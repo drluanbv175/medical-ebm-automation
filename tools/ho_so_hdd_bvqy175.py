@@ -938,9 +938,10 @@ def trich_du_kien(exports_root: Path, study: str) -> tuple[dict, list[str]]:
 # ---------------------------------------------------------------------------
 
 #: Khối dữ kiện riêng của biểu mẫu Hội đồng Đạo đức trong study_meta (câu trả lời của bảng kiểm/phiếu mà không nguồn
-#: nào khác có). Khoá dùng chung (đơn vị, chủ nhiệm, kinh phí, xung đột lợi ích, quản trị dữ liệu, mục tiêu, thời
-#: gian, cỡ mẫu, căn cứ miễn đồng thuận, bản thông tin) KHÔNG được ghi ở đây — có thì bị bỏ qua và báo.
-KHOI_HDD = ("gate_params", "G2", "ho_so_hdd")
+#: nào khác có) — khoá riêng `ho_so_don_vi.hdd`, ngoài gate_params (xem HSC.KHOA_HO_SO_DON_VI). Khoá dùng chung (đơn
+#: vị, chủ nhiệm, kinh phí, xung đột lợi ích, quản trị dữ liệu, mục tiêu, thời gian, cỡ mẫu, căn cứ miễn đồng thuận, bản
+#: thông tin) KHÔNG được ghi ở đây — có thì bị bỏ qua và báo.
+KHOI_HDD = HSC.KHOI_HDD
 
 #: Đường dẫn khoá lấy từ nguồn chung — khối riêng không ghi đè được.
 DUONG_DUNG_CHUNG = (
@@ -1309,9 +1310,12 @@ def ap_nguon_chung(du_lieu: dict, n: HSC.NguonDeTai, nguon: dict[str, str], ghi_
 
 def ap_khoi_ho_so(du_lieu: dict, n: HSC.NguonDeTai, nguon: dict[str, str], ghi_chu: list[str],
                   da_suy: set[str] | None = None) -> None:
-    """Áp khối dữ kiện riêng `gate_params.G2.ho_so_hdd` (câu trả lời của bảng kiểm/phiếu). Khoá dùng chung và ô đã
-    suy được từ nguồn chung bị bỏ (một bản sự thật)."""
+    """Áp khối dữ kiện riêng `ho_so_don_vi.hdd` (câu trả lời của bảng kiểm/phiếu). Khoá dùng chung và ô đã suy được
+    từ nguồn chung bị bỏ (một bản sự thật). Khối ở vị trí cũ trong gate_params không được đọc — báo để dời."""
     da_suy = da_suy or set()
+    cu = HSC.canh_bao_vi_tri_cu(n.meta, KHOI_HDD)
+    if cu:
+        ghi_chu.append(cu)
     khoi = _lay(n.meta, *KHOI_HDD)
     if not isinstance(khoi, dict) or not khoi:
         return
@@ -2882,6 +2886,8 @@ def lenh_kiem(args: argparse.Namespace) -> int:
     if dau_cu and dau_cu != n_chung.dau_nguon():
         con_viec.append("nguồn đã chốt (đề cương nộp/study_meta/G3) đổi sau lượt trích — chạy lại `trich --ghi-de` rồi"
                         " `dung --ghi`")
+    if HSC.canh_bao_vi_tri_cu(n_chung.meta, KHOI_HDD):
+        con_viec.append(HSC.canh_bao_vi_tri_cu(n_chung.meta, KHOI_HDD))
     dtcs_path = _doc(exports_root, study) / "ho_so_dtcs" / "HO_SO_DTCS_BVQY175.json"
     try:
         dtcs = json.loads(dtcs_path.read_text(encoding="utf-8")) if dtcs_path.is_file() else None

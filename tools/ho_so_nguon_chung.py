@@ -47,6 +47,29 @@ DONG_CHAM = "……………………"
 #: Mọi dấu đánh dấu của ba loại + sổ lý lịch (dùng để thay khi dựng Word).
 DAU_DANH_DAU = re.compile(r"\[(GÓI KÝ|DỮ KIỆN CẦN NHẬP|SỔ LÝ LỊCH):\s*([^\]]*)\]")
 
+#: Khối câu trả lời riêng của biểu mẫu hồ sơ trình đơn vị (Hội đồng Đạo đức, đề tài cơ sở, phiếu đề xuất) — KHOÁ
+#: RIÊNG `study_meta.ho_so_don_vi`, NGOÀI `gate_params` (23/11/2026). Đây là câu trả lời hành chính của biểu mẫu, không
+#: phải quyết định PI chốt ở cổng: đặt trong gate_params.G1 thì đổi dấu vân tay xác nhận G1 (g1_quality_gate băm mọi
+#: khoá G1 trừ khoá xác nhận) và lọt vào phép quét chuỗi của G1 (vd hoi_dong_cong._kiem_g2_ghep_ngoai tìm «eHospital»).
+#: Dời ra khoá riêng giữ nguyên miền băm của mọi cổng — không cần tập loại trừ lặp ở từng nơi đọc gate_params.
+KHOA_HO_SO_DON_VI = "ho_so_don_vi"
+KHOI_HDD = (KHOA_HO_SO_DON_VI, "hdd")
+KHOI_DTCS = (KHOA_HO_SO_DON_VI, "dtcs")
+#: Vị trí cũ (22/11/2026) — KHÔNG đọc; còn dữ liệu ở đó thì báo để dời.
+VI_TRI_CU = {KHOI_HDD: ("gate_params", "G2", "ho_so_hdd"), KHOI_DTCS: ("gate_params", "G1", "ho_so_dtcs")}
+
+
+def canh_bao_vi_tri_cu(meta: Any, khoi: tuple[str, ...]) -> str:
+    """Câu báo khi study_meta còn khối ở vị trí cũ trong gate_params (không đọc khối đó); rỗng nếu không có."""
+    cu = VI_TRI_CU.get(tuple(khoi))
+    o = meta
+    for k in cu or ():
+        o = o.get(k) if isinstance(o, dict) else None
+    if not cu or not o:
+        return ""
+    return (f"study_meta còn khối {'.'.join(cu)} ở vị trí cũ — không đọc; dời sang {'.'.join(khoi)} (khối hành chính"
+            " của biểu mẫu không thuộc quyết định cổng, đặt trong gate_params làm đổi dấu xác nhận cổng)")
+
 
 def goi_ky(mo_ta: str) -> str:
     """Ô thuộc gói ký (chữ ký, ngày ký, văn bản ký, tự khai cá nhân)."""

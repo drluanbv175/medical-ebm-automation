@@ -1283,8 +1283,9 @@ def trich_du_kien(exports_root: Path, study: str, chu_nhiem: str | None = None,
 # --- Trích từ NGUỒN CHUNG (22/11/2026) — một bản sự thật với gói G2 và hồ sơ Hội đồng Đạo đức ------------------
 
 #: Khối dữ kiện riêng của thuyết minh đề tài cơ sở trong study_meta (loại đề tài, tình trạng, phối hợp, sản phẩm, tác
-#: động, tài sản, người chủ trì từng nội dung tiến độ…). Ô dùng chung/đã suy được thắng khối này.
-KHOI_DTCS = ("gate_params", "G1", "ho_so_dtcs")
+#: động, tài sản, người chủ trì từng nội dung tiến độ, đơn vị ứng dụng của phiếu đề xuất…) — khoá riêng
+#: `ho_so_don_vi.dtcs`, ngoài gate_params (xem HSC.KHOA_HO_SO_DON_VI). Ô dùng chung/đã suy được thắng khối này.
+KHOI_DTCS = HSC.KHOI_DTCS
 
 
 def du_tru_kinh_phi(md: str) -> list[str]:
@@ -1358,12 +1359,13 @@ def ap_nguon_chung_dtcs(du_lieu: dict, n: HSC.NguonDeTai, nguon: dict[str, str],
             + "; ".join(f"({i}) {h['noi_dung'].rstrip('.')}" for i, h in enumerate(td, 1)) + ".",
             "đề cương nộp — tiến độ thực hiện")
     # Tác động 25.2/25.3 — cùng câu trả lời «đóng góp khoa học»/«lợi ích» đã chốt ở hồ sơ Hội đồng Đạo đức
-    khoi_hdd = _lay(n.meta, "gate_params", "G2", "ho_so_hdd", "phu_luc_11", "muc", default={}) or {}
+    khoi_hdd = _lay(n.meta, *HSC.KHOI_HDD, "phu_luc_11", "muc", default={}) or {}
     td25 = dict(tm.get("m25_tac_dong") or {})
     for khoa, muc in (("25.2", "3c"), ("25.3", "3a")):
         if _co(khoi_hdd.get(muc)):
             td25[khoa] = "\n".join(ghi_nguon_tham_chieu(str(khoi_hdd[muc]).split("\n"), set()))
-            nguon[f"thuyet_minh.m25_tac_dong.{khoa}"] = f"study_meta.json#gate_params.G2.ho_so_hdd.phu_luc_11.muc.{muc}"
+            nguon[f"thuyet_minh.m25_tac_dong.{khoa}"] = ("study_meta.json#" + ".".join(HSC.KHOI_HDD)
+                                                         + f".phu_luc_11.muc.{muc}")
             da_suy.add(f"thuyet_minh.m25_tac_dong.{khoa}")
     tm["m25_tac_dong"] = td25
     du_lieu["viec_bac_si"] = []
@@ -1386,8 +1388,12 @@ def _ghi_nguon_khoi(v: Any) -> Any:
 
 def ap_khoi_dtcs(du_lieu: dict, n: HSC.NguonDeTai, nguon: dict[str, str], ghi_chu: list[str],
                  da_suy: set[str]) -> None:
-    """Áp khối `gate_params.G1.ho_so_dtcs`: khoá `thuyet_minh.*` (trừ ô đã suy được) và `m21_hang` (người chủ trì,
-    kết quả, thời gian của từng dòng tiến độ — khớp theo đầu câu nội dung, lệch thì bỏ và báo)."""
+    """Áp khối `ho_so_don_vi.dtcs`: khoá `thuyet_minh.*` (trừ ô đã suy được) và `m21_hang` (người chủ trì, kết quả,
+    thời gian của từng dòng tiến độ — khớp theo đầu câu nội dung, lệch thì bỏ và báo). Khối ở vị trí cũ trong
+    gate_params không được đọc — báo để dời."""
+    cu = HSC.canh_bao_vi_tri_cu(n.meta, KHOI_DTCS)
+    if cu:
+        ghi_chu.append(cu)
     khoi = _lay(n.meta, *KHOI_DTCS)
     if not isinstance(khoi, dict) or not khoi:
         return
@@ -2735,6 +2741,8 @@ def lenh_kiem(args: argparse.Namespace) -> int:
     if dau_cu and dau_cu != n_chung.dau_nguon():
         con_viec.append("nguồn đã chốt (đề cương nộp/study_meta/G3) đổi sau lượt trích — chạy lại `trich --ghi-de`"
                         " rồi `dung --ghi`")
+    if HSC.canh_bao_vi_tri_cu(n_chung.meta, KHOI_DTCS):
+        con_viec.append(HSC.canh_bao_vi_tri_cu(n_chung.meta, KHOI_DTCS))
     hdd = _doc_json(exports_root / study / "ho_so_hdd" / "HO_SO_HDD_BVQY175.json") or None
     doi_chieu = HSC.doi_chieu(n_chung, hdd, d)
     khop, lech, khong_do = HSC.tom_tat_doi_chieu(doi_chieu)

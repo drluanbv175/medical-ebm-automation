@@ -24,7 +24,7 @@ for _p in (str(ROOT), str(ROOT / "tools")):
 docx = pytest.importorskip("docx")
 
 from tests import test_ho_so_nguon_chung_20261122 as _TNC  # noqa: E402
-from tests.test_ho_so_nguon_chung_20261122 import MT, STUDY, TEN, _chay_dtcs, _chay_hdd  # noqa: E402
+from tests.test_ho_so_nguon_chung_20261122 import MT, STUDY, TEN, _chay_dtcs, _chay_hdd, dat_khoi  # noqa: E402
 from tools import ho_so_dtcs_bvqy175 as DTCS  # noqa: E402
 from tools import ho_so_hdd_bvqy175 as HDD  # noqa: E402
 from tools import ho_so_nguon_chung as HSC  # noqa: E402
@@ -68,7 +68,7 @@ KHOI_PDX = {"thuyet_minh": {"m22_san_pham": "Dạng I: 01 bài báo giả."},
 
 
 def test_dung_phieu_de_xuat_dien_dung_o_mau(de_tai_pdx) -> None:
-    goc = de_tai_pdx(meta_sua=lambda m: m["gate_params"]["G1"].__setitem__("ho_so_dtcs", KHOI_PDX))
+    goc = de_tai_pdx(meta_sua=lambda m: dat_khoi(m, HSC.KHOI_DTCS, KHOI_PDX))
     assert _chay_hdd(goc, "trich", "--ghi", "--ghi-de") == 0
     assert _chay_dtcs(goc, "trich", "--ghi", "--ghi-de") == 0
     assert _chay_dtcs(goc, "dung", "--ghi") == 0
@@ -161,7 +161,7 @@ def test_sau_chap_thuan_nguon_thieu_thi_khong_xanh(tmp_path: Path, capsys, monke
 def test_kiem_canh_bao_phieu_de_xuat_qua_dai(de_tai_pdx, capsys) -> None:
     """Mẫu PDX ghi «không quá 04 trang» ⇒ phiếu ước dài hơn bị `kiem` nêu thành việc cần làm."""
     def dai(m: dict) -> None:
-        m["gate_params"]["G1"]["ho_so_dtcs"] = KHOI_PDX
+        dat_khoi(m, HSC.KHOI_DTCS, KHOI_PDX)
     goc = de_tai_pdx(meta_sua=dai)
     p = goc / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
     doan = "\n\n".join(f"Đoạn lý do thứ {i} " + "nội dung tính cấp thiết của đề tài " * 12 for i in range(40))
@@ -179,8 +179,8 @@ def test_kiem_canh_bao_phieu_de_xuat_qua_dai(de_tai_pdx, capsys) -> None:
 def test_sau_chap_thuan_tien_do_cung_khoi_voi_thuyet_minh(de_tai) -> None:
     """Mốc thiếu thời gian ở đề cương được khối m21_hang giải ở thuyết minh ⇒ báo cáo tiến độ dùng đúng giá trị đó."""
     def khoi(m: dict) -> None:
-        m["gate_params"]["G1"]["ho_so_dtcs"] = {"m21_hang": [{"dau": "Thu thập số liệu",
-                                                               "thoi_gian": "01–03/2027 (theo phân công)"}]}
+        dat_khoi(m, HSC.KHOI_DTCS, {"m21_hang": [{"dau": "Thu thập số liệu",
+                                                  "thoi_gian": "01–03/2027 (theo phân công)"}]})
     goc = de_tai(meta_sua=khoi)
     p = goc / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
     p.write_text(p.read_text(encoding="utf-8").replace("| 2 | Thu thập số liệu | 01–03/2027 | Phiếu |",
