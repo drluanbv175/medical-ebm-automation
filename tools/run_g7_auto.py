@@ -922,7 +922,7 @@ def build_pmid_meta(pubmed_raw: dict) -> dict:
 # ước lượng): số đã là số THẬT của G6 nhưng bác sĩ CHƯA đối chiếu — đối chiếu xong mới xoá nhãn và đặt results_final.
 NHAN_DOI_CHIEU_G6 = "[CẦN KẾT QUẢ THẬT — đối chiếu G6]"
 # Khoá của tóm tắt Python CLI (run_stats_analysis.py) mang ước lượng; tóm tắt khối cuối 03_analysis.R chỉ có n_total.
-_KHOA_UOC_LUONG_G6 = ("primary_outcome", "ordinal", "survival", "multivariate", "ty_le", "dac_thu")
+_KHOA_UOC_LUONG_G6 = ("primary_outcome", "poisson_pr", "ordinal", "survival", "multivariate", "ty_le", "dac_thu")
 # Một số trong văn bản: không dính chữ/số phía trước (G6, sha256, q1_…), không dính chữ phía sau; dấu chấm cuối câu
 # không làm số «biến mất» («N = 218.» vẫn tách được 218).
 _SO_RE = re.compile(r"(?<!\w)(?<!\d\.)-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?(?!\w)(?!\.\d)")
@@ -1309,7 +1309,9 @@ def _bang_mo_hinh_g6(tieu_de: str, mh: Any) -> list[str]:
     if not kq:
         return []
     co_or = any("OR_adj" in r or "OR_adj" in (r.get("so_tho_khong_tin_cay") or {}) for r in kq)
-    khoa, cot = ("OR_adj", "OR hiệu chỉnh") if co_or else ("beta", "β")
+    co_pr = any("PR_adj" in r or "PR_adj" in (r.get("so_tho_khong_tin_cay") or {}) for r in kq)  # Poisson robust
+    khoa, cot = (("OR_adj", "OR hiệu chỉnh") if co_or else ("PR_adj", "PR hiệu chỉnh") if co_pr
+                 else ("beta", "β"))
     n = mh.get("n", mh.get("n_total"))
     dong = [f"*{tieu_de} — mô hình `{_mot_dong(mh.get('model', '?'))}`, n = {_so_g6(n)}* {NHAN_DOI_CHIEU_G6}  ", "",
             f"| Biến | {cot} | 95% CI | p |", "|---|---|---|---|"]
@@ -1792,6 +1794,22 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6") -> list[str]:
         s3.append(f"[CẦN THỐNG KÊ VIÊN — G6: mô hình chính CHƯA chạy ({_trong_o(mh.get('ly_do'))})]  ")
     if isinstance(tt.get("primary_outcome"), dict):
         s3 += _khoi_ket_cuc_chinh_g6(tt["primary_outcome"])
+    # 22/11/2026 (CONSORT 2025 mục 26, STROBE 16a): PR/RR hiệu chỉnh của hồi quy Poisson sai số robust là ƯỚC LƯỢNG
+    # CHÍNH theo SAP của thử nghiệm/thuần tập/cắt ngang phân tích — tóm tắt G6 có khối `poisson_pr` nhưng bản thảo
+    # trước đây chỉ in ước lượng thô (RR hiệu chỉnh chỉ nằm ở chú thích hình).
+    pp = tt.get("poisson_pr")
+    if isinstance(pp, dict):
+        if s3:
+            s3.append("")
+        s3 += _bang_mo_hinh_g6(f"Mô hình đa biến Poisson sai số robust — PR hiệu chỉnh theo các biến trong bảng (G6, "
+                               f"`{tien_to}_table4_poisson_pr.txt`; {_so_g6(pp.get('n_bien_co'))} biến cố)", pp)
+        po = tt.get("primary_outcome") if isinstance(tt.get("primary_outcome"), dict) else {}
+        nhom = str(((tt.get("dac_ta_phan_tich") or {}) if isinstance(tt.get("dac_ta_phan_tich"), dict) else {})
+                   .get("group") or "")
+        g = [_mot_dong(x) for x in (po.get("groups") or [])]
+        if nhom and len(g) == 2 and any(isinstance(r, dict) and r.get("variable") == nhom
+                                        for r in pp.get("results") or []):
+            s3 += [f"*Hàng `{_mot_dong(nhom)}`: nhóm `{g[1]}` so với nhóm `{g[0]}`.*  ", ""]
     hi = tt.get("hypothesis_interpretation")
     if isinstance(hi, dict) and hi.get("note"):
         # SỬA 15/11/2026 (thẩm định PR #261): bản trước chép ghi chú vào THÂN BÀI qua _mot_dong(…, 400) — ô người-thật

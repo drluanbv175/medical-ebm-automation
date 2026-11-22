@@ -383,3 +383,50 @@ def test_g7_muc_tieu_tac_hai_khi_sap_dinh_nghia_ton_hai():
     assert cau in gioi_thieu and "180/110" not in gioi_thieu
     assert cau not in _sinh()                                                # SAP chưa định nghĩa tổn hại
     assert cau not in _sinh(sap_tom_tat=sap, design_code="cohort", reporting_std="STROBE")
+
+
+PP = {"model": "poisson_robust_hc0", "n": 218, "n_bien_co": 124, "phuong_sai": "HC0 (sandwich)",
+      "tho": [{"variable": "nhom", "PR": 1.3871, "CI_95": [1.1012, 1.7473], "p": 0.0055}],
+      "results": [{"variable": "nhom", "PR_adj": 1.3894, "CI_95": [1.1031, 1.7501], "p": 0.0052},
+                  {"variable": "tuoi", "PR_adj": 1.0021, "CI_95": [0.9934, 1.0109], "p": 0.6371}]}
+
+
+def test_g7_ket_qua_chinh_co_pr_hieu_chinh_poisson_va_dat_strobe_16a(tmp_path):
+    """Ước lượng chính theo SAP (PR/RR hiệu chỉnh, Poisson sai số robust) phải có trong §3 Kết quả — trước đây chỉ có
+    ước lượng thô, RR hiệu chỉnh chỉ nằm trong chú thích hình (CONSORT 2025 mục 26, STROBE 16a)."""
+    import tieu_chi_ban_thao as TB
+
+    out = tmp_path / "exports" / "THU"
+    _manifest(out)
+    _ghi_tom_tat(out, _tom_tat_nhi_phan(table1=BANG1_G6, poisson_pr=PP, dac_ta_phan_tich={"group": "nhom"}))
+    kq = G7A.dung_ket_qua_tu_g6(G7A.doc_tom_tat_g6_hop_le(out), tu_dien=_tu_dien_nhom("Can thiệp"))
+    assert kq["da_dung"], kq.get("ly_do")
+    s3 = "\n".join(kq["s3"])
+    assert "Mô hình đa biến Poisson sai số robust — PR hiệu chỉnh theo các biến trong bảng" in s3
+    assert "124 biến cố" in s3
+    assert "| `nhom` | 1.3894 | 1.1031–1.7501 | 0.0052 |" in s3                       # số chép nguyên văn G6
+    assert "*Hàng `nhom`: nhóm can thiệp so với nhóm chứng.*" in s3                   # nhóm mang tên
+    md = _sinh(ket_qua_g6={**kq, "s4": []}, design_code="cohort", design_primary="Nghiên cứu thuần tập (Cohort)",
+               reporting_std="STROBE")
+    # ô mục tiêu do tác giả điền (giả lập điền ở lượt thật) — STROBE 16a chỉ đòi khi có mục tiêu phân tích liên quan
+    md = md.replace("nhằm [CẦN câu hỏi PICO chính]", "nhằm đánh giá ảnh hưởng của phơi nhiễm đến kết cục chính")
+    md = md.replace(" " + G7A.NHAN_DOI_CHIEU_G6, "")   # người đối chiếu đã so với G6 và xoá nhãn (như lượt thật)
+    r = TB.doi_chieu_ban_thao(md, "cohort", co_so_lieu=True)
+    assert {x.ma: x.trang_thai for x in r["ket_qua"] if x.ma == "16a"} == {"16a": "dat"}
+    _ghi_tom_tat(out, _tom_tat_nhi_phan(table1=BANG1_G6))                             # không có Poisson ⇒ không in
+    assert "PR hiệu chỉnh" not in "\n".join(G7A.dung_ket_qua_tu_g6(G7A.doc_tom_tat_g6_hop_le(out))["s3"])
+
+
+@pytest.mark.parametrize("cau, dat", [
+    ("Hạn chế: sai lệch nhớ lại. Sai lệch nhớ lại thường làm ước tính cao mối liên quan.", True),
+    ("Hạn chế: nhiễu tồn dư có thể lệch theo cả hai hướng.", True),
+    ("Hạn chế: sai lệch chọn có thể làm ước lượng quá thấp tỷ lệ.", True),
+    ("Hạn chế: một cơ sở, cỡ mẫu nhỏ.", False),
+])
+def test_k17_strobe_19_nhan_chieu_tac_dong_tieng_viet(cau, dat):
+    import re as _re
+
+    import kiem_chuan_de_cuong_theo_muc as KCD
+
+    yt = next(y for y in KCD._STROBE_TIEU_CHI[("19", "chung")][3] if "chiều" in y.ten)
+    assert bool(_re.search(yt.mau, cau, _re.IGNORECASE)) is dat
