@@ -33,6 +33,9 @@
 # bản ĐẦU TIÊN nhận pillow<14 (1.59–1.66.0 vẫn <13; nền starlette/uvicorn không đổi). Cách làm như 28/09: venv cài
 # đúng file này rồi `pip install streamlit==1.66.1 pillow==13.0.0`; freeze trước/sau lệch đúng 2 dòng, `pip check` sạch.
 #
+# 2026-11-22: thêm python-pptx 1.0.2 (+ phụ thuộc XlsxWriter 3.2.9; lxml, pillow, typing_extensions đã có) cho
+# tệp trình chiếu của gói bảo vệ đề cương — đúng bản đang cài trong venv đã chạy test (`pip show`), `pip check` sạch.
+#
 # Không sửa tay file này — luôn sinh lại bằng `pip freeze` để đảm bảo khớp thật với
 # venv đã chạy test, không phải liệt kê tay dễ lệch.
 
@@ -106,6 +109,7 @@ pypdf==6.21.4
 pytest==9.1.0
 python-dateutil==2.9.0.post0
 python-docx==1.2.0
+python-pptx==1.0.2
 python-dotenv==1.2.2
 python-multipart==0.0.32
 pytz==2026.2
@@ -138,3 +142,4 @@ websockets==16.0
 Werkzeug==3.1.9
 wiley-tdm==1.2.0
 wrapt==2.2.2
+XlsxWriter==3.2.9

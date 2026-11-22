@@ -50,6 +50,7 @@ pypdf>=6.21.4  # vá bảo mật 02/10/2026 (Dependabot: 8 cảnh báo high đ�
 Jinja2>=3.1.4
 deep-translator>=1.11.4
 python-docx>=1.1.2
+python-pptx>=1.0.2  # gói bảo vệ đề cương: tệp trình chiếu .pptx (goi_bao_ve_hoi_dong.py, 22/11/2026)
 openpyxl>=3.1.5
 markdown>=3.6
 

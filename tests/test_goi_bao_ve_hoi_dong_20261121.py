@@ -353,7 +353,8 @@ def test_ghi_chi_tao_hai_tep_moi_khong_dong_cham_nguon(goc: Path) -> None:
     assert G.main(["--study", MA, "--exports-root", str(goc), "--ghi", "--khong-word"]) == 0
     sau = _anh_chup(goc / MA)
     moi = sorted(set(sau) - set(truoc))
-    assert moi == sorted([f"GOI_BAO_VE_CAU_HOI_{MA}.md", f"GOI_BAO_VE_DAN_SLIDE_{MA}.md"])
+    assert moi == sorted([f"GOI_BAO_VE_CAU_HOI_{MA}.md", f"GOI_BAO_VE_DAN_SLIDE_{MA}.md",
+                          f"GOI_BAO_VE_TRINH_CHIEU_{MA}.pptx"])  # 22/11/2026: thêm tệp trình chiếu
     assert {k: v for k, v in sau.items() if k in truoc} == truoc  # nguồn (đề cương, biên bản, báo cáo) giữ nguyên
 
 
@@ -362,7 +363,8 @@ def test_thu_muc_ra_ghi_ra_ngoai_exports(goc: Path, tmp_path: Path) -> None:
     ra = tmp_path / "xem-thu"
     assert G.main(["--study", MA, "--exports-root", str(goc), "--ghi", "--khong-word", "--thu-muc-ra", str(ra)]) == 0
     assert sorted(p.name for p in ra.iterdir()) == sorted([f"GOI_BAO_VE_CAU_HOI_{MA}.md",
-                                                           f"GOI_BAO_VE_DAN_SLIDE_{MA}.md"])
+                                                           f"GOI_BAO_VE_DAN_SLIDE_{MA}.md",
+                                                           f"GOI_BAO_VE_TRINH_CHIEU_{MA}.pptx"])
     assert _anh_chup(goc / MA) == truoc
 
 
