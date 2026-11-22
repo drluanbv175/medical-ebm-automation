@@ -203,9 +203,10 @@ def _meta(icf_waiver: bool = False) -> dict:
                            " khoa được đánh giá.", "management": "người ngoài khoa thu thập số liệu"},
                    "mien_icf_lap_luan": {"i_khong_kha_thi": LL[0], "ii_gia_tri_xa_hoi": LL[1],
                                          "iii_nguy_co_toi_thieu": LL[2]},
-                   "da_soan": {"tl4": TL4}, "ho_so_hdd": KHOI_HDD},
+                   "da_soan": {"tl4": TL4}},
             "G3": {"confirmed_n": 1000},
         },
+        HSC.KHOA_HO_SO_DON_VI: {HSC.KHOI_HDD[1]: KHOI_HDD},
         "data_governance": {"storage_location": "máy chủ giả của Bệnh viện", "access": "Phân quyền truy cập: chỉ"
                             " người được phân quyền"},
     }
@@ -260,6 +261,14 @@ def de_tai(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         (tm / f"G2_A3_ETHICS_PACKAGE_{STUDY}.md").write_text(g2, encoding="utf-8", newline="\n")
         return goc
     return tao
+
+
+def dat_khoi(meta: dict, khoi: tuple, gia_tri: dict) -> None:
+    """Đặt khối hồ sơ đơn vị đúng vị trí mà bộ dựng đọc (HSC.KHOI_HDD / HSC.KHOI_DTCS)."""
+    o = meta
+    for k in khoi[:-1]:
+        o = o.setdefault(k, {})
+    o[khoi[-1]] = gia_tri
 
 
 def _chay_hdd(goc: Path, *lenh: str) -> int:
@@ -478,7 +487,7 @@ def test_kiem_bao_nguon_doi_sau_luot_trich(de_tai, capsys) -> None:
 
 
 def test_trich_dtcs_tu_tuc_goi_ky_can_nhap_va_khoi(de_tai) -> None:
-    goc = de_tai(meta_sua=lambda m: m["gate_params"].setdefault("G1", {}).__setitem__("ho_so_dtcs", KHOI_DTCS))
+    goc = de_tai(meta_sua=lambda m: dat_khoi(m, HSC.KHOI_DTCS, KHOI_DTCS))
     d, ghi = DTCS.trich_du_kien(goc, STUDY, so_ca_nhan=Path(DTCS.tim_so_ca_nhan()))
     tm = d["thuyet_minh"]
     assert tm["m4_tong_kinh_phi"] == "Tự túc, không đề nghị cấp kinh phí.", "khối không ghi đè kinh phí đã suy"
