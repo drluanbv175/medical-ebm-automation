@@ -764,10 +764,10 @@ def ap_bien_tap(dl: Any, van: str) -> Tuple[str, Dict[str, Any]]:
             if not isinstance(th, dict):
                 continue
             loi = kiem_thay(th, van)
-            ban = {"id": fid, "dong": th.get("dong"), "cu": str(th.get("cu") or "")[:300],
+            ban = {"id": fid, "dong": th.get("dong"), "cu": str(th.get("cu") or ""),
                    "moi": str(th.get("moi") or "")[:TRAN_KY_TU_THAY]}
             if loi:
-                nk["loai"].append({**ban, "ly_do_loai": loi})
+                nk["loai"].append({**ban, "cu": ban["cu"][:300], "ly_do_loai": loi})
             else:
                 van = van.replace(str(th["cu"]), str(th.get("moi") or ""), 1)
                 nk["nhan"].append(ban)
@@ -822,6 +822,18 @@ def _xuat_word(out_dir: Path, study: str, van: str) -> str:
         return "đã xuất lại Word" if kq else "chưa xuất lại Word (thiếu python-docx)"
     except Exception as exc:  # noqa: BLE001
         return f"chưa xuất lại Word: {type(exc).__name__}"
+
+
+def _thu_ban(van_thu: str, tep: Path, out_dir: Path, study: str, k_truoc: Dict[str, Any]) -> List[str]:
+    """Ghi bản thử + xuất Word (K1–K17 so Word với .md) rồi đo; trả danh sách «xấu đi» so với bản đầu vòng.
+    Bản thử NẰM LẠI trên đĩa — bên gọi chịu trách nhiệm ghi bản cuối hoặc hoàn nguyên."""
+    _ghi_van(tep, van_thu)
+    _xuat_word(out_dir, study, van_thu)
+    try:
+        k = _do_chuan(van_thu, study, out_dir, True)
+    except Exception as exc:  # noqa: BLE001 — không đo được ⇒ coi là xấu đi (không bao giờ «đạt»)
+        return [f"không đo được: {type(exc).__name__}"]
+    return _xau_di(k_truoc, k)
 
 
 def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_api: bool, ap_dung: bool,
@@ -890,39 +902,50 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
     van_moi, nk = ap_bien_tap(gop, van)
     nk["yeu_cau_hong"] = hong   # nhóm hỏng: vấn đề của nhóm đó sẽ được hội đồng vòng sau nêu lại (không bị bỏ qua)
     la_chinh = Path(st["tep"]).resolve() == tep_mac_dinh(st["study"], out_dir.parents[1]).resolve()
-    truoc, sau = _do_chuan(van, st["study"], out_dir, False), _do_chuan(van_moi, st["study"], out_dir, False)
-    xau = _xau_di(truoc, sau)
-    nk.update(do_truoc=truoc, do_sau=sau, xau_di=xau)
     st["bien_tap"] = nk
     if not nk["nhan"]:
         print(f"⛔ Không thay thế nào qua rào liêm chính ({len(nk['loai'])} bị loại) — dừng.")
         return 1
-    if xau:
-        print("⛔ Bản sửa làm chuẩn xấu đi — KHÔNG áp: " + "; ".join(xau))
-        return 1
+    if not la_chinh:
+        print("⛔ Vòng kín chỉ sửa đề cương chính của đề tài.")
+        return 3
     if not ap_dung:
         print(f"(chạy khô) {len(nk['nhan'])} thay thế qua rào, {len(nk['loai'])} bị loại — thêm --ap-dung để ghi.")
         return 0
     sao_luu = thu_muc_hd(out_dir) / f"sao_luu_{st['sha'][:12]}{tep.suffix}"
     if not sao_luu.exists():
         _ghi_van(sao_luu, van)
-    # K1–K17 và nhất quán xuyên cổng đọc TỆP trên đĩa ⇒ đo «trước» khi ghi bản mới, đo «sau» khi đã ghi.
-    k_truoc = _do_chuan(van, st["study"], out_dir, True) if la_chinh else {}
-    _ghi_van(tep, van_moi)
-    if la_chinh:
-        # Word xuất TRƯỚC khi đo «sau»: K1–K17 so Word với .md — đo khi Word còn cũ sẽ báo lỗi giả và hoàn nguyên nhầm.
-        nk["word"] = _xuat_word(out_dir, st["study"], van_moi)
-        try:
-            k_sau = _do_chuan(van_moi, st["study"], out_dir, True)
-        except Exception as exc:  # noqa: BLE001 — không đo được ⇒ coi là xấu đi, hoàn nguyên (không bao giờ «đạt»)
-            k_sau = {"loi": str(exc)}
-        xau2 = _xau_di(k_truoc, k_sau) + ([f"không đo được sau sửa: {k_sau['loi']}"] if "loi" in k_sau else [])
-        if xau2:
+    # K1–K17 và nhất quán xuyên cổng đọc TỆP trên đĩa ⇒ đo «trước» khi ghi bản mới.
+    k_truoc = _do_chuan(van, st["study"], out_dir, True)
+    xau = _thu_ban(van_moi, tep, out_dir, st["study"], k_truoc)
+    nk["do_truoc"] = k_truoc
+    if xau:
+        # 22/11/2026 (đo thật): hoàn nguyên CẢ LƯỢT vì vài thay thế làm K11/K15/K4 tăng đã bỏ luôn hàng chục thay thế
+        # tốt ⇒ CHỌN LỌC: thử từng thay thế, giữ cái không làm chuẩn xấu đi so với bản đầu vòng, loại cái làm xấu đi.
+        nk["xau_di_ca_luot"] = xau
+        van_moi, giu, bo = van, [], []
+        for e in nk["nhan"]:
+            loi = kiem_thay(e, van_moi)
+            if loi:
+                bo.append({**e, "cu": e["cu"][:300], "ly_do_loai": f"khi chọn lọc: {loi}"})
+                continue
+            ung = van_moi.replace(e["cu"], e["moi"], 1)
+            x = _thu_ban(ung, tep, out_dir, st["study"], k_truoc)
+            if x:
+                bo.append({**e, "cu": e["cu"][:300], "ly_do_loai": "làm chuẩn xấu đi: " + "; ".join(x)})
+            else:
+                van_moi = ung
+                giu.append(e)
+        nk["nhan"], nk["loai_chon_loc"] = giu, bo
+        xau_cuoi = _thu_ban(van_moi, tep, out_dir, st["study"], k_truoc) if giu else ["không giữ được thay thế nào"]
+        if xau_cuoi:
             _ghi_van(tep, van)  # hoàn nguyên cả .md lẫn Word
             _xuat_word(out_dir, st["study"], van)
-            nk["xau_di"] = xau2
-            print("⛔ K1–K17/nhất quán xấu đi trên bản chính — đã HOÀN NGUYÊN: " + "; ".join(xau2))
+            nk["xau_di"] = xau_cuoi
+            print("⛔ Không còn thay thế nào giữ được mà chuẩn không xấu đi — đã HOÀN NGUYÊN: " + "; ".join(xau_cuoi))
             return 1
+        print(f"🔎 Chọn lọc: giữ {len(giu)}/{len(giu) + len(bo)} thay thế; loại {len(bo)} vì làm chuẩn xấu đi.")
+    nk["word"] = _xuat_word(out_dir, st["study"], van_moi)
     st["buoc"], st["sha_moi"] = "da_sua", _sha(van_moi)
     moi = khoi_tao(st["study"], out_dir, tep, st["model"])
     moi.update(vong=int(st.get("vong", 1)) + 1, ban_truoc=st["sha"])

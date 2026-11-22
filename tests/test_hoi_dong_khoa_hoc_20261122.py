@@ -410,3 +410,34 @@ def test_bien_tap_chia_nhom_va_nop_lai_khi_hong_het(tmp_path, monkeypatch):
     assert st["so_lan_hong_bien_tap"] == 1 and len(st["loi_bien_tap"]) == 2 and "bien_tap" not in st["batch"]
     assert [goi(), goi(), goi(), goi()] == [4, 1, 4, 1]       # nộp lại lần 1, 2 — đều hỏng
     assert goi() == 1 and len(kh.lo) == 5                     # 3 lần hỏng > 1 + 2 ⇒ dừng, không nộp thêm
+
+
+def test_chon_loc_giu_thay_the_tot_loai_thay_the_lam_xau(tmp_path, monkeypatch):
+    """22/11 (đo thật): hoàn nguyên cả lượt vì vài thay thế xấu đã bỏ luôn thay thế tốt ⇒ chọn lọc từng thay thế."""
+    goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
+    hai = {"sua": [{"id": "F01", "hanh_dong": "sua", "thay": [
+        {"dong": 8, "cu": "theo Wilson", "moi": "theo Wilson; dữ liệu thiếu xử lý bằng phân tích ca đầy đủ"},
+        {"dong": 10, "cu": "khoảng 50%.", "moi": "khoảng 50% (DẤU XẤU)."}]}]}
+    kh = KhachBatch({**TRA, "bt0": hai})
+    that = H._do_chuan
+
+    def do_gia(van, study, out_dir, la_chinh):
+        r = that(van, study, out_dir, la_chinh)
+        if la_chinh and "DẤU XẤU" in van:
+            r["lech"] = (r.get("lech") or 0) + 1
+        return r
+
+    monkeypatch.setattr(H, "_do_chuan", do_gia)
+    p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
+    for _ in range(6):
+        H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
+        if "phân tích ca đầy đủ" in p.read_text(encoding="utf-8"):
+            break
+    van = p.read_text(encoding="utf-8")
+    assert "phân tích ca đầy đủ" in van and "DẤU XẤU" not in van        # giữ tốt, loại xấu
+    st = [H._doc_st(x) for x in (goc / "exports" / STUDY / H.THU_MUC).glob("trang_thai_*.json")]
+    bt = next(s["bien_tap"] for s in st if s.get("bien_tap"))
+    assert len(bt["nhan"]) == 1 and len(bt["loai_chon_loc"]) == 1 and "xấu đi" in bt["loai_chon_loc"][0]["ly_do_loai"]
+    kh.tra = SACH
+    assert _vong(goc, kh) == 0                                            # vòng 2 thông qua
