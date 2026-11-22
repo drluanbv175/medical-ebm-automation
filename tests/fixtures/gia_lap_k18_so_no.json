@@ -46,54 +46,17 @@
   },
   "chan_doan": {
    "ban_thao": [
-    "STARD 2015 11",
-    "STARD 2015 12a",
-    "STARD 2015 12b",
-    "STARD 2015 21a",
-    "STARD 2015 21b",
-    "STARD 2015 29",
-    "STARD 2015 3"
+    "STARD 2015 21b"
    ],
    "bao_cao": [
-    "STARD 2015 11",
-    "STARD 2015 12a",
-    "STARD 2015 12b",
-    "STARD 2015 21a",
     "STARD 2015 21b",
-    "STARD 2015 29",
     "STARD 2015 3"
    ]
   },
   "mo_hinh_du_bao": {
-   "ban_thao": [
-    "TRIPOD+AI 2024 15",
-    "TRIPOD+AI 2024 18c",
-    "TRIPOD+AI 2024 18e",
-    "TRIPOD+AI 2024 18f",
-    "TRIPOD+AI 2024 19",
-    "TRIPOD+AI 2024 22",
-    "TRIPOD+AI 2024 27a",
-    "TRIPOD+AI 2024 27b",
-    "TRIPOD+AI 2024 3b",
-    "TRIPOD+AI 2024 3c",
-    "TRIPOD+AI 2024 6c",
-    "TRIPOD+AI 2024 7",
-    "TRIPOD+AI 2024 8c"
-   ],
+   "ban_thao": [],
    "bao_cao": [
-    "TRIPOD+AI 2024 15",
-    "TRIPOD+AI 2024 18c",
-    "TRIPOD+AI 2024 18e",
-    "TRIPOD+AI 2024 18f",
-    "TRIPOD+AI 2024 19",
-    "TRIPOD+AI 2024 22",
-    "TRIPOD+AI 2024 27a",
-    "TRIPOD+AI 2024 27b",
-    "TRIPOD+AI 2024 3b",
-    "TRIPOD+AI 2024 3c",
-    "TRIPOD+AI 2024 6c",
-    "TRIPOD+AI 2024 7",
-    "TRIPOD+AI 2024 8c"
+    "TRIPOD+AI 2024 3c"
    ]
   },
   "tong_quan_gop": {
