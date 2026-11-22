@@ -237,6 +237,12 @@ def _tao_bo_mau_gia(thu_muc: Path, *, co_huong_dan: bool = True) -> None:
         _luu(thu_muc, khoa, ["Bản hướng dẫn giả."])
 
 
+@pytest.fixture(autouse=True)
+def _cach_ly_so_ly_lich(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Sổ lý lịch cá nhân trỏ vào thư mục rỗng — test không bao giờ đọc sổ thật trên máy (22/11/2026)."""
+    monkeypatch.setenv("EBM_HO_SO_CA_NHAN_BVQY175", str(tmp_path / "khong_co_so_ly_lich"))
+
+
 @pytest.fixture()
 def thu_muc_mau_gia(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     thu_muc = tmp_path / "mau"
@@ -255,6 +261,12 @@ DE_CUONG_GIA = """# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC
 ## THÔNG TIN CHUNG VỀ ĐỀ TÀI
 
 Thông tin chung giả định của đề tài (có nhắc phụ lục phiếu thu thập ở cuối).
+
+| Mục | Nội dung |
+|---|---|
+| Tên đề tài | Đề tài giả định |
+| Thiết kế | Nghiên cứu cắt ngang mô tả |
+| Thời gian thực hiện | Thực hiện dự kiến 11/2026–09/2027 |
 
 # 1. ĐẶT VẤN ĐỀ
 
@@ -327,12 +339,14 @@ def _ghi_study_meta(thu_muc: Path, *, icf_waiver: bool, recruitment_mode: str, t
     (thu_muc / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
-def _ghi_ethics_md(thu_muc: Path, study: str) -> None:
+def _ghi_ethics_md(thu_muc: Path, study: str, title: str = "Đề tài giả định") -> None:
     noi_dung = f"""# A3 | {study}
 
 ## TÀI LIỆU 1. ĐƠN XIN PHÊ DUYỆT IRB
 
 ```
+ Tên đề tài: {title}
+ Thiết kế: Nghiên cứu cắt ngang · Thời gian thực hiện: 11/2026–09/2027
  Nơi thực hiện: Khoa Khám bệnh giả định, Bệnh viện giả định.
  Cỡ mẫu dự kiến: 123
 ```
@@ -356,8 +370,9 @@ def _tao_de_tai(tmp_path: Path, study: str, *, icf_waiver: bool, recruitment_mod
     exports_root = tmp_path / "exports"
     thu_muc = exports_root / study
     _ghi_study_meta(thu_muc, icf_waiver=icf_waiver, recruitment_mode=recruitment_mode, title=title)
-    _ghi_ethics_md(thu_muc, study)
-    (thu_muc / f"DE_CUONG_NOP_HOI_DONG_{study}.md").write_text(DE_CUONG_GIA, encoding="utf-8", newline="\n")
+    _ghi_ethics_md(thu_muc, study, title)
+    (thu_muc / f"DE_CUONG_NOP_HOI_DONG_{study}.md").write_text(DE_CUONG_GIA.replace("Đề tài giả định", title),
+                                                                encoding="utf-8", newline="\n")
     if quy_trinh is not None:
         (thu_muc / "_quy-trinh-du-lieu.csv").write_text(quy_trinh, encoding="utf-8", newline="\n")
     return exports_root
@@ -643,7 +658,8 @@ def test_don_mien_lap_luan_ba_dieu_kien_khong_coi_du_lieu_xac_dinh_la_co_chan(
     exports_root = _tao_de_tai_hoi_cuu(tmp_path, "gia-dinh-x4")
     p = _trich(exports_root, "gia-dinh-x4")
     d = json.loads(p.read_text(encoding="utf-8"))
-    assert d["mien_icf"]["ngay"] == hs.CAN_BAC_SI_DIEN, "không lấy ngày sinh gói G2 làm ngày làm đơn"
+    assert d["mien_icf"]["ngay"].startswith(hs.HSC.TIEN_TO_GOI_KY), "ngày làm đơn thuộc gói ký"
+    assert "2026-11-19" not in d["mien_icf"]["ngay"], "không lấy ngày sinh gói G2 làm ngày làm đơn"
     _dung(exports_root, "gia-dinh-x4")
     chu = _chu(exports_root / "gia-dinh-x4" / "ho_so_hdd" / "MIEN_ICF_gia-dinh-x4.docx")
     for bat_buoc in ("(i) Nghiên cứu không khả thi", "(ii) Nghiên cứu có giá trị xã hội quan trọng",
@@ -850,7 +866,7 @@ def test_email_thu_ky_doc_tu_huong_dan_goc(tmp_path: Path, thu_muc_mau_gia: Path
     _trich(exports_root, s)
     _dung(exports_root, s)
     danh_muc = (exports_root / s / "ho_so_hdd" / f"DANH_MUC_HO_SO_HDD_{s}.md").read_text(encoding="utf-8")
-    assert EMAIL_GIA in danh_muc and EMAIL_GIA_PL10 in danh_muc and "hỏi lại" in danh_muc
+    assert EMAIL_GIA in danh_muc and EMAIL_GIA_PL10 in danh_muc and "theo hướng dẫn gốc" in danh_muc
     monkeypatch.setenv(hs.ENV_EMAIL_THU_KY, "khac@example.org")
     assert hs.doc_email_thu_ky(thu_muc_mau_gia)[0] == "khac@example.org"
     monkeypatch.delenv(hs.ENV_EMAIL_THU_KY)
