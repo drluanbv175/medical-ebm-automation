@@ -1937,8 +1937,10 @@ def _sap_tom_tat(out_dir: Path, study: str) -> dict:
     if lt and "[CẦN" not in lt.group(1).upper():
         ra["bien_lien_tuc"] = sach(lt.group(1))
     # RCT (SAP §13 giữa kỳ, §15 tổn hại/tuân thủ) — CONSORT 2025 mục 15, 16b, 24a
+    # 22/11/2026: «Cách phân tích tổn hại» (SAP §15, có từ phiên «G7 đọc sổ sàng lọc») — CONSORT 2025 mục 21a
     for khoa, so, nhan in (("giua_ky", 13, r"Có phân tích giữa kỳ"), ("quy_tac_dung", 13, r"Quy tắc dừng[^*]*"),
                            ("ton_hai", 15, r"Định nghĩa tổn hại[^*]*"), ("danh_gia_ton_hai", 15, r"Cách đánh giá"),
+                           ("phan_tich_ton_hai", 15, r"Cách phân tích tổn hại"),
                            ("tuan_thu", 15, r"Chiến lược cải thiện và theo dõi tuân thủ")):
         m = re.search(rf"\*\*{nhan}:\*\*\s*(.+)", muc(so))
         if m and "[CẦN" not in m.group(1).upper():
@@ -1958,12 +1960,16 @@ def _g1_g2_g7(out_dir: Path) -> tuple[dict, dict]:
     return (gp.get("G1") or {}), (gp.get("G2") or {})
 
 
+#: chú thích máy trong giá trị đã chốt: «(G0 treatment/superiority)» của G1, «(SPIRIT 15d)» của đặc tả PI khai ở G10
+_CHU_THICH_MAY_RE = re.compile(r"\s*\((?:G\d+\b[^)]*|SPIRIT(?: 2025)?\s+(?:mục\s+)?\d+[a-z]?)\)")
+
+
 def _gia_tri_chot(v: Any) -> str:
-    """Giá trị đã chốt dùng được trong văn bản: gộp khoảng trắng, bỏ chú thích máy «(G0 …)»; còn [CẦN] hoặc «Không áp
-    dụng» ⇒ chuỗi rỗng (bỏ dòng). Danh sách nối bằng «; » (bỏ tiền tố mã «khac:»)."""
+    """Giá trị đã chốt dùng được trong văn bản: gộp khoảng trắng, bỏ chú thích máy «(G0 …)», «(SPIRIT 15d)»; còn [CẦN]
+    hoặc «Không áp dụng» ⇒ chuỗi rỗng (bỏ dòng). Danh sách nối bằng «; » (bỏ tiền tố mã «khac:»)."""
     if isinstance(v, (list, tuple)):
         v = "; ".join(re.sub(r"^[a-z_]+:", "", str(x)).strip() for x in v if str(x).strip())
-    v = re.sub(r"\s*\(G\d+\b[^)]*\)", "", re.sub(r"\s+", " ", str(v or ""))).strip().rstrip(".")
+    v = _CHU_THICH_MAY_RE.sub("", re.sub(r"\s+", " ", str(v or ""))).strip().rstrip(".")
     return "" if (not v or "[CẦN" in v.upper() or v.lower().startswith("không áp dụng")) else v
 
 
@@ -2027,12 +2033,17 @@ def _khoi_rct_g7(out_dir: Path, sap: Optional[dict], hypothesis_type: str) -> li
         dong.append(f"*Nhóm can thiệp:* {o(g1.get('intervention_or_exposure'))}"
                     + (f"; {_ha_dau(o(g1.get('intervention_dose_adherence')))}"
                        if o(g1.get("intervention_dose_adherence")) else "") + ".  ")
+    meta = _doc_meta_g7(out_dir)
     for khoa, nhan in (("comparator", "Nhóm chứng"), ("randomisation", "Tạo trình tự ngẫu nhiên"),
                        ("allocation_concealment", "Giấu phân bổ"), ("blinding", "Làm mù"),
+                       # 22/11/2026 (CONSORT 2025 mục 20b): cách làm mù và độ tương tự của can thiệp — G1 không có
+                       # trường này; PI khai `blinding_how` ở study_meta (cùng khoá research_study_spec đọc cho G10)
+                       ("blinding_how", "Cách làm mù và độ tương tự của can thiệp"),
                        ("follow_up_schedule", "Lịch đánh giá"),
                        ("stopping_rescue_rules", "Tiêu chí ngừng can thiệp cho từng người tham gia")):
-        if o(g1.get(khoa)):
-            dong.append(f"*{nhan}:* {o(g1.get(khoa))}.  ")
+        gt = o(g1.get(khoa)) or (_khai_pi_g7(meta, khoa) if khoa == "blinding_how" else "")
+        if gt:
+            dong.append(f"*{nhan}:* {gt}.  ")
     if o(sap.get("ton_hai")):
         dong.append(f"*Tổn hại:* {o(sap.get('ton_hai'))}"
                     + (f"; cách đánh giá: {_ha_dau(o(sap.get('danh_gia_ton_hai')))}" if o(sap.get("danh_gia_ton_hai"))
@@ -2151,6 +2162,174 @@ def _ha_dau(x: str) -> str:
     return x[0].lower() + x[1:] if len(x) > 1 and x[0].isupper() and not x[1].isupper() else x
 
 
+# ── 22/11/2026 (K18, CONSORT 2025 mục 3, 4, 8, 10, 21a, 23a, 24b) ─────────────────────────────────────────────────────
+# Đo đầu–cuối trên 3 bản thảo RCT giả lập (ghép #403 + #405 + nhánh «G7 đọc sổ sàng lọc»): còn thiếu nơi truy cập đề
+# cương/SAP, chia sẻ dữ liệu cá nhân và mã thống kê, sự tham gia của người bệnh/công chúng, thay đổi so với đề cương,
+# phương pháp cho kết cục chính và tác hại, mốc ngày tuyển–theo dõi, chăm sóc đồng thời. Mỗi dòng dưới đây chép NGUYÊN
+# chữ một dữ kiện đã chốt (G1, G2, SAP, phiếu G9, khai báo tác giả G7, đặc tả PI khai ở study_meta); trường vắng, còn
+# [CẦN] hoặc «Không áp dụng» ⇒ không in (K18 báo thiếu đúng mục). Không câu mẫu, không ô [CẦN] mới (bước «PI điền ô»
+# của giả lập điền theo mẫu cố định — ô lạ làm vỡ CI).
+
+def _doc_meta_g7(out_dir: Path) -> dict:
+    try:
+        meta = json.loads((Path(out_dir) / "study_meta.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return meta if isinstance(meta, dict) else {}
+
+
+def _khai_pi_g7(meta: dict, *khoa: str) -> str:
+    """Giá trị PI đã khai ở study_meta (khoá phẳng, hoặc dưới `design_specific` — cùng hai chỗ `research_study_spec` đọc
+    cho đề cương G10) — qua `_gia_tri_chot`."""
+    ds = meta.get("design_specific") if isinstance(meta.get("design_specific"), dict) else {}
+    for k in khoa:
+        for nguon in (meta, ds):
+            gt = _gia_tri_chot(nguon.get(k))
+            if gt:
+                return gt
+    return ""
+
+
+def _chia_se_g9(out_dir: Path) -> dict:
+    """`data_availability` của phiếu sẵn sàng công bố G9 — chỉ khi tác giả đã chốt tuyên bố (`statement_final`)."""
+    try:
+        d = json.loads((Path(out_dir) / "G9_PUBLICATION_READINESS.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    da = d.get("data_availability") if isinstance(d, dict) else None
+    return da if isinstance(da, dict) and da.get("statement_final") is True else {}
+
+
+#: quyết định chia sẻ dữ liệu cá nhân của phiếu G9 (mã ⇒ lời); mã lạ ⇒ không in
+_QUYET_DINH_CHIA_SE = {"OPEN": "Dữ liệu cá nhân được chia sẻ công khai",
+                       "CONTROLLED_ACCESS": "Dữ liệu cá nhân được chia sẻ có kiểm soát",
+                       "NOT_SHARED_WITH_JUSTIFICATION": "Không chia sẻ dữ liệu cá nhân"}
+_TAI_LIEU_DE_CUONG_RE = re.compile(r"đề cương|protocol|kế hoạch phân tích|\bSAP\b|statistical analysis plan",
+                                   re.IGNORECASE)
+
+
+def _noi_cau(phan: list) -> str:
+    """Nối các vế (bỏ trùng, không phân biệt hoa thường) thành một câu; vế sau viết thường chữ đầu."""
+    ra: list = []
+    for x in phan:
+        if x and x.lower() not in {y.lower() for y in ra}:
+            ra.append(x)
+    return "; ".join([ra[0], *(_ha_dau(x) for x in ra[1:])]) + "." if ra else ""
+
+
+def _chia_se_du_lieu_g7(out_dir: Path) -> str:
+    """Tuyên bố chia sẻ dữ liệu (CONSORT 2025 mục 4; ICMJE): quyết định + chi tiết của phiếu G9 đã chốt và tuyên bố tác
+    giả khai ở G7 (`gate_params.G7.data_sharing_statement`). Chưa có gì ⇒ chuỗi rỗng (mục «Tính có sẵn dữ liệu» giữ câu
+    cũ)."""
+    da = _chia_se_g9(out_dir)
+    g7 = ((_doc_meta_g7(out_dir).get("gate_params") or {}).get("G7") or {})
+    def o(khoa: str, nhan: str = "") -> str:
+        gt = _gia_tri_chot(da.get(khoa))
+        return f"{nhan}: {_ha_dau(gt)}" if gt and nhan else gt
+
+    phan = [_QUYET_DINH_CHIA_SE.get(str(da.get("decision") or "").strip().upper(), ""), o("what_data"),
+            o("related_documents", "tài liệu kèm"), o("available_from", "thời điểm"),
+            o("availability_duration", "thời hạn"), o("access_criteria"), o("access_mechanism", "cách truy cập"),
+            _gia_tri_chot(g7.get("data_sharing_statement") if isinstance(g7, dict) else "")]
+    return _noi_cau(phan)
+
+
+def _protocol_url_g2(out_dir: Path, study: str) -> str:
+    """Đường dẫn đề cương đã khai trong bản đăng ký G2 (WHO TRDS — mục «Summary Results» `protocol_url`)."""
+    try:
+        r = json.loads((Path(out_dir) / f"G2_REGISTRATION_DRAFT_{study}.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ""
+    for muc in (r.get("items") if isinstance(r, dict) and isinstance(r.get("items"), list) else []):
+        gt = muc.get("value") if isinstance(muc, dict) else None
+        if isinstance(gt, dict) and _gia_tri_chot(gt.get("protocol_url")):
+            return _gia_tri_chot(gt.get("protocol_url"))
+    return ""
+
+
+def _truy_cap_de_cuong_g7(out_dir: Path, study: str) -> str:
+    """Nơi truy cập đề cương và SAP (CONSORT 2025 mục 3): `protocol_url` của bản đăng ký G2 + tài liệu đề cương/SAP mà
+    phiếu G9 liệt kê ở `related_documents` (kèm cơ chế truy cập phiếu khai). Không có ⇒ chuỗi rỗng."""
+    da = _chia_se_g9(out_dir)
+    url = _protocol_url_g2(out_dir, study)
+    tl = [str(x).strip() for x in (da.get("related_documents") or []) if _TAI_LIEU_DE_CUONG_RE.search(str(x))]
+    cach = _gia_tri_chot(da.get("access_mechanism"))
+    phan = [f"Đề cương truy cập tại {url}" if url else "",
+            ("; ".join(tl) + (f" — cách truy cập: {_ha_dau(cach)}" if cach else "")) if tl else ""]
+    return _noi_cau(phan)
+
+
+#: bảng «PHẦN 4 — THAY ĐỔI SAU KHI KHOÁ» của SAP (run_g4_auto) — dòng «(chưa có)» là dòng khuôn, không phải lời khai
+_THAY_DOI_SAP_RE = re.compile(r"^##\s*PHẦN\s*4\b[^\n]*THAY ĐỔI SAU KHI KH[OÓ]A[^\n]*\n(.*?)(?=^##\s|\Z)",
+                              re.MULTILINE | re.DOTALL)
+
+
+def _thay_doi_sau_khoa_g7(out_dir: Path, study: str) -> list[str]:
+    """Thay đổi đã ghi vào SAP sau khi khoá (CONSORT 2025 mục 10): mỗi dòng bảng có mô tả ⇒ «ngày: mô tả (loại)».
+    Dòng khuôn «(chưa có)» KHÔNG được hiểu là «không có thay đổi» — chưa ai khai ⇒ không in (K18 báo thiếu mục 10)."""
+    try:
+        t = (Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md").read_text(encoding="utf-8")
+    except OSError:
+        return []
+    m = _THAY_DOI_SAP_RE.search(t)
+    ra = []
+    for dong in (m.group(1).splitlines() if m else []):
+        o = [x.strip() for x in dong.strip().strip("|").split("|")]
+        if len(o) < 3 or set(o[1]) <= {"-", ":", " "} or o[0].lower() in ("ngày", "(chưa có)"):
+            continue
+        mo_ta = _gia_tri_chot(o[1])
+        if mo_ta:
+            ra.append(f"{o[0]}: {mo_ta}" + (f" ({_ha_dau(_gia_tri_chot(o[2]))})" if _gia_tri_chot(o[2]) else ""))
+    return ra
+
+
+def khoi_consort_bo_sung_g7(out_dir: Path, study: str, design_code: str) -> dict:
+    """Các dòng CONSORT 2025 còn thiếu sau K18, theo chỗ đặt trong bản thảo:
+    - `phuong_phap`: §6 — phân tích tác hại (SAP §15, RCT) và thay đổi sau khi khoá SAP (mục 10, 21a);
+    - `khai_bao`: mục KHAI BÁO — nơi truy cập đề cương/SAP, sự tham gia của người bệnh/công chúng (mục 3, 8);
+    - `chia_se`: câu «Tính có sẵn dữ liệu» từ lời khai (mục 4) — rỗng ⇒ giữ câu cũ;
+    - `ket_qua`: cuối chương Kết quả, RCT — mốc ngày tuyển–theo dõi theo đề cương, chăm sóc đồng thời (mục 23a, 24b)."""
+    meta = _doc_meta_g7(out_dir)
+    g1 = ((meta.get("gate_params") or {}).get("G1") or {})
+    g2 = ((meta.get("gate_params") or {}).get("G2") or {})
+    sap = _sap_tom_tat(out_dir, study)
+    rct = design_code == "rct"
+    pp: list[str] = []
+    if rct and sap.get("phan_tich_ton_hai"):
+        pp.append(f"*Phân tích tác hại:* {sap['phan_tich_ton_hai']}.  ")
+    thay = _thay_doi_sau_khoa_g7(out_dir, study)
+    if thay:
+        pp.append(f"*Thay đổi so với kế hoạch phân tích sau khi khoá:* {'; '.join(thay)}.  ")
+    kb: list[str] = []
+    de_cuong = _truy_cap_de_cuong_g7(out_dir, study)
+    if de_cuong:
+        kb += ["**Đề cương và kế hoạch phân tích thống kê:**  ", f"{de_cuong}  ", ""]
+    ppi = _khai_pi_g7(meta, "ppi_plan")
+    if ppi:
+        kb += ["**Sự tham gia của người bệnh và công chúng:**  ", f"{ppi}.  ", ""]
+    kq: list[str] = []
+    if rct:
+        thoi_gian = "; ".join(x for x in (
+            _gia_tri_chot(g1.get("study_period")),
+            f"ngày tuyển người tham gia đầu tiên: {_gia_tri_chot(g2.get('first_enrolment_date'))}"
+            if _gia_tri_chot(g2.get("first_enrolment_date")) else "",
+            f"lịch đánh giá: {_ha_dau(_gia_tri_chot(g1.get('follow_up_schedule')))}"
+            if _gia_tri_chot(g1.get("follow_up_schedule")) else "") if x)
+        if thoi_gian:
+            kq.append(f"*Thời gian tuyển chọn và theo dõi theo đề cương:* {thoi_gian}.  ")
+        dong_thoi = _khai_pi_g7(meta, "concomitant_care_policy", "concomitant_care")
+        if dong_thoi:
+            kq.append(f"*Chăm sóc đồng thời theo quy định của đề cương:* {dong_thoi}.  ")
+        # tiêu đề chỉ gọi tên phần CÓ dòng — giả lập đầu–cuối 22/11: tiêu đề cố định «… và chăm sóc đồng thời» làm
+        # CONSORT 24b đạt giả khi chỉ có dòng thời gian (đặc tả chăm sóc đồng thời PI khai sau G7). Không đánh số:
+        # chương Kết quả đã có «§6 Hình kết quả» khi G6 tự sinh hình
+        ten = " và ".join(x for x in ("Thời gian nghiên cứu" if thoi_gian else "",
+                                       "chăm sóc đồng thời" if dong_thoi else "") if x)
+        if kq:
+            kq = ["", f"**{ten[:1].upper() + ten[1:]}:**  ", *kq, ""]
+    return {"phuong_phap": pp, "khai_bao": kb, "chia_se": _chia_se_du_lieu_g7(out_dir), "ket_qua": kq}
+
+
 def generate_manuscript(
     study: str,
     topic: str,
@@ -2182,6 +2361,7 @@ def generate_manuscript(
     crf_blocks: Optional[dict] = None,
     bias_controls: Optional[list] = None,
     outcome_ordinal: bool = False,
+    khoi_consort: Optional[dict] = None,  # 22/11/2026: CONSORT 3/4/8/10/21a/23a/24b (`khoi_consort_bo_sung_g7`)
     mien_dong_thuan: bool = False,
     ket_qua_g6: Optional[dict] = None,
     g3_n_chot: Optional[int] = None,  # 16/11/2026: N PI đã chốt ở G3 (thiết kế không tính theo lực),
@@ -2359,10 +2539,14 @@ def generate_manuscript(
     # nguồn thẩm quyền. Tính TRƯỚC thành biến vì phần tử Methods bên dưới là
     # chuỗi ghép liền nhiều literal (chèn biểu thức có ngoặc vào giữa sẽ phá
     # cú pháp ghép).
+    # 22/11/2026 (K18, CONSORT 2025 mục 21a): nhãn nói rõ đây là phương pháp cho KẾT CỤC CHÍNH (SAP §4 «Phân tích
+    # chính») — nhãn cũ «Phương pháp chính» không cho người đọc biết phương pháp áp cho kết cục nào.
     _method_line = (
-        f"Phương pháp chính: [CẦN — từ SAP §4; SAP đã khai mô hình thứ bậc → gợi ý: {_method_hint}]. "
+        "Phương pháp phân tích kết cục chính: [CẦN — từ SAP §4; SAP đã khai mô hình thứ bậc → gợi ý: "
+        f"{_method_hint}]. "
         if outcome_ordinal else
-        f"Phương pháp chính: [CẦN — từ SAP §4; theo effect_type={effect_type} gợi ý: {_method_hint}]. ")
+        f"Phương pháp phân tích kết cục chính: [CẦN — từ SAP §4; theo effect_type={effect_type} gợi ý: {_method_hint}]. ")
+    _kc = khoi_consort or {}
 
     # ── Chuẩn bị snippet cho Discussion §2 (đối chiếu y văn) ──
     lit_compare_lines = []
@@ -2458,6 +2642,7 @@ def generate_manuscript(
             "**§5 Phân tích nhạy cảm:**  ",
             *(kq6["s5"] or ["[CẦN KẾT QUẢ THẬT — từ SAP sensitivity analysis (G4)]  ", ""]),
             *(kq6.get("hinh") or []),
+            *(_kc.get("ket_qua") or []),
             "---",
             "",
         ]
@@ -2493,6 +2678,7 @@ def generate_manuscript(
             "[CẦN KẾT QUẢ THẬT — từ SAP sensitivity analysis (G4)]  ",
             "*(Ví dụ: complete case vs MI; subgroup theo giới tính/tuổi...)*",
             "",
+            *(_kc.get("ket_qua") or []),
             "---",
             "",
         ]
@@ -2664,6 +2850,7 @@ def generate_manuscript(
         + _cau_bien_luong + _cau_da_bien +
         "Ngưỡng ý nghĩa thống kê: α = " + str(alpha) + " (two-sided); "
         "mọi ước lượng kèm 95%CI.  ",
+        *(_kc.get("phuong_phap") or []),
         "",
         # VÁ 04/10/2026 (G7-10): «STROBE mục 9» chỉ đúng cho thiết kế quan sát theo STROBE — bản cũ in cho MỌI thiết kế.
         "**§6b Kiểm soát sai lệch (Bias)"
@@ -2797,14 +2984,19 @@ def generate_manuscript(
         "Analysis: ...; Writing-Original draft: ...; Review/Editing: ...; "
         "Supervision: ...; Funding acquisition: ...]  ",
         "",
+        *(_kc.get("khai_bao") or []),
         "**Tính có sẵn dữ liệu:**  ",
         # SỬA 2026-07-31 (audit tautology vòng 2, G7-AUTO-06): câu này TỪNG in
         # cứng "đã được IRB phê duyệt" VÔ ĐIỀU KIỆN, không branching theo
         # irb_number như khối Methods §7 đã vá 2026-07-28 — một đề tài CHƯA
         # có phê duyệt đạo đức thật vẫn khẳng định đã có, đúng loại sai phạm
         # liêm chính bị rút bài nếu bác sĩ không đọc lại kỹ trước khi nộp.
+        # 22/11/2026 (K18, CONSORT 2025 mục 4): tác giả đã khai (phiếu G9 đã chốt / tuyên bố G7) ⇒ in đúng lời khai, kể
+        # cả khi quyết định là KHÔNG chia sẻ — câu cũ bên dưới khẳng định «có thể cung cấp theo yêu cầu» bất kể lời khai.
         (
-            "Dữ liệu nghiên cứu (đã khử định danh) có thể cung cấp theo yêu cầu "
+            f"{_kc['chia_se']}  "
+            if _kc.get("chia_se")
+            else "Dữ liệu nghiên cứu (đã khử định danh) có thể cung cấp theo yêu cầu "
             "hợp lý từ tác giả liên lạc, theo điều kiện đã được IRB phê duyệt và "
             "Luật BVDLCN 91/2025/QH15.  "
             if not str(irb_number).startswith("[CẦN")
@@ -3528,6 +3720,7 @@ def main() -> None:
                          and GC.sap_declares_ordinal(out_dir, study)),
         mien_dong_thuan=g2_da_duyet and g2.get("g2_icf_waiver_approved") is True,
         ket_qua_g6=ket_qua_g6,
+        khoi_consort=khoi_consort_bo_sung_g7(out_dir, study, design_code),
     )
 
     # SỬA 16/11/2026: ô hỏi lại điều ĐÃ CHỐT (mục tiêu, cơ sở, tiêu chí, phơi nhiễm, kết cục, phần mềm SAP §10…) lấy
