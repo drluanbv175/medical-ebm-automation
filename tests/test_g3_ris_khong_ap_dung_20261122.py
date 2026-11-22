@@ -85,3 +85,28 @@ def test_tong_quan_gop_n_chot_lech_ris_thi_bao_lech(tmp_path):
     cp = dung_g0_g3_da_chot(tmp_path / "exports" / "E2E-SRMA2", "E2E-SRMA2", thiet_ke="sr_ma",
                             g3_argv=["--confirmed-n", "15"], them_meta={"G3": _RIS})
     assert cp["ris"]["khop"] is False and "LỆCH" in cp["formula_used"]
+
+
+def test_bang_khung_co_mau_g10_khop_g3():
+    import run_g10_assemble as R10
+    assert R10._KHUNG_CO_MAU_KHONG_DUNG_LUC == G3.KHUNG_CO_MAU_THAY_THE
+    assert set(R10._KHUNG_CO_MAU_KHONG_DUNG_LUC) == G3Q.N_NOT_APPLICABLE_DESIGNS
+
+
+@pytest.mark.parametrize("design, cum", [("sr_ma", "RIS"), ("prediction", "Riley"), ("qualitative", "Bão hoà")])
+def test_g10_khoi_co_mau_khong_in_luc_mac_dinh_hay_dau_hoi(design, cum):
+    import run_g10_assemble as R10
+    cps = {"G1": {}, "G3": {"design_code": design, "alpha": 0.05, "power": None, "n_total": 0, "n_adjusted": 0,
+                           "confirmed_n": 120, "formula_used": ""}}
+    meta = {"gate_params": {"G3": {"confirmed_n_method": "thống kê viên khai theo khung của thiết kế"}}}
+    khoi = R10.sec_comau(cps, meta)
+    assert cum in khoi and "Cỡ mẫu đã chốt: **120**" in khoi
+    assert "lực mẫu (power) =" not in khoi and "?" not in khoi and "Công thức áp dụng" not in khoi
+
+
+def test_g10_khoi_co_mau_thiet_ke_thuong_giu_nguyen():
+    import run_g10_assemble as R10
+    cps = {"G1": {}, "G3": {"design_code": "rct", "alpha": 0.05, "power": 0.8, "n_total": 200, "n_adjusted": 222,
+                           "n_per_group": 100, "dropout": 0.1, "formula_used": "Hai tỷ lệ"}}
+    khoi = R10.sec_comau(cps, {"gate_params": {"G3": {}}})
+    assert "lực mẫu (power) = 0.8" in khoi and "Công thức áp dụng (tự động từ G3):** Hai tỷ lệ" in khoi

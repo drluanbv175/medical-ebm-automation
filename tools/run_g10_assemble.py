@@ -60,6 +60,13 @@ import kiem_a12_khop_bien_nhan as KA12  # noqa: E402  (mô tả A12 ↔ biên nh
 import research_study_spec as RS  # noqa: E402
 import skill_standards as S  # noqa: E402
 
+#: Khung cỡ mẫu của thiết kế KHÔNG dùng công thức lực mẫu — khớp run_g3_auto.KHUNG_CO_MAU_THAY_THE (22/11/2026)
+_KHUNG_CO_MAU_KHONG_DUNG_LUC = {
+    "qualitative": "Bão hoà dữ liệu (lấy mẫu có chủ đích; không dùng công thức lực mẫu/độ chính xác)",
+    "sr_ma": "Cỡ thông tin cần thiết (RIS) / phân tích tuần tự (TSA) trên dữ liệu cộng dồn",
+    "prediction": "Tiêu chí Riley 2020 (pmsampsize; BMJ 2020;368:m441, PMID 32188600)",
+}
+
 TAG_BS = S.STATUS_TAGS["CAN_BO_SUNG"]              # [CẦN BỔ SUNG]
 TAG_DV = S.STATUS_TAGS["CAN_XAC_NHAN_DON_VI"]      # [CẦN XÁC NHẬN TẠI ĐƠN VỊ]
 TAG_DRAFT = S.STATUS_TAGS["DU_THAO"]               # [DỰ THẢO]
@@ -800,6 +807,23 @@ def sec_comau(cps, meta) -> str:
             )
         else:
             confirmed_block = f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{confirmed_n}**.\n"
+    ma_khung = {"systematic_review": "sr_ma"}.get(code, code)  # canonical_design_code("sr_ma") = "systematic_review"
+    if ma_khung in _KHUNG_CO_MAU_KHONG_DUNG_LUC:
+        # 22/11/2026: thiết kế không dùng công thức lực mẫu — trước đây khối này in «lực mẫu (power) = 0.8» (MẶC ĐỊNH
+        # MÁY bị in như tham số đề tài), «Công thức áp dụng: .» và «Cỡ mẫu tối thiểu tính được: 0» cho tổng quan gộp,
+        # dự báo, định tính. Nay in đúng phương pháp của thiết kế và N đã chốt kèm cách xác định (thống kê viên khai).
+        cach = g3m.get("confirmed_n_method") if RS.is_present(g3m.get("confirmed_n_method")) else None
+        cong_thuc = formula if isinstance(formula, str) and formula.strip() and "[CẦN" not in formula else None
+        return (
+            f"{S.de_cuong_heading('comau')}\n\n"
+            f"**Phương pháp xác định cỡ mẫu:** {_KHUNG_CO_MAU_KHONG_DUNG_LUC[ma_khung]}.\n\n"
+            + (f"- {cong_thuc.rstrip('.')}.\n" if cong_thuc else "")
+            + "- Thiết kế không dùng công thức lực mẫu của nghiên cứu so sánh một kết cục.\n"
+            + (f"- Cỡ mẫu đã chốt: **{confirmed_n}**" + (f" — {cach.rstrip('.')}.\n" if cach else ".\n")
+               if confirmed_n is not None else "")
+            + "\n"
+            + (f"> **Nguồn giả định (G3 — thống kê viên/chủ nhiệm khai):** {'; '.join(nguon)}.\n" if nguon else "")
+        )
     return (
         f"{S.de_cuong_heading('comau')}\n\n"
         f"**Công thức áp dụng (tự động từ G3):** {formula}.\n\n"
