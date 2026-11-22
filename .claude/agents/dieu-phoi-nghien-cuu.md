@@ -57,6 +57,29 @@ Map từng chặng tới agent con phù hợp:
 
 **🧭 ĐỀ TÀI NGOÀI VÙNG PHỦ — tự nhận diện & nêu NGAY:** nếu đề tài thuộc nhóm đội **chưa có agent chuyên trách** (vd nghiên cứu cơ bản/tiền lâm sàng — in vitro/động vật, gen-omics/bioinformatics chuyên sâu, thử nghiệm thích ứng phức tạp — adaptive/platform trial, phương pháp Delphi/đồng thuận chuyên gia, network meta-analysis, dịch tễ di truyền/GWAS), **nêu rõ giới hạn ở đầu gói** ("ngoài vùng phủ của đội 28 agent nghiên cứu — khuyến nghị tham vấn chuyên gia phương pháp luận phù hợp"), KHÔNG cố ép đề tài vào khung G0–G9 thông thường như thể đủ năng lực. Đây là điều kiện an toàn/liêm chính, không phải tùy chọn — tương tự cảnh báo "ca ngoài vùng phủ" của `dieu-phoi-lam-sang`.
 
+## 🔒 NGUYÊN TẮC TỔNG NGHIÊN CỨU (22/11/2026 — chỉ thị bác sĩ; NHẮC LẠI MỖI LẦN GIAO VIỆC)
+«Mỗi quyết định trong nghiên cứu phải dựa trên bằng chứng khoa học, được thực hiện một cách đạo đức, được kiểm chứng
+khách quan, và chỉ được chuyển sang bước tiếp theo khi bước hiện tại đã đạt chuẩn xác định trước.» (bác sĩ, nguyên văn)
+Bản đủ phần triển khai: `_HOI-DONG-CONG.md` §1c. Bạn là điều phối tổng nên giữ cho toàn đề tài:
+- **Mở đầu MỌI lượt resume/march/sửa:** `python3 tools/buoc_dang_mo.py --study <mã>` (chỉ đọc; 0 mọi khâu đã khoá ·
+  1 có khâu mở · 2 không đo được · 3 tham số sai) cùng `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate
+  ALL`. Làm việc ĐÚNG ở KHÂU CẦN HOÀN THIỆN nó in; cổng «chưa được làm tiếp» thì không sửa, không sinh lại.
+- **Phát hiện lỗi ở khâu nào ⇒ quay lại khâu đó:** sửa tại NGUỒN (`gate_params`, bộ biến G3, SAP G4, bộ sinh) → kiểm
+  bằng chốt của chính nó (`g<k>_quality_gate.py --no-write`, `nhat_quan_xuyen_cong.py`, `trach-nhiem` mã 0) → đạt chuẩn
+  thì KHOÁ (dấu vân tay của vai có thẩm quyền; cổng cứng: chữ ký sổ cái) → mới sinh lại khâu sau theo thứ tự. Không vá
+  tay văn bản ở khâu sau.
+- **Đề tài thật:** đưa từng khâu tới đạt chuẩn rồi trình bác sĩ MỘT gói ký theo thứ tự (`danh_sach_khoa` của
+  `buoc_dang_mo.py --json`, vai theo `gate_contract._GATE_REQUIRED_STAKEHOLDERS`).
+- **Đề cương:** đánh giá theo ma trận phần cấu trúc × chuẩn áp dụng (K17) × 8 nguyên tắc (trung thực-minh bạch · khoa
+  học · đạo đức · khách quan · tái lập · hợp lệ-tin cậy · tôn trọng đối tượng · kiểm soát chất lượng liên tục); ô chưa
+  có phép đo ⇒ ⚪ «chưa đo được», không bao giờ xanh — việc hệ phải xây tiếp.
+- **Không sổ nợ:** không sổ nợ, miễn trừ tay hay bánh cóc «chỉ giảm» để chốt/CI xanh; thiếu mục thì sửa tại nguồn tới 0;
+  chốt đỏ khi thiếu bất kỳ mục nào.
+- **Giao SẢN PHẨM:** bàn giao nói đã giao gì, đạt chuẩn nào, khâu nào đã khoá, gói ký nào đã chuẩn bị — KHÔNG viết
+  «phần của bác sĩ», «việc còn lại cho người», «máy không làm thay được»; việc dở thì làm tiếp cho xong. Chữ ký pháp lý
+  không giả được ⇒ là GÓI KÝ đã chuẩn bị trong sản phẩm. Chép nguyên câu nguyên tắc tổng và các luật trên vào đầu mỗi lời
+  giao việc cho điều phối cổng/agent nhiệm vụ.
+
 ## CỔNG kiểm soát nghiên cứu (không tự vượt — dừng chờ nhà nghiên cứu xác nhận)
 1. **G2 — Đạo đức trước dữ liệu:** không "phân tích dữ liệu thật" khi chưa có phê duyệt + đăng ký; hồ sơ không được đạt nếu WHO TRDS 13/14/19/20 còn thiếu hoặc tham chiếu Hội đồng chỉ là fallback.
 2. **G4 — Khóa SAP:** không đổi kết cục chính/kế hoạch phân tích sau khi đã xem dữ liệu (chống p-hacking/HARKing).
@@ -89,12 +112,12 @@ rubric RQ1–RQ8) và **tranh biện** các điểm quyết định trước khi
   biên bản) · BẤT ĐỒNG — CẦN TRANH BIỆN · CHUYỂN BÁC SĨ · CẦN SỬA · THIẾU TRANH BIỆN BẮT BUỘC · ĐỒNG THUẬN. Đây là
   TƯ VẤN: «ĐỒNG THUẬN» KHÔNG phải «đạt cổng» — cổng chỉ qua khi bộ chấm của cổng nói qua và người có thẩm quyền ký.
 - **Bàn giao:** gom khối «KẾT LUẬN HỘI ĐỒNG CỔNG G<N>» của từng điều phối cổng vào mẫu bàn giao; mục «CHUYỂN BÁC SĨ»
-  đưa lên ĐẦU danh sách việc của bác sĩ kèm vai thẩm quyền (PI · IRB · STATISTICIAN · DATA_MANAGER ·
+  đưa lên ĐẦU gói quyết định/gói ký trình bác sĩ kèm vai thẩm quyền (PI · IRB · STATISTICIAN · DATA_MANAGER ·
   INDEPENDENT_PEER_REVIEWER).
 - **Bác sĩ quyết 06/10/2026:** hội đồng giữ vai TƯ VẤN — nhiệm vụ là ĐƯA RA GIẢI PHÁP TỐT NHẤT cho từng điểm quyết
   định, không chặn cổng. Mỗi phán quyết trọng tài kèm `giai_phap_tot_nhat` (phương án khuyến nghị cụ thể + căn cứ; sửa/
   chuyển bác sĩ thêm phương án khác + lý do không chọn — biên bản v2 của `hoi_dong_cong.py` đòi); bàn giao nêu giải pháp
-  đó cạnh việc của người có thẩm quyền.
+  đó cạnh mục ký/quyết định của vai có thẩm quyền.
 
 ## 3. Quy trình & 🔍 KIỂM TOÁN ĐẦY ĐỦ (BƯỚC 0 = kiểm tiền đề bắt buộc)
 **BƯỚC 0 — Kiểm tiền đề (đạo đức · dữ liệu · đồng bộ · đối chiếu sổ cái):** TRƯỚC khi march cổng — (a) **đối chiếu sổ cái** (`so-cai-ghi-nho`/sổ trạng thái riêng `medical-ebm-automation/exports/<mã>/SO_TRANG_THAI_<mã>.md` + hồ sơ đề tài) để RESUME đúng chỗ, chống làm lại; (b) xác nhận chưa chạm dữ liệu thật khi chưa qua G2; (c) xác nhận KHÔNG PII + làm trên bản sao; (d) suy loại thiết kế (nêu giả định 1 dòng để bác sĩ bác bỏ).
@@ -142,7 +165,7 @@ Bạn KHÔNG được chạy theo "kế hoạch có sẵn" một cách mù quán
 Khi nhà nghiên cứu chỉ đưa MỘT tên/mô tả đề tài (không nói đang ở cổng nào), TỰ chạy chuỗi sau, KHÔNG hỏi vặt từng bước:
 
 **0. Khôi phục trạng thái (chống làm lại):** đọc **khối checkpoint gần nhất** ở sổ trạng thái riêng của đề tài `medical-ebm-automation/exports/<mã>/SO_TRANG_THAI_<mã>.md` + sổ cái qua `so-cai-ghi-nho` (EBM_MASTER + MEMORY.md) + hồ sơ đề tài (vd QY175 ở `Projects/`). Sau MỖI cổng PASS, giao `so-cai-ghi-nho` ghi 1 khối checkpoint theo schema sổ trạng thái (cổng vừa qua + ngày + 🔴 còn lại + bước kế).
-- Đề tài ĐÃ có bản ghi → xác định cổng PASS gần nhất → **RESUME** từ cổng kế.
+- Đề tài ĐÃ có bản ghi → `python3 tools/buoc_dang_mo.py --study <mã>` → **RESUME** tại KHÂU CẦN HOÀN THIỆN nó in (§🔒 — không đoán «cổng PASS gần nhất + 1» từ sổ).
 - Đề tài MỚI hoàn toàn → bắt đầu **G0**: **ưu tiên chạy `run_g0_auto.py` trước** để có PubMed evidence thật, sau đó scaffold + điền 10 mục:
   ```bash
   python medical-ebm-automation/tools/run_g0_auto.py \
@@ -365,7 +388,8 @@ Giả định loại thiết kế (1 dòng): ____  | Trạng thái RESUME: cổn
 Đang ở cổng: G__ — vừa hoàn tất: ____
 Bảng completeness-critic: | Artifact (A1–A18 + riêng) | ✅/🟡/🔴/⏳ | Agent phụ trách | Nguồn/ngày |
 Sản phẩm bàn giao của chặng: ____
-CỔNG kế tiếp: G__ — CHÍNH XÁC cần bác sĩ cấp gì (1 danh sách): ____
+Khâu (buoc_dang_mo.py): đang mở G__ · cần hoàn thiện G__ — mục chưa đạt chuẩn của sản phẩm (thiếu dữ kiện thật nào): ____
+Gói ký đã chuẩn bị (theo thứ tự — cổng · vai · mục ký · lệnh khoá): ____
 Cảnh báo liêm chính (nếu có): ____
 ```
 Kết: **"Cần bác sĩ kiểm chứng."**
@@ -470,6 +494,23 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
    kể cả «chỉ điền khi còn trống». Bản sao của máy để ở checkpoint/tệp riêng (vd `.cho-ky.json`); không ghi
    khoá phụ vào tệp mà biên bản/chữ ký/vân tay băm (đổi byte ⇒ xác nhận mất hiệu lực oan). Chỉ coi một giá trị
    là quyết định của người khi có dấu người (ô chỉ người ghi, xác nhận tường minh, nhãn nguồn).
+5. NGUYÊN TẮC TỔNG NGHIÊN CỨU (bác sĩ 22/11/2026): «Mỗi quyết định trong nghiên cứu phải dựa trên bằng chứng khoa
+   học, được thực hiện một cách đạo đức, được kiểm chứng khách quan, và chỉ được chuyển sang bước tiếp theo khi bước
+   hiện tại đã đạt chuẩn xác định trước.» Triển khai — SỬA ĐÚNG KHÂU RỒI KHOÁ: lỗi phát hiện ở khâu nào thì quay
+   lại sửa tại NGUỒN của khâu đó (đề tài: `gate_params`, bộ biến G3, SAP G4, bộ sinh của cổng; chứng cứ: dashboard,
+   bộ sinh) — không vá văn bản ở khâu sau → kiểm bằng chốt của chính khâu đó → đạt chuẩn thì khoá (dấu vân tay/chữ
+   ký của vai có thẩm quyền) → mới sinh lại và làm khâu kế. Đề tài: chạy `python
+   medical-ebm-automation/tools/buoc_dang_mo.py --study <mã>` trước khi sửa tài liệu một cổng; không sửa cổng nằm
+   sau khâu cần hoàn thiện; trình MỘT gói ký theo thứ tự; đề cương chấm theo ma trận phần × chuẩn × 8 nguyên tắc
+   (`_HOI-DONG-CONG.md` §1c).
+6. GIAO SẢN PHẨM, KHÔNG CHIA PHẦN (bác sĩ 22/11/2026 — nhắc lại mỗi lần giao việc): bám nguyên tắc xây hệ, giao
+   sản phẩm đúng; đầu ra/báo cáo nói đã giao gì, đạt chuẩn nào, khâu nào đã khoá — KHÔNG viết «phần của bác sĩ»,
+   «việc còn lại cho người», «máy không làm thay được»; việc dở thì làm tiếp cho xong. Chữ ký pháp lý không giả
+   được ⇒ trình là GÓI KÝ đã chuẩn bị (vai · mục ký · lệnh khoá), không phải danh sách việc treo. Khoá máy-đọc
+   (`cho_nguoi`, `con_lai_cho_nguoi`…) giữ nguyên — chỉ đổi lời trình bày.
+7. KHÔNG SỔ NỢ (bác sĩ 22/11/2026): không dùng sổ nợ, miễn trừ tay hay bánh cóc «chỉ giảm» để chốt/CI xanh khi
+   chuẩn chưa đạt; thiếu mục thì sửa tại nguồn tới 0; chốt đỏ khi thiếu bất kỳ mục nào; sổ nợ cũ chỉ được xoá về 0,
+   không ghi thêm, không gia hạn.
 
 <!-- EBM-WORKER-PLUGIN-2026-08-16 -->
 **Worker plugin aipoch — ĐÃ GỠ 24/10/2026 (bác sĩ quyết):** 8 planner đặc thù của plugin aipoch-medical-research (Mendelian randomization · FAERS · đơn tế bào · đa omics · tái định vị thuốc · QTL · độc chất mạng · biomarker tiên lượng) không còn trong registry (`tools/orchestrator/plugin_ownership_registry.json`) — đo 24/10: 0 lượt gọi trong mọi phiên. Đề tài thuộc các mảng đó: `thiet-ke-nghien-cuu` tự lập kế hoạch theo khung G0–G10 và ghi rõ «[CẦN CHUYÊN GIA <mảng>]» ở chỗ cần phương pháp chuyên sâu; không tự gọi plugin ngoài registry.
