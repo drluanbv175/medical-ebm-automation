@@ -712,26 +712,54 @@ def loi_k13(out_dir: Path, md: str) -> List[str]:
         trang = str(m.get("pages") or "").strip()
         if trang and f":{trang}" not in noi_dung.replace(": ", ":"):
             sai.append(f"thiếu trang/mã bài «:{trang}» theo PubMed")
+        if m.get("pmcid") and str(m["pmcid"]).strip() not in noi_dung:  # NLM: ghi đủ PMID + PMCID khi có
+            sai.append(f"thiếu «PMCID: {str(m['pmcid']).strip()}» theo PubMed")
         if sai:
             loi.append(f"K13 TLTK [{so}] (PMID {pm.group(1)}): " + "; ".join(sai))
     return loi
 
 
-def loi_k13_nlm(md: str) -> List[str]:
+THIEU_TRANG = "trang hoặc mã bài (năm;tập(số):trang)"
+
+
+def loi_k13_nlm(md: str, out_dir: Optional[Path] = None) -> List[str]:
     """K13 (mục KHÔNG có PMID — 22/11/2026): yếu tố bắt buộc theo NLM Citing Medicine cho đúng LOẠI tài liệu
     (`danh_muc_trich_dan.yeu_to_nlm`): bài tạp chí trong nước, văn bản quy phạm, sách, chương sách, luận văn, trang web,
-    bản tiền in. Mục có PMID do `loi_k13` đối chiếu với metadata PubMed của biên nhận A12 (nguồn có thẩm quyền)."""
+    bản tiền in. Mục có PMID do `loi_k13` đối chiếu với metadata PubMed của biên nhận A12 (nguồn có thẩm quyền).
+
+    Có sổ định danh (`toan_van_trich_dan.py dinh-danh` → `SO_DINH_DANH_TLTK_<mã>.json`) và mục sổ còn hiệu lực (băm
+    dòng trùng dòng hiện hành): siêu dữ liệu lệch Crossref ⇒ lỗi kèm giá trị nguồn; thiếu trang mà Crossref có trang ⇒
+    lỗi kèm trang nguồn; Crossref xác nhận nguồn KHÔNG ghi trang ⇒ không đòi trang (theo nguồn)."""
     import danh_muc_trich_dan as DMT  # noqa: PLC0415
 
+    so_dd: Dict[int, Dict[str, Any]] = {}
+    if out_dir is not None:
+        import toan_van_trich_dan as TVT  # noqa: PLC0415
+
+        so_dd = TVT.doc_so_dinh_danh(Path(out_dir), Path(out_dir).name)
     _, muc = _tach_tltk(md)
     loi: List[str] = []
     for so, noi_dung in sorted(muc.items()):
         if re.search(r"PMID:\s*\d+", noi_dung):
             continue
         y = DMT.yeu_to_nlm(noi_dung)
-        if y["thieu"]:
+        thieu = list(y["thieu"])
+        e = so_dd.get(so)
+        if e is not None:
+            import toan_van_trich_dan as TVT  # noqa: PLC0415
+
+            e = e if e.get("bam_dong") == TVT.bam_dong(f"{so}. {noi_dung}") or \
+                e.get("bam_dong") == TVT.bam_dong(noi_dung) else None
+        if e is not None and THIEU_TRANG in thieu:
+            if e.get("trang_nguon"):
+                thieu[thieu.index(THIEU_TRANG)] = f"{THIEU_TRANG} — Crossref ghi «{e['trang_nguon']}»"
+            elif e.get("nguon_khong_co_trang") is True:
+                thieu.remove(THIEU_TRANG)
+        if e is not None:
+            thieu += [f"lệch nguồn: {x}" for x in e.get("lech") or []]
+        if thieu:
             loi.append(f"K13 TLTK [{so}] ({DMT.TEN_LOAI_TLTK[y['loai']]}, NLM Citing Medicine) thiếu: "
-                       + "; ".join(y["thieu"]))
+                       + "; ".join(thieu))
     return loi
 
 
@@ -1060,7 +1088,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k11(md))
     loi.extend(loi_k12(md))
     loi.extend(loi_k13(out_dir, md))
-    loi.extend(loi_k13_nlm(md))
+    loi.extend(loi_k13_nlm(md, out_dir))
     loi.extend(loi_k14(md))
     loi.extend(loi_k15(md))
     loi.extend(loi_k16(out_dir, md))

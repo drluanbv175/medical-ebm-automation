@@ -59,7 +59,12 @@ TEN_MAC_DINH = "DE_CUONG_NOP_HOI_DONG_{study}.md"
 BO_TEP_HE_THONG = ("TomTatChungCu",)  # tệp do hệ thống dựng, không phải nguồn
 _SO_RE = re.compile(r"\d{1,3}(?:\.\d{3})+|\d+,\d+|\d+")
 _NAM_RE = re.compile(r"^(19|20)\d\d$")
-_SO_HIEU_RE = re.compile(r"(khuyến cáo|điểm thực hành|mục|Mục|Bảng|Hình|MT|phụ lục|Phụ lục)\s*[\d.]+[a-z]?")
+_SO_HIEU_RE = re.compile(r"(khuyến cáo|điểm thực hành|mục|Mục|Bảng|Hình|MT|phụ lục|Phụ lục)\s*[\d.]+[a-z]?"
+                         # 22/11/2026: số hiệu + ngày ban hành văn bản quy phạm («Quyết định số 56/QĐ-BYT ngày
+                         # 08/01/2024») và số mẫu phiếu («Mẫu số 2») là ĐỊNH DANH văn bản — đối chiếu ở K13/sổ định
+                         # danh, không phải số liệu quy cho nguồn
+                         r"|(?:Quyết định|Thông tư|Nghị định|Công văn|Chỉ thị|Nghị quyết)(?:\s+số)?\s*\d+(?:/\d{4})?"
+                         r"/[\wĐđ-]+(?:\s+ngày\s+\d{1,2}/\d{1,2}/\d{4})?|[Mm]ẫu(?:\s+phiếu)?\s+số\s*\d+")
 _TACH_VE_RE = re.compile(r"(?<=\.)\s+|;\s+|\n")
 
 
