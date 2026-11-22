@@ -241,6 +241,14 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/approve_gate.py` (kiểm) — đầu ra của `dieu-phoi-nghien-cuu`: ghi phê duyệt của người vào sổ cái niêm phong — vai có thẩm quyền tự chạy, agent không chạy; chốt kiểm `tools/stakeholder_review_audit.py`; nguyên tắc: đạo đức · đạt chuẩn định trước · trung thực–minh bạch.
+- Công cụ `tools/hoi_dong_khoa_hoc.py` (kiểm) — đầu ra của `binh-duyet`: Hội đồng Khoa học máy chấm đề cương theo thể thức hội đồng; chốt kiểm `tools/duyet_kiem_may_api.py`; nguyên tắc: khách quan · câu hỏi giá trị · khoa học.
+- Công cụ `tools/run_g10_assemble.py` (kiểm) — đầu ra của `dieu-phoi-g10`: lắp đề cương thống nhất + manifest gói phát hành; chốt kiểm `tools/g10_quality_gate.py`; nguyên tắc: đạt chuẩn định trước · trung thực–minh bạch · tái lập.
+- Công cụ `tools/sinh_de_cuong_nop_hoi_dong.py` (kiểm) — đầu ra của `viet-ban-thao`: sinh đề cương nộp Hội đồng từ quyết định đã chốt; chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: trung thực–minh bạch · tái lập.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

@@ -362,6 +362,15 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/hoi_dong_khoa_hoc.py` (chủ) — Hội đồng Khoa học máy chấm đề cương theo thể thức hội đồng; chốt kiểm `tools/duyet_kiem_may_api.py`; nguyên tắc: khách quan · câu hỏi giá trị · khoa học.
+- Công cụ `tools/bao_cao_tong_hop.py` (kiểm) — đầu ra của `viet-ban-thao`: báo cáo tổng hợp kết quả đề tài (hồ sơ nghiệm thu) từ tài liệu đã có; chốt kiểm `K18`; nguyên tắc: trung thực–minh bạch · tái lập · kết quả kiểm chứng được.
+- Công cụ `tools/dien_giai_ket_qua.py` (kiểm) — đầu ra của `dien-giai-ket-qua`: hợp đồng bản diễn giải kết quả (G6-T3); chốt kiểm `tools/hoi_dong_cong.py`; nguyên tắc: khách quan · trung thực–minh bạch.
+- Công cụ `tools/run_g9_auto.py` (kiểm) — đầu ra của `nop-bai-phan-hoi`: liêm chính tác giả: ICMJE/CRediT, COI, khai AI, chia sẻ dữ liệu; chốt kiểm `tools/g9_quality_gate.py`; nguyên tắc: trung thực–minh bạch · đạo đức.
+- Công cụ `tools/tieu_chi_ban_thao.py` (kiểm) — đầu ra của `viet-ban-thao`: K18 — đối chiếu bản thảo với từng mục chuẩn báo cáo theo thiết kế; chốt kiểm `K18`; nguyên tắc: khoa học · đạt chuẩn định trước · trung thực–minh bạch.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

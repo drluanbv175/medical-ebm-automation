@@ -107,6 +107,11 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/g0_tong_hop.py` (kiểm) — đầu ra của `tong-quan-y-van`: phần đọc bài G0: tổng hợp bằng chứng và khoảng trống; chốt kiểm `tools/hoi_dong_cong.py`; nguyên tắc: bằng chứng · trung thực–minh bạch.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

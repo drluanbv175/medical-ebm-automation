@@ -183,6 +183,12 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/run_g1_auto.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: tự động hoá G1: thiết kế + đề cương lõi + SAP khung; chốt kiểm `tools/g1_quality_gate.py`; nguyên tắc: khoa học · phương pháp phù hợp · khách quan.
+- Công cụ `tools/run_g4_auto.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: SAP final + chứng chỉ khoá SAP; chốt kiểm `tools/g4_quality_gate.py`; nguyên tắc: khách quan · đạt chuẩn định trước · kết quả kiểm chứng được.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

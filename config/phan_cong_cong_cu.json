@@ -1,0 +1,2343 @@
+{
+ "schema": "phan_cong_cong_cu/v1",
+ "cap_nhat": "2026-11-22",
+ "mo_ta": "Sổ phân công CÔNG CỤ của hệ nghiên cứu G0–G10: mỗi tệp tools/*.py|*.sh cấp đầu có ĐÚNG MỘT mục — nghiên cứu (đúng một agent chủ gắn cổng, người dùng phụ, người kiểm, chốt kiểm, nguyên tắc kèm lý do) hoặc ngoài phạm vi (kèm lý do). Đo bằng tools/tieu_chuan_hoan_thien.py (C1–C6). Không lập nguồn sự thật thứ hai: nhiệm vụ/tiêu chí đọc từ tools/hoi_dong_cong.py, cổng cứng từ tools/gate_contract.py, chủ plugin từ sổ plugin_ownership_registry.json của repo gốc.",
+ "khop_nguon": {
+   "nhiem_vu_tieu_chi": "tools/hoi_dong_cong.py — NHIEM_VU, PHAN_CONG, KIEM_NHIEM_VU",
+   "cong_cung": "tools/gate_contract.py — _GATE_REQUIRED_STAKEHOLDERS",
+   "chu_plugin": "<gốc EBM>/tools/orchestrator/plugin_ownership_registry.json — capabilities.*.owner.runtime",
+   "khoa_nguyen_tac": "tools/tam_nguyen_tac_de_cuong.py — NT (8 nguyên tắc, tiền tố nt:) và TRUC_TONG (5 tiêu chí đề cương tốt, tiền tố dct:); nguyên tắc tổng (tiền tố tong:) theo lời bác sĩ 22/11/2026"
+ },
+ "nguyen_tac": {
+   "tong": {
+     "bang_chung": "Mỗi quyết định dựa trên bằng chứng khoa học có nguồn truy được (PMID/DOI/văn bản quy phạm).",
+     "dao_duc": "Mỗi bước được thực hiện một cách đạo đức: đúng thẩm quyền, bảo vệ người tham gia.",
+     "kiem_chung": "Mỗi đầu ra được kiểm chứng khách quan bằng phép đo độc lập với người làm ra nó.",
+     "dat_chuan": "Chỉ chuyển sang bước sau khi bước hiện tại đạt chuẩn xác định trước."
+   },
+   "nt": {
+     "trung_thuc": "Tính trung thực và minh bạch (Integrity).",
+     "khoa_hoc": "Tính khoa học (Scientific Validity).",
+     "dao_duc": "Tính đạo đức (Ethical Conduct).",
+     "khach_quan": "Tính khách quan (Objectivity).",
+     "tai_lap": "Tính tái lập (Reproducibility).",
+     "hop_le_tin_cay": "Tính hợp lệ và tin cậy (Validity & Reliability).",
+     "ton_trong": "Tôn trọng đối tượng nghiên cứu.",
+     "kiem_soat_cl": "Kiểm soát chất lượng liên tục."
+   },
+   "dct": {
+     "gia_tri": "Câu hỏi có giá trị.",
+     "phuong_phap": "Phương pháp khoa học phù hợp.",
+     "kha_thi": "Khả thi về triển khai.",
+     "dao_duc": "Tuân thủ đạo đức.",
+     "kiem_chung": "Kết quả kiểm chứng được."
+   }
+ },
+ "cong_cu": {
+  "agent_gate_governance.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "bộ kiểm doctrine cho toàn đội agent (lâm sàng + nghiên cứu) — là phép đo A1 của tieu_chuan_hoan_thien, không phải công cụ một nhiệm vụ G0–G10"
+  },
+  "annex2_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dao-duc-dang-ky",
+   "cong": ["G1", "G2"],
+   "nhiem_vu": ["G2-T1"],
+   "viec": "kiểm ICH E6(R3) Annex 2 cho thử nghiệm có yếu tố mới",
+   "nguoi_dung_phu": ["thiet-ke-nghien-cuu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_annex2_quality_gate_20260902.py"],
+   "nguyen_tac": {
+    "nt:dao_duc": "thử nghiệm phi tập trung/thực dụng/dữ liệu đời thực theo ICH E6(R3)",
+    "nt:trung_thuc": "không tự bịa tiêu chí quy phạm cho có cổng"
+   }
+  },
+  "api_claude_nc.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "cầu nối Claude API dùng chung cho kiểm máy của hệ nghiên cứu",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/duyet_kiem_may_api.py", "tests/test_a12_batch_20261121.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "người đọc máy thứ hai độc lập với agent soạn",
+    "nt:trung_thuc": "ghi sổ chi phí thật; chỉ gọi khi được yêu cầu"
+   }
+  },
+  "app_data_analysis.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "giao diện Streamlit khám phá dữ liệu cho bác sĩ; G6 chỉ chạy SAP đã khoá qua chay_sap_g6/run_stats_analysis, kết quả giao diện này không vào gói cổng"
+  },
+  "approve_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "ghi phê duyệt của người vào sổ cái niêm phong — vai có thẩm quyền tự chạy, agent không chạy",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tools/stakeholder_review_audit.py", "tests/test_approve_gate_g4_content_check.py"],
+   "nguyen_tac": {
+    "tong:dao_duc": "chỉ vai có thẩm quyền ký; agent không tự phê duyệt",
+    "tong:dat_chuan": "chấm bộ chấm của cổng trước khi ghi sổ cái",
+    "nt:trung_thuc": "chữ ký mật mã gắn prev_hash, sửa tay sổ cái làm cổng bị chặn"
+   }
+  },
+  "approve_gate_synthetic_admin.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "phê duyệt quản trị CHỈ cho đề tài tổng hợp/thử nghiệm đã đánh dấu",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/mark_study_synthetic.py", "tests/test_approval_ledger_concurrency.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "chỉ nhận đề tài mang dấu tổng hợp, không bao giờ áp cho đề tài người thật",
+    "tong:dao_duc": "không lách chữ ký người cho dữ liệu thật"
+   }
+  },
+  "assess_knowledge_pack_release.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "chứng cứ lâm sàng — đánh giá phát hành knowledge pack"
+  },
+  "audit_research_gates.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "kiểm tự động hoá từng cổng G0–G10 (artifact, guardrail, bằng chứng)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_chi_tiet_he_nghien_cuu.py", "tests/test_audit_research_gates.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "đọc checkpoint thật để trả lời cổng đã có artifact/bằng chứng chưa",
+    "nt:kiem_soat_cl": "soát định kỳ toàn chuỗi cổng"
+   }
+  },
+  "bang_bien_g3.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "bien-so-nghien-cuu",
+   "cong": ["G3"],
+   "nhiem_vu": ["G3-T2"],
+   "viec": "bảng bộ biến G3 cho PI duyệt",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["quan-ly-du-lieu", "thiet-ke-nghien-cuu"],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_bang_bien_g3_20261115.py"],
+   "nguyen_tac": {
+    "nt:hop_le_tin_cay": "mỗi biến đặc tả đo đúng khái niệm",
+    "nt:trung_thuc": "bảng PI duyệt là nguồn của bộ biến"
+   }
+  },
+  "bao_cao_giam_sat_chi_doc.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "giám sát chứng cứ + an toàn thuốc (owner weekly_safety/monthly_update)"
+  },
+  "bao_cao_tong_hop.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7"],
+   "nhiem_vu": ["G7-T1"],
+   "viec": "báo cáo tổng hợp kết quả đề tài (hồ sơ nghiệm thu) từ tài liệu đã có",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["binh-duyet"],
+   "chot_kiem": ["K18", "tests/test_bao_cao_tong_hop_20261122.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "chỉ đọc đề cương, bản thảo, kết quả G6 — không bịa nội dung",
+    "nt:tai_lap": "dựng lại tất định từ tài liệu đề tài",
+    "dct:kiem_chung": "mỗi kết quả truy về tệp kết quả G6"
+   }
+  },
+  "bien_phai_sinh.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "bien-so-nghien-cuu",
+   "cong": ["G3"],
+   "nhiem_vu": ["G3-T2"],
+   "viec": "biến phái sinh: công thức máy đọc → tính tất định ở Python, SPSS, R",
+   "nguoi_dung_phu": ["quan-ly-du-lieu"],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/kiem_cheo_g6.py", "tests/test_bien_phai_sinh_20261114.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "cùng công thức ở SPSS và R",
+    "nt:hop_le_tin_cay": "công thức đã duyệt trước khi tính"
+   }
+  },
+  "bieu_do_bao_cao.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "biểu đồ báo cáo: sơ đồ luồng có số thật, nguy cơ sai lệch, kinh tế y tế",
+   "nguoi_dung_phu": ["viet-ban-thao", "kinh-te-y-te"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/ve_bieu_do.py", "tests/test_ve_bieu_do_20261121.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "sơ đồ luồng kiểm số học, lệch thì từ chối vẽ",
+    "nt:kiem_soat_cl": "lý do loại trừ cộng đủ"
+   }
+  },
+  "bieu_do_chan_doan.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "biểu đồ chẩn đoán và mô hình dự báo (STARD/TRIPOD+AI)",
+   "nguoi_dung_phu": ["mo-hinh-tien-luong"],
+   "nguoi_kiem": ["tham-dinh-do-chinh-xac-chan-doan"],
+   "chot_kiem": ["tools/ve_bieu_do.py", "tests/test_bieu_do_chan_doan_20261121.py"],
+   "nguyen_tac": {
+    "nt:hop_le_tin_cay": "ROC/hiệu chuẩn theo STARD 2015, TRIPOD+AI",
+    "nt:trung_thuc": "số đã vẽ ghi JSON"
+   }
+  },
+  "bieu_do_chung.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "nền trình bày chung cho mọi biểu đồ kết quả",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/ve_bieu_do.py", "tests/test_bieu_do_gop_20261121.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "một chuẩn trình bày cho mọi họ biểu đồ"
+   }
+  },
+  "bieu_do_do_luong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "cong-cu-do-luong",
+   "cong": ["G1"],
+   "nhiem_vu": ["G1-T4"],
+   "viec": "biểu đồ kiểm định công cụ đo (scree, tải, CFA, Bland–Altman)",
+   "nguoi_dung_phu": ["phan-tich-thong-ke"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/ve_bieu_do.py", "tests/test_bieu_do_do_luong_bao_cao_20261121.py"],
+   "nguyen_tac": {
+    "nt:hop_le_tin_cay": "đặc tính đo lường trình bày đúng COSMIN",
+    "nt:trung_thuc": "số đã vẽ ghi kèm JSON"
+   }
+  },
+  "bieu_do_gop.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "meta-phan-tich",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T2"],
+   "viec": "biểu đồ phân tích gộp (forest, funnel, SROC)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/ve_bieu_do.py", "tests/test_bieu_do_gop_20261121.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "số đã vẽ ghi JSON",
+    "nt:tai_lap": "vẽ lại tất định"
+   }
+  },
+  "bieu_do_hoi_quy.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "biểu đồ hồi quy (forest thô/hiệu chỉnh, phân nhóm, spline)",
+   "nguoi_dung_phu": ["mo-hinh-tien-luong"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/ve_bieu_do.py", "tests/test_bieu_do_hoi_quy_20261121.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "ước lượng vẽ đúng mô hình đã chạy"
+   }
+  },
+  "bieu_do_mo_ta.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "biểu đồ mô tả (tỷ lệ/trung bình kèm KTC, Likert, phân bố, dữ liệu thiếu)",
+   "nguoi_dung_phu": ["cong-cu-do-luong"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/ve_bieu_do.py", "tests/test_bieu_do_mo_ta_20261121.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "khoảng tin cậy tính đúng, số đã vẽ ghi JSON"
+   }
+  },
+  "bieu_do_song_con.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "biểu đồ sống còn / thời gian đến biến cố",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/ve_bieu_do.py", "tests/test_bieu_do_song_con_20261121.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "đường sống còn và số người nguy cơ tính đúng"
+   }
+  },
+  "build_knowledge_pack_update_queue.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "chứng cứ lâm sàng — hàng chờ cập nhật knowledge pack"
+  },
+  "buoc_dang_mo.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "khâu đang mở và gói ký theo thứ tự G0→G10 (chấm sống; READY và «không đo được» không bao giờ là khoá)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_buoc_dang_mo_20261122.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "chỉ chuyển sang khâu sau khi khâu hiện tại đã đạt chuẩn định trước và được khoá (bác sĩ 22/11)",
+    "nt:kiem_soat_cl": "khâu cần hoàn thiện là chỗ duy nhất được sửa; cổng sau chưa được làm tiếp"
+   }
+  },
+  "can_cu_dao_duc.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dao-duc-dang-ky",
+   "cong": ["G2"],
+   "nhiem_vu": ["G2-T1"],
+   "viec": "căn cứ đạo đức/pháp lý cho đề nghị miễn đồng thuận",
+   "nguoi_dung_phu": ["viet-ban-thao"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g2_quality_gate.py", "tests/test_sinh_de_cuong_dat_k17_20261121.py"],
+   "nguyen_tac": {
+    "nt:ton_trong": "miễn đồng thuận có căn cứ hợp pháp (TT43/2024, CIOMS HD 10)",
+    "tong:bang_chung": "căn cứ là văn bản quy phạm có điều khoản cụ thể"
+   }
+  },
+  "cau_noi_r.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "cầu nối R ↔ hệ nghiên cứu G5–G6",
+   "nguoi_dung_phu": ["quan-ly-du-lieu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_cheo_g6.py", "tests/test_cau_noi_r_20261114.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "chạy cùng cú pháp trên phần mềm thứ hai",
+    "tong:kiem_chung": "kết quả phần mềm thứ hai đối chiếu được"
+   }
+  },
+  "cau_noi_spss.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "cầu nối IBM SPSS ↔ hệ nghiên cứu G5–G6",
+   "nguoi_dung_phu": ["quan-ly-du-lieu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_cheo_g6.py", "tests/test_cau_noi_spss_20261114.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "chạy cùng cú pháp trên phần mềm thứ hai",
+    "tong:kiem_chung": "kết quả phần mềm thứ hai đối chiếu được"
+   }
+  },
+  "chay_sap_g6.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "chạy trọn SAP (chính · phụ · nhóm con · độ nhạy) theo đặc tả máy đọc",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["thiet-ke-nghien-cuu"],
+   "chot_kiem": ["tools/g6_quality_gate.py", "tools/kiem_cheo_g6.py", "tests/test_chay_sap_g6_20261114.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "mọi phân tích định trước, không chọn theo kết quả",
+    "nt:tai_lap": "đặc tả phân tích máy đọc",
+    "tong:kiem_chung": "kiểm chéo bằng phần mềm thứ hai"
+   }
+  },
+  "check_citation_metadata.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G7", "G9", "G10"],
+   "nhiem_vu": ["G7-T3"],
+   "viec": "phân giải metadata gốc từ PubMed cho danh sách PMID",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_a12_khop_bien_nhan.py", "tests/test_g9_hoan_thien_20261005.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "tác giả/tiêu đề/tạp chí/năm lấy từ bản ghi gốc"
+   }
+  },
+  "check_citation_retraction.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G7", "G9", "G10"],
+   "nhiem_vu": ["G7-T3"],
+   "viec": "tra trạng thái rút bài/expression of concern từ PubMed",
+   "nguoi_dung_phu": ["thu-thu-tai-lieu", "viet-ban-thao", "binh-duyet"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_a12_khop_bien_nhan.py", "tests/test_check_citation_retraction.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "không dẫn bài đã rút; không tra được ghi «chưa kiểm rút bài»",
+    "tong:bang_chung": "nguồn được kiểm bằng công cụ, không bằng trí nhớ"
+   }
+  },
+  "check_citations.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G7", "G9", "G10"],
+   "nhiem_vu": ["G7-T3"],
+   "viec": "kiểm trọn gói danh sách PMID (metadata + rút bài)",
+   "nguoi_dung_phu": ["thu-thu-tai-lieu", "viet-ban-thao"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_a12_khop_bien_nhan.py", "tests/test_check_citations_combined.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "không dẫn bài đã rút, metadata khớp nguồn",
+    "tong:bang_chung": "mọi trích dẫn có thật"
+   }
+  },
+  "check_de_cuong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g10",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T1"],
+   "viec": "guardrail đề cương thống nhất G10 theo chuẩn skill",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["kiem-chung-trich-dan"],
+   "chot_kiem": ["tools/g10_quality_gate.py", "tests/test_check_de_cuong_receipt_20260830.py"],
+   "nguyen_tac": {
+    "nt:khoa_hoc": "đề cương đủ chuẩn skill theo thiết kế",
+    "tong:dat_chuan": "chạy trước khi giao đề cương"
+   }
+  },
+  "chuan_bao_cao_items.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7", "G10"],
+   "viec": "nguyên văn mục chuẩn báo cáo giấy phép CC (sinh tự động)",
+   "nguoi_dung_phu": ["binh-duyet", "tong-quan-y-van", "meta-phan-tich"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/sinh_chuan_bao_cao_items.py", "tests/test_k17_chuan_them_20261121.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "nguyên văn chuẩn từ bản CC, không dịch, không chép bản có bản quyền"
+   }
+  },
+  "chuan_trinh_bay.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7", "G10"],
+   "viec": "chuẩn trình bày tài liệu nghiên cứu dùng chung mọi cổng",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/xuat_docx_chuan.py", "tests/test_chuan_trinh_bay_20260901.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "một chuẩn trình bày cho mọi tài liệu nộp"
+   }
+  },
+  "clean_research_dataset.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G5"],
+   "nhiem_vu": ["G5-T1"],
+   "viec": "làm sạch dữ liệu trên bản sao, có nhật ký truy vấn",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/g5_quality_gate.py", "tests/test_clean_research_dataset.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "sửa trên bản sao, mọi thay đổi có truy vấn và lý do",
+    "nt:kiem_soat_cl": "luật phạm vi/logic chạy trước khoá"
+   }
+  },
+  "clinical_calc.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "máy tính suy luận lâm sàng tại điểm khám (Bayes, test/treat, NNT); tuyến lâm sàng làm chủ"
+  },
+  "clinical_checkpoint.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "sổ trạng thái checkpoint ca lâm sàng (Cổng A/B), không thuộc G0–G10"
+  },
+  "cong_song.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "chấm sống trạng thái cổng trước cho cổng sau (không đọc trạng thái lưu cũ)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_chi_tiet_he_nghien_cuu.py", "tests/test_cong_song_20261004.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng sau chỉ tin trạng thái chấm sống của cổng trước",
+    "nt:khach_quan": "«không đo được» không bao giờ được coi là đạt"
+   }
+  },
+  "danh_muc_trich_dan.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G7", "G10"],
+   "nhiem_vu": ["G7-T3"],
+   "viec": "danh mục trích dẫn đề tài và danh mục TLTK trong văn bản",
+   "nguoi_dung_phu": ["viet-ban-thao", "thu-thu-tai-lieu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_toan_van_trich_dan_20261118.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "bài đã loại không còn được dùng làm chứng cứ",
+    "tong:bang_chung": "danh mục là nguồn duy nhất của TLTK"
+   }
+  },
+  "dataframe_dtype_utils.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "tiện ích nhận diện kiểu cột pandas chỉ cho giao diện app_data_analysis"
+  },
+  "dau_may_sinh.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["G2", "G4"],
+   "viec": "dấu bản máy sinh cho hồ sơ G2/G4 để phân biệt bản người đã biên tập",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_sinh_lai_g2_g4_g3_20261114.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "không đè bản người đã biên tập, không giữ bản máy cũ sai thiết kế"
+   }
+  },
+  "deidentify_research_dataset.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G5"],
+   "nhiem_vu": ["G5-T1"],
+   "viec": "khử định danh CSV nghiên cứu trước khi nạp",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g5_quality_gate.py", "tests/test_deidentify_research_dataset.py"],
+   "nguyen_tac": {
+    "nt:ton_trong": "xoá/thay thông tin định danh trước mọi xử lý"
+   }
+  },
+  "dien_giai_ket_qua.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dien-giai-ket-qua",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T3"],
+   "viec": "hợp đồng bản diễn giải kết quả (G6-T3)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke", "binh-duyet"],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_chuan_khau_9_10_20261122.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "không diễn giải quá mức, tách ý nghĩa thống kê và lâm sàng",
+    "nt:trung_thuc": "mọi số truy nguyên tệp kết quả"
+   }
+  },
+  "dien_tap_spss_r.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G3", "G5"],
+   "nhiem_vu": ["G3-T3"],
+   "viec": "diễn tập khai báo biến ở SPSS và R trước thu thập",
+   "nguoi_dung_phu": ["bien-so-nghien-cuu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_cheo_g6.py", "tests/test_he_thong_spss_r_truoc_thu_thap_20261115.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "biến khai đúng ở cả hai phần mềm trước khi có dữ liệu",
+    "nt:kiem_soat_cl": "lỗi khai báo bắt trước thu thập"
+   }
+  },
+  "do_cache_api.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "đo hiệu quả bộ nhớ đệm chi phí API (vận hành), không sinh hay kiểm đầu ra nghiên cứu"
+  },
+  "do_mang_nguon.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "đo đường mạng tới nguồn chứng cứ (vận hành giám sát chứng cứ)"
+  },
+  "doc_toan_van.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "tong-quan-y-van",
+   "cong": ["G0"],
+   "nhiem_vu": ["G0-T3"],
+   "viec": "tìm cụm/số trong kho toàn văn JATS của đề tài",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/tham_dinh_toan_van.py", "tests/test_doc_toan_van_workflow_20260905_vong24_malformed_filename_crash.py"],
+   "nguyen_tac": {
+    "tong:bang_chung": "trả lời trên toàn văn thật, không trên trí nhớ"
+   }
+  },
+  "doi_chieu_bien_de_cuong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "bien-so-nghien-cuu",
+   "cong": ["G3"],
+   "nhiem_vu": ["G3-T2"],
+   "viec": "đối chiếu bộ biến máy với đề cương (G5-AUTO-11)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["quan-ly-du-lieu"],
+   "chot_kiem": ["tools/g5_quality_gate.py", "tests/test_doi_chieu_bien_de_cuong_20261115.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "biến máy khớp đề cương, không thêm biến thẳng vào bản máy",
+    "dct:kiem_chung": "mỗi biến đề cương có trong từ điển nhập liệu"
+   }
+  },
+  "doi_chieu_sai_lech_sap.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thiet-ke-nghien-cuu",
+   "cong": ["G1", "G4"],
+   "nhiem_vu": ["G1-T1", "G4-T1"],
+   "viec": "đối chiếu biện pháp kiểm soát sai lệch G1 ↔ phân tích SAP G4",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/g4_quality_gate.py", "tests/test_thiet_ke_20261115.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "mỗi biện pháp kiểm soát sai lệch có phân tích tương ứng",
+    "dct:phuong_phap": "thiết kế và kế hoạch phân tích nhất quán"
+   }
+  },
+  "duyet_kiem_may_api.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T2"],
+   "viec": "duyệt và đo độ đúng của kiểm máy bằng Claude API",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["binh-duyet"],
+   "chot_kiem": ["tests/test_phan_xu_kiem_may_20261121.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "đo độ đúng của chính phép kiểm máy",
+    "nt:khach_quan": "phân xử theo toàn văn, không theo phán đoán máy"
+   }
+  },
+  "g0_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g0",
+   "cong": ["G0"],
+   "viec": "bộ chấm cổng G0: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["cau-hoi-nghien-cuu", "thu-thu-tai-lieu", "tong-quan-y-van", "khoang-trong-nghien-cuu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g0_quality_gate_20260728.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G0 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "dct:gia_tri": "câu hỏi có giá trị: PICO rõ, khoảng trống có nguồn, FINER"
+   }
+  },
+  "g0_tong_hop.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "tong-quan-y-van",
+   "cong": ["G0"],
+   "nhiem_vu": ["G0-T3"],
+   "viec": "phần đọc bài G0: tổng hợp bằng chứng và khoảng trống",
+   "nguoi_dung_phu": ["khoang-trong-nghien-cuu"],
+   "nguoi_kiem": ["tham-dinh-phe-binh"],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g0_tong_hop_bien_ban_20261010.py"],
+   "nguyen_tac": {
+    "tong:bang_chung": "sàng lọc đủ PMID nền, tóm lược dẫn PMID liên quan trực tiếp",
+    "nt:trung_thuc": "đã kiểm rút bài, khoảng trống không tuyệt đối hoá"
+   }
+  },
+  "g10_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g10",
+   "cong": ["G10"],
+   "viec": "bộ chấm cổng G10: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["kiem-chung-trich-dan"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g10_quality_gate.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G10 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "dct:kiem_chung": "gói phát hành nhất quán xuyên cổng, không ô trống"
+   }
+  },
+  "g1_design_blocks.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thiet-ke-nghien-cuu",
+   "cong": ["G1"],
+   "nhiem_vu": ["G1-T1"],
+   "viec": "khối thiết kế + khung bảng kết quả riêng theo từng thiết kế",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g1_quality_gate.py", "tests/test_luot_sua_c1a_20261026.py"],
+   "nguyen_tac": {
+    "nt:khoa_hoc": "khối thiết kế đúng 8 mã thiết kế, không khuôn chung"
+   }
+  },
+  "g1_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g1",
+   "cong": ["G1"],
+   "viec": "bộ chấm cổng G1: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["thiet-ke-nghien-cuu", "tong-quan-y-van", "ke-hoach-trien-khai"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g1_quality_gate.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G1 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "dct:phuong_phap": "thiết kế và đề cương lõi hợp câu hỏi"
+   }
+  },
+  "g2_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g2",
+   "cong": ["G2"],
+   "viec": "bộ chấm cổng G2: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["dao-duc-dang-ky", "an-toan-nghien-cuu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g2_quality_gate.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G2 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "dct:dao_duc": "hồ sơ đạo đức, đồng thuận, đăng ký trước thu thập"
+   }
+  },
+  "g3_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g3",
+   "cong": ["G3"],
+   "viec": "bộ chấm cổng G3: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["co-mau-nghien-cuu", "bien-so-nghien-cuu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g3_quality_gate.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G3 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "dct:phuong_phap": "cỡ mẫu có nguồn tham số, bộ biến đủ cho mục tiêu"
+   }
+  },
+  "g4_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g4",
+   "cong": ["G4"],
+   "viec": "bộ chấm cổng G4: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["thiet-ke-nghien-cuu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g4_quality_gate.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G4 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "nt:khach_quan": "SAP khoá trước dữ liệu"
+   }
+  },
+  "g5_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g5",
+   "cong": ["G5"],
+   "viec": "bộ chấm cổng G5: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["quan-ly-du-lieu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g5_quality_gate.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G5 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "nt:ton_trong": "khử định danh và quản trị dữ liệu trước khoá"
+   }
+  },
+  "g6_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g6",
+   "cong": ["G6"],
+   "viec": "bộ chấm cổng G6: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["phan-tich-thong-ke", "meta-phan-tich", "mo-hinh-tien-luong", "nghien-cuu-dinh-tinh"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g6_quality_gate_20260815.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G6 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "nt:tai_lap": "script bám SAP đã khoá, tái lập được"
+   }
+  },
+  "g6_trong_so_survey.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "script R trọng số hậu phân tầng + phân tích giới hạn theo SAP",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["thiet-ke-nghien-cuu"],
+   "chot_kiem": ["tools/g6_quality_gate.py", "tests/test_g6_trong_so_survey_20261112.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "trọng số theo SAP đã khoá (G6-AUTO-11)",
+    "nt:tai_lap": "script sinh tất định"
+   }
+  },
+  "g7_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g7",
+   "cong": ["G7"],
+   "viec": "bộ chấm cổng G7: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["viet-ban-thao", "kiem-chung-trich-dan"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g7_quality_gate_20260728.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G7 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "nt:trung_thuc": "khẳng định của bản thảo khớp kết quả G6"
+   }
+  },
+  "g8_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g8",
+   "cong": ["G8"],
+   "viec": "bộ chấm cổng G8: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["binh-duyet"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g8_quality_gate.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G8 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "nt:khach_quan": "bình duyệt độc lập trước nộp"
+   }
+  },
+  "g9_quality_gate.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g9",
+   "cong": ["G9"],
+   "viec": "bộ chấm cổng G9: tiêu chí AUTO/HUMAN của cổng",
+   "nguoi_dung_phu": ["nop-bai-phan-hoi", "kiem-chung-trich-dan"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_g9_quality_gate.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng G9 chỉ đạt khi mọi tiêu chí định trước đạt",
+    "nt:trung_thuc": "liêm chính tác giả, COI, khai AI"
+   }
+  },
+  "gate_contract.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "hợp đồng dừng và vai ký bắt buộc của 11 cổng (nguồn sự thật cổng cứng)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tools/kiem_chi_tiet_he_nghien_cuu.py", "tests/test_gate_contract_roles.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "cổng chỉ mở khi đủ đúng vai ký theo hợp đồng, thiếu vai thì dừng có lý do",
+    "nt:trung_thuc": "trạng thái dừng và vai ký ghi minh bạch, máy đọc được"
+   }
+  },
+  "gen_morning_brief.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "bản tin chứng cứ lâm sàng buổi sáng"
+  },
+  "gen_research_docx.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7", "G10"],
+   "viec": "tạo Word chuẩn cho bộ artifact G0→G9",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/xuat_docx_chuan.py", "tests/test_gen_research_docx_scaffold_warning.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "cùng khuôn Word cho mọi cổng"
+   }
+  },
+  "generate_agent.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "tự sinh agent đề xuất cho đội agent, không thuộc chuỗi cổng nghiên cứu"
+  },
+  "generate_cerebrovascular_dashboard_20260723.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "dashboard chứng cứ lâm sàng (mạch não) một lần"
+  },
+  "gia_lap_bien_the_kho.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "kịch bản biến thể khó của giả lập trọn vòng",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_k11_huyet_ap_20261122.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "chạy thử trọn chuỗi để bắt lỗi hệ trước khi gặp đề tài thật",
+    "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
+   }
+  },
+  "gia_lap_chan_thuc.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "kịch bản giả lập chân thực (dữ liệu, sai sót nhập liệu)",
+   "nguoi_dung_phu": ["bien-so-nghien-cuu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_gia_lap_chan_thuc_20261117.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "chạy thử trọn chuỗi để bắt lỗi hệ trước khi gặp đề tài thật",
+    "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
+   }
+  },
+  "gia_lap_dinh_ky.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "giả lập định kỳ (canary tháng) hệ nghiên cứu",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_gia_lap_dinh_ky_20261115.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "chạy thử trọn chuỗi để bắt lỗi hệ trước khi gặp đề tài thật",
+    "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
+   }
+  },
+  "gia_lap_ho_so_sau_g6.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "hồ sơ vai G6.5→G10 cho các thiết kế ngoài thuần tập trong giả lập",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_k11_huyet_ap_20261122.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "chạy thử trọn chuỗi để bắt lỗi hệ trước khi gặp đề tài thật",
+    "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
+   }
+  },
+  "gia_lap_kich_ban_them.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "các kịch bản giả lập bổ sung để phủ đủ 8 thiết kế",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_k11_huyet_ap_20261122.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "chạy thử trọn chuỗi để bắt lỗi hệ trước khi gặp đề tài thật",
+    "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
+   }
+  },
+  "gia_lap_tron_vong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "giả lập trọn vòng G0→G10 như một đề tài thật cho 8 thiết kế",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_gia_lap_tron_vong_20261115.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "chạy thử trọn chuỗi để bắt lỗi hệ trước khi gặp đề tài thật",
+    "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
+   }
+  },
+  "gia_lap_van_ban_tac_tu.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "văn bản do agent soạn trong giả lập trọn vòng",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_gia_lap_van_ban_tac_tu_20261119.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "chạy thử trọn chuỗi để bắt lỗi hệ trước khi gặp đề tài thật",
+    "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
+   }
+  },
+  "go_khung_ban_thao_g7.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7"],
+   "nhiem_vu": ["G7-T1"],
+   "viec": "gỡ khung bản nháp khỏi bản thảo G7 để thành bản nộp",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g7_quality_gate.py", "tests/test_quyet_dinh_da_chot_20261116.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "không đổi nội dung khoa học khi gỡ khung"
+   }
+  },
+  "goc_ebm.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "hạ tầng định vị repo gốc EBM cho công cụ trong repo y khoa"
+  },
+  "goi_bao_ve_hoi_dong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T4"],
+   "viec": "gói bảo vệ đề cương trước Hội đồng (dàn slide + câu hỏi phản biện)",
+   "nguoi_dung_phu": ["binh-duyet"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_goi_bao_ve_hoi_dong_20261121.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "slide chỉ lấy từ đề cương đã kiểm, không thêm khẳng định mới",
+    "nt:kiem_soat_cl": "chuẩn bị câu hỏi phản biện trước buổi họp"
+   }
+  },
+  "gom_toan_van_oa.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thu-thu-tai-lieu",
+   "cong": ["G0"],
+   "nhiem_vu": ["G0-T2"],
+   "viec": "gom toàn văn PMC Open Access cho nền y văn đề tài",
+   "nguoi_dung_phu": ["tong-quan-y-van"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/toan_van_trich_dan.py", "tests/test_gom_toan_van_oa_workflow_20260906_vong30_incomplete_read_uncaught.py"],
+   "nguyen_tac": {
+    "tong:bang_chung": "đọc toàn văn thật thay vì chỉ abstract",
+    "nt:trung_thuc": "chỉ lưu bản mang giấy phép mở"
+   }
+  },
+  "health_econ_calc.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kinh-te-y-te",
+   "cong": ["G1"],
+   "nhiem_vu": ["G1-T8"],
+   "viec": "máy tính kinh tế y tế (ICER, Markov, chiết khấu)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_health_econ_calc.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "tính tất định, cùng tham số cho cùng kết quả",
+    "nt:trung_thuc": "đơn giá/utility có nguồn hoặc chủ nhiệm cung cấp"
+   }
+  },
+  "hinh_g6.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "tự sinh biểu đồ kết quả G6 theo đặc tả SAP + dữ liệu đã khoá",
+   "nguoi_dung_phu": ["viet-ban-thao", "tong-quan-y-van"],
+   "nguoi_kiem": ["thiet-ke-nghien-cuu"],
+   "chot_kiem": ["tools/ve_bieu_do.py", "tests/test_hinh_g6_20261121.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "hình vẽ từ dữ liệu đã khoá, số đã vẽ ghi JSON",
+    "nt:tai_lap": "hình sinh lại tất định"
+   }
+  },
+  "ho_so_dtcs_bvqy175.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "ke-hoach-trien-khai",
+   "cong": ["G1", "G10"],
+   "nhiem_vu": ["G1-T3"],
+   "viec": "hồ sơ đăng ký chủ trì đề tài cấp bệnh viện",
+   "nguoi_dung_phu": ["dieu-phoi-g10"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g1_quality_gate.py", "tests/test_ho_so_dtcs_bvqy175_20261121.py"],
+   "nguyen_tac": {
+    "dct:kha_thi": "nhân lực, tiến độ, kinh phí của đề tài trình đơn vị",
+    "nt:trung_thuc": "đơn giá/kinh phí do chủ nhiệm cung cấp, không bịa"
+   }
+  },
+  "ho_so_g2_da_soan.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dao-duc-dang-ky",
+   "cong": ["G2"],
+   "nhiem_vu": ["G2-T1"],
+   "viec": "nội dung hồ sơ G2 đã soạn để sinh lại đúng bản đang nộp",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g2_quality_gate.py", "tests/test_g2_tai_lap_va_don_vi_chu_tri_20261122.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "sinh lại hồ sơ không mất nội dung đã soạn"
+   }
+  },
+  "ho_so_hdd_bvqy175.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dao-duc-dang-ky",
+   "cong": ["G2"],
+   "nhiem_vu": ["G2-T1"],
+   "viec": "nháp hồ sơ Hội đồng Đạo đức cấp bệnh viện",
+   "nguoi_dung_phu": ["ke-hoach-trien-khai"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g2_quality_gate.py", "tests/test_ho_so_hdd_bvqy175_20261119.py"],
+   "nguyen_tac": {
+    "nt:dao_duc": "đúng thể thức Hội đồng Đạo đức đơn vị",
+    "nt:ton_trong": "đủ tài liệu bảo vệ người tham gia"
+   }
+  },
+  "hoi_dong_cong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "danh mục nhiệm vụ, phân công tiêu chí, biên bản đánh giá chéo/tranh biện, bảng trách nhiệm",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/tieu_chuan_hoan_thien.py", "tests/test_hoi_dong_cong_20261006.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "đầu ra mỗi nhiệm vụ được chấm chéo độc lập theo RQ1–RQ8",
+    "nt:khach_quan": "điểm quyết định qua tranh biện có trọng tài",
+    "nt:kiem_soat_cl": "mỗi tiêu chí bộ chấm có đúng một bên chịu trách nhiệm"
+   }
+  },
+  "hoi_dong_cong_batch.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "hội đồng cổng qua Claude Batch API, cùng biên bản và luật với workflow",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_kiem_api_truoc_ky_20261121.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "biên bản API qua cùng bộ kiểm `hoi_dong_cong.py ghi`",
+    "nt:tai_lap": "cùng khuôn biên bản với hội đồng chạy trong phiên"
+   }
+  },
+  "hoi_dong_khoa_hoc.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "binh-duyet",
+   "cong": ["G10"],
+   "viec": "Hội đồng Khoa học máy chấm đề cương theo thể thức hội đồng",
+   "nguoi_dung_phu": ["dieu-phoi-g10", "viet-ban-thao"],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tools/duyet_kiem_may_api.py", "tests/test_hoi_dong_khoa_hoc_20261122.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "nhiều ghế chấm độc lập theo thể thức Hội đồng Khoa học",
+    "dct:gia_tri": "chấm tính cấp thiết, ý nghĩa của đề tài",
+    "nt:khoa_hoc": "chấm mục tiêu và phương pháp"
+   }
+  },
+  "hon_hop.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "nghien-cuu-dinh-tinh",
+   "cong": ["G1"],
+   "nhiem_vu": ["G1-T7"],
+   "viec": "thiết kế hỗn hợp định lượng–định tính trên chuỗi G0–G10",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_hon_hop_20261117.py"],
+   "nguyen_tac": {
+    "nt:khoa_hoc": "kiểu tích hợp (hội tụ/tuần tự) hợp câu hỏi",
+    "dct:phuong_phap": "phần định tính và định lượng có kế hoạch tích hợp"
+   }
+  },
+  "import_real_dataset.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G5"],
+   "nhiem_vu": ["G5-T1"],
+   "viec": "cổng tiếp nhận dữ liệu thật đã khử định danh",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g5_quality_gate.py", "tests/test_import_real_dataset_workflow_20260904_date_pii.py"],
+   "nguyen_tac": {
+    "tong:dao_duc": "chỉ nạp sau khi G2 (Hội đồng Đạo đức) và G4 có trong sổ cái",
+    "nt:ton_trong": "từ chối tệp còn PII"
+   }
+  },
+  "install_chatgpt_tunnel_launch_agent.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "hạ tầng tunnel MCP (LaunchAgent), không phải nghiên cứu"
+  },
+  "install_ebm_mcp_code_watcher.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "hạ tầng tunnel MCP (theo dõi mã), không phải nghiên cứu"
+  },
+  "interim_analysis_calc.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "an-toan-nghien-cuu",
+   "cong": ["G4"],
+   "nhiem_vu": ["G4-T2"],
+   "viec": "máy tính phân tích giữa kỳ (hàm chi tiêu alpha)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_interim_analysis_calc.py"],
+   "nguyen_tac": {
+    "tong:dao_duc": "quy tắc dừng bảo vệ người tham gia",
+    "nt:khach_quan": "ranh giới dừng định trước, không xem dữ liệu rồi mới đặt"
+   }
+  },
+  "khung_bieu_bang.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thiet-ke-nghien-cuu",
+   "cong": ["G1", "G4"],
+   "nhiem_vu": ["G4-T1"],
+   "viec": "khung biểu bảng (bảng trống, biểu đồ, sơ đồ) cho «Dự kiến kết quả»",
+   "nguoi_dung_phu": ["viet-ban-thao"],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_khung_bieu_bang_20261119.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "khung bảng định trước dữ liệu, không chọn bảng sau khi thấy số",
+    "dct:kiem_chung": "mỗi mục tiêu có bảng/biểu đồ đo được"
+   }
+  },
+  "khung_de_tai.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "cau-hoi-nghien-cuu",
+   "cong": ["G0"],
+   "nhiem_vu": ["G0-T1"],
+   "viec": "khung PICO đã chốt cho G1/SAP/đề cương điền sẵn",
+   "nguoi_dung_phu": ["thiet-ke-nghien-cuu", "viet-ban-thao"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/nhat_quan_xuyen_cong.py", "tests/test_dong_bo_xuyen_cong_20261115.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "PICO đã chốt không bị gõ lại làm lệch kết cục",
+    "tong:dat_chuan": "chỉ kế thừa G0 khi G0 đã chốt"
+   }
+  },
+  "khuon_de_cuong_bvqy175.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T4"],
+   "viec": "chuyển đề cương nộp sang khuôn hướng dẫn cấp bệnh viện",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_khuon_de_cuong_bvqy175_20261121.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "đúng thể thức đơn vị chủ trì",
+    "nt:trung_thuc": "đổi khuôn không đổi nội dung khoa học"
+   }
+  },
+  "kiem_a12_khop_bien_nhan.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T2"],
+   "viec": "đối chiếu lời khai A12 với biên nhận máy-kiểm",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g10_quality_gate.py", "tests/test_a12_chan_khi_lap_20261114.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "lời khai khớp biên nhận máy, không khai suông"
+   }
+  },
+  "kiem_api_truoc_ky.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g10",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T1"],
+   "viec": "một lệnh kiểm API trước khi ký/nộp (phản biện + A12 + hội đồng)",
+   "nguoi_dung_phu": ["binh-duyet", "kiem-chung-trich-dan"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/duyet_kiem_may_api.py", "tests/test_kiem_api_truoc_ky_20261121.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "kiểm phần thiếu/cũ trước khi PI ký",
+    "tong:kiem_chung": "gộp các kiểm máy độc lập thành một phiếu"
+   }
+  },
+  "kiem_ban_thao_tap_chi.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "nop-bai-phan-hoi",
+   "cong": ["G9"],
+   "nhiem_vu": ["G9-T1"],
+   "viec": "kiểm bản thảo gửi tạp chí theo thể lệ (đo bằng máy)",
+   "nguoi_dung_phu": ["viet-ban-thao", "binh-duyet"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["K18", "tests/test_kiem_ban_thao_tap_chi_20261119.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "thể lệ tạp chí đo lặp lại được",
+    "nt:khoa_hoc": "kèm K18 chuẩn báo cáo theo mục"
+   }
+  },
+  "kiem_cheo_g6.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "kiểm chéo G6 bằng phần mềm thứ hai (SPSS và R)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["thiet-ke-nghien-cuu"],
+   "chot_kiem": ["tests/test_kiem_cheo_g6_20261114.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "phần mềm thứ hai độc lập tính lại kết quả",
+    "nt:tai_lap": "lệch giữa hai phần mềm bị báo"
+   }
+  },
+  "kiem_chi_tiet_he_nghien_cuu.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "kiểm chi tiết 11 cổng × 5 trục của một đề tài",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_kiem_chi_tiet_he_nghien_cuu_20260902.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "đo từng cổng bằng chính tệp của đề tài",
+    "nt:kiem_soat_cl": "soát trọn hệ trước khi báo hoàn thiện"
+   }
+  },
+  "kiem_chuan_de_cuong_theo_muc.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G10", "G7"],
+   "nhiem_vu": ["G10-T4"],
+   "viec": "K17 — đề cương (và bản thảo) theo từng mục mọi chuẩn",
+   "nguoi_dung_phu": ["thiet-ke-nghien-cuu"],
+   "nguoi_kiem": ["binh-duyet"],
+   "chot_kiem": ["K17", "tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_k17_chuan_them_20261121.py"],
+   "nguyen_tac": {
+    "nt:khoa_hoc": "từng mục chuẩn quốc tế và Việt Nam áp dụng cho thiết kế",
+    "dct:phuong_phap": "phương pháp đủ yếu tố cụ thể của chuẩn theo thiết kế",
+    "tong:dat_chuan": "chuẩn chưa có tiêu chí là «chưa đo được», không bao giờ đạt"
+   }
+  },
+  "kiem_chuan_vang_guideline.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "chứng cứ lâm sàng — engine trả guideline hiện hành mạnh nhất"
+  },
+  "kiem_de_cuong_nop_hoi_dong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T4"],
+   "viec": "kiểm đề cương nộp Hội đồng K1–K19 (G10-T4)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["tham-dinh-dau-ra", "kiem-chung-trich-dan"],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_kiem_de_cuong_nop_hoi_dong_20261015.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "số liệu không có nguồn trong danh mục bị loại (K10)",
+    "tong:dat_chuan": "đề cương chỉ nộp khi K1–K19 đạt",
+    "dct:kiem_chung": "cỡ mẫu khớp G3, PMID trong biên nhận A12"
+   }
+  },
+  "kiem_do_tuoi_thang_diem.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "thang điểm lâm sàng — rút bài và độ tươi"
+  },
+  "kiem_gia_lap_16.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "cổng CI của giả lập 16 kịch bản: khoá được G10, 0 ô lỗi, đề cương đạt",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_gia_lap_ci_20261117.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "kịch bản chỉ xanh khi khoá được gói G10 và đề cương nộp đạt",
+    "nt:kiem_soat_cl": "sổ nợ chuẩn báo cáo chỉ được giảm"
+   }
+  },
+  "kiem_khoa_phan_tich.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "chốt khoá dữ liệu trước khi chạy phân tích",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["quan-ly-du-lieu"],
+   "chot_kiem": ["tools/g6_quality_gate.py", "tests/test_g6_hoan_thien_20261004.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "không phân tích dữ liệu chưa khoá",
+    "nt:khach_quan": "dữ liệu không đổi giữa lúc khoá và phân tích"
+   }
+  },
+  "kiem_lien_ket_scopus_bao_cao.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "chốt liên kết Scopus trong reports/ của giám sát chứng cứ"
+  },
+  "kiem_newline_vung_ky.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "bất biến newline vùng chuỗi được băm trong chữ ký (CI)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_kiem_newline_vung_ky_mask_comment_vs_string_20260912.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "băm chữ ký ổn định giữa Mac và Windows, không vỡ niêm phong giả"
+   }
+  },
+  "kiem_noi_dung_trich_dan.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G7", "G10"],
+   "nhiem_vu": ["G10-T2"],
+   "viec": "kiểm nội dung trích dẫn A12 (câu khẳng định ↔ abstract) bằng API",
+   "nguoi_dung_phu": ["viet-ban-thao"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/duyet_kiem_may_api.py", "tests/test_a12_batch_20261121.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "từng câu có [n] đối chiếu với abstract của tài liệu [n]",
+    "nt:trung_thuc": "bắt trích sai nội dung"
+   }
+  },
+  "kiem_rut_bai_trich_dan.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G7", "G10"],
+   "nhiem_vu": ["G7-T3"],
+   "viec": "kiểm rút bài cho từng trích dẫn của đề tài theo mã",
+   "nguoi_dung_phu": ["thu-thu-tai-lieu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/check_citation_retraction.py", "tests/test_hoan_thien_cong_20261120.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "từng trích dẫn có trạng thái rút bài ghi theo mã"
+   }
+  },
+  "kiem_so_lieu_toan_van.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G7", "G10"],
+   "nhiem_vu": ["G10-T2"],
+   "viec": "đối chiếu số trong câu có [n] với toàn văn tài liệu được dẫn",
+   "nguoi_dung_phu": ["viet-ban-thao"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_tong_quan_k12_k13_20261120.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "số có nguồn thật trong toàn văn"
+   }
+  },
+  "kiem_tin_cay_thang_do.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "cong-cu-do-luong",
+   "cong": ["G1"],
+   "nhiem_vu": ["G1-T4"],
+   "viec": "chỉ số độ tin cậy thang đo trên dữ liệu pilot",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_kiem_tin_cay_thang_do_20260928.py"],
+   "nguyen_tac": {
+    "nt:hop_le_tin_cay": "Cronbach α, ICC test–retest theo COSMIN"
+   }
+  },
+  "kiem_tong_quan_g0_api.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "tong-quan-y-van",
+   "cong": ["G0"],
+   "nhiem_vu": ["G0-T3"],
+   "viec": "kiểm tổng quan G0 (G0-T3/T4) bằng Claude API",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/duyet_kiem_may_api.py", "tests/test_kiem_tong_quan_g0_api_20261118.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "người đọc máy độc lập rà tổng hợp bằng chứng"
+   }
+  },
+  "kiem_trich_dan_toan_van.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G7", "G10"],
+   "nhiem_vu": ["G10-T2"],
+   "viec": "xét lại cặp «cần xem» của A12 trên toàn văn",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_noi_dung_trich_dan.py", "tests/test_kiem_trich_dan_toan_van_20261121.py"],
+   "nguyen_tac": {
+    "tong:bang_chung": "quyết định dựa trên toàn văn, không chỉ abstract"
+   }
+  },
+  "list_studies.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "liệt kê và theo dõi mọi đề tài trong exports/",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/cong_song.py", "tests/test_list_studies.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "mỗi đề tài một thư mục theo dõi xuyên suốt"
+   }
+  },
+  "lock_analysis_dataset.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G5"],
+   "nhiem_vu": ["G5-T1"],
+   "viec": "khoá bộ dữ liệu phân tích có audit trail, không PII",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/g5_quality_gate.py", "tests/test_run_stats_survival.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "chỉ phân tích sau khi dữ liệu đã khoá",
+    "nt:khach_quan": "dữ liệu không đổi sau khi khoá"
+   }
+  },
+  "ma_tran_muc_tieu_bien.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "bien-so-nghien-cuu",
+   "cong": ["G3"],
+   "nhiem_vu": ["G3-T2"],
+   "viec": "ma trận mục tiêu → biến → câu hỏi → phân tích (G3-AUTO-19)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["quan-ly-du-lieu"],
+   "chot_kiem": ["tools/g3_quality_gate.py", "tests/test_hon_hop_20261117.py"],
+   "nguyen_tac": {
+    "dct:kiem_chung": "mỗi mục tiêu có biến và phân tích đo được",
+    "nt:khoa_hoc": "biến bám câu hỏi nghiên cứu"
+   }
+  },
+  "mark_study_synthetic.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "đánh dấu đề tài là dữ liệu tổng hợp/thử nghiệm (bước 1/2 quản trị)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/verify_exports_integrity.py", "tests/test_gia_lap_dinh_ky_20261115.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "dấu tổng hợp tách bạch đề tài giả với đề tài thật trong exports/"
+   }
+  },
+  "md2docx_vn.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7", "G10"],
+   "viec": "chuyển Markdown sang Word theo chuẩn luận văn/đề cương Việt Nam",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/xuat_docx_chuan.py", "tests/test_md2docx_vn_workflow_20260906_vong30_clean_formula_strips_vertalign_braces.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "Word sinh tất định từ .md"
+   }
+  },
+  "meta_analysis_calc.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "meta-phan-tich",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T2"],
+   "viec": "máy tính phân tích gộp (cố định/ngẫu nhiên, I², Egger)",
+   "nguoi_dung_phu": ["trich-xuat-y-van"],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/g6_quality_gate.py", "tests/test_meta_analysis_calc.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "tính tất định từ bảng trích xuất",
+    "nt:khoa_hoc": "mô hình hiệu ứng và không đồng nhất đúng SAP"
+   }
+  },
+  "mo_trong_phan_mem.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "mở dữ liệu đề tài thẳng trong SPSS/RStudio",
+   "nguoi_dung_phu": ["quan-ly-du-lieu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_cheo_g6.py", "tests/test_chay_trong_ung_dung_20261115.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "chạy cùng cú pháp trên phần mềm thứ hai",
+    "tong:kiem_chung": "kết quả phần mềm thứ hai đối chiếu được"
+   }
+  },
+  "moi_truong_venv.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "hạ tầng môi trường Python (~/.ebm-venv) cho mọi script"
+  },
+  "nhac_dinh_tuyen_cau_noi.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "hook nhắc định tuyến chứng cứ «một cửa vào» của phiên Claude Code"
+  },
+  "nhap_lieu_excel.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G5"],
+   "nhiem_vu": ["G5-T1"],
+   "viec": "nhập liệu tay qua Excel → CSV chuẩn cho cổng tiếp nhận",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g5_quality_gate.py", "tests/test_nhap_lieu_excel_20261114.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "kiểm khuôn và luật nhập liệu trước khi tiếp nhận"
+   }
+  },
+  "nhat_quan_xuyen_cong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "đối chiếu thông số then chốt cùng giá trị ở mọi cổng (G10-AUTO-11)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g10_quality_gate.py", "tests/test_cong_cu_20261115.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "một thông số mang cùng giá trị ở mọi hồ sơ",
+    "nt:khach_quan": "kết cục chính lệch giữa cổng bị gắn cờ đổi kết cục",
+    "tong:kiem_chung": "đối chiếu máy, không dựa lời khai"
+   }
+  },
+  "normal_dist.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G4", "G6"],
+   "viec": "CDF chuẩn và nghịch đảo dùng chung cho mọi máy tính thống kê",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_normal_dist.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "một hàm dùng chung ⇒ mọi máy tính cho cùng kết quả"
+   }
+  },
+  "pha_phat_trien_cong_cu.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "cong-cu-do-luong",
+   "cong": ["G1"],
+   "nhiem_vu": ["G1-T4"],
+   "viec": "số liệu pha phát triển bộ câu hỏi (CVI + phỏng vấn nhận thức)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_pha_phat_trien_cong_cu_20260928.py"],
+   "nguyen_tac": {
+    "nt:hop_le_tin_cay": "giá trị nội dung đo bằng CVI ≥ 3 chuyên gia",
+    "nt:tai_lap": "nhật ký phỏng vấn đủ cột, truy xuất khớp phiếu"
+   }
+  },
+  "phan_bien_may_de_cuong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "binh-duyet",
+   "cong": ["G10"],
+   "viec": "phản biện máy đề cương nộp bằng Claude API",
+   "nguoi_dung_phu": ["viet-ban-thao"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/duyet_kiem_may_api.py", "tests/test_kiem_api_truoc_ky_20261121.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "người đọc độc lập với người soạn",
+    "tong:kiem_chung": "phản biện có thẩm tra"
+   }
+  },
+  "phan_tich_nhan_to_r.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "cong-cu-do-luong",
+   "cong": ["G1"],
+   "nhiem_vu": ["G1-T4"],
+   "viec": "giá trị cấu trúc bộ câu hỏi: EFA nửa mẫu + CFA nửa còn lại",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/hoi_dong_cong.py", "tests/test_phan_tich_nhan_to_r_20261121.py"],
+   "nguyen_tac": {
+    "nt:hop_le_tin_cay": "giá trị cấu trúc kiểm trên mẫu độc lập",
+    "nt:tai_lap": "mã R tất định, hạt giống cố định"
+   }
+  },
+  "phan_tich_sap_bo_sung.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "chạy bằng máy các phân tích SAP trước đây ghi «chờ làm tay»",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["thiet-ke-nghien-cuu"],
+   "chot_kiem": ["tools/kiem_cheo_g6.py", "tests/test_phan_tich_sap_bo_sung_20261122.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "không bỏ sót phân tích đã định trước",
+    "nt:tai_lap": "chạy trên dữ liệu đã khoá, tất định"
+   }
+  },
+  "phan_tich_sap_bo_sung_r.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "mã R của các phân tích SAP bổ sung (thứ tự, spline…)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["thiet-ke-nghien-cuu"],
+   "chot_kiem": ["tools/kiem_cheo_g6.py", "tests/test_phan_tich_sap_bo_sung_20261122.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "mã R tất định khớp đường Python",
+    "tong:kiem_chung": "phần mềm thứ hai kiểm chéo"
+   }
+  },
+  "phan_tich_thiet_ke_dac_thu.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "phân tích chính + kiểm chéo SPSS/R cho 4 thiết kế đặc thù",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_cheo_g6.py", "tests/test_phan_tich_thiet_ke_dac_thu_20261116.py"],
+   "nguyen_tac": {
+    "nt:khoa_hoc": "phân tích chính đúng thiết kế",
+    "nt:tai_lap": "kiểm chéo SPSS/R"
+   }
+  },
+  "pii_van_ban.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G5"],
+   "nhiem_vu": ["G5-T1"],
+   "viec": "bộ dò PII dùng chung cho văn bản và giá trị trường của hồ sơ",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/verify_exports_integrity.py", "tests/test_pii_van_ban_20261004.py"],
+   "nguyen_tac": {
+    "nt:ton_trong": "không để thông tin định danh lọt vào hồ sơ",
+    "tong:dao_duc": "bảo vệ dữ liệu cá nhân theo Luật 91/2025/QH15"
+   }
+  },
+  "pipeline_freshness.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "bảo vệ độ tươi chuỗi checkpoint G0–G10",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/run_pipeline.py", "tests/test_pipeline_freshness_20260927_bo_cham_giu_moc_sinh.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "checkpoint cũ hơn cổng trước không được dùng cho cổng sau",
+    "nt:tai_lap": "mốc sinh của mỗi checkpoint truy được"
+   }
+  },
+  "placeholder_contract.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "hợp đồng nhận diện ô còn trống dùng chung cho 11 bộ chấm",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/verify_exports_integrity.py", "tests/test_placeholder_contract_20261003.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "ô trống không bao giờ bị đếm là đã điền",
+    "tong:dat_chuan": "cổng không đạt khi còn ô chờ điền"
+   }
+  },
+  "protocol_checklist_items.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G10"],
+   "viec": "danh mục mục SPIRIT 2025/PRISMA-P 2015 nguyên văn (sinh tự động)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/check_de_cuong.py", "tests/test_g10_hoan_thien_20261005.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "nguyên văn tiếng Anh, không dịch, G10 không tự tick"
+   }
+  },
+  "pseudonymize_research_dataset.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G5"],
+   "nhiem_vu": ["G5-T1"],
+   "viec": "mã hoá thay thế với bảng ánh xạ bảo vệ riêng",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g5_quality_gate.py", "tests/test_pseudonymize_research_dataset.py"],
+   "nguyen_tac": {
+    "nt:ton_trong": "bảng ánh xạ tách riêng, chỉ chủ đọc",
+    "nt:tai_lap": "mã thay thế ổn định giữa các lần nạp"
+   }
+  },
+  "quy_trinh_du_lieu.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G3", "G5"],
+   "nhiem_vu": ["G3-T3"],
+   "viec": "quy trình thu thập · nhập liệu · lưu trữ ↔ đề cương ↔ G2 ↔ DMP",
+   "nguoi_dung_phu": ["dao-duc-dang-ky"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/nhat_quan_xuyen_cong.py", "tests/test_cong_cu_20261115.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "quy trình khai một chỗ, dùng cho mọi hồ sơ",
+    "nt:ton_trong": "lưu trữ và phân quyền bảo vệ dữ liệu người tham gia"
+   }
+  },
+  "quyet_dinh_da_chot.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "rút quyết định đã chốt ở cổng trước cho G7/G9/G10, không hỏi lại",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/nhat_quan_xuyen_cong.py", "tests/test_quyet_dinh_da_chot_20261116.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "không gõ lại giá trị đã chốt — nguồn lệch thường gặp",
+    "tong:dat_chuan": "chỉ lấp khoá còn trống, không đè khoá PI đã khai"
+   }
+  },
+  "record_evidence_surveillance_run.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "ghi trạng thái lượt giám sát chứng cứ launchd"
+  },
+  "research_ccn_status.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "báo việc chờ người/hạ tầng ngoài của nhánh nghiên cứu",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/study_readiness.py", "tests/test_research_ccn_status.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "đọc trực tiếp checkpoint, không suy đoán trạng thái"
+   }
+  },
+  "research_studies_overview.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "tổng quan một màn hình cho mọi đề tài đang chạy",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/cong_song.py", "tests/test_research_studies_overview.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "thấy ngay đề tài nào kẹt ở cổng nào"
+   }
+  },
+  "research_study_spec.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g10",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T1"],
+   "viec": "chuẩn hoá StudySpec và kiểm đầy đủ của đề cương G10",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/check_de_cuong.py", "tests/test_research_study_spec.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "một biểu diễn chuẩn cho assembler và validator",
+    "nt:trung_thuc": "không tự tạo dữ kiện khoa học"
+   }
+  },
+  "retry_loop.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "vòng lặp thử lại có cấu trúc cho pipeline nghiên cứu",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/run_pipeline.py", "tests/test_retry_loop_lessons_mapping.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "lỗi được phân loại và thử lại có giới hạn, không im lặng nuốt lỗi"
+   }
+  },
+  "risk_score_calc.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "thang điểm nguy cơ lâm sàng tại điểm khám (tuyến lâm sàng)"
+  },
+  "run_chatgpt_mcp_stdio.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "hạ tầng tunnel MCP qua stdio"
+  },
+  "run_ebm_tunnel_managed.sh": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "hạ tầng tunnel MCP"
+  },
+  "run_g0_auto.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "cau-hoi-nghien-cuu",
+   "cong": ["G0"],
+   "nhiem_vu": ["G0-T1"],
+   "viec": "tự động hoá G0: câu hỏi PICO/FINER + y văn nền thật",
+   "nguoi_dung_phu": ["thu-thu-tai-lieu", "tong-quan-y-van"],
+   "nguoi_kiem": ["khoang-trong-nghien-cuu"],
+   "chot_kiem": ["tools/g0_quality_gate.py", "tests/test_g0_quality_gate_20260728.py"],
+   "nguyen_tac": {
+    "tong:bang_chung": "y văn nền là PMID thật, đã tra sổ đăng ký",
+    "dct:gia_tri": "câu hỏi rõ, đo được, có khoảng trống",
+    "nt:khoa_hoc": "PICO/PECO và kết cục chính đúng loại câu hỏi"
+   }
+  },
+  "run_g10_assemble.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-g10",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T1"],
+   "viec": "lắp đề cương thống nhất + manifest gói phát hành",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["tham-dinh-dau-ra", "binh-duyet"],
+   "chot_kiem": ["tools/g10_quality_gate.py", "tests/test_g10_assemble.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "chỉ lắp từ cổng đã đạt theo mục đích phát hành",
+    "nt:trung_thuc": "đề cương dựng từ quyết định đã chốt",
+    "nt:tai_lap": "manifest băm mọi tệp của gói"
+   }
+  },
+  "run_g1_auto.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thiet-ke-nghien-cuu",
+   "cong": ["G1"],
+   "nhiem_vu": ["G1-T1"],
+   "viec": "tự động hoá G1: thiết kế + đề cương lõi + SAP khung",
+   "nguoi_dung_phu": ["ke-hoach-trien-khai", "cong-cu-do-luong", "thu-thu-tai-lieu"],
+   "nguoi_kiem": ["co-mau-nghien-cuu"],
+   "chot_kiem": ["tools/g1_quality_gate.py", "tests/test_g1_quality_gate.py"],
+   "nguyen_tac": {
+    "nt:khoa_hoc": "thiết kế hợp loại câu hỏi",
+    "dct:phuong_phap": "đề cương lõi đủ khối theo thiết kế",
+    "nt:khach_quan": "kiểm soát sai lệch khai ngay từ thiết kế"
+   }
+  },
+  "run_g2_auto.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dao-duc-dang-ky",
+   "cong": ["G2"],
+   "nhiem_vu": ["G2-T1"],
+   "viec": "tự động hoá G2: hồ sơ Hội đồng Đạo đức, ICF, đăng ký, DMP",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["an-toan-nghien-cuu", "quan-ly-du-lieu"],
+   "chot_kiem": ["tools/g2_quality_gate.py", "tests/test_g2_quality_gate.py"],
+   "nguyen_tac": {
+    "tong:dao_duc": "hồ sơ đủ để Hội đồng thẩm định trước thu thập",
+    "nt:ton_trong": "ICF nêu quyền từ chối/rút lui, bảo vệ dữ liệu cá nhân",
+    "nt:dao_duc": "nguy cơ–lợi ích và đường thẩm định đúng TT43/2024"
+   }
+  },
+  "run_g3_auto.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "co-mau-nghien-cuu",
+   "cong": ["G3"],
+   "nhiem_vu": ["G3-T1"],
+   "viec": "tính cỡ mẫu/lực mẫu theo thiết kế với nguồn tham số",
+   "nguoi_dung_phu": ["thiet-ke-nghien-cuu"],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tools/g3_quality_gate.py", "tests/test_g3_quality_gate.py"],
+   "nguyen_tac": {
+    "tong:bang_chung": "hiệu ứng/tỷ lệ có nguồn PMID/DOI/MCID, không bịa",
+    "nt:tai_lap": "khai đủ tham số để người khác tính lại",
+    "dct:phuong_phap": "công thức đúng thiết kế"
+   }
+  },
+  "run_g4_auto.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thiet-ke-nghien-cuu",
+   "cong": ["G4"],
+   "nhiem_vu": ["G4-T1"],
+   "viec": "SAP final + chứng chỉ khoá SAP",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke", "co-mau-nghien-cuu"],
+   "chot_kiem": ["tools/g4_quality_gate.py", "tests/test_g4_quality_gate.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "SAP khoá trước dữ liệu, kết cục chính không đổi",
+    "tong:dat_chuan": "SAP chỉ khoá khi §1/§2/§4/§5/§9/§10 hết ô trống",
+    "dct:kiem_chung": "phân tích định trước, tái lập được"
+   }
+  },
+  "run_g5_auto.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G5"],
+   "nhiem_vu": ["G5-T1"],
+   "viec": "hạ tầng quản trị dữ liệu: DMP, từ điển REDCap, script QC",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke", "dao-duc-dang-ky"],
+   "chot_kiem": ["tools/g5_quality_gate.py", "tests/test_g5_quality_gate.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "luật kiểm dữ liệu, nhật ký truy vấn (ALCOA+)",
+    "nt:ton_trong": "khử định danh trước khoá",
+    "nt:tai_lap": "gói tái lặp có phiên bản"
+   }
+  },
+  "run_g6_auto.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "G6: sinh script phân tích theo SAP đã khoá",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["thiet-ke-nghien-cuu", "dien-giai-ket-qua"],
+   "chot_kiem": ["tools/g6_quality_gate.py", "tests/test_g6_quality_gate_20260815.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "script bám đúng SAP đã khoá",
+    "nt:tai_lap": "script và môi trường có phiên bản"
+   }
+  },
+  "run_g7_auto.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7"],
+   "nhiem_vu": ["G7-T1"],
+   "viec": "bản thảo IMRAD từ checkpoint G0–G6",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["dien-giai-ket-qua", "kiem-chung-trich-dan"],
+   "chot_kiem": ["tools/g7_quality_gate.py", "tests/test_g7_quality_gate_20260728.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "mọi khẳng định khớp kết quả G6",
+    "nt:khoa_hoc": "đúng chuẩn báo cáo theo thiết kế"
+   }
+  },
+  "run_g8_auto.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "binh-duyet",
+   "cong": ["G8"],
+   "nhiem_vu": ["G8-T1"],
+   "viec": "bảng rà trước nộp A9 (bình duyệt đối kháng)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["phan-tich-thong-ke", "kiem-chung-trich-dan"],
+   "chot_kiem": ["tools/g8_quality_gate.py", "tests/test_g8_quality_gate.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "bình duyệt đối kháng trước nộp",
+    "tong:kiem_chung": "rà toàn pipeline trước khi nộp"
+   }
+  },
+  "run_g9_auto.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "nop-bai-phan-hoi",
+   "cong": ["G9"],
+   "nhiem_vu": ["G9-T1"],
+   "viec": "liêm chính tác giả: ICMJE/CRediT, COI, khai AI, chia sẻ dữ liệu",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["binh-duyet", "kiem-chung-trich-dan"],
+   "chot_kiem": ["tools/g9_quality_gate.py", "tests/test_g9_quality_gate.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "khai xung đột lợi ích, khai AI, chia sẻ dữ liệu",
+    "tong:dao_duc": "tác giả đủ 4 tiêu chí ICMJE"
+   }
+  },
+  "run_pipeline.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "nhạc trưởng tự động chuỗi G0→G10, dừng ở cổng cứng",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_run_pipeline_trung_thuc_20261114.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "dừng ở 6 cổng cứng cần người ký",
+    "nt:tai_lap": "chạy lại cùng đầu vào cho cùng chuỗi tệp",
+    "nt:kiem_soat_cl": "tự sửa chữa có kiểm, không vượt cổng"
+   }
+  },
+  "run_pipeline_integrated.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "đã bị thay thế bởi run_g10_assemble.py (rà 15/07/2026), không thuộc chuỗi đang chạy"
+  },
+  "run_stats_analysis.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "phân tích thống kê từ dữ liệu thật đã khoá",
+   "nguoi_dung_phu": ["quan-ly-du-lieu"],
+   "nguoi_kiem": ["thiet-ke-nghien-cuu"],
+   "chot_kiem": ["tools/g6_quality_gate.py", "tests/test_golden.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "cùng dữ liệu cho cùng kết quả",
+    "nt:khach_quan": "chỉ chạy phân tích có trong SAP"
+   }
+  },
+  "scaffold_research_project.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "khởi tạo cấu trúc thư mục chuẩn cho đề tài mới",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/verify_exports_integrity.py", "tests/test_scaffold_research_project_workflow_20260906_vong32_overwrite_on_rerun.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "mọi đề tài cùng một bố cục tệp",
+    "nt:kiem_soat_cl": "không ghi đè tệp đã có"
+   }
+  },
+  "secure_permissions.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G5"],
+   "nhiem_vu": ["G5-T1"],
+   "viec": "khoá quyền chỉ-chủ cho tệp nhạy cảm (PII, bảng ánh xạ, khoá ký)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/pseudonymize_research_dataset.py", "tests/test_pseudonymize_research_dataset.py"],
+   "nguyen_tac": {
+    "nt:ton_trong": "tệp PII và bảng ánh xạ không ai khác đọc được"
+   }
+  },
+  "setup_gate_approval_key.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "thiết lập khoá ký theo vai — chỉ bác sĩ tự chạy, agent không chạy, không đọc khoá",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/approve_gate.py", "tests/test_setup_gate_approval_key_workflow_20260906_vong30_missing_data_manager_role.py"],
+   "nguyen_tac": {
+    "tong:dao_duc": "khoá riêng chỉ người giữ vai có thẩm quyền, agent không chạm",
+    "nt:trung_thuc": "chữ ký theo vai chứng minh được ai đã ký"
+   }
+  },
+  "sinh_chuan_bao_cao_items.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7", "G10"],
+   "viec": "sinh chuan_bao_cao_items.py từ XML Europe PMC",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_k17_chuan_them_20261121.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "sinh lại tất định từ nguồn chính thức"
+   }
+  },
+  "sinh_de_cuong_nop_hoi_dong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T4"],
+   "viec": "sinh đề cương nộp Hội đồng từ quyết định đã chốt",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_sinh_de_cuong_nop_hoi_dong_20261116.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "dựng từ quyết định đã chốt, không bịa",
+    "nt:tai_lap": "sinh lại cùng nội dung khi đầu vào không đổi"
+   }
+  },
+  "sinh_du_lieu_redcap.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "quan-ly-du-lieu",
+   "cong": ["G3", "G5"],
+   "nhiem_vu": ["G3-T3"],
+   "viec": "sinh dữ liệu mô phỏng theo từ điển REDCap để thử luật kiểm",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/dien_tap_spss_r.py", "tests/test_gia_lap_chan_thuc_20261117.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "thử logic nhánh, calc, khoảng hợp lệ trước thu thập",
+    "nt:trung_thuc": "dữ liệu mô phỏng có nhãn, không lẫn dữ liệu thật"
+   }
+  },
+  "sinh_tai_lieu_trach_nhiem.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "sinh khối trách nhiệm trong tệp agent từ hoi_dong_cong",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/tieu_chuan_hoan_thien.py", "tests/test_sinh_tai_lieu_trach_nhiem_20261010.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "khối trách nhiệm sinh từ một nguồn, không chép tay",
+    "nt:kiem_soat_cl": "lệch bản sinh bị A3 bắt"
+   }
+  },
+  "skill_standards.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thiet-ke-nghien-cuu",
+   "cong": ["G1"],
+   "nhiem_vu": ["G1-T1"],
+   "viec": "canon chuẩn của skill nghiên cứu (thiết kế, khoá phần đề cương)",
+   "nguoi_dung_phu": ["viet-ban-thao", "binh-duyet"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/check_de_cuong.py", "tests/test_skill_standards.py"],
+   "nguyen_tac": {
+    "nt:khoa_hoc": "chuẩn theo thiết kế là nguồn duy nhất",
+    "tong:dat_chuan": "chuẩn định trước, không sửa theo đề tài"
+   }
+  },
+  "spss_chay_nen.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "trình chạy nền SPSS do Python đi kèm SPSS thực thi",
+   "nguoi_dung_phu": ["quan-ly-du-lieu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_cheo_g6.py", "tests/test_cau_noi_spss_20261114.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "chạy cùng cú pháp trên phần mềm thứ hai",
+    "tong:kiem_chung": "kết quả phần mềm thứ hai đối chiếu được"
+   }
+  },
+  "stakeholder_review_audit.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "xem trạng thái phê duyệt các vai G2/G4/G8/G9 đối chiếu chữ ký",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_stakeholder_review_audit.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "đối chiếu chữ ký và vai trong sổ cái, chỉ đọc"
+   }
+  },
+  "study_readiness.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "đề tài đang ở đâu, việc chưa làm, quyết định treo, chỗ trống",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/cong_song.py", "tests/test_study_readiness_g0_quality_visibility.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "cố ý bi quan, không bao giờ in «sẵn sàng» khi còn chỗ trống",
+    "nt:kiem_soat_cl": "liệt kê đủ việc treo theo cổng"
+   }
+  },
+  "tai_retraction_watch.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G7", "G9", "G10"],
+   "nhiem_vu": ["G7-T3"],
+   "viec": "tải danh mục Retraction Watch ngoại tuyến (tầng 1 chuỗi rút bài)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/check_citation_retraction.py", "tests/test_tai_retraction_watch_guong_gitlab_20260924.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "nền rút bài ngoại tuyến, không bao giờ tự nói «ok»"
+   }
+  },
+  "ten_de_tai.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "cau-hoi-nghien-cuu",
+   "cong": ["G0"],
+   "nhiem_vu": ["G0-T1"],
+   "viec": "tên đề tài chính thức dùng chung mọi bộ sinh văn bản",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/nhat_quan_xuyen_cong.py", "tests/test_g10_hoan_thien_20261005.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "một tên chính thức ở mọi hồ sơ trình các cơ quan"
+   }
+  },
+  "test_quarterly_superseded_so_pmid_hong_20260922.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "test của scripts/quarterly_superseded.sh (giám sát chứng cứ) đặt nhầm trong tools/"
+  },
+  "tham_dinh_toan_van.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G7", "G10"],
+   "nhiem_vu": ["G10-T2"],
+   "viec": "đối chiếu số liệu tường thuật với toàn văn OA",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_so_lieu_toan_van.py", "tests/test_tham_dinh_toan_van_workflow_20260905_vong25_malformed_filename_crash.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "số liệu tường thuật khớp toàn văn"
+   }
+  },
+  "thu_dau_cuoi_cong_nghien_cuu.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "canary đầu–cuối cho chuỗi cổng nghiên cứu",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_thu_dau_cuoi_cong_nghien_cuu.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "chứng minh cổng bắt được lỗi khi gói đi qua",
+    "nt:kiem_soat_cl": "chạy ngoại tuyến mỗi lần CI"
+   }
+  },
+  "tieu_chi_ban_thao.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7"],
+   "nhiem_vu": ["G7-T1"],
+   "viec": "K18 — đối chiếu bản thảo với từng mục chuẩn báo cáo theo thiết kế",
+   "nguoi_dung_phu": ["dieu-phoi-g7"],
+   "nguoi_kiem": ["binh-duyet"],
+   "chot_kiem": ["K18", "tools/kiem_ban_thao_tap_chi.py", "tests/test_k18_prisma_2020_20261122.py"],
+   "nguyen_tac": {
+    "nt:khoa_hoc": "đủ từng mục chuẩn báo cáo (CONSORT 2025/STROBE/PRISMA 2020…) theo thiết kế",
+    "tong:dat_chuan": "mục chưa đo được không bao giờ báo đạt",
+    "nt:trung_thuc": "mục phải có trong thân bài, không tính bảng kiểm tự đánh dấu"
+   }
+  },
+  "tieu_chi_chuan_de_cuong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T4"],
+   "viec": "tiêu chí từng mục của 12 chuẩn ngoài STROBE/RECORD/CROSS cho K17",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["K17", "tests/test_k17_chuan_them_20261121.py"],
+   "nguyen_tac": {
+    "nt:khoa_hoc": "tiêu chí bám nguyên văn chuẩn gốc của từng thiết kế",
+    "nt:trung_thuc": "chuẩn chưa đối chiếu bảng gốc chỉ cảnh báo, không giả đạt"
+   }
+  },
+  "tieu_chuan_hoan_thien.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "tiêu chuẩn hoàn thiện agent, điều phối và sổ phân công công cụ (C1–C6)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_tieu_chuan_hoan_thien_20261010.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "agent/điều phối/công cụ chỉ ĐẠT khi mọi hạng mục định trước đạt",
+    "nt:kiem_soat_cl": "chốt không lùi trong CI"
+   }
+  },
+  "toan_van_guideline.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "đọc toàn văn guideline cho agent tra cứu lâm sàng"
+  },
+  "toan_van_trich_dan.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "kiem-chung-trich-dan",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T2"],
+   "viec": "chốt toàn văn cho mọi trích dẫn đề tài (G10-AUTO-12)",
+   "nguoi_dung_phu": ["thu-thu-tai-lieu"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g10_quality_gate.py", "tests/test_toan_van_trich_dan_20261118.py"],
+   "nguyen_tac": {
+    "tong:bang_chung": "mọi trích dẫn có toàn văn đã đọc"
+   }
+  },
+  "tra_thuoc_quoc_te.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "tra thuốc quốc tế cho ke-don-an-toan (tuyến lâm sàng)"
+  },
+  "trial_registry.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "khoang-trong-nghien-cuu",
+   "cong": ["G0", "G2"],
+   "nhiem_vu": ["G0-T4"],
+   "viec": "tra sổ đăng ký ClinicalTrials.gov (G0 + G2)",
+   "nguoi_dung_phu": ["dao-duc-dang-ky"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g0_quality_gate.py", "tests/test_trial_registry_bo_the_pubmed_20261014.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "phát hiện đề tài trùng lặp đã đăng ký",
+    "dct:gia_tri": "tính mới được kiểm trên sổ đăng ký thật"
+   }
+  },
+  "trinh_ky_cong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["G2", "G8"],
+   "viec": "trợ lý trình ký G2 (Hội đồng Đạo đức) và G8 (phản biện độc lập)",
+   "nguoi_dung_phu": ["dao-duc-dang-ky", "binh-duyet"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/gate_contract.py", "tests/test_trinh_ky_cong_20260901.py"],
+   "nguyen_tac": {
+    "tong:dao_duc": "người thật xác nhận; agent không ký thay",
+    "nt:khach_quan": "phản biện G8 phải là người độc lập"
+   }
+  },
+  "validate_knowledge_packs.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "chứng cứ lâm sàng — kiểm schema knowledge pack"
+  },
+  "ve_bieu_do.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "cửa vào duy nhất cho biểu đồ kết quả: danh mục hình theo thiết kế + kiểm thư mục hình",
+   "nguoi_dung_phu": ["cong-cu-do-luong", "kinh-te-y-te", "mo-hinh-tien-luong", "viet-ban-thao"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_ve_bieu_do_20261121.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "danh mục hình theo thiết kế, kiểm được",
+    "nt:kiem_soat_cl": "hình lỗi làm đỏ giả lập"
+   }
+  },
+  "verify_clinical_evidence_agent_standards.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "chuẩn agent của hệ cập nhật chứng cứ lâm sàng"
+  },
+  "verify_clinical_production_control_plane.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "control-plane sản xuất lâm sàng"
+  },
+  "verify_direct_clinical_practice_readiness.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "cổng sẵn sàng áp dụng lâm sàng trực tiếp"
+  },
+  "verify_evidence_surveillance_deployment.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "cổng triển khai giám sát chứng cứ ngoại trú"
+  },
+  "verify_exports_integrity.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "kiểm liêm chính nội dung tài liệu trong exports/ (pre-commit)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tests/test_verify_exports_integrity_20260927_pmid_nhan_dem.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "bắt placeholder bị sửa nhầm và nội dung giả trước khi commit",
+    "nt:kiem_soat_cl": "chạy ở mọi commit"
+   }
+  },
+  "verify_personal_production_hardening.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "hardening sản xuất cho sử dụng cá nhân (hạ tầng)"
+  },
+  "vn_prose_style.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7", "G10"],
+   "viec": "chuẩn hoá văn phong tiếng Việt của tài liệu hệ sinh",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_vn_prose_style_workflow_20260906_vong33_placeholder_after_operator.py"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "văn phong nhất quán, đo lại được ở bộ kiểm đề cương"
+   }
+  },
+  "watch_restart_ebm_tunnel.sh": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "hạ tầng tunnel MCP"
+  },
+  "xuat_docx_chuan.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7", "G10"],
+   "viec": "xuất .docx chuẩn từ artifact .md hiện có, không sinh lại nội dung",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_xuat_docx_chuan_20260902.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "chỉ đổi trình bày, không đổi nội dung đã duyệt"
+   }
+  },
+  "xuat_phieu_ky_thang_diem.py": {
+   "pham_vi": "ngoai_pham_vi",
+   "ly_do": "phiếu ký xác nhận chuyên khoa cho thang điểm lâm sàng"
+  },
+  "xung_dot_loi_ich.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dao-duc-dang-ky",
+   "cong": ["G2", "G9"],
+   "nhiem_vu": ["G2-T1"],
+   "viec": "xung đột lợi ích, tài trợ, quản trị dữ liệu của hồ sơ đạo đức",
+   "nguoi_dung_phu": ["nop-bai-phan-hoi"],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/g2_quality_gate.py", "tests/test_g2_coi_quan_tri_du_lieu_20261122.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "khai xung đột cơ cấu, không tích thay người ký",
+    "dct:dao_duc": "kế hoạch quản lý xung đột lợi ích"
+   }
+  }
+ }
+}

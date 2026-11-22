@@ -542,6 +542,31 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/bieu_do_chan_doan.py` (chủ) — biểu đồ chẩn đoán và mô hình dự báo (STARD/TRIPOD+AI); chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: hợp lệ–tin cậy · trung thực–minh bạch.
+- Công cụ `tools/bieu_do_chung.py` (chủ) — nền trình bày chung cho mọi biểu đồ kết quả; chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: kiểm soát chất lượng.
+- Công cụ `tools/g6_trong_so_survey.py` (chủ) — script R trọng số hậu phân tầng + phân tích giới hạn theo SAP; chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: khách quan · tái lập.
+- Công cụ `tools/hinh_g6.py` (chủ) — tự sinh biểu đồ kết quả G6 theo đặc tả SAP + dữ liệu đã khoá; chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: trung thực–minh bạch · tái lập.
+- Công cụ `tools/kiem_cheo_g6.py` (chủ) — kiểm chéo G6 bằng phần mềm thứ hai (SPSS và R); chốt kiểm `tests/test_kiem_cheo_g6_20261114.py`; nguyên tắc: kiểm chứng khách quan · tái lập.
+- Công cụ `tools/normal_dist.py` (chủ) — CDF chuẩn và nghịch đảo dùng chung cho mọi máy tính thống kê; chốt kiểm `tests/test_normal_dist.py`; nguyên tắc: tái lập.
+- Công cụ `tools/phan_tich_sap_bo_sung.py` (chủ) — chạy bằng máy các phân tích SAP trước đây ghi «chờ làm tay»; chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: khách quan · tái lập.
+- Công cụ `tools/phan_tich_sap_bo_sung_r.py` (chủ) — mã R của các phân tích SAP bổ sung (thứ tự, spline…); chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: tái lập · kiểm chứng khách quan.
+- Công cụ `tools/spss_chay_nen.py` (chủ) — trình chạy nền SPSS do Python đi kèm SPSS thực thi; chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: tái lập · kiểm chứng khách quan.
+- Công cụ `tools/ve_bieu_do.py` (chủ) — cửa vào duy nhất cho biểu đồ kết quả: danh mục hình theo thiết kế + kiểm thư mục hình; chốt kiểm `tests/test_ve_bieu_do_20261121.py`; nguyên tắc: tái lập · kiểm soát chất lượng.
+- Công cụ `tools/bieu_do_gop.py` (kiểm) — đầu ra của `meta-phan-tich`: biểu đồ phân tích gộp (forest, funnel, SROC); chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: trung thực–minh bạch · tái lập.
+- Công cụ `tools/clean_research_dataset.py` (kiểm) — đầu ra của `quan-ly-du-lieu`: làm sạch dữ liệu trên bản sao, có nhật ký truy vấn; chốt kiểm `tools/g5_quality_gate.py`; nguyên tắc: trung thực–minh bạch · kiểm soát chất lượng.
+- Công cụ `tools/dien_giai_ket_qua.py` (kiểm) — đầu ra của `dien-giai-ket-qua`: hợp đồng bản diễn giải kết quả (G6-T3); chốt kiểm `tools/hoi_dong_cong.py`; nguyên tắc: khách quan · trung thực–minh bạch.
+- Công cụ `tools/doi_chieu_sai_lech_sap.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: đối chiếu biện pháp kiểm soát sai lệch G1 ↔ phân tích SAP G4; chốt kiểm `tools/g4_quality_gate.py`; nguyên tắc: khách quan · phương pháp phù hợp.
+- Công cụ `tools/interim_analysis_calc.py` (kiểm) — đầu ra của `an-toan-nghien-cuu`: máy tính phân tích giữa kỳ (hàm chi tiêu alpha); chốt kiểm `tools/hoi_dong_cong.py`; nguyên tắc: đạo đức · khách quan.
+- Công cụ `tools/lock_analysis_dataset.py` (kiểm) — đầu ra của `quan-ly-du-lieu`: khoá bộ dữ liệu phân tích có audit trail, không PII; chốt kiểm `tools/g5_quality_gate.py`; nguyên tắc: đạt chuẩn định trước · khách quan.
+- Công cụ `tools/meta_analysis_calc.py` (kiểm) — đầu ra của `meta-phan-tich`: máy tính phân tích gộp (cố định/ngẫu nhiên, I², Egger); chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: tái lập · khoa học.
+- Công cụ `tools/run_g3_auto.py` (kiểm) — đầu ra của `co-mau-nghien-cuu`: tính cỡ mẫu/lực mẫu theo thiết kế với nguồn tham số; chốt kiểm `tools/g3_quality_gate.py`; nguyên tắc: bằng chứng · tái lập · phương pháp phù hợp.
+- Công cụ `tools/run_g4_auto.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: SAP final + chứng chỉ khoá SAP; chốt kiểm `tools/g4_quality_gate.py`; nguyên tắc: khách quan · đạt chuẩn định trước · kết quả kiểm chứng được.
+- Công cụ `tools/run_g5_auto.py` (kiểm) — đầu ra của `quan-ly-du-lieu`: hạ tầng quản trị dữ liệu: DMP, từ điển REDCap, script QC; chốt kiểm `tools/g5_quality_gate.py`; nguyên tắc: kiểm soát chất lượng · tôn trọng đối tượng · tái lập.
+- Công cụ `tools/run_g8_auto.py` (kiểm) — đầu ra của `binh-duyet`: bảng rà trước nộp A9 (bình duyệt đối kháng); chốt kiểm `tools/g8_quality_gate.py`; nguyên tắc: khách quan · kiểm chứng khách quan.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

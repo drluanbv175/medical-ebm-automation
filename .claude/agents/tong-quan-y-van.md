@@ -125,6 +125,14 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/doc_toan_van.py` (chủ) — tìm cụm/số trong kho toàn văn JATS của đề tài; chốt kiểm `tools/tham_dinh_toan_van.py`; nguyên tắc: bằng chứng.
+- Công cụ `tools/kiem_tong_quan_g0_api.py` (chủ) — kiểm tổng quan G0 (G0-T3/T4) bằng Claude API; chốt kiểm `tools/duyet_kiem_may_api.py`; nguyên tắc: kiểm chứng khách quan.
+- Công cụ `tools/g0_quality_gate.py` (dùng phụ) — bộ chấm cổng G0 đo đầu ra nhiệm vụ G0-T3 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g0`); nguyên tắc: đạt chuẩn định trước · câu hỏi giá trị.
+- Công cụ `tools/g1_quality_gate.py` (dùng phụ) — bộ chấm cổng G1 đo đầu ra nhiệm vụ G1-T2 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g1`); nguyên tắc: đạt chuẩn định trước · phương pháp phù hợp.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

@@ -432,6 +432,17 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/dien_tap_spss_r.py` (chủ) — diễn tập khai báo biến ở SPSS và R trước thu thập; chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: tái lập · kiểm soát chất lượng.
+- Công cụ `tools/pii_van_ban.py` (chủ) — bộ dò PII dùng chung cho văn bản và giá trị trường của hồ sơ; chốt kiểm `tools/verify_exports_integrity.py`; nguyên tắc: tôn trọng đối tượng · đạo đức.
+- Công cụ `tools/secure_permissions.py` (chủ) — khoá quyền chỉ-chủ cho tệp nhạy cảm (PII, bảng ánh xạ, khoá ký); chốt kiểm `tools/pseudonymize_research_dataset.py`; nguyên tắc: tôn trọng đối tượng.
+- Công cụ `tools/sinh_du_lieu_redcap.py` (chủ) — sinh dữ liệu mô phỏng theo từ điển REDCap để thử luật kiểm; chốt kiểm `tools/dien_tap_spss_r.py`; nguyên tắc: kiểm soát chất lượng · trung thực–minh bạch.
+- Công cụ `tools/bang_bien_g3.py` (kiểm) — đầu ra của `bien-so-nghien-cuu`: bảng bộ biến G3 cho PI duyệt; chốt kiểm `tools/hoi_dong_cong.py`; nguyên tắc: hợp lệ–tin cậy · trung thực–minh bạch.
+- Công cụ `tools/kiem_khoa_phan_tich.py` (kiểm) — đầu ra của `phan-tich-thong-ke`: chốt khoá dữ liệu trước khi chạy phân tích; chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: đạt chuẩn định trước · khách quan.
+- Công cụ `tools/run_g2_auto.py` (kiểm) — đầu ra của `dao-duc-dang-ky`: tự động hoá G2: hồ sơ Hội đồng Đạo đức, ICF, đăng ký, DMP; chốt kiểm `tools/g2_quality_gate.py`; nguyên tắc: đạo đức · tôn trọng đối tượng.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

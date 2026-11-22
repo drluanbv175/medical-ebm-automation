@@ -333,6 +333,21 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/bao_cao_tong_hop.py` (chủ) — báo cáo tổng hợp kết quả đề tài (hồ sơ nghiệm thu) từ tài liệu đã có; chốt kiểm `K18`; nguyên tắc: trung thực–minh bạch · tái lập · kết quả kiểm chứng được.
+- Công cụ `tools/chuan_bao_cao_items.py` (chủ) — nguyên văn mục chuẩn báo cáo giấy phép CC (sinh tự động); chốt kiểm `tools/sinh_chuan_bao_cao_items.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/chuan_trinh_bay.py` (chủ) — chuẩn trình bày tài liệu nghiên cứu dùng chung mọi cổng; chốt kiểm `tools/xuat_docx_chuan.py`; nguyên tắc: kiểm soát chất lượng.
+- Công cụ `tools/gen_research_docx.py` (chủ) — tạo Word chuẩn cho bộ artifact G0→G9; chốt kiểm `tools/xuat_docx_chuan.py`; nguyên tắc: tái lập.
+- Công cụ `tools/goi_bao_ve_hoi_dong.py` (chủ) — gói bảo vệ đề cương trước Hội đồng (dàn slide + câu hỏi phản biện); chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: trung thực–minh bạch · kiểm soát chất lượng.
+- Công cụ `tools/md2docx_vn.py` (chủ) — chuyển Markdown sang Word theo chuẩn luận văn/đề cương Việt Nam; chốt kiểm `tools/xuat_docx_chuan.py`; nguyên tắc: tái lập.
+- Công cụ `tools/protocol_checklist_items.py` (chủ) — danh mục mục SPIRIT 2025/PRISMA-P 2015 nguyên văn (sinh tự động); chốt kiểm `tools/check_de_cuong.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/sinh_chuan_bao_cao_items.py` (chủ) — sinh chuan_bao_cao_items.py từ XML Europe PMC; chốt kiểm `tests/test_k17_chuan_them_20261121.py`; nguyên tắc: tái lập.
+- Công cụ `tools/tieu_chi_chuan_de_cuong.py` (chủ) — tiêu chí từng mục của 12 chuẩn ngoài STROBE/RECORD/CROSS cho K17; chốt kiểm `K17`; nguyên tắc: khoa học · trung thực–minh bạch.
+- Công cụ `tools/vn_prose_style.py` (chủ) — chuẩn hoá văn phong tiếng Việt của tài liệu hệ sinh; chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: kiểm soát chất lượng.
+- Công cụ `tools/xuat_docx_chuan.py` (chủ) — xuất .docx chuẩn từ artifact .md hiện có, không sinh lại nội dung; chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: trung thực–minh bạch.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

@@ -593,6 +593,14 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/annex2_quality_gate.py` (chủ) — kiểm ICH E6(R3) Annex 2 cho thử nghiệm có yếu tố mới; chốt kiểm `tests/test_annex2_quality_gate_20260902.py`; nguyên tắc: đạo đức · trung thực–minh bạch.
+- Công cụ `tools/ho_so_g2_da_soan.py` (chủ) — nội dung hồ sơ G2 đã soạn để sinh lại đúng bản đang nộp; chốt kiểm `tools/g2_quality_gate.py`; nguyên tắc: tái lập.
+- Công cụ `tools/xung_dot_loi_ich.py` (chủ) — xung đột lợi ích, tài trợ, quản trị dữ liệu của hồ sơ đạo đức; chốt kiểm `tools/g2_quality_gate.py`; nguyên tắc: trung thực–minh bạch · đạo đức.
+- Công cụ `tools/run_g5_auto.py` (kiểm) — đầu ra của `quan-ly-du-lieu`: hạ tầng quản trị dữ liệu: DMP, từ điển REDCap, script QC; chốt kiểm `tools/g5_quality_gate.py`; nguyên tắc: kiểm soát chất lượng · tôn trọng đối tượng · tái lập.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
