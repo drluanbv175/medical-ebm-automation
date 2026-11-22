@@ -410,3 +410,118 @@ def test_gia_lap_thuan_tap_hoi_cuu_da_chot_sai_lech_kem_chieu():
     for ma in ("thuan_tap_song_con", "thuan_tap_mi"):
         sl = G7._sai_lech_chot_g7({}, kb[ma]["pi"]["G1"])
         assert re.search(_mau("RECORD 2015", "19.1")[1].mau, sl, re.IGNORECASE), ma
+
+
+# ───────────────────── Phần mở rộng CONSORT 2010 — không kém hơn (Piaggio 2012) và theo cụm (Campbell 2012) ─────────
+NI_G1 = {"ni_rationale": ("Chọn thiết kế không kém hơn vì tái khám qua điện thoại giảm đi lại và thời gian chờ cho "
+                          "người bệnh"),
+         "ni_constancy": ("Quần thể tương tự thử nghiệm đã xác lập hiệu quả (người tăng huyết áp ngoại trú); nhóm "
+                          "chứng ở đề tài này khác can thiệp của thử nghiệm đó; kết cục tương tự (đạt đích huyết áp); "
+                          "giả thuyết không kém hơn chỉ áp cho kết cục chính")}
+NI_G3 = {"hypothesis_type": "non_inferiority", "margin": 0.10,
+         "margin_justification": "Biên cố định M1/M2: M1 ≈ 22 điểm %, giữ ≥ 50% hiệu ứng ⇒ M2 ≤ 11 điểm %"}
+
+
+def test_mo_rong_khong_kem_hon_chep_loi_khai_g1_g3(tmp_path):
+    d = _meta(tmp_path, {"G1": NI_G1, "G3": NI_G3})
+    k = G7.khoi_chuan_bao_cao_g7(d, STUDY, "rct", None, [])
+    pp3 = "\n".join(k["phuong_phap_3"])
+    assert f"*Lý do chọn thiết kế không kém hơn:* {NI_G1['ni_rationale']}.  " in pp3
+    assert "*Lý do chọn biên không kém hơn:* Biên cố định M1/M2" in "\n".join(k["phuong_phap"])
+    kq18 = TB.doi_chieu_ban_thao(_ban_thao(d, *RCT), "rct", co_so_lieu=True)
+    tt = {r.ma: r for r in kq18["ket_qua"] if r.chuan == "CONSORT NI 2012"}
+    assert {m: tt[m].trang_thai for m in ("2a", "4a", "5", "6a")} == {m: "dat" for m in ("2a", "4a", "5", "6a")}
+    # 2b: vế giả thuyết kèm biên do câu giả thuyết G0 (ô ở bộ dựng thử này); vế lý do chọn biên do dòng G3 trên
+    assert "lý do chọn biên" not in tt["2b"].thieu, tt["2b"].thieu
+    # chưa khai ⇒ ô [CẦN] cùng dòng nhãn, K18 vẫn thiếu (không câu mẫu)
+    d2 = _meta(tmp_path / "rong", {"G3": {"hypothesis_type": "non_inferiority", "margin": 0.10}})
+    tt2 = _tt(_ban_thao(d2, *RCT), "rct", "CONSORT NI 2012")
+    assert {m: tt2[m] for m in ("2a", "4a", "5", "6a")} == {m: "thieu" for m in ("2a", "4a", "5", "6a")}, tt2
+    assert G7.khoi_chuan_bao_cao_g7(_meta(tmp_path / "vt", {"G1": NI_G1}), STUDY, "rct", None, [])["phuong_phap_3"] \
+        == []                                                                       # thử nghiệm vượt trội: không in
+
+
+CUM_G1 = {"cluster_definition": ("Cụm là phòng khám ngoại trú; can thiệp triển khai ở mức cụm, còn mục tiêu và kết cục "
+                                 "chính đánh giá ở mức cá nhân người bệnh"),
+          "cluster_eligibility": ["Phòng khám thuộc chương trình", "Mỗi tháng có ít nhất 8 người đủ tiêu chuẩn"],
+          "cluster_consent": ("Lãnh đạo phòng khám ký đồng ý trước khi ngẫu nhiên hoá cụm; người bệnh ký phiếu đồng ý "
+                              "sau khi phòng khám đã được phân bổ")}
+CUM_G3 = {"icc": 0.05, "cluster_size": 4, "n_clusters": 4, "equal_cluster_sizes": True,
+          "icc_source": "PMID: 15485730 — ICC huyết áp tâm thu 0–0,052; chọn 0,05 (cận trên)"}
+SAP_CUM = ("### §4 PHÂN TÍCH CHÍNH\n\n- **Hiệu chỉnh cụm:** phân tích chính phải tính cấu trúc cụm — Hồi quy Poisson "
+           "với sai số chuẩn theo cụm, phòng khám là cụm\n\n### §5 PHÂN TÍCH ĐA BIẾN\n")
+LUONG_CUM = ("buoc,n,loai,nhanh,ly_do\nĐánh giá đủ tiêu chuẩn,18,chinh,,\nLoại trừ,2,loai,,Không đủ tiêu chuẩn: 2\n"
+             "Phân bổ ngẫu nhiên,16,chinh,,\nĐược phân bổ nhóm can thiệp,8,chinh,Can thiệp,\n"
+             "Nhận can thiệp theo phân bổ,8,chinh,Can thiệp,\nMất theo dõi / ngừng can thiệp,0,loai,Can thiệp,\n"
+             "Đưa vào phân tích,8,chinh,Can thiệp,\nĐược phân bổ nhóm chứng,8,chinh,Chứng,\n"
+             "Nhận can thiệp theo phân bổ,8,chinh,Chứng,\nMất theo dõi / ngừng can thiệp,1,loai,Chứng,Mất liên lạc: 1\n"
+             "Đưa vào phân tích,7,chinh,Chứng,\n")
+G6_CUM = {"hop_le": True, "nguon": "G6_analysis_summary.json", "tom_tat": {
+    "dac_ta_phan_tich": {"group": "nhom"}, "table1": {"n_per_group": {"0": 7, "1": 8}},
+    "icc_cluster": {"cot_cum": "ma_pk", "so_cum": 4, "n": 15, "co_cum_trung_binh": 3.75, "co_cum_min": 3,
+                    "co_cum_max": 4, "icc": 0.0467, "hieu_ung_thiet_ke": 1.14}}}
+MUC_CUM = ("1b", "2b", "3a", "4a", "5", "6a", "7a", "10c", "12a", "13a", "13b", "17a")
+
+
+def _de_tai_cum(d: Path, g1: dict = CUM_G1, sha_lech: bool = False) -> Path:
+    import hashlib
+
+    _meta(d, {"G1": g1, "G3": CUM_G3})
+    _ghi(d / f"G4_A5_SAP_FINAL_{STUDY}.md", SAP_CUM)
+    _ghi(d / f"SO_DO_LUONG_{STUDY}.csv", LUONG_CUM)
+    du_lieu = "nhom,ma_pk,y\n" + "".join(f"{g},{pk},1\n" for g, pk, n in (("1", "A", 4), ("1", "B", 4),
+                                                                         ("0", "C", 4), ("0", "D", 3))
+                                       for _ in range(n))
+    _ghi(d / "05_clean_locked/df.locked.csv", du_lieu)
+    sha = hashlib.sha256((d / "05_clean_locked/df.locked.csv").read_bytes()).hexdigest()
+    _ghi(d / "DATA_LOCK_manifest.json", json.dumps({"locked_dataset_path": "05_clean_locked/df.locked.csv",
+                                                    "sha256": "0" * 64 if sha_lech else sha}))
+    return d
+
+
+def test_mo_rong_cum_chep_g1_g3_sap_g6_du_lieu_khoa_va_so_sang_loc(tmp_path, monkeypatch):
+    monkeypatch.setattr(G7, "doc_tom_tat_g6_hop_le", lambda out_dir: G6_CUM)
+    d = _de_tai_cum(tmp_path)
+    rv = [{"variable": "nhom", "choices": "1, Tin nhắn | 0, Chăm sóc thường quy"}]
+    k = G7.khoi_chuan_bao_cao_g7(d, STUDY, "rct", rv, [])
+    kq = "\n".join(k["ket_qua"])
+    assert ("*Số cụm theo nhóm:* 2 cụm vào nhóm chăm sóc thường quy (7 người) và 2 cụm vào nhóm tin nhắn (8 người) "
+            "được phân bổ và đưa vào phân tích kết cục chính; tổng 4 cụm, n = 15") in kq
+    assert "không cụm nào rút khỏi nghiên cứu (số cụm phân tích/theo kế hoạch đã chốt ở G3: 4/4)" in kq
+    assert "0 người ở nhóm can thiệp và 1 người ở nhóm chứng mất theo dõi" in kq
+    assert "ICC = 0.0467; hiệu ứng thiết kế 1.14" in kq
+    assert ("*Cách tính cấu trúc cụm trong phân tích (SAP §4):* phân tích chính phải tính cấu trúc cụm — Hồi quy "
+            "Poisson với sai số chuẩn theo cụm") in "\n".join(k["phuong_phap"])
+    assert k["tom_tat"][0].startswith("**Clusters:** 4 cụm được phân bổ ngẫu nhiên theo cụm")
+    kq18 = TB.doi_chieu_ban_thao(_ban_thao_cum(d, rv).replace(G7.NHAN_DOI_CHIEU_G6, ""), "rct", co_so_lieu=True)
+    tt = {r.ma: r for r in kq18["ket_qua"] if r.chuan == "CONSORT Cluster 2012"}
+    assert {m: tt[m].trang_thai for m in MUC_CUM} == {m: "dat" for m in MUC_CUM}, \
+        {m: (tt[m].trang_thai, tt[m].thieu) for m in MUC_CUM}
+    assert "đặc điểm nền mức cụm" not in tt["15"].thieu                           # mức cá nhân do Bảng 1 G6 (giả lập)
+
+
+def _ban_thao_cum(d: Path, rv: list) -> str:
+    kw = dict(study=STUDY, topic="Chương trình tin nhắn theo phòng khám: thử nghiệm ngẫu nhiên theo cụm", n_sr=1,
+              n_rct=1, n_guideline=0, research_gaps=["còn thiếu dữ liệu"], pmids=["11111111"], pmid_meta={},
+              design_code="rct", design_primary=RCT[1], reporting_std=RCT[2], irb_number="GL-1/2026",
+              icf_version="1.0", registration="Không đăng ký — không bắt buộc", n_total=16, n_adjusted=16, alpha=0.05,
+              power=0.8, effect_val=None, effect_type="RR", formula_used="", g4_status="LOCKED",
+              g4_lock_date="2026-11-01", target_journal="Tạp chí Y học Việt Nam", word_limit=3500,
+              run_date="2026-11-22",
+              khoi_consort=G7.khoi_consort_bo_sung_g7(d, STUDY, "rct"),
+              khoi_chuan=G7.khoi_chuan_bao_cao_g7(d, STUDY, "rct", rv, []))
+    van, _da = G7.lap_o_da_chot_g7(G7.generate_manuscript(**kw), d, STUDY)
+    return van
+
+
+def test_mo_rong_cum_thieu_du_kien_thi_o_can_khong_so(tmp_path, monkeypatch):
+    """G1 chưa khai cụm ⇒ ô [CẦN]; dữ liệu khoá sai sha256 ⇒ không đếm cụm theo nhóm (không in số cụm/nhóm)."""
+    monkeypatch.setattr(G7, "doc_tom_tat_g6_hop_le", lambda out_dir: G6_CUM)
+    d = _de_tai_cum(tmp_path, g1={}, sha_lech=True)
+    k = G7.khoi_chuan_bao_cao_g7(d, STUDY, "rct", None, [])
+    pp3 = "\n".join(k["phuong_phap_3"])
+    assert pp3.count("[CẦN — ") == 3 and "Cụm là" not in pp3
+    assert "Số cụm theo nhóm" not in "\n".join(k["ket_qua"]) and k["tom_tat"] == []
+    assert G7._cum_theo_nhom_g7(d, "ma_pk", "nhom") == {}
+    tt = _tt(_ban_thao_cum(d, None), "rct", "CONSORT Cluster 2012")
+    assert {m: tt[m] for m in ("3a", "4a", "10c", "13a")} == {m: "thieu" for m in ("3a", "4a", "10c", "13a")}, tt

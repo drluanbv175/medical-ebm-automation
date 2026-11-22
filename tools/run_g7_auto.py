@@ -2392,7 +2392,9 @@ def _sap_tom_tat(out_dir: Path, study: str) -> dict:
     for khoa, so, nhan in (("giua_ky", 13, r"Có phân tích giữa kỳ"), ("quy_tac_dung", 13, r"Quy tắc dừng[^*]*"),
                            ("ton_hai", 15, r"Định nghĩa tổn hại[^*]*"), ("danh_gia_ton_hai", 15, r"Cách đánh giá"),
                            ("phan_tich_ton_hai", 15, r"Cách phân tích tổn hại"),
-                           ("tuan_thu", 15, r"Chiến lược cải thiện và theo dõi tuân thủ")):
+                           ("tuan_thu", 15, r"Chiến lược cải thiện và theo dõi tuân thủ"),
+                           # 22/11/2026 (CONSORT mở rộng cụm mục 12a): cách tính cấu trúc cụm thống kê viên chốt ở §4
+                           ("hieu_chinh_cum", 4, r"Hiệu chỉnh cụm")):
         m = re.search(rf"\*\*{nhan}:\*\*\s*(.+)", muc(so))
         if m and "[CẦN" not in m.group(1).upper():
             ra[khoa] = sach(m.group(1))
@@ -3194,6 +3196,128 @@ def _khoi_kinh_te_g7(out_dir: Path, study: str) -> list:
     return dong
 
 
+def _cum_theo_nhom_g7(out_dir: Path, cot_cum: str, cot_nhom: str) -> dict:
+    """{mã nhóm: số cụm khác nhau} đếm trên bộ dữ liệu ĐÃ KHOÁ (đường dẫn + sha256 của DATA_LOCK_manifest; sha lệch,
+    thiếu cột hay không đọc được ⇒ {}). Chỉ đếm, không tính thống kê — tóm tắt G6 (`icc_cluster`) chỉ ghi tổng số cụm."""
+    import hashlib  # noqa: PLC0415
+
+    try:
+        mf = json.loads((Path(out_dir) / "DATA_LOCK_manifest.json").read_text(encoding="utf-8"))
+        p = Path(out_dir) / str(mf.get("locked_dataset_path") or "")
+        if not p.is_file() or hashlib.sha256(p.read_bytes()).hexdigest() != str(mf.get("sha256") or "").lower():
+            return {}
+        with p.open(encoding="utf-8-sig", newline="") as f:
+            hang = list(csv.DictReader(f))
+    except (OSError, ValueError, csv.Error, TypeError):
+        return {}
+    if not hang or cot_cum not in hang[0] or cot_nhom not in hang[0]:
+        return {}
+    cum: dict = {}
+    for r in hang:
+        g, c = str(r.get(cot_nhom) or "").strip(), str(r.get(cot_cum) or "").strip()
+        if g and c:
+            cum.setdefault(g, set()).add(c)
+    return {g: len(v) for g, v in cum.items()}
+
+
+def _khoi_mo_rong_consort_g7(out_dir: Path, study: str, meta: dict, g1: dict, g3: dict,
+                             redcap_vars: Optional[list]) -> dict:
+    """Phần mở rộng CONSORT 2010 cho thử nghiệm theo cụm (Campbell 2012, PMID 22951546) và không kém hơn (Piaggio 2012,
+    PMID 23268518) — 22/11/2026 (K18 bản thảo áp hai phần mở rộng; giả lập: thử nghiệm cụm thiếu 1b, 2b, 3a, 4a, 5, 6a,
+    7a, 10c, 12a, 13a, 13b, 15, 17a; không kém hơn thiếu 2a, 2b, 4a, 5, 6a). Chép dữ kiện đã chốt: G1 (`cluster_definition`
+    — mức cụm/cá nhân của can thiệp, mục tiêu, kết cục; `cluster_eligibility`; `cluster_consent`; `ni_rationale`;
+    `ni_constancy`), G3 (ICC + nguồn + bất định, số cụm, cỡ cụm; `margin_justification`), SAP §4 (cách tính cấu trúc
+    cụm), tóm tắt G6 hợp lệ (`icc_cluster`: số cụm, cỡ cụm, ICC ước tính), sổ sàng lọc (mất theo dõi mức cá nhân) và
+    số cụm mỗi nhóm đếm trên dữ liệu đã khoá. Trường vắng ⇒ ô [CẦN] cùng dòng nhãn (K18 vẫn báo thiếu). Không phải thử
+    nghiệm cụm/không kém hơn ⇒ mọi khoá rỗng."""
+    ra: dict = {k: [] for k in ("tom_tat", "phuong_phap_3", "phuong_phap", "ket_qua")}
+    khai = lambda k: _gia_tri_chot(g1.get(k)) or _khai_pi_g7(meta, k)  # noqa: E731
+    cum = g3.get("icc") is not None and g3.get("cluster_size") is not None
+    ni = str(g3.get("hypothesis_type") or "").strip() in ("non_inferiority", "equivalence")
+    if ni:
+        ra["phuong_phap_3"] += [
+            _dong_khai("Lý do chọn thiết kế không kém hơn", khai("ni_rationale"),
+                       "lý do dùng thiết kế không kém hơn/tương đương (lợi thế của can thiệp mới)"), "",
+            _dong_khai("Tương đồng với thử nghiệm đã xác lập hiệu quả của nhóm chứng", khai("ni_constancy"),
+                       "quần thể, điều trị nhóm chứng và kết cục so với thử nghiệm đã xác lập hiệu quả; kết cục nào "
+                       "kiểm định không kém hơn"), ""]
+        ra["phuong_phap"] += [_dong_khai("Lý do chọn biên không kém hơn", _gia_tri_chot(g3.get("margin_justification")),
+                                         "biên Δ được chọn thế nào (hiệu ứng đã xác lập, phần hiệu ứng giữ lại)"), ""]
+    if not cum:
+        return ra
+    tc = g1.get("cluster_eligibility")
+    tc = "; ".join(_gia_tri_chot(x).rstrip(".") for x in tc if _gia_tri_chot(x)) if isinstance(tc, list) else \
+        _gia_tri_chot(tc)
+    ra["phuong_phap_3"] += [
+        _dong_khai("Định nghĩa cụm và mức áp dụng", khai("cluster_definition"),
+                   "cụm là gì; can thiệp, mục tiêu và kết cục ở mức cụm hay mức cá nhân"), "",
+        _dong_khai("Tiêu chuẩn chọn cụm", tc, "tiêu chuẩn chọn cụm (phòng khám/cơ sở) vào nghiên cứu"), "",
+        _dong_khai("Đồng ý tham gia ở mức cụm và mức cá nhân", khai("cluster_consent"),
+                   "xin đồng ý từ đại diện cụm và/hoặc từng người, trước hay sau khi phân bổ cụm"), ""]
+    nguon_icc = _gia_tri_chot(g3.get("icc_source"))
+    deu = g3.get("equal_cluster_sizes")
+    co = (f"ICC = {_so_g6(g3['icc'])}" + (f" theo {nguon_icc.rstrip('.')}" if nguon_icc else "")
+          + (f"; {g3['n_clusters']} cụm" if isinstance(g3.get("n_clusters"), int) else "")
+          + f", {_so_g6(g3['cluster_size'])} người mỗi cụm"
+          + ("; cỡ cụm đều" if deu is True else "; cỡ cụm không đều" if deu is False else ""))
+    sap = _sap_tom_tat(out_dir, study)
+    ra["phuong_phap"] += [
+        _dong_khai("Hệ số tương quan nội cụm dùng tính cỡ mẫu", co if nguon_icc else "",
+                   "ICC giả định kèm nguồn và khoảng bất định, số cụm, cỡ cụm đều hay không đều"), "",
+        _dong_khai("Cách tính cấu trúc cụm trong phân tích (SAP §4)", sap.get("hieu_chinh_cum", ""),
+                   "cách tính cấu trúc cụm trong phân tích chính (mô hình hiệu ứng hỗn hợp, GEE, sai số chuẩn theo "
+                   "cụm) — khai ở SAP §4"), ""]
+    # ── kết quả: tóm tắt G6 hợp lệ + dữ liệu đã khoá + sổ sàng lọc ──
+    g6 = doc_tom_tat_g6_hop_le(out_dir)
+    tt = g6.get("tom_tat") if g6.get("hop_le") and isinstance(g6.get("tom_tat"), dict) else {}
+    ic = tt.get("icc_cluster") if isinstance(tt.get("icc_cluster"), dict) else {}
+    nhom = str(((tt.get("dac_ta_phan_tich") or {}) if isinstance(tt.get("dac_ta_phan_tich"), dict) else {})
+               .get("group") or "")
+    if not (isinstance(ic.get("so_cum"), int) and ic.get("cot_cum") and nhom):
+        return ra
+    N = NHAN_DOI_CHIEU_G6
+    nhan = nhan_nhom_bang1(tt, redcap_vars)
+    n_nhom = ((tt.get("table1") or {}).get("n_per_group") or {}) if isinstance(tt.get("table1"), dict) else {}
+    dem = _cum_theo_nhom_g7(out_dir, str(ic["cot_cum"]), nhom)
+    ten = lambda g: f"nhóm {_ha_chu_dau(nhan[g])}" if g in nhan else f"nhóm `{g}`"  # noqa: E731
+    so_cum_nhom = {g: dem.get(_ma_nhom(g)) or dem.get(str(g)) for g in n_nhom}
+    theo_nhom = [f"{so_cum_nhom[g]} cụm vào {ten(g)} ({n} người)" for g, n in n_nhom.items() if so_cum_nhom[g]]
+    kq = []
+    if theo_nhom and len(theo_nhom) == len(n_nhom) and sum(dem.values()) == ic["so_cum"]:
+        kq.append(f"*Số cụm theo nhóm:* {_noi_va(theo_nhom)} được phân bổ và đưa vào phân tích kết cục chính; tổng "
+                  f"{ic['so_cum']} cụm, n = {_so_g6(ic.get('n'))} {N}  ")
+    ke_hoach = g3.get("n_clusters") if isinstance(g3.get("n_clusters"), int) else None
+    # câu mất mức cụm không viết «<số> cụm» trước tên nhóm (không làm bằng chứng giả cho «số cụm theo nhóm» — 13a)
+    mat_cum = (("không cụm nào rút khỏi nghiên cứu" if ke_hoach == ic["so_cum"] else
+                f"số cụm theo kế hoạch không có trong dữ liệu phân tích: {ke_hoach - ic['so_cum']}")
+               + f" (số cụm phân tích/theo kế hoạch đã chốt ở G3: {ic['so_cum']}/{ke_hoach})") \
+        if ke_hoach is not None and ke_hoach >= ic["so_cum"] else ""
+    mat_nguoi = []
+    for t, buoc in ((doc_so_do_luong_g7(out_dir, study) or {}).get("nhanh") or {}).items():
+        b = next((x for x in buoc if t and x["loai"] == "loai" and x["buoc"].casefold().startswith("mất theo dõi")),
+                 None)
+        if b is not None:
+            mat_nguoi.append(f"{b['n']} người ở nhóm {_ha_chu_dau(t)}")
+    if mat_cum and mat_nguoi:
+        kq.append(f"*Mất và loại ở mức cụm và mức cá nhân:* {mat_cum}; mức cá nhân: {_noi_va(mat_nguoi)} mất theo dõi "
+                  "hoặc ngừng can thiệp (sổ sàng lọc, lý do ở sơ đồ luồng)  ")
+    if all(isinstance(ic.get(k), (int, float)) for k in ("co_cum_trung_binh", "co_cum_min", "co_cum_max")):
+        kq.append(f"*Đặc điểm nền ở mức cụm:* cỡ cụm trung bình {_so_g6(ic['co_cum_trung_binh'])} người (nhỏ nhất "
+                  f"{_so_g6(ic['co_cum_min'])}, lớn nhất {_so_g6(ic['co_cum_max'])}) {N}  ")
+    if isinstance(ic.get("icc"), (int, float)):
+        kq.append(f"*Hệ số tương quan nội cụm ước tính cho kết cục chính:* ICC = {_so_g6(ic['icc'])}"
+                  + (f"; hiệu ứng thiết kế {_so_g6(ic['hieu_ung_thiet_ke'])}"
+                     if isinstance(ic.get("hieu_ung_thiet_ke"), (int, float)) else "")
+                  + f" (G6, `G6_icc_cluster.txt`) {N}  ")
+    if kq:
+        ra["ket_qua"] += ["", "**Cụm và người tham gia (CONSORT mở rộng cho thử nghiệm cụm):**  ",
+                          *[x for d in kq for x in (d, "")]]
+        if theo_nhom and len(theo_nhom) == len(n_nhom):
+            ra["tom_tat"] += [f"**Clusters:** {ic['so_cum']} cụm được phân bổ ngẫu nhiên theo cụm ({_noi_va(theo_nhom)}) "
+                              f"{N}  ", ""]
+    return ra
+
+
 def _nhan_bien_g7(redcap_vars: Optional[list], bien: str) -> str:
     return next((str(v.get("label") or "").strip() for v in redcap_vars or []
                  if str(v.get("variable") or "") == bien and str(v.get("label") or "").strip()), "")
@@ -3544,6 +3668,10 @@ def khoi_chuan_bao_cao_g7(out_dir: Path, study: str, design_code: str, redcap_va
             ra[k] += v
     # 22/11/2026: cấu phần đánh giá kinh tế (SAP §16 — chỉ có khi G1 khai economic_evaluation), mọi thiết kế
     ra["phuong_phap"] += _khoi_kinh_te_g7(out_dir, study)
+    if design_code == "rct":  # phần mở rộng CONSORT cho thử nghiệm cụm / không kém hơn
+        g3 = gp.get("G3") if isinstance(gp.get("G3"), dict) else {}
+        for k, v in _khoi_mo_rong_consort_g7(out_dir, study, meta, g1, g3, redcap_vars).items():
+            ra[k] += v
     pi = lambda k: _khai_pi_g7(meta, k)  # noqa: E731 — gọn cho bảng khai báo dưới
     if design_code == "diagnostic":
         ra["gioi_thieu"].append(_dong_khai("Vai trò dự kiến của xét nghiệm đánh giá trong lộ trình chẩn đoán",
