@@ -756,5 +756,299 @@
   "literature_consensus": "Thời gian chờ dài hơn đi kèm hài lòng thấp hơn, khá nhất quán (PMID 34017606; PMID 39944421; PMID 40295132); thời gian chờ và thủ tục lặp lại là lĩnh vực hài lòng thấp nhất (PMID 32584904; PMID 31703089).",
   "literature_disagreements": "Học vấn cao hơn có thể đi kèm hài lòng thấp hơn nhưng chiều chưa nhất quán nên để ngỏ cả hai chiều (PMID 40295132); chiều liên quan của BHYT không nhất quán giữa các nghiên cứu (PMID 36439278 và PMID 42625778 ngược với PMID 32584904).",
   "aim": "Xác định mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175; đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.",
-  "g5_quality_status": "DRAFT_READY_NEEDS_REAL_DATA"
+  "g5_quality_status": "DRAFT_READY_NEEDS_REAL_DATA",
+  "ho_so_don_vi": {
+    "hdd": {
+      "meta": {
+        "quy_trinh": "ca_hai",
+        "quy_trinh_de_xuat": "rut_gon"
+      },
+      "don_mau4": {
+        "dia_diem_thoi_gian": "Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh; từ tháng 12/2026 đến tháng 12/2028 (thu thập mẫu chính dự kiến 05–10/2027, chỉ sau khi Hội đồng Đạo đức chấp thuận và đề tài đã được đăng ký trên OSF Registries).",
+        "ho_so_kem_theo": {
+          "bang_kiem_rut_gon": true,
+          "phieu_day_du": true
+        }
+      },
+      "phu_luc_10": {
+        "phan_ba": {
+          "A": {
+            "A1": {
+              "gia_tri": false,
+              "giai_thich": "Không — không thử nghiệm thuốc."
+            },
+            "A2": {
+              "gia_tri": false,
+              "giai_thich": "Không — không thử nghiệm chế phẩm sinh học."
+            },
+            "A3": {
+              "gia_tri": false,
+              "giai_thich": "Không — không có can thiệp điều trị."
+            },
+            "A4": {
+              "gia_tri": false,
+              "giai_thich": "Không — không thử nghiệm thiết bị y tế."
+            },
+            "A5": {
+              "gia_tri": false,
+              "giai_thich": "Không — không dùng xạ trị, siêu âm."
+            },
+            "A6": {
+              "gia_tri": false,
+              "giai_thich": "Không — không có thủ thuật, phẫu thuật."
+            },
+            "A7": {
+              "gia_tri": false,
+              "giai_thich": "Không — không thực hiện trong bối cảnh giáo dục."
+            },
+            "A8": {
+              "gia_tri": true,
+              "giai_thich": "Có — bộ câu hỏi tự điền khuyết danh (mẫu chính 1.000 phiếu hợp lệ; khảo sát thử 50–100 người bệnh) và phỏng vấn nhận thức 10–15 người bệnh ở pha phát triển bộ câu hỏi."
+            },
+            "A9": {
+              "gia_tri": true,
+              "giai_thich": "Có — mốc thời gian chờ khám (giờ lấy số, giờ gọi vào buồng khám) và số liệu tổng hợp về người bệnh bỏ về có sẵn trên HIS/eHospital, do nhân sự được ủy quyền của Phòng CNTT/QLCL trích; nhóm nghiên cứu chỉ nhận số phút chờ, mã bàn khám giả danh, ngày và khung giờ khám, có làm cận lâm sàng hay không và số quầy phải qua, kèm mã nghiên cứu."
+            },
+            "A10": {
+              "gia_tri": false,
+              "giai_thich": "Không."
+            }
+          },
+          "B": {
+            "B1": {
+              "giai_thich": "Có — (1) phiếu đồng ý có họ tên và chữ ký người tham gia được thu và lưu riêng (tủ có khoá, vị trí riêng với phiếu khảo sát), không gắn với mã nghiên cứu, lưu 2 năm; (2) Phòng CNTT/QLCL giữ tạm bảng đối chiếu mã nghiên cứu ↔ lượt khám (số thứ tự, ngày khám), nhóm nghiên cứu không giữ và không tiếp cận, huỷ trong vòng 30 ngày có biên bản; (3) phiếu khảo sát khuyết danh; cơ sở dữ liệu của nhóm không chứa thông tin định danh; chỉ công bố số liệu tổng hợp, nhóm dưới 5 người được gộp."
+            },
+            "B2": {
+              "gia_tri": false,
+              "giai_thich": "Không — người không đủ khả năng trả lời (cấp cứu, suy giảm nhận thức) bị loại trừ."
+            },
+            "B3": {
+              "gia_tri": false,
+              "giai_thich": "Không — chỉ người từ đủ 18 tuổi."
+            },
+            "B4": {
+              "gia_tri": true,
+              "giai_thich": "Có (cần lưu ý) — người tham gia là người bệnh đang khám tại Khoa C1a, nơi chủ nhiệm công tác; có thể ngại từ chối hoặc ngại nhận xét. Biện pháp: điều tra viên không thuộc Khoa C1a mời, giải thích, phát và thu phiếu; phiếu khuyết danh, hòm phiếu kín; khẳng định từ chối không ảnh hưởng khám chữa bệnh; chủ nhiệm và nhân viên khoa không tiếp xúc phiếu đã điền; nhân viên y tế của Khoa hoặc Bệnh viện đến khám bị loại trừ."
+            },
+            "B5": {
+              "gia_tri": false,
+              "giai_thich": "Không."
+            },
+            "B6": {
+              "gia_tri": false,
+              "giai_thich": "Không — người bệnh điền phiếu về trải nghiệm dịch vụ khoảng 15–20 phút, một lần, có thể dừng bất cứ lúc nào."
+            },
+            "B7": {
+              "gia_tri": false,
+              "giai_thich": "Không — không có khoản bồi dưỡng và không phát sinh chi phí cho người tham gia."
+            },
+            "B8": {
+              "gia_tri": true,
+              "giai_thich": "Có, ở mức thấp — phiếu hỏi khoảng thu nhập hộ gia đình, tự đánh giá sức khoẻ, việc hoãn dịch vụ vì chi phí và nhận xét về nhân viên y tế; không hỏi chẩn đoán hay bệnh án. Phiếu khuyết danh; người tham gia được bỏ qua câu không muốn trả lời."
+            },
+            "B9": {
+              "gia_tri": false,
+              "giai_thich": "Không — nhóm nghiên cứu không tiếp cận hồ sơ bệnh án; việc trích mốc thời gian từ HIS do Phòng CNTT/QLCL (ngoài nhóm nghiên cứu) thực hiện; nhóm chỉ nhận các trường vận hành không định danh."
+            },
+            "B10": {
+              "gia_tri": false,
+              "giai_thich": "Không."
+            },
+            "B11": {
+              "gia_tri": false,
+              "giai_thich": "Không — không chọn có chủ đích người dân tộc thiểu số; phiếu không hỏi dân tộc."
+            }
+          }
+        },
+        "phan_bon": {
+          "C1_huy_dong_chon_nguoi_tham_gia": "Tiêu chí chọn: người bệnh khám ngoại trú tại Khoa C1a, từ đủ 18 tuổi (kể cả phụ nữ mang thai); đủ sức khoẻ, tỉnh táo, đủ khả năng nhận thức và ngôn ngữ để trả lời; đã cơ bản hoàn thành quy trình khám (đang chờ thanh toán, nhận thuốc hoặc nhận lại thẻ BHYT); đồng ý tự nguyện. Loại trừ: từ chối; không đủ khả năng trả lời; nhân viên y tế của Khoa hoặc Bệnh viện đến khám; đã tham gia nghiên cứu trước đó (kể cả phỏng vấn nhận thức, khảo sát thử).\nSố lượng: 1.000 phiếu hợp lệ (mời khoảng 1.180–1.250 người; tới khoảng 1.700 lượt mời nếu tỷ lệ đồng ý chỉ 60%). Pha phát triển bộ câu hỏi: 10–15 người bệnh phỏng vấn nhận thức; 50–100 người bệnh khảo sát thử, tách khỏi mẫu chính.\nCác bước (mẫu chính): chọn mẫu hệ thống phân tầng theo ngày trong tuần × khung giờ khám; trong mỗi tầng, một người chuyên trách (không kiêm phát/thu phiếu) xác định người thứ kₕ trong dòng người bệnh đã hoàn thành lượt khám, điểm bắt đầu ngẫu nhiên; điều tra viên không thuộc Khoa C1a sàng lọc tiêu chuẩn, hỏi chống trùng, mời tham gia theo kịch bản thống nhất; người từ chối hoặc không đủ tiêu chuẩn được ghi vào sổ theo dõi (chỉ ngày và khung giờ, nhóm tuổi ước lượng, giới, lý do nếu tự nêu), không thay bằng người liền kề. Không có chi trả hay bồi dưỡng.",
+          "C2_thu_thap_so_lieu": "Điều tra viên không thuộc Khoa C1a, đã được tập huấn, phát và thu phiếu tại khu vực chờ của Khoa C1a, tách khỏi buồng khám. Nội dung: phiếu khảo sát tự điền khuyết danh 4 phần, 58 câu (thông tin chung; 30 câu hài lòng theo 6 lĩnh vực A–F, thang 5 mức; 3 câu đánh giá chung G1–G3; một câu hỏi mở), khoảng 15–20 phút, một lần. Người bệnh bỏ phiếu vào hòm phiếu kín; hòm do tổ hai người (một điều tra viên ngoài khoa và một đại diện Phòng Kế hoạch tổng hợp hoặc Phòng QLCL) mở và lập biên bản. Thời gian chờ khám: nhân sự được ủy quyền của Phòng CNTT/QLCL trích hai mốc thời gian từ HIS theo mã nghiên cứu, chỉ chuyển cho nhóm các trường không định danh, huỷ bảng đối chiếu trong 30 ngày. Nhập kép toàn bộ phiếu do người không thuộc Khoa C1a. Trước thu thập chính thức: pha phát triển bộ câu hỏi (hội đồng chuyên gia, phỏng vấn nhận thức, khảo sát thử) và buổi chạy thử quy trình (tối thiểu 40 lượt mời, năm tiêu chí khả thi). Thu thập mẫu chính dự kiến 05–10/2027.",
+          "C3_xin_chap_thuan_tu_nguyen": "Điều tra viên giải thích theo Bản thông tin dành cho người tham gia (Mẫu 8 kèm theo; có thể đọc cho người bệnh nghe); người bệnh có thể đặt câu hỏi; nếu đồng ý thì ký tên hoặc điểm chỉ vào phiếu đồng ý; người không đọc, viết được có người làm chứng ký. Phiếu đồng ý là tài liệu riêng, ký trước khi nhận phiếu khảo sát, thu và lưu tách biệt, không gắn với mã nghiên cứu. Người tham gia có thể dừng bất cứ lúc nào trước khi bỏ phiếu vào hòm; sau đó, vì phiếu không ghi tên nên không thể rút riêng phiếu của một người — điều này được nêu rõ trong Bản thông tin. Người tham gia phỏng vấn nhận thức ký phiếu đồng ý riêng (kèm theo)."
+        },
+        "phan_nam": {
+          "C4_thu_nghiem_thuoc_can_thiep": {
+            "gia_tri": false,
+            "giai_thich": "Không — không có thuốc hay thủ thuật; thông tin thu thập là ý kiến khuyết danh về dịch vụ (mức nhạy cảm thấp, đã khai ở B8)."
+          },
+          "C5_nguy_co_toi_thieu_de_quan_ly": {
+            "gia_tri": true,
+            "giai_thich": "Có — nghiên cứu quan sát, không can thiệp; nguy cơ chính là riêng tư và ngại nhận xét, được quản lý bằng phiếu khuyết danh, phiếu đồng ý lưu riêng, hòm phiếu kín, điều tra viên ngoài khoa, giả danh hoá có kiểm soát khi ghép thời gian chờ. Thuộc loại «nghiên cứu sử dụng điều tra, phỏng vấn, đánh giá chất lượng» và «dữ liệu được thu thập cho mục đích không nghiên cứu» trong danh mục nguy cơ tối thiểu của hướng dẫn Phụ lục 10."
+          },
+          "C6_nhieu_co_quan": {
+            "gia_tri": false,
+            "giai_thich": "Không — chỉ thực hiện tại Bệnh viện Quân y 175."
+          }
+        },
+        "thoi_gian": {
+          "thu_nghiem": {
+            "tu": "01/2027 (pha phát triển bộ câu hỏi, chạy thử quy trình)",
+            "den": "04/2027"
+          },
+          "thu_thap": {
+            "tu": "05/2027",
+            "den": "10/2027"
+          }
+        },
+        "nghien_cuu_vien_khac": "Theo Bảng 6.1 đề cương: thư ký đề tài; điều tra viên (không thuộc Khoa C1a); người nhập liệu (không thuộc Khoa C1a, khác điều tra viên); giám sát chất lượng; nhà thống kê; tổ mở hòm phiếu (2 người); tổ mã hoá câu hỏi mở (2 người và 1 người phân xử, không thuộc Khoa C1a); hội đồng chuyên gia 6–10 người; Phòng CNTT/QLCL (ngoài nhóm nghiên cứu). Họ tên và thông tin từng người: [DỮ KIỆN CẦN NHẬP: họ tên, chức danh và đơn vị của từng nghiên cứu viên khác — có khi chủ nhiệm phân công nhân sự]."
+      },
+      "phu_luc_11": {
+        "tinh_chat": {
+          "sinh_vien_dai_hoc": false,
+          "xin_phep_tap_the": false,
+          "hoc_vien_sau_dai_hoc": false,
+          "khong_thuoc_nhom_nao_tren": true
+        },
+        "quy_che_dac_biet": {
+          "tre_em_vi_thanh_nien": false,
+          "ton_thuong_than_kinh_thieu_nang_tri_tue": false,
+          "can_cham_soc_y_te_thuong_xuyen": false,
+          "quan_he_le_thuoc_khong_binh_dang": true,
+          "tap_the_nhom_nguoi": false,
+          "dan_toc_thieu_so": false,
+          "phong_xa_chat_ion_hoa": false,
+          "cong_nghe_sinh_san_co_tro_giup": false,
+          "thu_nghiem_lam_sang": false,
+          "phac_do_dieu_tri_thu_thuat_moi": false,
+          "nghien_cuu_dich_te_hoc": false,
+          "mau_mo_chat_dich_nguoi": false,
+          "gien_nguoi": false
+        },
+        "thong_tin_sinh_vien": "Không áp dụng — đề tài cấp cơ sở do chủ nhiệm đề tài chủ trì (hồ sơ đăng ký chủ trì đề tài cấp Bệnh viện), không phải đề tài của học viên.",
+        "muc": {
+          "1a": "Nghiên cứu tìm hiểu mức độ hài lòng của người bệnh khám ngoại trú tại Khoa Khám bệnh C1a (khám theo yêu cầu) và các yếu tố liên quan, đặc biệt là thời gian chờ khám, để Bệnh viện cải tiến chất lượng phục vụ. Khoảng 1.000 người bệnh từ đủ 18 tuổi, vừa hoàn thành lượt khám, được chọn theo một quy trình chọn mẫu định trước theo ngày và khung giờ khám. Người được chọn được điều tra viên (không thuộc Khoa C1a) giải thích; nếu đồng ý, người bệnh ký phiếu đồng ý, tự điền một phiếu khảo sát không ghi tên trong khoảng 15–20 phút tại khu vực chờ rồi bỏ vào hòm phiếu kín. Người bệnh không phải đến thêm, không làm thêm xét nghiệm hay thủ thuật nào. Phiếu chỉ mang một mã nghiên cứu; nhân viên được ủy quyền của Phòng Công nghệ thông tin/Quản lý chất lượng dùng mã này để lấy số phút chờ khám từ hệ thống thông tin bệnh viện; nhóm nghiên cứu không nhận họ tên, số hồ sơ hay thông tin về bệnh. Trước khi khảo sát chính thức, bộ câu hỏi được hoàn thiện qua hội đồng chuyên gia, phỏng vấn nhận thức 10–15 người bệnh (người bệnh đọc từng câu hỏi và nói ra cách mình hiểu) và khảo sát thử 50–100 người bệnh; những người này cũng được giải thích, ký đồng ý và không được mời vào mẫu chính.",
+          "1b": "Trình tự: (1) đăng ký đề tài trên OSF Registries; trình Hội đồng hồ sơ cho toàn bộ đề cương, gồm cả pha phát triển bộ câu hỏi; (2) sau khi được phê duyệt: bảng truy xuất nguồn gốc câu hỏi, hội đồng chuyên gia 6–10 người (I-CVI, S-CVI), phỏng vấn nhận thức 10–15 người bệnh, khảo sát thử 50–100 người bệnh; khoá phiên bản cuối của phiếu; (3) tập huấn điều tra viên, chạy thử toàn bộ quy trình (tối thiểu 40 lượt mời, năm tiêu chí khả thi); (4) thu thập mẫu chính: chọn người thứ kₕ theo tầng → sàng lọc, chống trùng → giải thích, ký đồng ý → tự điền phiếu tại khu vực chờ → bỏ hòm kín; (5) ghép thời gian chờ từ HIS do Phòng CNTT/QLCL thực hiện; (6) nhập kép, làm sạch, khoá cơ sở dữ liệu; (7) phân tích theo kế hoạch đã khoá.\nLý do chọn: tự điền khuyết danh kết hợp hòm phiếu kín và điều tra viên ngoài khoa để hạn chế sai lệch do mong muốn xã hội; thời gian chờ lấy khách quan từ mốc HIS thay cho tự báo cáo; chọn mẫu hệ thống phân tầng để loại bỏ việc điều tra viên tự chọn người trả lời; bộ câu hỏi tự xây dựng nên phải được thẩm định nội dung, phỏng vấn nhận thức và khảo sát thử trước khi dùng.",
+          "1d": "Không. Nghiên cứu không chọn có chủ đích người dân tộc thiểu số và phiếu không hỏi dân tộc.",
+          "1e": "Tại Bệnh viện Quân y 175: khu vực chờ của Khoa Khám bệnh C1a (sau khi người bệnh rời buồng khám). Khảo sát thử thực hiện tại Khoa C1a. Địa điểm phỏng vấn nhận thức: khu vực riêng tại Khoa C1a, tách khỏi buồng khám; mỗi buổi không quá 60 phút, không ghi âm, không ghi hình.",
+          "1f": "Có. Chủ nhiệm đề tài công tác tại chính Khoa C1a — đơn vị được đánh giá (xung đột lợi ích về cơ cấu, không phải tài chính). Nguyên tắc quản lý: tách người có lợi ích khỏi mọi khâu mà phán đoán chủ quan có thể làm thay đổi kết quả — mời, phát và thu phiếu do điều tra viên ngoài khoa; mở hòm phiếu do tổ hai người có đại diện Phòng Kế hoạch tổng hợp hoặc Phòng QLCL; nhập liệu và mã hoá câu hỏi mở do người ngoài khoa; phân tích theo kế hoạch đã khoá; hội đồng chuyên gia không quá 2 thành viên thuộc Khoa C1a; báo cáo đầy đủ cả kết quả bất lợi.",
+          "2a": "Người tham gia: lộ thông tin (rất thấp — phiếu khuyết danh, phiếu đồng ý lưu riêng); mất khoảng 15–20 phút điền phiếu (một lần, có thể dừng bất cứ lúc nào); ngại trả lời câu về thu nhập, chi phí (được bỏ qua); ngại nhận xét về nhân viên y tế (hạn chế bằng hình thức khuyết danh, hòm kín, điều tra viên ngoài khoa). Người tham gia phỏng vấn nhận thức trao đổi trực tiếp với người phỏng vấn trong thời gian dài hơn. Không có nguy cơ thể chất. Nhóm nghiên cứu, cộng đồng: không đáng kể.",
+          "2b": "Không cao hơn mức sinh hoạt hằng ngày: chỉ trả lời câu hỏi về trải nghiệm dịch vụ, tương tự các khảo sát hài lòng người bệnh mà bệnh viện thực hiện thường quy trong quản lý chất lượng; không có xét nghiệm hay thủ thuật nào thêm.",
+          "2c": "Phiếu khảo sát không có ô định danh; phiếu đồng ý là tài liệu riêng, lưu tách biệt, không gắn mã nghiên cứu; hòm phiếu niêm phong đặt ở vị trí kín đáo, không có nhân viên y tế đứng cạnh; điều tra viên không thuộc Khoa C1a, tập huấn theo kịch bản thống nhất, không gợi ý đáp án; người bệnh điền phiếu tách khỏi buồng khám; được bỏ qua câu không muốn trả lời; ghép thời gian chờ theo quy trình giả danh hoá có kiểm soát do Phòng CNTT/QLCL thực hiện, bảng đối chiếu huỷ trong 30 ngày; cơ sở dữ liệu không chứa thông tin định danh; dữ liệu lưu trên ổ đĩa mã hoá AES-256, phân quyền; chỉ công bố số liệu tổng hợp, nhóm dưới 5 người được gộp.",
+          "2d": "Người tham gia thấy mệt hoặc không muốn tiếp tục có thể dừng ngay, không cần giải thích; việc khám chữa bệnh không bị ảnh hưởng. Sự cố về dữ liệu: chủ nhiệm đề tài là bên kiểm soát dữ liệu, xử lý và báo cáo theo quy định (Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15, Nghị định 356/2025/NĐ-CP) và báo Hội đồng Đạo đức; kiểm tra cơ sở dữ liệu không chứa thông tin định danh trước khi phân tích. Thắc mắc, khiếu nại về quyền của người tham gia: liên hệ Hội đồng Đạo đức (thông tin trong Bản thông tin).",
+          "2e": "Không — không có thủ thuật, thiết bị hay can thiệp.",
+          "2f": "Không — không lấy hay sử dụng máu, dịch hay mô người.",
+          "2g": "Không.",
+          "3a": "Người tham gia không nhận lợi ích trực tiếp về y khoa; ý kiến của họ góp phần cải tiến chất lượng dịch vụ cho chính họ và người bệnh sau. Lợi ích cho Bệnh viện: số liệu nền về mức hài lòng, các lĩnh vực cần cải tiến và mối liên quan với thời gian chờ tại Khoa C1a; bộ câu hỏi đã kiểm định để đối chiếu các kỳ sau.",
+          "3b": "Người bệnh khám tại Khoa C1a (kể cả người tham gia), Trung tâm C1 và Bệnh viện (căn cứ cải tiến chất lượng), y văn trong nước.",
+          "3c": "Nhân rộng có kiểm chứng vào bối cảnh mới: dữ liệu nền tại Khoa C1a; gắn mức hài lòng với thời gian chờ lấy từ mốc HIS thay cho tự báo cáo; ước lượng hệ số tương quan nội cụm theo bàn khám; kiểm định cấu trúc lĩnh vực của bộ câu hỏi có bổ sung lĩnh vực chi phí (đề cương mục 3.5).",
+          "3d": "Nguy cơ ở mức tối thiểu và được kiểm soát (khuyết danh, phiếu đồng ý lưu riêng, điều tra viên ngoài khoa, giả danh hoá có kiểm soát); lợi ích là căn cứ cải tiến chất lượng dịch vụ cho chính nhóm người bệnh này. Lợi ích dự kiến vượt trội nguy cơ.",
+          "4a": "Mẫu chính: 1.000 phiếu hợp lệ của người bệnh ngoại trú từ đủ 18 tuổi đã cơ bản hoàn thành lượt khám tại Khoa C1a (mời khoảng 1.180–1.250 người; tới khoảng 1.700 lượt mời nếu tỷ lệ đồng ý chỉ 60%). Pha phát triển bộ câu hỏi: 10–15 người bệnh phỏng vấn nhận thức; 50–100 người bệnh khảo sát thử; hội đồng chuyên gia 6–10 người (có ít nhất 2 đại diện người bệnh). Buổi chạy thử quy trình: tối thiểu 40 lượt mời.",
+          "4b": "Mẫu chính: chọn mẫu hệ thống phân tầng theo ngày trong tuần × khung giờ khám, khoảng cách kₕ = Nₕ/nₕ, điểm bắt đầu ngẫu nhiên; người chuyên trách xác định người thứ kₕ trong dòng người bệnh đã hoàn thành lượt khám; điều tra viên ngoài khoa tiếp cận lúc người bệnh đang chờ thanh toán, nhận thuốc hoặc nhận lại thẻ BHYT, sàng lọc, hỏi chống trùng và mời theo kịch bản thống nhất. Pha phát triển bộ câu hỏi: điều tra viên ở pha phát triển (người phỏng vấn, người ghi chép), không thuộc Khoa C1a và đã được tập huấn, mời người bệnh khám theo yêu cầu từ đủ 18 tuổi sau khi hoàn thành lượt khám và lấy đồng ý theo bản thông tin riêng của pha này; phỏng vấn nhận thức 10–15 người bệnh (một người phỏng vấn, một người ghi chép biên bản có cấu trúc); khảo sát thử 50–100 người bệnh, tách khỏi mẫu chính.",
+          "5": "Mẫu chính và khảo sát thử: điều tra viên giải thích theo Bản thông tin dành cho người tham gia (Mẫu 8 kèm theo) hoặc đọc cho người bệnh nghe; người bệnh đặt câu hỏi; đồng ý thì ký tên hoặc điểm chỉ; người không đọc, viết được có người làm chứng ký. Phiếu đồng ý ký trước khi nhận phiếu khảo sát, thu và lưu riêng, không gắn với mã nghiên cứu. Người tham gia có thể dừng bất cứ lúc nào trước khi bỏ phiếu vào hòm; sau đó không thể rút riêng phiếu vì phiếu không ghi tên — điều này được nêu rõ trong Bản thông tin. Phỏng vấn nhận thức: bản thông tin và phiếu đồng ý riêng (kèm theo), cùng mẫu với bản thông tin mẫu chính, phần mô tả quy trình được điều chỉnh.",
+          "6a": "Có — phiếu khảo sát tự điền (Phụ lục C đề cương, kèm theo hồ sơ) do điều tra viên ngoài khoa phát và thu; biên bản phỏng vấn nhận thức chỉ ghi mã ẩn danh (NT01…), không ghi họ tên; sổ theo dõi chọn mẫu và từ chối không định danh.",
+          "6b": "Có — mốc thời gian lượt khám trên HIS/eHospital do Bệnh viện Quân y 175 quản lý. Chủng loại: nhóm nghiên cứu chỉ nhận thông tin không định danh kèm mã nghiên cứu (số phút chờ, mã bàn khám giả danh, ngày và khung giờ khám, có làm cận lâm sàng hay không, số quầy phải qua) và số liệu tổng hợp về người bệnh bỏ về; bảng đối chiếu có thể xác định lại do Phòng CNTT/QLCL giữ. Phê chuẩn: Hội đồng Đạo đức và lãnh đạo Bệnh viện Quân y 175. Cách cung cấp: nhân sự được ủy quyền của Phòng CNTT/QLCL trích và chuyển; nhóm không nhận số liệu HIS thô, thông tin bệnh án, chẩn đoán hay kết quả khám.",
+          "6c": "Không có thông tin nhận dạng: phiếu chỉ mang mã nghiên cứu ngẫu nhiên (không dùng số thứ tự khám); phiếu đồng ý lưu riêng; số hồ sơ bệnh án không xuất hiện trong bất kỳ hệ thống nào của nhóm nghiên cứu.",
+          "6d": "Thông tin nhạy cảm ở mức thấp (khoảng thu nhập hộ gia đình, tự đánh giá sức khoẻ, hoãn dịch vụ vì chi phí); không tiếp cận thông tin y tế của người bệnh. Người tham gia đồng ý bằng văn bản sau khi được giải thích, bao gồm việc ghép thời gian chờ từ HIS; được bỏ qua câu không muốn trả lời; công bố số liệu tổng hợp.",
+          "6e": "Trong khi nghiên cứu: phiếu khảo sát niêm phong theo từng biên bản mở hòm, chỉ người nhập liệu và giám sát chất lượng được mở niêm phong; chủ nhiệm không tiếp cận phiếu đã điền; phiếu đồng ý và phiếu khảo sát cất trong tủ có khoá ở hai vị trí riêng biệt; nhập liệu trên REDCap (dự phòng EpiData) có nhật ký thay đổi. Khi công bố: chỉ số liệu tổng hợp, nhóm dưới 5 người được gộp; không công bố thông tin có thể nhận diện người tham gia hay nhân viên y tế.",
+          "6g": "Có — mốc thời gian lượt khám lấy từ HIS của Bệnh viện, do Phòng CNTT/QLCL trích.",
+          "7a": "Từ 01/2027 đến 04/2027 (pha phát triển bộ câu hỏi 01–03/2027; chạy thử quy trình 04/2027)",
+          "7b": "Từ 05/2027 đến 10/2027 (mẫu chính; ghép thời gian chờ và làm sạch cuốn chiếu tới 12/2027)",
+          "9": "Tôn trọng con người: tự nguyện, phiếu đồng ý riêng, quyền dừng và bỏ qua câu hỏi; giới hạn của việc rút phiếu sau khi bỏ vào hòm được nêu trước. Phụ nữ mang thai được mời như mọi người bệnh khác vì nghiên cứu không có nguy cơ thể chất. Người bệnh bỏ về trước khi khám không được khảo sát; chỉ số liệu tổng hợp không định danh của nhóm này được dùng. Công bằng: chọn mẫu hệ thống phủ đều các ngày và khung giờ, loại bỏ việc điều tra viên tự chọn người trả lời. Tính pháp lý: Thông tư 43/2024/TT-BYT; Luật Khám bệnh, chữa bệnh 15/2023/QH15; Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và Nghị định 356/2025/NĐ-CP. Đăng ký: OSF Registries trước khi tuyển người tham gia đầu tiên; mã đăng ký: [DỮ KIỆN CẦN NHẬP: mã đăng ký OSF Registries — có sau khi đăng ký]. Khai báo: hồ sơ được soạn nháp với sự hỗ trợ của công cụ trí tuệ nhân tạo (Claude); chủ nhiệm đề tài kiểm chứng và chịu trách nhiệm toàn bộ nội dung.",
+          "10": "Tổng quan tài liệu (đầy đủ ở Quyển 1, mục 3): sự hài lòng của người bệnh là chỉ số cốt lõi của chất lượng khám chữa bệnh và là yêu cầu trong quản lý chất lượng bệnh viện tại Việt Nam (khung đo lường Mẫu số 2, Quyết định 56/QĐ-BYT). Ở người bệnh ngoại trú Việt Nam, thời gian chờ và thủ tục là các lĩnh vực có mức hài lòng thấp lặp lại (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít hài lòng hơn (PMID 34017606); khối dịch vụ theo yêu cầu có tín hiệu hài lòng thấp hơn ở mẫu nhỏ (PMID 34445940). Chưa có số liệu công bố tại Khoa C1a; trong phạm vi đã tra, chưa thấy nghiên cứu gắn mức hài lòng với thời gian chờ lấy từ mốc HIS.\nKế hoạch và phương pháp (đầy đủ ở Quyển 1, mục 4): cắt ngang mô tả có phân tích; 1.000 phiếu hợp lệ, chọn mẫu hệ thống phân tầng theo ngày trong tuần × khung giờ khám; bộ câu hỏi tự điền khuyết danh (6 lĩnh vực, 30 câu, thang 5 mức; kết cục chính là câu hài lòng chung G1) được thẩm định nội dung, phỏng vấn nhận thức và khảo sát thử trước khi dùng; thời gian chờ lấy từ mốc HIS theo quy trình giả danh hoá có kiểm soát; mục tiêu 1 báo tỷ lệ kèm KTC 95%; mục tiêu 2 dùng hồi quy logistic thứ tự đa biến, có hiệu chỉnh gom cụm theo bàn khám; kế hoạch phân tích khoá trước khi tiếp cận số liệu; báo cáo theo STROBE, CROSS và RECORD.\nPhạm vi và hạn chế: một khoa của một bệnh viện quân y tuyến cuối; chỉ khảo sát người đã được khám (nhóm bỏ về được định lượng từ HIS); sai lệch do mong muốn xã hội; bộ câu hỏi tự xây dựng, dùng lần đầu; chủ nhiệm công tác tại khoa được đánh giá (quản lý theo Bảng 4.8 đề cương); thiết kế cắt ngang không cho phép suy diễn nhân quả.",
+          "4c": "Không — chỉ người từ đủ 18 tuổi.",
+          "4d": "Không — người không đủ khả năng nhận thức để trả lời bị loại trừ.",
+          "4e": "Không có người bị giam giữ. Người tham gia là người bệnh đang nhận dịch vụ tại Khoa nơi chủ nhiệm công tác (quan hệ có thể không bình đẳng): việc mời, giải thích, phát và thu phiếu do điều tra viên ngoài khoa; phiếu khuyết danh; khẳng định từ chối không ảnh hưởng khám chữa bệnh, quyền lợi bảo hiểm y tế hay cách nhân viên y tế phục vụ. Nhân viên y tế của Khoa hoặc Bệnh viện đến khám bị loại trừ. Phiếu không thu thông tin về quân nhân, thân nhân quân nhân hay dân sự.",
+          "4f": "Có — chủ nhiệm và nhân viên Khoa C1a trực tiếp phục vụ nhóm người bệnh này. Biện pháp: xem mục 1f và 4e; chủ nhiệm không tham gia mời, thu phiếu, mở hòm phiếu, nhập liệu hay mã hoá ý kiến.",
+          "4g": "Người có rào cản ngôn ngữ không khắc phục được bị loại trừ. Người khó tự điền: người nhà hoặc điều tra viên ghi đúng nguyên văn lời người bệnh, không gợi ý, không giải thích thay đáp án, không cho người khác trả lời thay; người không đọc, viết được nghe điều tra viên đọc Bản thông tin và có người làm chứng ký phiếu đồng ý.",
+          "4h": "Có — sàng lọc theo tiêu chuẩn chọn (từ đủ 18 tuổi; đủ sức khoẻ, nhận thức, ngôn ngữ để trả lời; đã cơ bản hoàn thành lượt khám; đồng ý) và loại trừ (từ chối; không đủ khả năng trả lời; nhân viên y tế của Khoa hoặc Bệnh viện; đã tham gia trước đó, kể cả pha phát triển bộ câu hỏi), có hỏi chống trùng trước khi mời.",
+          "4i": "Không.",
+          "4j": "Không.",
+          "4k": "Không.",
+          "4l": "Không — không có khoản bồi dưỡng; tham gia không phát sinh chi phí.",
+          "4m": "Không phản hồi kết quả cho từng người (phiếu khuyết danh). Kết quả tổng hợp được báo cáo cho Ban Giám đốc, Phòng Quản lý chất lượng và Trung tâm C1; trình bày tại hội nghị khoa học của Bệnh viện; gửi đăng một bài báo có bình duyệt; cập nhật lên bản đăng ký công khai trên OSF Registries, nơi người tham gia có thể biết kết quả chung.",
+          "4n": "Không áp dụng — nghiên cứu không che giấu mục đích và không đề cập vấn đề gây tổn thương tâm lý.",
+          "6f_i_kiem_soat": "Mật khẩu theo từng người dùng; mạng riêng ảo khi truy cập từ xa; sao lưu hằng tuần thành hai bản độc lập do thư ký đề tài quản lý; nhật ký truy vấn và chỉnh sửa sau khi khoá cơ sở dữ liệu",
+          "6f_ii_dia_diem": "Báo cáo cho Bệnh viện; bài báo có bình duyệt; bản đăng ký OSF Registries",
+          "6f_ii_ai_tiep_can": "Công khai — chỉ chứa số liệu tổng hợp",
+          "6f_ii_kiem_soat": "Nhóm dưới 5 người được gộp; không có thông tin nhận diện người tham gia hay nhân viên y tế",
+          "6g_i": "Bệnh viện Quân y 175 — HIS/eHospital, Phòng Công nghệ thông tin/Quản lý chất lượng",
+          "6g_ii": "Khoảng 1.000 lượt khám (theo số phiếu được ghép), cùng số liệu tổng hợp không định danh về người bệnh bỏ về",
+          "6g_iii": "Không vi phạm: việc lấy thời gian chờ được nêu rõ trong Bản thông tin và có sự đồng ý bằng văn bản của người tham gia; nhóm nghiên cứu không nhận thông tin định danh; số liệu về người bệnh bỏ về chỉ ở dạng tổng hợp; bảng đối chiếu do Phòng CNTT/QLCL giữ và huỷ trong 30 ngày, không sao lưu vào máy của nhóm nghiên cứu."
+        },
+        "nguy_co_xay_ra_voi": {
+          "nhom_nghien_cuu": false,
+          "nguoi_tham_gia": true,
+          "cong_dong_cua_truong": false,
+          "cong_dong_lon_hon": false
+        },
+        "chap_thuan_bo_mon_luu_tru": {
+          "i": "[GÓI KÝ: xác nhận của lãnh đạo khoa nơi lưu trữ dữ liệu thu thập — ô «chấp thuận của bộ môn» mục 6(f)i Phụ lục 11]",
+          "ii": "[GÓI KÝ: xác nhận của lãnh đạo khoa nơi lưu trữ báo cáo công bố — ô «chấp thuận của bộ môn» mục 6(f)ii Phụ lục 11]"
+        }
+      },
+      "goi_ky": [
+        "[GÓI KÝ: văn bản của Phòng Khoa học Quân sự hoặc Phòng Quản lý chất lượng cử người giữ dữ liệu độc lập và người giám sát độc lập; văn bản đồng ý tiếp nhận lưu trữ]"
+      ]
+    },
+    "dtcs": {
+      "thuyet_minh": {
+        "m6_loai_de_tai": "Độc lập.",
+        "m11_don_vi_phoi_hop": "1. Phòng Công nghệ thông tin, Bệnh viện Quân y 175 — cấp mã bàn khám giả danh, trích xuất thời gian chờ từ hệ thống thông tin bệnh viện, giữ và huỷ bảng đối chiếu (mục 2.6.4.3, Bảng F.1).\n2. Phòng Quản lý chất lượng, Bệnh viện Quân y 175 — cùng Phòng Công nghệ thông tin trích xuất thời gian chờ; nơi đặt người giữ dữ liệu độc lập và người giám sát độc lập (mục 2.7.1, Bảng F.1).\nĐơn vị chủ quản: Bệnh viện Quân y 175. Họ tên thủ trưởng từng đơn vị: [DỮ KIỆN CẦN NHẬP: họ tên thủ trưởng Phòng Công nghệ thông tin và Phòng Quản lý chất lượng]",
+        "m14_tinh_trang": "Mới.",
+        "m18_phoi_hop_trong_nuoc": "Phối hợp trong Bệnh viện Quân y 175: Phòng Công nghệ thông tin và Phòng Quản lý chất lượng trích xuất thời gian chờ từ hệ thống thông tin bệnh viện qua quy trình giả danh hoá có kiểm soát, nhóm nghiên cứu chỉ nhận số liệu không định danh; người giữ dữ liệu độc lập và người giám sát độc lập do Phòng Khoa học Quân sự hoặc Phòng Quản lý chất lượng cử bằng văn bản. Không phối hợp với cơ sở sản xuất.",
+        "m19_hop_tac_quoc_te": "Không — đề tài không có đối tác nước ngoài.",
+        "m20_thue_chuyen_gia": "Không thuê chuyên gia trong và ngoài nước. Hội đồng chuyên gia (6–10 người) thẩm định nội dung bộ câu hỏi theo thỏa thuận tham gia ở Phụ lục B1 của đề cương.",
+        "m22_san_pham": "Dạng I: 01 bài báo khoa học trên tạp chí y học có bình duyệt; trình bày kết quả tại hội nghị khoa học của Bệnh viện Quân y 175.\nDạng II: 01 báo cáo tổng hợp kết quả gửi Ban Giám đốc, Phòng Quản lý chất lượng và Trung tâm Khám bệnh và Điều trị theo yêu cầu C1; 01 bộ câu hỏi khảo sát sự hài lòng của người bệnh ngoại trú đã kiểm định nội dung (hội đồng chuyên gia, phỏng vấn nhận thức, khảo sát thử).",
+        "m22_1_dao_tao_sau_dai_hoc": "Không.",
+        "m22_2_trinh_do_khoa_hoc": "Bài báo đạt yêu cầu của tạp chí y học có bình duyệt; báo cáo theo chuẩn STROBE cho nghiên cứu cắt ngang; chỉ công bố số liệu tổng hợp.",
+        "m22_3_muc_chat_luong": "Không — đề tài không có sản phẩm Dạng III.",
+        "m23_ung_dung_chuyen_giao": {
+          "23.1": "Không áp dụng — kết quả là số liệu nền phục vụ cải tiến chất lượng khám chữa bệnh tại Bệnh viện, không phải sản phẩm đưa ra thị trường.",
+          "23.2": "Không áp dụng — không có sản phẩm sản xuất kinh doanh.",
+          "23.3": "Không áp dụng — không liên doanh, liên kết với doanh nghiệp.",
+          "23.4": "Chuyển giao kết quả cho Bệnh viện bằng báo cáo kết quả và trình bày tại hội nghị khoa học của Bệnh viện; không chuyển giao công nghệ."
+        },
+        "m25_tac_dong": {
+          "25.1": "Cung cấp căn cứ cải tiến chất lượng khám chữa bệnh ngoại trú tại Bệnh viện Quân y 175, góp phần nâng cao chất lượng phục vụ người bệnh của bệnh viện quân đội."
+        },
+        "m26_tai_san": {
+          "26.1a": "Bố trí trong số thiết bị máy móc hiện có của đơn vị chủ trì (máy tính, phần mềm thống kê R miễn phí); không cần trang bị thêm.",
+          "26.1b": "Không.",
+          "26.1c": "Không.",
+          "26.1d": "Không — đề tài tự túc kinh phí, không mua sắm tài sản.",
+          "26.2": "Không hình thành tài sản phải xử lý."
+        }
+      },
+      "m21_hang": [
+        {
+          "dau": "Hoàn thiện đề cương",
+          "chu_tri": "Chủ nhiệm đề tài"
+        },
+        {
+          "dau": "Hội đồng Y đức và lãnh đạo Bệnh viện phê duyệt",
+          "chu_tri": "Chủ nhiệm đề tài"
+        },
+        {
+          "dau": "Phát triển và kiểm định bộ câu hỏi",
+          "chu_tri": "Chủ nhiệm đề tài"
+        },
+        {
+          "dau": "Tập huấn điều tra viên",
+          "chu_tri": "Chủ nhiệm đề tài"
+        },
+        {
+          "dau": "Thu thập số liệu mẫu chính",
+          "chu_tri": "Thư ký khoa học (điều phối điều tra viên không thuộc Khoa C1a)"
+        },
+        {
+          "dau": "Ghép thời gian chờ từ HIS",
+          "chu_tri": "Phòng Công nghệ thông tin, Phòng Quản lý chất lượng"
+        },
+        {
+          "dau": "Phân tích số liệu",
+          "chu_tri": "Chủ nhiệm đề tài (nhà thống kê độc lập thực hiện phân tích)"
+        },
+        {
+          "dau": "Viết báo cáo tổng kết và bài báo",
+          "chu_tri": "Chủ nhiệm đề tài"
+        },
+        {
+          "dau": "Nghiệm thu, báo cáo kết quả và công bố",
+          "chu_tri": "Chủ nhiệm đề tài"
+        }
+      ],
+      "phieu_de_xuat": {
+        "don_vi_ung_dung": "Ban Giám đốc, Phòng Quản lý chất lượng và Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175"
+      }
+    }
+  }
 }
