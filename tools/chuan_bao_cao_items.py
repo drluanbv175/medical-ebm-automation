@@ -9,11 +9,13 @@ Nguồn (lấy qua Europe PMC fullTextXML ngày 21/11/2026; giấy phép đọc 
   SQUIRE 2.0 BMJ Qual Saf 2016;25(12):986-992 (PMID 26369893; PMC5256233; CC BY-NC — phi thương mại) · CARE
   J Med Case Rep 2013;7:223 (PMID 24228906; PMC3844611) · HARPER Pharmacoepidemiol Drug Saf 2023;32(1):44-55
   (PMID 36215113; PMC9771861; mẫu đề cương) · CONSORT 2025 PLoS Med 2025;22(4):e1004587 (PMID 40228477;
-  PMC11996237; CC BY 4.0 — thêm 22/11/2026 cho K18 kiểm bản thảo RCT).
+  PMC11996237; CC BY 4.0 — thêm 22/11/2026 cho K18 kiểm bản thảo RCT) · PRISMA 2020 PLoS Med
+  2021;18(3):e1003583 (PMID 33780438; PMC8007028; CC BY 4.0 — thêm 22/11/2026 cho K18 kiểm bản thảo tổng quan
+  hệ thống; Table 1 và Table 2 «PRISMA 2020 for Abstracts»).
 """
 
 #: giấy phép đọc từ XML, theo chuẩn
-GIAY_PHEP = {'STROBE': 'creativecommons.org/licenses/by/4.0', 'RECORD': 'creativecommons.org/licenses/by/4.0', 'STARD': 'creativecommons.org/licenses/by/4.0', 'TRIPOD_AI': 'creativecommons.org/licenses/by/4.0', 'CHEERS': 'creativecommons.org/licenses/by/4.0', 'SQUIRE': 'creativecommons.org/licenses/by-nc/4.0', 'CARE': 'creativecommons.org/licenses/by/3.0', 'HARPER': 'creativecommons.org/licenses/by/4.0', 'CONSORT': 'creativecommons.org/licenses/by/4.0'}
+GIAY_PHEP = {'STROBE': 'creativecommons.org/licenses/by/4.0', 'RECORD': 'creativecommons.org/licenses/by/4.0', 'STARD': 'creativecommons.org/licenses/by/4.0', 'TRIPOD_AI': 'creativecommons.org/licenses/by/4.0', 'CHEERS': 'creativecommons.org/licenses/by/4.0', 'SQUIRE': 'creativecommons.org/licenses/by-nc/4.0', 'CARE': 'creativecommons.org/licenses/by/3.0', 'HARPER': 'creativecommons.org/licenses/by/4.0', 'CONSORT': 'creativecommons.org/licenses/by/4.0', 'PRISMA': 'creativecommons.org/licenses/by/4.0', 'PRISMA_TOM_TAT': 'creativecommons.org/licenses/by/4.0'}
 
 # (mã, thiết kế: chung|cat_ngang|thuan_tap|benh_chung, chủ đề, nguyên văn)
 STROBE_2007_ITEMS = (
@@ -373,6 +375,68 @@ CONSORT_2025_ITEMS = (
     ('30', 'Discussion', 'Limitations', 'Trial limitations, addressing sources of potential bias, imprecision, generalisability, and, if relevant, multiplicity of analyses'),
 )
 
+# (mã, phần, chủ đề, nguyên văn) — PRISMA 2020 Table 1
+PRISMA_2020_ITEMS = (
+    ('1', 'Title', 'Title', 'Identify the report as a systematic review.'),
+    ('2', 'Abstract', 'Abstract', 'See the PRISMA 2020 for Abstracts checklist (Table 2).'),
+    ('3', 'Introduction', 'Rationale', 'Describe the rationale for the review in the context of existing knowledge.'),
+    ('4', 'Introduction', 'Objectives', 'Provide an explicit statement of the objective(s) or question(s) the review addresses.'),
+    ('5', 'Methods', 'Eligibility criteria', 'Specify the inclusion and exclusion criteria for the review and how studies were grouped for the syntheses.'),
+    ('6', 'Methods', 'Information sources', 'Specify all databases, registers, websites, organisations, reference lists and other sources searched or consulted to identify studies. Specify the date when each source was last searched or consulted.'),
+    ('7', 'Methods', 'Search strategy', 'Present the full search strategies for all databases, registers and websites, including any filters and limits used.'),
+    ('8', 'Methods', 'Selection process', 'Specify the methods used to decide whether a study met the inclusion criteria of the review, including how many reviewers screened each record and each report retrieved, whether they worked independently, and if applicable, details of automation tools used in the process.'),
+    ('9', 'Methods', 'Data collection process', 'Specify the methods used to collect data from reports, including how many reviewers collected data from each report, whether they worked independently, any processes for obtaining or confirming data from study investigators, and if applicable, details of automation tools used in the process.'),
+    ('10a', 'Methods', 'Data items', 'List and define all outcomes for which data were sought. Specify whether all results that were compatible with each outcome domain in each study were sought (e.g. for all measures, time points, analyses), and if not, the methods used to decide which results to collect.'),
+    ('10b', 'Methods', 'Data items', 'List and define all other variables for which data were sought (e.g. participant and intervention characteristics, funding sources). Describe any assumptions made about any missing or unclear information.'),
+    ('11', 'Methods', 'Study risk of bias assessment', 'Specify the methods used to assess risk of bias in the included studies, including details of the tool(s) used, how many reviewers assessed each study and whether they worked independently, and if applicable, details of automation tools used in the process.'),
+    ('12', 'Methods', 'Effect measures', 'Specify for each outcome the effect measure(s) (e.g. risk ratio, mean difference) used in the synthesis or presentation of results.'),
+    ('13a', 'Methods', 'Synthesis methods', 'Describe the processes used to decide which studies were eligible for each synthesis (e.g. tabulating the study intervention characteristics and comparing against the planned groups for each synthesis (item #5)).'),
+    ('13b', 'Methods', 'Synthesis methods', 'Describe any methods required to prepare the data for presentation or synthesis, such as handling of missing summary statistics, or data conversions.'),
+    ('13c', 'Methods', 'Synthesis methods', 'Describe any methods used to tabulate or visually display results of individual studies and syntheses.'),
+    ('13d', 'Methods', 'Synthesis methods', 'Describe any methods used to synthesise results and provide a rationale for the choice(s). If meta-analysis was performed, describe the model(s), method(s) to identify the presence and extent of statistical heterogeneity, and software package(s) used.'),
+    ('13e', 'Methods', 'Synthesis methods', 'Describe any methods used to explore possible causes of heterogeneity among study results (e.g. subgroup analysis, meta-regression).'),
+    ('13f', 'Methods', 'Synthesis methods', 'Describe any sensitivity analyses conducted to assess robustness of the synthesised results.'),
+    ('14', 'Methods', 'Reporting bias assessment', 'Describe any methods used to assess risk of bias due to missing results in a synthesis (arising from reporting biases).'),
+    ('15', 'Methods', 'Certainty assessment', 'Describe any methods used to assess certainty (or confidence) in the body of evidence for an outcome.'),
+    ('16a', 'Results', 'Study selection', 'Describe the results of the search and selection process, from the number of records identified in the search to the number of studies included in the review, ideally using a flow diagram (see Fig 1).'),
+    ('16b', 'Results', 'Study selection', 'Cite studies that might appear to meet the inclusion criteria, but which were excluded, and explain why they were excluded.'),
+    ('17', 'Results', 'Study characteristics', 'Cite each included study and present its characteristics.'),
+    ('18', 'Results', 'Risk of bias in studies', 'Present assessments of risk of bias for each included study.'),
+    ('19', 'Results', 'Results of individual studies', 'For all outcomes, present, for each study: (a) summary statistics for each group (where appropriate) and (b) an effect estimate and its precision (e.g. confidence/credible interval), ideally using structured tables or plots.'),
+    ('20a', 'Results', 'Results of syntheses', 'For each synthesis, briefly summarise the characteristics and risk of bias among contributing studies.'),
+    ('20b', 'Results', 'Results of syntheses', 'Present results of all statistical syntheses conducted. If meta-analysis was done, present for each the summary estimate and its precision (e.g. confidence/credible interval) and measures of statistical heterogeneity. If comparing groups, describe the direction of the effect.'),
+    ('20c', 'Results', 'Results of syntheses', 'Present results of all investigations of possible causes of heterogeneity among study results.'),
+    ('20d', 'Results', 'Results of syntheses', 'Present results of all sensitivity analyses conducted to assess the robustness of the synthesised results.'),
+    ('21', 'Results', 'Reporting biases', 'Present assessments of risk of bias due to missing results (arising from reporting biases) for each synthesis assessed.'),
+    ('22', 'Results', 'Certainty of evidence', 'Present assessments of certainty (or confidence) in the body of evidence for each outcome assessed.'),
+    ('23a', 'Discussion', 'Discussion', 'Provide a general interpretation of the results in the context of other evidence.'),
+    ('23b', 'Discussion', 'Discussion', 'Discuss any limitations of the evidence included in the review.'),
+    ('23c', 'Discussion', 'Discussion', 'Discuss any limitations of the review processes used.'),
+    ('23d', 'Discussion', 'Discussion', 'Discuss implications of the results for practice, policy, and future research.'),
+    ('24a', 'Other information', 'Registration and protocol', 'Provide registration information for the review, including register name and registration number, or state that the review was not registered.'),
+    ('24b', 'Other information', 'Registration and protocol', 'Indicate where the review protocol can be accessed, or state that a protocol was not prepared.'),
+    ('24c', 'Other information', 'Registration and protocol', 'Describe and explain any amendments to information provided at registration or in the protocol.'),
+    ('25', 'Other information', 'Support', 'Describe sources of financial or non-financial support for the review, and the role of the funders or sponsors in the review.'),
+    ('26', 'Other information', 'Competing interests', 'Declare any competing interests of review authors.'),
+    ('27', 'Other information', 'Availability of data, code, and other materials', 'Report which of the following are publicly available and where they can be found: template data collection forms; data extracted from included studies; data used for all analyses; analytic code; any other materials used in the review.'),
+)
+
+# (mã, phần, chủ đề, nguyên văn) — PRISMA 2020 for Abstracts (Table 2)
+PRISMA_2020_ABSTRACT_ITEMS = (
+    ('1', 'Title', 'Title', 'Identify the report as a systematic review.'),
+    ('2', 'Background', 'Objectives', 'Provide an explicit statement of the main objective(s) or question(s) the review addresses.'),
+    ('3', 'Methods', 'Eligibility criteria', 'Specify the inclusion and exclusion criteria for the review.'),
+    ('4', 'Methods', 'Information sources', 'Specify the information sources (e.g. databases, registers) used to identify studies and the date when each was last searched.'),
+    ('5', 'Methods', 'Risk of bias', 'Specify the methods used to assess risk of bias in the included studies.'),
+    ('6', 'Methods', 'Synthesis of results', 'Specify the methods used to present and synthesise results.'),
+    ('7', 'Results', 'Included studies', 'Give the total number of included studies and participants and summarise relevant characteristics of studies.'),
+    ('8', 'Results', 'Synthesis of results', 'Present results for main outcomes, preferably indicating the number of included studies and participants for each. If meta-analysis was done, report the summary estimate and confidence/credible interval. If comparing groups, indicate the direction of the effect (i.e. which group is favoured).'),
+    ('9', 'Discussion', 'Limitations of evidence', 'Provide a brief summary of the limitations of the evidence included in the review (e.g. study risk of bias, inconsistency and imprecision).'),
+    ('10', 'Discussion', 'Interpretation', 'Provide a general interpretation of the results and important implications.'),
+    ('11', 'Other', 'Funding', 'Specify the primary source of funding for the review.'),
+    ('12', 'Other', 'Registration', 'Provide the register name and registration number.'),
+)
+
 assert (len(STROBE_2007_ITEMS) == 41
         and len(RECORD_2015_ITEMS) == 13
         and len(STARD_2015_ITEMS) == 34
@@ -381,4 +445,6 @@ assert (len(STROBE_2007_ITEMS) == 41
         and len(SQUIRE_2_0_ITEMS) == 40
         and len(CARE_2013_ITEMS) == 23
         and len(HARPER_2023_MUC_LUC) == 43
-        and len(CONSORT_2025_ITEMS) == 42)
+        and len(CONSORT_2025_ITEMS) == 42
+        and len(PRISMA_2020_ITEMS) == 42
+        and len(PRISMA_2020_ABSTRACT_ITEMS) == 12)

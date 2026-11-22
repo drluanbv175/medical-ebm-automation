@@ -15,7 +15,9 @@ Nam, cho mọi thiết kế; «những gì không đạt chuẩn sẽ phải đ�
   - chuẩn Việt Nam; CROSS 5d, 11c; COSMIN I4; STARD 7, 13a, 14, 23, 26; TRIPOD+AI 8a.
 - RCT dùng CONSORT 2025 (42 mục). Nguyên văn lấy từ bản PLOS Med 2025;22(4):e1004587 (PMID 40228477), giấy phép
   CC BY 4.0 đọc từ khối `<license>` của XML Europe PMC PMC11996237. Bản BMJ (PMID 40228833) ghi «No commercial re-use»;
-  bản Lancet không có trên PMC. Tổng quan hệ thống dùng PRISMA 2020, chưa có tiêu chí theo mục ⇒ ⚪.
+  bản Lancet không có trên PMC.
+- Tổng quan hệ thống/phân tích gộp dùng PRISMA 2020 (42 dòng: 27 mục kể cả 10a–b, 13a–f, 16a–b, 20a–d, 23a–d, 24a–c),
+  thay PRISMA-P 2015 của đề cương. Mục 2 chấm theo 12 mục PRISMA 2020 for Abstracts. Chi tiết ở §3.4.
 - Bản thảo chưa có số liệu (còn ô [CẦN…], không `--nop`): chấm phương pháp và cấu trúc. Mục thuộc trọn Kết quả/Bàn
   luận/Kết luận và yếu tố `so_lieu` báo «chưa đo được». Yếu tố `so_lieu` gồm số liệu kết quả, số quyết định Hội đồng,
   quyết định đồng thuận/miễn, quyết định chia sẻ dữ liệu. «Chưa đo được» không bao giờ là đạt.
@@ -120,7 +122,71 @@ Chép nguyên chữ quyết định đã chốt; trường vắng, còn [CẦN] 
     dụng (27a/b).
   - Mọi thiết kế: nơi truy cập đề cương/SAP (CONSORT 3, STARD 29, TRIPOD+AI 18c).
 - Định tính: COREQ 20, SRQR 7 mục ⚠. Hai chuẩn chưa đối chiếu bảng gốc ⇒ chỉ cảnh báo, không chặn.
-- Tổng quan: PRISMA 2020 ⚪ — cần viết tiêu chí theo mục (bản PLOS Med/BMJ CC BY) ở lượt sau.
+- Tổng quan: xem §3.4.
+
+### 3.4. Tổng quan hệ thống — PRISMA 2020 theo mục (22/11/2026)
+
+**Bản quyền.** Đọc khối `<license>` của XML Europe PMC hai bản. Bản PLOS Med 2021;18(3):e1003583 (PMID 33780438;
+PMC8007028): `xlink:href` creativecommons by/4.0, «© 2021 Page et al» ⇒ chép nguyên văn Table 1 (42 dòng) và Table 2
+«PRISMA 2020 for Abstracts» (12 mục) vào `tools/chuan_bao_cao_items.py` qua `sinh_chuan_bao_cao_items.py` (`muc_prisma`,
+`muc_prisma_tom_tat`, kiểm số dòng 42/12, `--ghi` qua tệp tạm). Bản BMJ 2021;372:n71 (PMID 33782057; PMC8005924) có
+khối CC BY 4.0 nhưng dòng bản quyền ghi «No commercial re-use» — mâu thuẫn, không chép (cùng cách CONSORT 2025). Sinh
+lại kho: 12 hằng cũ so từng phần tử = 0 khác biệt; chỉ thêm `PRISMA_2020_ITEMS`, `PRISMA_2020_ABSTRACT_ITEMS`, hai khoá
+`GIAY_PHEP` và câu `assert` số dòng. DNS của VPN không phân giải `www.ebi.ac.uk` lúc tải (PMC OAI trả 429) ⇒ tải bằng
+`curl --resolve` với IP lấy từ DNS công cộng.
+
+**Tiêu chí** (`tools/tieu_chi_ban_thao.py`, `_PRISMA_2020`): cùng khuôn `_CONSORT` — chương IMRAD, tiêu chí tiếng Việt,
+yếu tố; điều kiện đi qua `_pham_vi` (20c chỉ đòi khi Phương pháp/Kết quả có phân nhóm; 20d khi có phân tích độ nhạy).
+Chữ «ideally» (sơ đồ luồng ở 16a) không là yếu tố bắt buộc; «where appropriate» (thống kê từng nhóm ở 19) chỉ đòi khi
+kết cục có số đo theo nhánh. Yếu tố số liệu (số bản ghi, số nghiên cứu, ước lượng gộp, KTC, nhận định Egger, mức GRADE,
+tài liệu chia sẻ) theo luật «chưa đo được» của K18.
+
+**Đo trên `ZZCANARY-TONG-QUAN-GOP`** (giả lập 21/11; nháp sinh lại bằng bản sao repo giả lập + khoá ký giả của lượt đó):
+
+| Bản | Đạt | Thiếu | Chưa đo | Không áp dụng |
+|---|---|---|---|---|
+| Bản cuối 21/11 (sinh trước #405, có số liệu) — lượt đầu | 23 | 18 | 0 | 1 |
+| Bản cuối 21/11 — sau khi sửa 3 ca đạt nhầm | 22 | 19 | 0 | 1 |
+| Nháp sinh bằng bộ sinh của #405 | 13 | 13 | 15 | 1 |
+| Nháp sinh bằng bộ sinh mới | 20 | 6 | 16 | 0 |
+| Bản cuối 21/11 + phần bộ sinh mới thêm (ghép) | 30 | 12 | 0 | 0 |
+
+Đạt nhầm đã sửa ở bộ kiểm (đọc lại từng dòng bằng chứng):
+
+| Mục | Nguyên nhân | Sửa |
+|---|---|---|
+| 6 | «search unpublished (clinicaltrials.gov)» trong bảng sai lệch được nhận là «cơ sở dữ liệu đã tìm» | Yếu tố CSDL chỉ nhận CSDL thư mục (PubMed, Embase, CENTRAL…); sổ đăng ký thử nghiệm không thay được |
+| 17 | «Bảng 1. Đặc điểm nền người tham gia» (khuôn nghiên cứu gốc, trung bình gộp mọi nghiên cứu) được nhận là đặc điểm từng nghiên cứu | Bảng phải là đặc điểm (các/từng) nghiên cứu/thử nghiệm |
+| 19 | «biến kết cục … nằm ở Bảng 2/3» được nhận là số biến cố/số người | «x/n» cần mẫu số ≥ 2 chữ số, không dính ngày |
+| 11 (bộ sinh) | Khối §3d viết liền một đoạn: «RoB 2» (dòng biến trích xuất) + «Hai người … độc lập» (dòng chọn nghiên cứu) ghép thành «cùng đoạn» | Mỗi dữ kiện của §3d là một đoạn |
+
+Thiếu thật — đã sửa ở bộ sinh G7 (`run_g7_auto.py`, chỉ cho `sr_ma`, chép nguyên chữ, trường vắng/[CẦN]/«Không áp dụng»
+thì bỏ dòng, không thêm ô [CẦN] mới để không làm vỡ giả lập 24 kịch bản):
+
+- §3d «Nguồn tìm, chọn nghiên cứu, trích xuất và tổng hợp (PRISMA 2020 mục 5–15)»: nguồn thông tin + ngày tìm cuối,
+  chiến lược tìm, quy trình chọn nghiên cứu (G1 `information_sources`, `search_last_date`, `search_strategy`,
+  `study_selection_process`); biến trích xuất (nhãn từ điển G5, bỏ `study_id`); thước đo hiệu ứng, mô hình gộp, không
+  đồng nhất, sai lệch công bố, mức chắc chắn (SAP §5); nhóm nhỏ tiền định, kiểm định tương tác (SAP §7); trình bày kết
+  quả (SAP §3 + tên bảng khung §11) ⇒ mục 5, 6, 8, 10b, 13c, 13e, 15 đạt.
+- Tóm tắt: «Information sources» (A4), «Synthesis methods» (A6, SAP §5), «Funding» chỉ khi G7 `funding_declared` đã
+  khai (A11). Tên cơ quan đăng ký (A12, 24a) đã có từ #405 (`_dang_ky_g7`).
+
+Thiếu thật — còn mở, ghi rõ chủ việc:
+
+- Tác giả/PI (chưa chốt ở trường nào): công cụ đánh giá nguy cơ sai lệch trong tóm tắt (2-A5), tổng số người tham gia
+  (2-A7), hạn chế của bằng chứng trong tóm tắt (2-A9); câu lệnh tìm đầy đủ hoặc phụ lục chứa câu lệnh (7 — G1 chỉ có
+  mô tả); số người đánh giá nguy cơ sai lệch và có độc lập không (11); nơi truy cập đề cương (24b); sửa đổi so với đăng
+  ký/đề cương hoặc nêu không có (24c).
+- G6/kết quả (dữ liệu, kịch bản chưa có): số bản ghi tìm được, lý do loại kèm trích dẫn (16a, 16b — cùng việc nối
+  `SO_DO_LUONG` như STROBE 13a của phiên khâu 9–10/#403); bảng đặc điểm TỪNG nghiên cứu kèm trích dẫn (17 — giả lập dùng
+  mã TN01–TN15 không có TLTK); số biến cố/số người từng nhánh của từng nghiên cứu (19 — tóm tắt G6 chỉ có log RR);
+  phân nhóm theo loại thuốc của SAP §7 chưa chạy (20c); kiểm định Egger của SAP §5 với k = 15 chưa chạy (21); GRADE
+  chưa xếp (22).
+- Đọc thấy khi phân xử, ngoài K18: Bàn luận bản cuối ghi «chưa đánh giá sai lệch công bố (cần ≥ 10 thử nghiệm và biểu đồ
+  phễu)» trong khi k = 15 và có Hình 4 phễu; kết cục phụ ở Kết quả «(tử vong tim mạch; biến cố thận)» lệch G1 («Tử vong
+  tim mạch; Biến cố bất lợi nghiêm trọng») — chữ của kịch bản giả lập `gia_lap_ho_so_sau_g6.py`; câu «tác giả chưa đọc
+  toàn văn bài này» ở §2 Bàn luận là chữ kịch bản `gia_lap_kich_ban_them.py`; bảng sai lệch G1 ghi «registrátion» (lỗi
+  dấu ở `run_g1_auto.py`) và liệt kê ROBINS-I/QUADAS-3 cho tổng quan chỉ gồm RCT.
 
 ## 4. Kiểm
 
@@ -128,6 +194,13 @@ Chép nguyên chữ quyết định đã chốt; trường vắng, còn [CẦN] 
 - Kiểm đột biến 17 phép (chạy `python -B`, xoá `__pycache__` trước mỗi phép): 17/17 làm test đỏ; phục hồi xanh.
   Phép «bỏ xoá trắng TLTK/bảng kiểm» lần đầu KHÔNG bị bắt — test cũ đo STROBE 1a, vốn chỉ tìm ở Tiêu đề/Tóm tắt. Đã
   sửa phép thử sang CROSS 5d (mục có phần phụ lục).
+- PRISMA 2020 (`tests/test_k18_prisma_2020_20261122.py`, 23 test): kho nguyên văn và bộ đọc bảng (rowspan, hàng phần,
+  colspan); bản thảo tổng hợp đạt đủ 42 dòng; nháp chưa số liệu ⇒ chưa đo; từng ca đạt nhầm ở §3.4; phạm vi điều kiện
+  20c; khối §3d và tóm tắt của bộ sinh, kể cả vòng kín «khối bộ sinh in ⇒ K18 nhận mục». Kiểm đột biến 16 phép trên
+  `tieu_chi_ban_thao.py`, `run_g7_auto.py`, `sinh_chuan_bao_cao_items.py`: 16/16 làm test đỏ, phục hồi xanh. Lượt đầu 2
+  phép lọt và đã sửa: câu bàn luận dùng để thử phạm vi 20c là câu phủ định (luật phủ định K17 đã loại sẵn) ⇒ đổi sang câu
+  khẳng định về nghiên cứu khác; mẫu ngày ISO riêng thừa (ngày «2027-06-30» khớp sẵn mẫu năm–tháng của `K.NGAY`) ⇒ bỏ,
+  thay phép đột biến bằng «ngày tìm cuối không cần có ngày».
 - 337 test K17/G7/sinh đề cương và 1108 test G8/G9/G10/giả lập ngắn xanh. Giả lập trọn vòng 24 kịch bản chỉ chạy đủ trên
   CI (`GIA_LAP_TRON_VONG=1`).
 

@@ -69,12 +69,13 @@ def test_consort_2025_nguyen_van_cc_by_du_42_muc_khop_bang_tieu_chi():
     assert " • the number of participants included in the analysis" in muc26  # gạch đầu dòng không dính chữ
 
 
-def test_rct_dung_consort_2025_thay_spirit_tong_quan_prisma_2020_chua_do():
+def test_rct_dung_consort_2025_thay_spirit_tong_quan_dung_prisma_2020_theo_muc():
     kq = _kq(_bt(), "rct")
     assert any(c == "CONSORT 2025" for c, _ in kq["chuan"]) and not any(c == "SPIRIT 2025" for c, _ in kq["chuan"])
+    # 22/11/2026: PRISMA 2020 có tiêu chí theo mục (tests/test_k18_prisma_2020_20261122.py) — không còn ⚪ cả chuẩn
     kq_sr = _kq(_bt(), "systematic_review")
-    assert ("PRISMA 2020" in dict(kq_sr["chua_do"])) and not any(r.trang_thai == "dat" and r.chuan == "PRISMA 2020"
-                                                                  for r in kq_sr["ket_qua"])
+    assert not kq_sr["chua_do"] and [c for c, _ in kq_sr["chuan"]] == ["PRISMA 2020"]
+    assert len([r for r in kq_sr["ket_qua"] if r.chuan == "PRISMA 2020"]) == 42
 
 
 # ───────────────────────────── tách chương IMRAD ─────────────────────────────
