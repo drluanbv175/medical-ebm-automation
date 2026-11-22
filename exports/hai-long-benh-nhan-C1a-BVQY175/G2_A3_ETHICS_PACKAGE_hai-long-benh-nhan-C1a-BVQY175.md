@@ -44,7 +44,8 @@ THÔNG TIN TỔNG QUAN:
  Cỡ mẫu dự kiến: 1000
  Thời gian nghiên cứu: bắt đầu SAU phê duyệt IRB — một giai đoạn liên tục phủ đều khung giờ/ngày trong tuần (đề cương §4.2); dự kiến từ tháng 12/2026 đến tháng 12/2028 theo thời gian nghiên cứu PI đã chốt ở G1 (11/10/2026); ngày bắt đầu thu thập = sau ngày Hội đồng phê duyệt
  Nguồn tài trợ: Không có tài trợ bên ngoài, kinh phí tự túc (chủ nhiệm đề tài tự chi trả)
- Xung đột lợi ích (COI): Không có xung đột lợi ích (khai đầy đủ ở Tài liệu 8)
+ Xung đột lợi ích (COI): Có xung đột lợi ích cơ cấu — chủ nhiệm đề tài công tác tại chính Khoa C1a, đơn vị được
+   đánh giá; quản lý theo kế hoạch ở mục 2.7.1 và Bảng 2.8 của đề cương; không có nhà tài trợ (khai đầy đủ ở Tài liệu 8)
  Đăng ký nghiên cứu: OSF Registries (https://osf.io/registries) — đăng ký TRƯỚC người tham gia đầu tiên (khảo sát tiến cứu, đề cương); mã đăng ký cập nhật sau khi đăng ký
 
 CAM KẾT:
@@ -63,6 +64,10 @@ Kèm theo hồ sơ:
  ☐ Tài liệu 8: Khai báo COI + Tài trợ + AI
  ☐ Đề cương đầy đủ (từ G1)
  ☐ CV chủ nhiệm + nghiên cứu viên chính
+ ☐ Phụ lục B1 đề cương: bản thông tin, phiếu đồng ý pha phát triển bộ câu hỏi; thỏa thuận tham gia
+   và cam kết bảo mật của hội đồng chuyên gia
+ ☐ Văn bản cử người giữ dữ liệu độc lập và người giám sát độc lập; văn bản đồng ý tiếp nhận lưu trữ
+   cơ sở dữ liệu của đơn vị lưu giữ
 
 Chủ nhiệm đề tài:
 ___________________________ Ký, ghi rõ họ tên Ngày: ___/___/2026
@@ -110,8 +115,10 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
  Cung cấp dữ liệu tỷ lệ hiện mắc/tỷ lệ các yếu tố liên quan tại địa phương; chi phí thấp
 
 7. BẢO MẬT DỮ LIỆU:
- Dữ liệu mã hóa, khử định danh theo Luật 91/2025/QH15.
- Không lưu PII; bảng liên kết lưu riêng có mật khẩu.
+ Phiếu khảo sát khuyết danh; thời gian chờ từ HIS ghép theo quy trình giả danh hóa có kiểm soát do Phòng CNTT/QLCL
+ thực hiện; bảng đối chiếu do Phòng CNTT/QLCL giữ, hủy trong vòng 30 ngày; nhóm nghiên cứu chỉ nhận dữ liệu giả danh
+ hóa (ngày trong tuần, không có ngày theo lịch), bảo vệ như dữ liệu cá nhân theo Luật 91/2025/QH15; cơ sở dữ liệu
+ lưu ngoài Khoa C1a do người giữ dữ liệu độc lập quản lý.
 
 8. KẾT QUẢ ĐẦU RA DỰ KIẾN:
  ☐ Bài báo đăng tạp chí quốc tế/trong nước có phản biện
@@ -134,6 +141,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
 | 1 | Rò rỉ thông tin từ phiếu | Rất thấp | Nhẹ | Phiếu nặc danh ngay từ khâu phát, không thu tên/số điện thoại; ICF ký tên lưu TÁCH RIÊNG, không liên kết với phiếu |
 | 2 | Gánh nặng thời gian | Thấp | Không đáng kể | Phiếu tự điền ~15–20 phút tại khoa sau khi khám xong, MỘT lần; dừng bất kỳ lúc nào |
 | 3 | Ngại nhận xét về nhân viên y tế | Thấp | Nhẹ | Nặc danh, hòm phiếu kín; điều tra viên không thuộc kíp khám; khẳng định không ảnh hưởng chăm sóc |
+| 4 | Suy ngược lượt khám hoặc bác sĩ ngồi bàn từ số liệu ghép HIS | Rất thấp | Trung bình | Chỉ chuyển ngày trong tuần (không chuyển ngày theo lịch), khung giờ và mã bàn khám giả danh; bảng đối chiếu và bảng khóa mã bàn khám do Phòng CNTT/QLCL giữ rồi hủy; cơ sở dữ liệu lưu ngoài Khoa C1a, chủ nhiệm đề tài không truy cập số liệu cấp cá nhân; không tạo và không công bố kết quả theo bàn khám hay nhân viên |
 
 | | **Lợi ích bù đắp** |
 |---|---|
@@ -176,7 +184,7 @@ Chúng tôi trân trọng mời Ông/Bà tham gia một nghiên cứu về sự 
  - Tự điền một phiếu khảo sát không ghi họ tên tại khu vực chờ, mất khoảng 15–20 phút, một lần duy nhất ngay trong lượt khám hôm nay;
  - Bỏ phiếu khảo sát vào hòm phiếu kín.
  Ông/Bà không phải đến bệnh viện thêm lần nào và không phải làm thêm xét nghiệm hay thủ thuật nào.
- Phiếu khảo sát chỉ mang một mã nghiên cứu. Nhân viên được ủy quyền của Phòng Công nghệ thông tin/Quản lý chất lượng dùng mã này để lấy từ hệ thống thông tin bệnh viện (HIS) một số thông tin về lượt khám của Ông/Bà: số phút chờ khám, bàn khám (dưới dạng mã), ngày và khung giờ khám, có làm xét nghiệm/chẩn đoán hình ảnh hay không và số quầy phải qua. Chỉ các thông tin này được chuyển cho nhóm nghiên cứu, kèm mã nghiên cứu. Nhóm nghiên cứu không nhận họ tên, số hồ sơ bệnh án hay thông tin về bệnh của Ông/Bà. Bảng đối chiếu mã do Phòng Công nghệ thông tin/Quản lý chất lượng giữ và hủy trong vòng 30 ngày.
+ Phiếu khảo sát chỉ mang một mã nghiên cứu. Khi phát phiếu, điều tra viên ghi mã này cùng số thứ tự khám, ngày khám của Ông/Bà và giờ phát phiếu lên một phiếu ghép riêng, không ghi họ tên; cuối buổi, phiếu ghép được niêm phong và giao cho nhân viên được ủy quyền của Phòng Công nghệ thông tin/Quản lý chất lượng. Điều tra viên không giữ bản sao phiếu ghép, không tham gia mở hòm chứa phiếu do mình phát và không nhập số liệu. Nhân viên được ủy quyền của Phòng Công nghệ thông tin/Quản lý chất lượng dùng mã này để lấy từ hệ thống thông tin bệnh viện (HIS) một số thông tin về lượt khám của Ông/Bà: số phút chờ khám (tính từ lúc lấy số, và tính lại sau khi trừ khoảng thời gian trước giờ khoa bắt đầu gọi khám, trước giờ hẹn khám nếu có và giờ nghỉ trưa, kèm ghi nhận lượt chờ có rơi vào các khoảng này hay không), bàn khám (dưới dạng mã), ngày trong tuần và khung giờ khám (không chuyển ngày khám cụ thể), có làm xét nghiệm/chẩn đoán hình ảnh hay không và số quầy phải qua. Chỉ các thông tin này được chuyển cho nhóm nghiên cứu, kèm mã nghiên cứu. Nhóm nghiên cứu không nhận họ tên, số hồ sơ bệnh án hay thông tin về bệnh của Ông/Bà. Bảng đối chiếu mã do Phòng Công nghệ thông tin/Quản lý chất lượng giữ và hủy trong vòng 30 ngày.
 
 3. RỦI RO VÀ BẤT TIỆN CÓ THỂ XẢY RA
  Nghiên cứu chỉ hỏi ý kiến, không can thiệp vào việc khám chữa bệnh.
@@ -189,7 +197,7 @@ Chúng tôi trân trọng mời Ông/Bà tham gia một nghiên cứu về sự 
  Ông/Bà không nhận được lợi ích trực tiếp về y khoa. Ý kiến của Ông/Bà giúp Bệnh viện cải tiến chất lượng phục vụ cho chính Ông/Bà và những người bệnh khác.
 
 4b. NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH
- Nghiên cứu không có tài trợ bên ngoài (kinh phí tự túc, chủ nhiệm đề tài tự chi trả). Chủ nhiệm đề tài công tác tại Khoa C1a – đơn vị được đánh giá; vì vậy việc mời tham gia, thu phiếu, mở hòm phiếu, nhập liệu và mã hóa ý kiến đều do người ngoài Khoa thực hiện.
+ Nghiên cứu không có tài trợ bên ngoài; kinh phí do chủ nhiệm đề tài tự chi trả. Chủ nhiệm đề tài là bác sĩ của chính Khoa Khám bệnh C1a, đơn vị được đánh giá; vì vậy việc mời tham gia, phát và thu phiếu, mở hòm phiếu, nhập liệu, lưu giữ số liệu và mã hóa ý kiến đều do người không thuộc Khoa C1a thực hiện, và chủ nhiệm đề tài không xem phiếu cũng như số liệu riêng của từng người, chỉ nhận kết quả tổng hợp.
 
 4c. HỖ TRỢ/BỒI DƯỠNG KHI THAM GIA
  Ông/Bà không phải trả bất kỳ chi phí nào và không nhận khoản bồi dưỡng nào khi tham gia.
@@ -197,7 +205,8 @@ Chúng tôi trân trọng mời Ông/Bà tham gia một nghiên cứu về sự 
 5. BẢO MẬT THÔNG TIN CÁ NHÂN
  - Phiếu khảo sát không ghi họ tên, số điện thoại, địa chỉ, số thẻ bảo hiểm y tế hay số hồ sơ bệnh án.
  - Thông tin lấy từ hệ thống thông tin bệnh viện được ghép theo cách giả danh hóa có kiểm soát như mô tả ở mục 2.
- - Số liệu được lưu trữ an toàn (ổ đĩa mã hóa), chỉ nhóm nghiên cứu được tiếp cận, lưu 2 năm sau khi kết thúc nghiên cứu rồi hủy.
+ - Số liệu được lưu trữ an toàn (ổ đĩa mã hóa) ngoài Khoa C1a, do người giữ dữ liệu không thuộc Khoa quản lý; chỉ những
+   người được phân quyền trong nhóm nghiên cứu được tiếp cận; lưu 2 năm sau khi kết thúc nghiên cứu rồi hủy.
  - Kết quả chỉ công bố dưới dạng số liệu tổng hợp; không ai có thể nhận ra câu trả lời của Ông/Bà.
  - Thông tin cá nhân được bảo vệ theo Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15.
 
@@ -257,7 +266,7 @@ Principal Investigator: Nguyễn Hà Luân, MD, Specialist Level I (BS.CKI)
  - complete, by yourself, one questionnaire that does not ask for your name, in the waiting area (about 15–20 minutes, once only, during today's visit);
  - put the questionnaire into a sealed ballot box.
  You will not need any additional visit, test or procedure.
- The questionnaire carries only a study code. Authorised staff of the IT/Quality Management department use this code to retrieve from the hospital information system (HIS) some information about your visit: waiting time in minutes, the examination desk (as a code), date and time slot, whether laboratory or imaging tests were done, and the number of counters visited. Only this information is passed to the research team, together with the study code. The research team never receives your name, medical record number or any information about your illness. The matching table is kept by IT/Quality Management and destroyed within 30 days.
+ The questionnaire carries only a study code. When handing out the questionnaire, the data collector writes this code, your queue number, the visit date and the time of hand-out on a separate linkage slip that carries no name; at the end of the session the slips are sealed and handed to authorised staff of the IT/Quality Management department. The data collector keeps no copy of the slips, does not open the ballot boxes containing the questionnaires he or she handed out and does not enter data. Authorised staff of the IT/Quality Management department use this code to retrieve from the hospital information system (HIS) some information about your visit: waiting time in minutes (counted from taking the queue number, and recounted after removing the time before the department starts calling patients, the time before your appointment if you have one, and the lunch break, with a note of whether your wait fell into these periods), the examination desk (as a code), day of the week (not the calendar date) and time slot, whether laboratory or imaging tests were done, and the number of counters visited. Only this information is passed to the research team, together with the study code. The research team never receives your name, medical record number or any information about your illness. The matching table is kept by IT/Quality Management and destroyed within 30 days.
 
 3. RISKS AND DISCOMFORTS
  The study only asks for your opinion; it does not change your medical care.
@@ -270,7 +279,7 @@ Principal Investigator: Nguyễn Hà Luân, MD, Specialist Level I (BS.CKI)
  There is no direct medical benefit to you. Your views will help the hospital improve its services for you and for other patients.
 
 4b. FUNDING AND CONFLICTS OF INTEREST
- The study has no external funding (self-funded by the principal investigator). The principal investigator works in Department C1a, the unit being evaluated; therefore invitation, questionnaire collection, ballot-box opening, data entry and coding of comments are all done by people from outside the department.
+ The study has no external funding; it is self-funded by the principal investigator. The principal investigator is a physician of Department C1a, the unit being evaluated; therefore invitation, questionnaire distribution and collection, ballot-box opening, data entry, data custody and coding of comments are all done by people from outside Department C1a, and the principal investigator does not see the questionnaires or any individual's data, only aggregate results.
 
 4c. PAYMENT OR SUPPORT FOR PARTICIPATION
  You will not pay anything and will not receive any payment for taking part.
@@ -278,7 +287,8 @@ Principal Investigator: Nguyễn Hà Luân, MD, Specialist Level I (BS.CKI)
 5. CONFIDENTIALITY
  - The questionnaire does not record your name, telephone number, address, health insurance number or medical record number.
  - Information from the hospital information system is linked by controlled pseudonymisation as described in section 2.
- - Data are stored securely (encrypted drive), accessible only to the research team, kept for 2 years after the end of the study and then destroyed.
+ - Data are stored securely (encrypted) outside Department C1a by an independent data custodian; only authorised members
+   of the research team have access; kept for 2 years after the end of the study and then destroyed.
  - Results are published only in aggregate form; no one will be able to identify your answers.
  - Your personal data are protected under the Vietnamese Personal Data Protection Law No. 91/2025/QH15.
 
@@ -328,50 +338,57 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  ☐ Dữ liệu thứ cấp (hồ sơ bệnh án), mã giả danh
  ☑ Kết quả khảo sát (phiếu tự điền, KHÔNG ghi thông tin định danh) — không dùng hồ sơ bệnh án
  ☑ Mốc thời gian hành chính từ HIS/eHospital (hoàn tất đăng ký, gọi vào buồng khám) ghép theo mã nghiên cứu —
-   nhóm nghiên cứu chỉ nhận mã nghiên cứu kèm số phút chờ, mã bàn khám giả danh, ngày và khung giờ khám, có làm cận lâm sàng hay không và số quầy phải qua (đề cương §4.6.3)
+   nhóm nghiên cứu chỉ nhận mã nghiên cứu kèm số phút chờ (theo định nghĩa chính và thời gian chờ hiệu dụng, kèm hai chỉ báo lấy số trước giờ khoa gọi khám và chờ vắt qua giờ nghỉ trưa), mã bàn khám giả danh, ngày trong tuần (không chuyển ngày theo lịch) và khung giờ khám, có làm cận lâm sàng hay không và số quầy phải qua (đề cương §4.6.3)
 
 2. THU THẬP:
  Công cụ: ☐ REDCap ☐ Google Forms (institutional) ☐ Phiếu giấy
  ☑ Phiếu giấy (nặc danh, tự điền tại khoa)
- Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép
- Phê duyệt quyền: Chủ nhiệm đề tài
+ Phân quyền truy cập: theo bảng phân quyền cố định trong đề cương (Phụ lục F); chủ nhiệm đề tài không có tài khoản
+   truy cập số liệu cấp cá nhân, chỉ nhận kết quả tổng hợp do nhà thống kê xuất; điều tra viên không truy cập
+ Cấp quyền: người giữ dữ liệu độc lập (Phòng CNTT hoặc Phòng QLCL, không thuộc Khoa C1a); thay đổi bảng phân quyền
+   trình Hội đồng Y đức trước khi áp dụng
 
 3. KHỬ ĐỊNH DANH:
  Phương pháp: GIẢ DANH HÓA CÓ KIỂM SOÁT — phiếu KHÔNG có ô định danh, chỉ mang mã nghiên cứu; phiếu
  đồng ý (ICF) ký tên lưu tách biệt vật lý, không ghép với phiếu (đề cương §4.11)
  Ghép HIS: nhân sự được uỷ quyền của Phòng CNTT/QLCL trích hai mốc thời gian và giữ bảng ghép mã nghiên cứu ↔
- lượt khám; nhóm nghiên cứu chỉ nhận mã nghiên cứu kèm các trường vận hành không định danh nêu trên; bảng ghép huỷ trong 30 ngày, có nhật ký huỷ
+ lượt khám; nhóm nghiên cứu chỉ nhận mã nghiên cứu kèm các trường vận hành không định danh trực tiếp nêu trên
+ (dữ liệu giả danh hóa, chưa phải dữ liệu đã khử nhận dạng, bảo vệ như dữ liệu cá nhân); bảng ghép huỷ trong 30 ngày, có nhật ký huỷ
  (đề cương §4.6.3, §4.11, §6.5)
  Ngưỡng k-ẩn danh: ≥5 (nhóm nhỏ sẽ nhóm lại trước công bố)
 
 4. LƯU TRỮ:
- Nơi lưu: ổ đĩa mã hóa AES-256 tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175;
- chỉ nhóm nghiên cứu được truy cập
+ Nơi lưu: ngoài Khoa C1a — máy chủ của Bệnh viện do Phòng CNTT quản lý, hoặc ổ đĩa mã hóa AES-256 đặt tại
+   Phòng QLCL nếu Phòng CNTT không bố trí được máy chủ; người giữ dữ liệu độc lập quản lý; không lưu số liệu
+   cấp cá nhân trên thiết bị của Khoa C1a; chỉ người được phân quyền truy cập
  Bảo mật: AES-256 · mật khẩu cấp người dùng · VPN (nếu từ xa)
- Sao lưu: hằng tuần, 2 bản độc lập
- Thời gian lưu: 2 năm sau kết thúc nghiên cứu
- (theo TT38/2018/TT-BYT về lưu trữ hồ sơ y tế)
+ Sao lưu: hằng tuần, 2 bản độc lập, do người giữ dữ liệu độc lập quản lý
+ Thời gian lưu: 2 năm sau kết thúc nghiên cứu (thời hạn đã nêu trong đề cương và bản thông tin;
+   chỉ lưu trong thời gian phù hợp với mục đích xử lý — Luật 91/2025/QH15, Điều 3 khoản 3)
 
 5. CHIA SẺ / MỞ DỮ LIỆU:
  ☐ Không chia sẻ
  ☑ Chia sẻ theo yêu cầu hợp lý (DTA cần ký trước)
  ☐ Mở hoàn toàn sau ẩn danh hóa
  Lựa chọn của chủ nhiệm (03/10/2026): chia sẻ có kiểm soát theo yêu cầu — bộ dữ
- liệu đã khử định danh kèm từ điển biến, sau khi công bố, cho mục đích nghiên
- cứu hợp lý, ký thoả thuận sử dụng dữ liệu (DTA) trước.
+ liệu không chứa thông tin định danh trực tiếp (dữ liệu giả danh hóa, mã bàn khám được gán lại ngẫu nhiên)
+ kèm từ điển biến, sau khi công bố, cho mục đích nghiên cứu hợp lý, khi Hội đồng Y đức cho phép và bên nhận
+ ký thoả thuận sử dụng dữ liệu (DTA) trước.
 
 6. XỬ LÝ VI PHẠM DỮ LIỆU:
- Theo NĐ 356/2025/NĐ-CP Điều 23:
- ∎ Phát hiện vi phạm → báo cáo nội bộ trong 24 giờ
- ∎ Thông báo cơ quan bảo vệ dữ liệu trong 72 giờ
+ Theo Luật 91/2025/QH15, Điều 23 (Chính phủ quy định chi tiết tại NĐ 356/2025/NĐ-CP):
+ ∎ Phát hiện vi phạm → người giữ dữ liệu độc lập báo ngay cho chủ nhiệm đề tài và người giám sát độc lập;
+   báo cáo nội bộ trong 24 giờ
+ ∎ Thông báo cơ quan chuyên trách bảo vệ dữ liệu cá nhân chậm nhất 72 giờ kể từ khi phát hiện (Điều 23 khoản 1)
  ∎ Thông báo người tham gia bị ảnh hưởng ngay khi xác nhận
  ∎ Khắc phục và điều tra nguyên nhân, lưu hồ sơ xử lý
  Quy trình: theo qui định của đơn vị
 
 7. CUỐI NGHIÊN CỨU:
- ∎ Dữ liệu nhận dạng: xóa/hủy vật lý trong 12 tháng
- ∎ Dữ liệu ẩn danh hóa: lưu theo quy định lưu trữ y tế
- ∎ Backup: xóa an toàn (overwrite 3 lần tiêu chuẩn DoD)
+ ∎ Phiếu ghép, bảng đối chiếu và bảng khóa mã bàn khám: Phòng CNTT/QLCL hủy trong vòng 30 ngày sau khi
+   hoàn tất đối chiếu và làm sạch số liệu (bảng khóa mã bàn khám hủy cùng bảng đối chiếu cuối cùng), có biên bản
+ ∎ Bộ số liệu giả danh hóa, phiếu giấy và bản sao lưu: lưu 2 năm sau khi kết thúc nghiên cứu, sau đó phiếu
+   giấy hủy bằng máy hủy tài liệu, tệp điện tử và bản sao lưu xóa an toàn, có biên bản (người giữ dữ liệu độc lập thực hiện)
 ---
 "DRAFT, Cần chủ nhiệm kiểm chứng và DMP Luật 91/2025 hoàn chỉnh."
 ```
@@ -395,6 +412,10 @@ HỒ SƠ BẮT BUỘC:
 ☐ CV nghiên cứu viên chính (nếu có)
 ☐ Khai báo COI + AI (Tài liệu 8)
 ☐ Kế hoạch Quản lý Dữ liệu (Tài liệu 6)
+☐ Kế hoạch quản lý xung đột lợi ích (mục 2.7.1, Bảng 2.8 đề cương); bản khai báo xung đột lợi ích đã ký của
+ chủ nhiệm và của từng thành viên nhóm nghiên cứu (Tài liệu 8)
+☐ Văn bản cử người giữ dữ liệu độc lập và người giám sát độc lập; văn bản đồng ý tiếp nhận lưu trữ
+☐ Phụ lục B1 đề cương: bản thông tin, phiếu đồng ý pha phát triển bộ câu hỏi; thỏa thuận hội đồng chuyên gia
 
 HỒ SƠ BỔ SUNG (theo loại NC):
 ☐ [RCT / can thiệp]: Hồ sơ an toàn DSMB (an-toan-nghien-cuu)
@@ -432,15 +453,23 @@ Tên chủ nhiệm: Nguyễn Hà Luân
 Chức vụ: Bác sĩ Chuyên khoa I (BS.CKI) | Đơn vị: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 Ngày khai báo: 31/07/2026
 
-A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH (12 tháng gần nhất):
-☑ Không có
+A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH (12 tháng gần nhất) — người ký tự đánh dấu:
+☐ Không có
 ☐ Có → [Liệt kê: Tên công ty · Loại quan hệ (cổ phần/tư vấn/
  thù lao/tài trợ hội nghị) · Giá trị (nếu phải khai)]
 
-B. XUNG ĐỘT LỢI ÍCH PHI TÀI CHÍNH:
-☑ Không có
+B. XUNG ĐỘT LỢI ÍCH PHI TÀI CHÍNH CÁ NHÂN — người ký tự đánh dấu:
+☐ Không có
 ☐ Có → [Quan hệ cá nhân với người được nghiên cứu / lợi ích
  học thuật (thăng tiến/bằng sáng chế) / quan điểm đối nghịch]
+
+B2. XUNG ĐỘT LỢI ÍCH CẤU TRÚC/THỂ CHẾ (theo hồ sơ đề tài):
+☑ Có → Chủ nhiệm đề tài công tác tại chính Khoa Khám bệnh C1a, đơn vị được đánh giá; người bệnh được mời là
+ người bệnh của khoa và người được nhận xét là đồng nghiệp của chủ nhiệm. Kinh phí tự túc nên các vai trò cần độc
+ lập nhận thù lao từ kinh phí của chủ nhiệm. Quản lý theo mục 2.7.1 và Bảng 2.8 đề cương: người ngoài khoa mời,
+ lấy đồng ý, thu phiếu, mở hòm, nhập liệu, mã hóa ý kiến; người giữ dữ liệu độc lập lưu cơ sở dữ liệu ngoài khoa
+ và cấp quyền; chủ nhiệm không truy cập số liệu cấp cá nhân; thù lao ấn định trước, không phụ thuộc kết quả;
+ người giám sát độc lập kiểm tra và báo cáo Hội đồng Y đức cùng báo cáo tiến độ hằng năm.
 
 C. NGUỒN TÀI TRỢ:
  Tài trợ chính: Không có tài trợ bên ngoài — kinh phí tự túc (chủ nhiệm đề tài tự chi trả)
@@ -465,8 +494,12 @@ E. SỬ DỤNG CÔNG CỤ AI TRONG NGHIÊN CỨU:
  từ nguồn gốc. AI KHÔNG được liệt kê là tác giả. Nội dung do
  AI sinh KHÔNG được trích dẫn như nguồn gốc." [ICMJE Mục V, bản 1/2026]
 
+Tôi cam kết khai báo bổ sung bằng văn bản cho Hội đồng Y đức và người giám sát độc lập khi phát sinh quan hệ
+hoặc lợi ích mới có thể ảnh hưởng đến nghiên cứu.
+
 Chữ ký chủ nhiệm: _______________ Ngày: ___/___/2026
-[Mỗi đồng tác giả cần khai báo COI riêng theo mẫu ICMJE]
+[Mỗi thành viên nhóm nghiên cứu, kể cả nhà thống kê và người giữ dữ liệu độc lập, khai báo riêng theo mẫu này
+ trước khi nhận nhiệm vụ; mỗi đồng tác giả khai báo theo mẫu ICMJE khi nộp bài]
 ---
 "DRAFT, Cần chủ nhiệm điền và ký trước khi nộp."
 ```

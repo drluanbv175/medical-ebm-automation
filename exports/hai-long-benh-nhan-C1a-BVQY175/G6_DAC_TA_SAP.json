@@ -1,23 +1,22 @@
 {
  "nguon_sap": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md",
- "sha256_sap": "d854c16f53141e29a5c28380d1f11fcdf9191ab0b3f3a55cfefc281791ecae6c",
- "trang_thai_de_xuat": "Đồng bộ lại 18/11/2026: P2_g2_g3 thành phân tích máy chạy được theo phương pháp chủ nhiệm chọn (SAP §2 sửa nháp 18/11). ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
- "can_thong_ke_vien_quyet": [
-  "suckhoe_tudanhgia (5 mức thứ tự): đề xuất đưa vào dạng SỐ (1 tham số, giả định tuyến tính); SAP §5 chưa nói rõ số hay phân loại — chuyển vào hiep_bien_phan_loai nếu muốn 4 biến giả. — CHỦ NHIỆM CHỌN DẠNG SỐ 20/11/2026 (chờ thống kê viên ghi vào SAP sửa đổi; G4_SAP_SUA_DOI_CHO_KY_20261120)",
-  "duoc_dung_bacsi mã 7 «Không áp dụng» KHÔNG khai là mã thiếu ⇒ đề xuất giữ như một MỨC (biến giả _2 và _7, tham chiếu 1 «Có»).",
-  "Biến phân loại → biến giả, tham chiếu = mã nhỏ nhất (lydokham 1 «Khám lần đầu», khunggio_kham 1, ngay_trong_tuan 1 «Thứ Hai»); mức không có ca (vd Chủ Nhật) không sinh biến giả.",
-  "P1_nhi_phan: SAP §2 chỉ cho diễn giải logistic khi ≥ 10 biến cố chưa hài lòng/tham số — kiểm EPV trước khi đọc kết quả; không đạt thì chỉ báo tỷ lệ (MT1_ty_le).",
-  "Lượt MT2_chinh sinh kèm: OR theo từng ngưỡng (đọc giả định tỷ lệ odds — vi phạm ⇒ DN_ppo), OLS HC3/chùm (§9 «G1 coi liên tục»), MI m = 20 khi có thiếu (§9 «complete-case vs MICE»), ICC — không cần mục riêng.",
-  "Trọng số hậu phân tầng (§4): bản CÓ trọng số chỉ có ở R survey / khối bổ sung SPSS Complex Samples khi kiểm chéo — đường Python không hỗ trợ trọng số; quy tắc kích hoạt (lệch > 20%) phải làm trên nₕ/Nₕ TRƯỚC khi xem kết cục.",
-  "Nhóm tuổi (15/11/2026, đã đồng bộ): hai biến cho hai mục đích của đề cương — NhomTuoi 3 mức (< 40 / 40–59 / ≥ 60) cho so sánh người từ chối với người tham gia (§4.4.2, Bảng 5.6; quyết 18/10) và NhomTuoi_MoTa 4 mức (< 30; 30–44; 45–59; ≥ 60) cho Bảng 5.1 (MT1; chủ nhiệm quyết 15/11). Cả hai ghi ở G3_BO_BIEN_SO_hai-long-benh-nhan-C1a-BVQY175.md; mô hình MT2 giữ Tuoi liên tục. Học vấn: Bảng 5.1 trình bày 7 mức như phiếu (chủ nhiệm chọn không gộp). Đặc tả này không có phân tích nào dùng hai biến nhóm tuổi (chỉ bảng mô tả).",
-  "ngay_trong_tuan: Khoa C1a chỉ khám thứ Hai–thứ Sáu (chủ nhiệm xác nhận 20/11/2026) — mô hình 5 mức, mã 6–7 không phát sinh."
- ],
+ "sha256_sap": "c0acb1ad15b8519b89ac6af1e1a882db600d9a651d0756df9adb1ced30d3ec33",
+ "trang_thai_de_xuat": "Soạn lại 22/11/2026 theo SAP hiện hành (208 thay thế của hội đồng nghiên cứu 22/11/2026, 51 sửa SAP): mô hình chính hiệu chỉnh co_yeucau_bacsi thay duoc_dung_bacsi, thêm co_hen_gio và uu_tien_kham với quy tắc bỏ biến thưa (tham_so.bien_thua); đủ mọi phân tích của SAP — chính, mô hình thô, phụ 1–2, mô tả §3 (tỷ lệ, phân bố, đặc tính đo lường, đáp ứng, đơn biến), thăm dò định trước §5 (sáu mô hình riêng từng yếu tố, trung gian, tương tác), dữ liệu thiếu §6, các kịch bản độ nhạy §9 (đề cương (1)–(13) và các phân tích có điều kiện); không còn mục chờ làm tay — các mục trước đây «chua_tu_dong» chạy bằng tools/phan_tich_sap_bo_sung.py (tham_so.loai_bo_sung). Chưa duyệt: thống kê viên/PI ghi bằng `chay_sap_g6.py duyet`.",
+ "phu_thuoc_sua_doi_sap": "Đi cùng tệp sửa đổi hai-long-benh-nhan-C1a-BVQY175_g6_sap_bo_sung.json (hội đồng vai G6/G4): SAP §5 thay gói `mediation` bằng mô phỏng quasi-Bayes cùng thuật toán (gói chưa có trên máy phân tích) và định nghĩa đại lượng ước lượng; §9 định nghĩa điểm ảnh hưởng (Cook > 4/n) và «vi phạm» giả định tỷ lệ odds (Brant p < 0,05); §3 dữ liệu thiếu theo cặp cho EFA/CFA; sổ theo dõi chọn mẫu thêm cột số theo mã kết quả; quy định tệp số tổng hợp HIS (his_tong_hop/N_tang_HIS.csv, his_tong_hop/bo_ve_HIS.csv có trung vị và tứ phân vị thời gian chờ nhóm bỏ về). Sau khi áp, cập nhật sha256_sap theo SAP mới.",
  "phan_tich": [
   {
    "id": "MT2_chinh",
    "vai": "chinh",
-   "sap_muc": "§4–§5",
-   "mo_ta": "Logistic thứ tự G1 (5 mức) theo thoigian_cho mỗi 15 phút, hiệu chỉnh tập forced-in §5, SE chùm ma_ban_kham, phiếu hợp lệ",
+   "sap_muc": "§4–§5, §9",
+   "sap_neo": [
+    "Exposure chính",
+    "Luật tập phân tích",
+    "Biến điều chỉnh bắt buộc",
+    "Gom cụm theo bàn khám",
+    "Giả thuyết kiểm định (Mục tiêu 2)",
+    "Hồi quy tuyến tính trên G1 coi liên tục"
+   ],
+   "mo_ta": "Logistic thứ tự G1 (5 mức) theo thoigian_cho mỗi 15 phút, hiệu chỉnh tập bắt buộc §5 (co_hen_gio, uu_tien_kham bỏ nếu một nhóm dưới 20 phiếu hợp lệ), sai số chuẩn theo chùm ma_ban_kham, phiếu hợp lệ; kèm kiểm định Brant, OR theo từng ngưỡng và hồi quy tuyến tính trên G1 coi liên tục (đề cương (1))",
    "tham_so": {
     "outcome": "g1",
     "outcome_type": "ordinal",
@@ -32,7 +31,9 @@
      "khunggio_kham",
      "ngay_trong_tuan",
      "suckhoe_tudanhgia",
-     "duoc_dung_bacsi"
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
     ],
     "hiep_bien_phan_loai": [
      "gioitinh",
@@ -41,24 +42,48 @@
      "lydokham",
      "khunggio_kham",
      "ngay_trong_tuan",
-     "duoc_dung_bacsi"
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
     ],
     "cot_cum": "ma_ban_kham",
-    "n_imputations": 20,
-    "loc": "PhieuHopLe == 1"
-   },
+    "loc": "PhieuHopLe == 1",
+    "bien_thua": {
+     "bien": [
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "toi_thieu": 20
+    }
+   }
+  },
+  {
+   "id": "MT2_tho",
+   "vai": "phu",
+   "sap_muc": "§11",
    "sap_neo": [
-    "Exposure chính",
-    "Luật tập phân tích",
-    "Complete-case (chính) vs MICE",
-    "Hồi quy tuyến tính trên G1 coi liên tục"
-   ]
+    "cOR thời gian chờ mỗi 15 phút (mô hình thô)"
+   ],
+   "mo_ta": "Mô hình thô: logistic thứ tự G1 theo thoigian_cho mỗi 15 phút, sai số chuẩn theo chùm",
+   "tham_so": {
+    "outcome": "g1",
+    "outcome_type": "ordinal",
+    "group": "thoigian_cho",
+    "don_vi_phoi_nhiem": 15,
+    "cot_cum": "ma_ban_kham",
+    "loc": "PhieuHopLe == 1"
+   }
   },
   {
    "id": "MT1_ty_le",
    "vai": "mo_ta",
-   "sap_muc": "§3",
-   "mo_ta": "Tỷ lệ hài lòng chung (G1 ≥ 4/5) và theo lĩnh vực A–F (điểm ≥ 4) + KTC 95% Wilson hiệu chỉnh chùm — bản KHÔNG trọng số",
+   "sap_muc": "§3, §4, §11",
+   "sap_neo": [
+    "Tỷ lệ hài lòng chung và theo lĩnh vực",
+    "Bảng 1, Đặc điểm nền",
+    "báo ICC cho G1 và từng lĩnh vực"
+   ],
+   "mo_ta": "Tỷ lệ hài lòng chung (G1 ≥ 4/5) và theo lĩnh vực A–F (điểm ≥ 4) + KTC 95% Wilson trên cỡ mẫu hiệu dụng (DE, ICC, CV cỡ chùm, DE theo ICC) — bản không trọng số; Bảng 1 đặc điểm nền",
    "tham_so": {
     "ty_le": [
      "g1",
@@ -71,17 +96,52 @@
     ],
     "nguong_ty_le": 4,
     "cot_cum": "ma_ban_kham",
-    "loc": "PhieuHopLe == 1"
-   },
+    "loc": "PhieuHopLe == 1",
+    "vars": [
+     "tuoi",
+     "NhomTuoi_MoTa",
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "uu_tien_kham",
+     "suckhoe_tudanhgia",
+     "co_yeucau_bacsi",
+     "duoc_dung_bacsi",
+     "co_hen_gio",
+     "thoigian_cho",
+     "kyvong_thoigiancho",
+     "chenh_kyvong"
+    ]
+   }
+  },
+  {
+   "id": "MT1_phan_bo_g1",
+   "vai": "mo_ta",
+   "sap_muc": "§11",
    "sap_neo": [
-    "Tỷ lệ hài lòng chung và theo lĩnh vực"
-   ]
+    "Phân bố G1 theo 5 mức"
+   ],
+   "mo_ta": "Phân bố G1 theo 5 mức, n (%) + KTC 95% Wilson",
+   "tham_so": {
+    "loai_bo_sung": "bang_cheo",
+    "cau_hinh": {
+     "hang": "g1"
+    },
+    "loc": "PhieuHopLe == 1"
+   }
   },
   {
    "id": "P1_nhi_phan",
    "vai": "phu",
    "sap_muc": "§2, §9",
-   "mo_ta": "Logistic nhị phân SHLNBChung_NhiPhan (G1 ≥ 4/5), cùng tập hiệu chỉnh — chỉ diễn giải khi EPV ≥ 10",
+   "sap_neo": [
+    "Kết cục phụ 1",
+    "Kết cục nhị phân G1 ≥ 4/5"
+   ],
+   "mo_ta": "Logistic nhị phân SHLNBChung_NhiPhan (G1 ≥ 4/5), cùng bộ hiệu chỉnh, sai số chuẩn theo chùm (hợp lý cực đại)",
    "tham_so": {
     "outcome": "SHLNBChung_NhiPhan",
     "outcome_type": "binary",
@@ -96,7 +156,9 @@
      "khunggio_kham",
      "ngay_trong_tuan",
      "suckhoe_tudanhgia",
-     "duoc_dung_bacsi"
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
     ],
     "hiep_bien_phan_loai": [
      "gioitinh",
@@ -105,21 +167,1011 @@
      "lydokham",
      "khunggio_kham",
      "ngay_trong_tuan",
-     "duoc_dung_bacsi"
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
     ],
     "cot_cum": "ma_ban_kham",
-    "n_imputations": 20,
-    "loc": "PhieuHopLe == 1"
-   },
-   "sap_neo": [
-    "Kết cục nhị phân G1 ≥ 4/5"
-   ]
+    "loc": "PhieuHopLe == 1",
+    "bien_thua": {
+     "bien": [
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "toi_thieu": 20
+    }
+   }
   },
   {
-   "id": "DN_tu_dien",
+   "id": "P1_quy_tac_firth",
+   "vai": "phu",
+   "sap_muc": "§2, §9",
+   "sap_neo": [
+    "Firth"
+   ],
+   "mo_ta": "Quy tắc ước lượng định trước của kết cục phụ 1: EPV ≥ 10 và không tách biệt ⇒ hợp lý cực đại; ngược lại Firth (logistf, KTC hợp lý có phạt); Firth không ước lượng được ⇒ chỉ báo tỷ lệ (MT1_ty_le); báo EPV",
+   "tham_so": {
+    "loai_bo_sung": "firth",
+    "cau_hinh": {
+     "outcome": "SHLNBChung_NhiPhan",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "muc_bien_co_epv": 0,
+     "nguong_epv": 10
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "P2_hoi_tu",
+   "vai": "phu",
+   "sap_muc": "§2",
+   "sap_neo": [
+    "đối chiếu hội tụ với G1"
+   ],
+   "mo_ta": "Tương quan hội tụ SHLNBChung_TinhToan với G1: Spearman (KTC Fisher z, Bonett–Wright) và Pearson",
+   "tham_so": {
+    "loai_bo_sung": "tuong_quan",
+    "cau_hinh": {
+     "x": "SHLNBChung_TinhToan",
+     "y": "g1"
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "P2_g2_g3",
+   "vai": "phu",
+   "sap_muc": "§2",
+   "sap_neo": [
+    "ý định quay lại"
+   ],
+   "mo_ta": "G2, G3: tỷ lệ có ý định (mức 4–5) + KTC 95% Wilson hiệu chỉnh chùm, không kiểm định",
+   "tham_so": {
+    "ty_le": [
+     "g2",
+     "g3"
+    ],
+    "nguong_ty_le": 4,
+    "cot_cum": "ma_ban_kham",
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "P2_phan_bo_g2",
+   "vai": "phu",
+   "sap_muc": "§2",
+   "sap_neo": [
+    "mô tả bằng phân bố 5 mức"
+   ],
+   "mo_ta": "Phân bố 5 mức của G2 (ý định quay lại)",
+   "tham_so": {
+    "loai_bo_sung": "bang_cheo",
+    "cau_hinh": {
+     "hang": "g2"
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "P2_phan_bo_g3",
+   "vai": "phu",
+   "sap_muc": "§2",
+   "sap_neo": [
+    "mô tả bằng phân bố 5 mức"
+   ],
+   "mo_ta": "Phân bố 5 mức của G3 (ý định giới thiệu)",
+   "tham_so": {
+    "loai_bo_sung": "bang_cheo",
+    "cau_hinh": {
+     "hang": "g3"
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "MO_phan_bo",
+   "vai": "mo_ta",
+   "sap_muc": "§3",
+   "sap_neo": [
+    "Báo % đạt điểm sàn/trần",
+    "phân bố điểm từng lĩnh vực"
+   ],
+   "mo_ta": "Phân bố điểm 6 lĩnh vực, G1 và điểm tổng hợp: TB ± ĐLC, trung vị [KTPV], độ lệch, độ nhọn, % điểm sàn/trần (> 15% ⇒ ghi hạn chế đo lường)",
+   "tham_so": {
+    "loai_bo_sung": "phan_bo_diem",
+    "cau_hinh": {
+     "bien": [
+      "A_Mean",
+      "B_Mean",
+      "C_Mean",
+      "D_Mean",
+      "E_Mean",
+      "F_Mean",
+      "g1",
+      "SHLNBChung_TinhToan"
+     ],
+     "san": 1,
+     "tran": 5,
+     "nguong_san_tran": 15
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "MO_tin_cay",
+   "vai": "mo_ta",
+   "sap_muc": "§3",
+   "sap_neo": [
+    "độ tin cậy nội tại"
+   ],
+   "mo_ta": "Cronbach α (KTC Feldt) cho lĩnh vực A–D; E kèm cảnh báo và Spearman hai câu; F không tính; α và omega cho cụm G1–G3 (KTC bootstrap, hạt giống §10); mã 7/8/9 là thiếu",
+   "tham_so": {
+    "loai_bo_sung": "tin_cay",
+    "cau_hinh": {
+     "thang": {
+      "A": [
+       "a1",
+       "a2",
+       "a3",
+       "a4",
+       "a5",
+       "a6"
+      ],
+      "B": [
+       "b1",
+       "b2",
+       "b3",
+       "b4",
+       "b5",
+       "b6",
+       "b7",
+       "b8"
+      ],
+      "C": [
+       "c1",
+       "c2",
+       "c3",
+       "c4",
+       "c5",
+       "c6",
+       "c7",
+       "c8",
+       "c9",
+       "c10"
+      ],
+      "D": [
+       "d1",
+       "d2",
+       "d3"
+      ],
+      "E": [
+       "e1",
+       "e2"
+      ],
+      "G": [
+       "g1",
+       "g2",
+       "g3"
+      ]
+     },
+     "cap_spearman": {
+      "E": [
+       "e1",
+       "e2"
+      ]
+     },
+     "omega": [
+      "G"
+     ],
+     "ma_thieu": [
+      7,
+      8,
+      9
+     ],
+     "so_lap": 1000,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "MO_efa_cfa",
+   "vai": "mo_ta",
+   "sap_muc": "§3, §10",
+   "sap_neo": [
+    "giá trị cấu trúc"
+   ],
+   "mo_ta": "Giá trị cấu trúc: chia hai nửa phân tầng theo khung giờ và bàn khám; EFA nửa 1 (polychoric, phân tích song song, xoay xiên), CFA năm nhân tố A–E nửa 2 (WLSMV); dữ liệu thiếu theo cặp",
+   "tham_so": {
+    "phan_tich_nhan_to": "efa_cfa",
+    "tang": [
+     "khunggio_kham",
+     "ma_ban_kham"
+    ],
+    "thieu": "pairwise",
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "MO_dap_ung",
+   "vai": "mo_ta",
+   "sap_muc": "§3",
+   "sap_neo": [
+    "Đáp ứng và người từ chối"
+   ],
+   "mo_ta": "Từ sổ theo dõi chọn mẫu và từ chối: số theo mã kết quả, tỷ lệ không gặp được, đồng ý, hoàn thành phiếu, phiếu hợp lệ, đáp ứng chung; so sánh người từ chối với người tham gia theo nhóm tuổi, giới, khung giờ",
+   "tham_so": {
+    "loai_bo_sung": "dap_ung",
+    "cau_hinh": {
+     "tep_so": "_so-chon-mau-tu-choi.csv",
+     "dieu_kien_hop_le": "PhieuHopLe == 1",
+     "so_sanh": {
+      "nhóm tuổi": {
+       "mau": "NhomTuoi",
+       "so": "nhom_tuoi_uoc_luong"
+      },
+      "giới": {
+       "mau": "gioitinh",
+       "so": "gioi"
+      },
+      "khung giờ": {
+       "mau": "khunggio_kham",
+       "so": "khunggio_kham"
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "MO_don_bien_g1",
+   "vai": "mo_ta",
+   "sap_muc": "§3, Bảng 3.3",
+   "sap_neo": [
+    "Đơn biến (Bảng 5.3)"
+   ],
+   "mo_ta": "Đơn biến các yếu tố với G1 (chỉ mô tả, không lọc biến): Mann–Whitney/Kruskal–Wallis/Spearman kèm hiệu ứng và KTC 95%, cOR thô từng mức (sai số chuẩn theo chùm), số và tỷ lệ hài lòng theo mức",
+   "tham_so": {
+    "loai_bo_sung": "don_bien",
+    "cau_hinh": {
+     "ket_cuc": "g1",
+     "kieu_ket_cuc": "thu_tu",
+     "yeu_to_phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "trinhdohocvan",
+      "nghenghiep",
+      "tinhtranghonnhan",
+      "thunhaphogd",
+      "khoangcachnhabv",
+      "cobhyt",
+      "lydokham",
+      "solankham12thang",
+      "phuongtiendichuyen",
+      "nguonthongtinbv",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "duoc_dung_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham",
+      "kenh_datlich",
+      "co_goikham",
+      "co_cls"
+     ],
+     "yeu_to_lien_tuc": [
+      "thoigian_cho",
+      "tuoi",
+      "suckhoe_tudanhgia",
+      "rieng_tu",
+      "kyvong_thoigiancho",
+      "so_quay_buoc"
+     ],
+     "don_vi": {
+      "thoigian_cho": 15
+     },
+     "cum": "ma_ban_kham",
+     "nguong_hai_long": 4,
+     "so_lap": 1000,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "MO_don_bien_nhi_phan",
+   "vai": "mo_ta",
+   "sap_muc": "§3",
+   "sap_neo": [
+    "Đơn biến (Bảng 5.3)"
+   ],
+   "mo_ta": "Đơn biến các yếu tố với kết cục nhị phân thứ cấp (G1 ≥ 4/5): χ²/Fisher kèm OR hoặc V Cramér, KTC 95%",
+   "tham_so": {
+    "loai_bo_sung": "don_bien",
+    "cau_hinh": {
+     "ket_cuc": "SHLNBChung_NhiPhan",
+     "kieu_ket_cuc": "nhi_phan",
+     "yeu_to_phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "trinhdohocvan",
+      "nghenghiep",
+      "tinhtranghonnhan",
+      "thunhaphogd",
+      "khoangcachnhabv",
+      "cobhyt",
+      "lydokham",
+      "solankham12thang",
+      "phuongtiendichuyen",
+      "nguonthongtinbv",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "duoc_dung_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham",
+      "kenh_datlich",
+      "co_goikham",
+      "co_cls"
+     ],
+     "yeu_to_lien_tuc": [
+      "thoigian_cho",
+      "tuoi",
+      "suckhoe_tudanhgia",
+      "rieng_tu",
+      "kyvong_thoigiancho",
+      "so_quay_buoc"
+     ],
+     "so_lap": 1000,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "MO_don_bien_tinh_toan",
+   "vai": "mo_ta",
+   "sap_muc": "§3",
+   "sap_neo": [
+    "Đơn biến (Bảng 5.3)"
+   ],
+   "mo_ta": "Đơn biến các yếu tố với điểm hài lòng tổng hợp (kết cục liên tục): t-test/ANOVA hoặc Pearson/Spearman kèm hiệu ứng và KTC 95%",
+   "tham_so": {
+    "loai_bo_sung": "don_bien",
+    "cau_hinh": {
+     "ket_cuc": "SHLNBChung_TinhToan",
+     "kieu_ket_cuc": "lien_tuc",
+     "yeu_to_phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "trinhdohocvan",
+      "nghenghiep",
+      "tinhtranghonnhan",
+      "thunhaphogd",
+      "khoangcachnhabv",
+      "cobhyt",
+      "lydokham",
+      "solankham12thang",
+      "phuongtiendichuyen",
+      "nguonthongtinbv",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "duoc_dung_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham",
+      "kenh_datlich",
+      "co_goikham",
+      "co_cls"
+     ],
+     "yeu_to_lien_tuc": [
+      "thoigian_cho",
+      "tuoi",
+      "suckhoe_tudanhgia",
+      "rieng_tu",
+      "kyvong_thoigiancho",
+      "so_quay_buoc"
+     ],
+     "so_lap": 1000,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "MO_thieu_du_lieu",
+   "vai": "mo_ta",
+   "sap_muc": "§6",
+   "sap_neo": [
+    "so sánh đặc điểm nhóm có/không thiếu"
+   ],
+   "mo_ta": "So sánh đặc điểm phiếu thiếu ít nhất một biến của mô hình chính với phiếu đủ dữ liệu (chỉ mô tả)",
+   "tham_so": {
+    "loai_bo_sung": "so_sanh_hai_nhom",
+    "cau_hinh": {
+     "nhom_a": {
+      "nhan": "Thiếu ít nhất một biến của mô hình chính",
+      "dieu_kien": "la_thieu(thoigian_cho) or la_thieu(tuoi) or la_thieu(gioitinh) or la_thieu(noicutru) or la_thieu(cobhyt) or la_thieu(lydokham) or la_thieu(khunggio_kham) or la_thieu(ngay_trong_tuan) or la_thieu(suckhoe_tudanhgia) or la_thieu(co_yeucau_bacsi) or la_thieu(co_hen_gio) or la_thieu(uu_tien_kham)",
+      "bien": {
+       "gioitinh": "gioitinh",
+       "khunggio_kham": "khunggio_kham",
+       "lydokham": "lydokham",
+       "g1": "g1",
+       "tuoi": "tuoi"
+      }
+     },
+     "nhom_b": {
+      "nhan": "Đủ dữ liệu",
+      "dieu_kien": "la_thieu(thoigian_cho) == 0 and la_thieu(tuoi) == 0 and la_thieu(gioitinh) == 0 and la_thieu(noicutru) == 0 and la_thieu(cobhyt) == 0 and la_thieu(lydokham) == 0 and la_thieu(khunggio_kham) == 0 and la_thieu(ngay_trong_tuan) == 0 and la_thieu(suckhoe_tudanhgia) == 0 and la_thieu(co_yeucau_bacsi) == 0 and la_thieu(co_hen_gio) == 0 and la_thieu(uu_tien_kham) == 0",
+      "bien": {
+       "gioitinh": "gioitinh",
+       "khunggio_kham": "khunggio_kham",
+       "lydokham": "lydokham",
+       "g1": "g1",
+       "tuoi": "tuoi"
+      }
+     },
+     "bien_phan_loai": [
+      "gioitinh",
+      "khunggio_kham",
+      "lydokham",
+      "g1"
+     ],
+     "bien_lien_tuc": [
+      "tuoi"
+     ]
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "TD_noicutru",
+   "vai": "phu",
+   "sap_muc": "§5",
+   "sap_neo": [
+    "Mô hình thăm dò riêng cho từng yếu tố khác"
+   ],
+   "mo_ta": "Thăm dò: nơi cư trú ~ tuổi + giới (logistic thứ tự riêng, chùm, Brant, gán đa trị m = 20 là độ nhạy)",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "noicutru",
+     "x_phan_loai": true,
+     "covariates": [
+      "tuoi",
+      "gioitinh"
+     ],
+     "phan_loai": [
+      "gioitinh"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_the": "yeu_to",
+     "kiem_po": true,
+     "mi": 20,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "TD_khoangcach",
+   "vai": "phu",
+   "sap_muc": "§5",
+   "sap_neo": [
+    "Mô hình thăm dò riêng cho từng yếu tố khác"
+   ],
+   "mo_ta": "Thăm dò: khoảng cách nhà–viện ~ tuổi + giới + nơi cư trú",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "khoangcachnhabv",
+     "x_phan_loai": true,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_the": "yeu_to",
+     "kiem_po": true,
+     "mi": 20,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "TD_hocvan",
+   "vai": "phu",
+   "sap_muc": "§5",
+   "sap_neo": [
+    "Mô hình thăm dò riêng cho từng yếu tố khác"
+   ],
+   "mo_ta": "Thăm dò: trình độ học vấn ~ tuổi + giới; mức dưới 20 quan sát gộp trước (1 vào 2, 7 vào 6)",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "trinhdohocvan",
+     "x_phan_loai": true,
+     "covariates": [
+      "tuoi",
+      "gioitinh"
+     ],
+     "phan_loai": [
+      "gioitinh"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_the": "yeu_to",
+     "gop_muc_thua": {
+      "trinhdohocvan": {
+       "toi_thieu": 20,
+       "dich": {
+        "1": "2",
+        "7": "6"
+       }
+      }
+     },
+     "kiem_po": true,
+     "mi": 20,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "TD_thunhap",
+   "vai": "phu",
+   "sap_muc": "§5",
+   "sap_neo": [
+    "Mô hình thăm dò riêng cho từng yếu tố khác"
+   ],
+   "mo_ta": "Thăm dò: thu nhập hộ gia đình ~ tuổi + giới + nơi cư trú + học vấn + nghề nghiệp (gộp mức thưa trước)",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thunhaphogd",
+     "x_phan_loai": true,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "trinhdohocvan",
+      "nghenghiep"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "trinhdohocvan",
+      "nghenghiep"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_the": "yeu_to",
+     "gop_muc_thua": {
+      "trinhdohocvan": {
+       "toi_thieu": 20,
+       "dich": {
+        "1": "2",
+        "7": "6"
+       }
+      },
+      "nghenghiep": {
+       "toi_thieu": 20,
+       "dich": {
+        "*": "9"
+       }
+      }
+     },
+     "kiem_po": true,
+     "mi": 20,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "TD_bhyt",
+   "vai": "phu",
+   "sap_muc": "§5",
+   "sap_neo": [
+    "Mô hình thăm dò riêng cho từng yếu tố khác"
+   ],
+   "mo_ta": "Thăm dò: có BHYT ~ tuổi + giới + nơi cư trú + học vấn + nghề nghiệp + thu nhập",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "cobhyt",
+     "x_phan_loai": true,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "trinhdohocvan",
+      "nghenghiep",
+      "thunhaphogd"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "trinhdohocvan",
+      "nghenghiep",
+      "thunhaphogd"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_the": "yeu_to",
+     "gop_muc_thua": {
+      "trinhdohocvan": {
+       "toi_thieu": 20,
+       "dich": {
+        "1": "2",
+        "7": "6"
+       }
+      },
+      "nghenghiep": {
+       "toi_thieu": 20,
+       "dich": {
+        "*": "9"
+       }
+      }
+     },
+     "kiem_po": true,
+     "mi": 20,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "TD_solankham",
+   "vai": "phu",
+   "sap_muc": "§5",
+   "sap_neo": [
+    "Mô hình thăm dò riêng cho từng yếu tố khác"
+   ],
+   "mo_ta": "Thăm dò: số lần khám 12 tháng ~ tuổi + giới + nơi cư trú + khoảng cách + BHYT + sức khỏe tự đánh giá",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "solankham12thang",
+     "x_phan_loai": true,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "khoangcachnhabv",
+      "cobhyt",
+      "suckhoe_tudanhgia"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "khoangcachnhabv",
+      "cobhyt"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_the": "yeu_to",
+     "kiem_po": true,
+     "mi": 20,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "TD_trung_gian",
+   "vai": "phu",
+   "sap_muc": "§5",
+   "sap_neo": [
+    "vai trò trung gian của đánh giá dịch vụ so với mong đợi"
+   ],
+   "mo_ta": "Thăm dò trung gian qua xacnhan_kyvong: mô phỏng quasi-Bayes (Imai 2010), mô hình trung gian và kết cục logistic thứ tự cùng bộ hiệu chỉnh; ACME, ADE, tổng, tỷ lệ trung gian trên thang xác suất hài lòng khi chờ thêm 15 phút; độ nhạy với nhiễu không đo giữa trung gian và kết cục",
+   "tham_so": {
+    "loai_bo_sung": "trung_gian",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "m": "xacnhan_kyvong",
+     "nguong_hai_long": 4,
+     "so_mo_phong": 1000,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "TD_tuong_tac",
+   "vai": "phu",
+   "sap_muc": "§5, §7",
+   "sap_neo": [
+    "Tương tác thăm dò định trước — kỳ vọng về thời gian chờ"
+   ],
+   "mo_ta": "Thăm dò: mô hình chính + kyvong_thoigiancho (mỗi 15 phút) + tương tác thoigian_cho × kyvong_thoigiancho; hệ số tương tác và cOR thời gian chờ tại tứ phân vị 25/50/75 của kỳ vọng; phiếu mã 998 không vào",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "bien_the": "tuong_tac",
+     "z": "kyvong_thoigiancho",
+     "z_don_vi": 15,
+     "ma_loai_z": [
+      998
+     ]
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "DN_mice",
+   "vai": "do_nhay",
+   "sap_muc": "§6, §9",
+   "sap_neo": [
+    "Complete-case (chính) vs MICE"
+   ],
+   "mo_ta": "Gán đa trị (mice, pmm, m = 20) cho biến nền/phơi nhiễm, G1 làm biến dự báo không gán; mỗi bộ logistic thứ tự + sai số chuẩn theo chùm, gộp Rubin; đối chiếu complete case (đề cương (2))",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "bien_the": "thuong",
+     "mi": 20,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "DN_ppo",
+   "vai": "do_nhay",
+   "sap_muc": "§4, §9",
+   "sap_neo": [
+    "Partial proportional odds/generalized ordered logit nếu vi phạm"
+   ],
+   "mo_ta": "Kiểm định Brant từng biến; biến vi phạm (p < 0,05) có hệ số riêng từng ngưỡng (clm nominal), KTC bootstrap theo cụm 1.000 lần; không biến nào vi phạm ⇒ giữ mô hình chính",
+   "tham_so": {
+    "loai_bo_sung": "ppo",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "nguong_brant": 0.05,
+     "so_lap": 1000,
+     "hat_giong": 20260830
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "DN_anh_huong",
    "vai": "do_nhay",
    "sap_muc": "§9",
-   "mo_ta": "Loại phiếu có hỗ trợ ghi (mode_tra_loi 2/3), chạy lại mô hình chính trên tập tự điền",
+   "sap_neo": [
+    "Có/không điểm ảnh hưởng"
+   ],
+   "mo_ta": "Có/không điểm ảnh hưởng: khoảng cách Cook > 4/n trong hồi quy tuyến tính tương ứng (G1 coi liên tục, cùng bộ biến) ⇒ chạy lại mô hình chính không có các phiếu đó (đề cương (6))",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "bien_the": "anh_huong"
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "DN_dung_bacsi",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "Thay `co_yeucau_bacsi` bằng `duoc_dung_bacsi`"
+   ],
+   "mo_ta": "Mô hình chính thay co_yeucau_bacsi bằng duoc_dung_bacsi (đặc tả SAP 1.5; mã 7 «không áp dụng» là một mức) (đề cương (8))",
    "tham_so": {
     "outcome": "g1",
     "outcome_type": "ordinal",
@@ -134,7 +1186,9 @@
      "khunggio_kham",
      "ngay_trong_tuan",
      "suckhoe_tudanhgia",
-     "duoc_dung_bacsi"
+     "duoc_dung_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
     ],
     "hiep_bien_phan_loai": [
      "gioitinh",
@@ -143,155 +1197,715 @@
      "lydokham",
      "khunggio_kham",
      "ngay_trong_tuan",
-     "duoc_dung_bacsi"
+     "duoc_dung_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
     ],
     "cot_cum": "ma_ban_kham",
-    "n_imputations": 20,
-    "loc": "PhieuHopLe == 1 and mode_tra_loi == 1"
-   },
-   "sap_neo": [
-    "Loại phiếu có hỗ trợ ghi"
-   ]
+    "loc": "PhieuHopLe == 1",
+    "bien_thua": {
+     "bien": [
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "toi_thieu": 20
+    }
+   }
   },
   {
-   "id": "P2_g2_g3",
-   "vai": "phu",
-   "sap_muc": "§2",
-   "mo_ta": "G2 (ý định quay lại), G3 (ý định giới thiệu) — kết cục thứ cấp định trước: phân bố 5 mức + tỷ lệ mức 4–5 kèm KTC 95% Wilson hiệu chỉnh chùm, không kiểm định (chủ nhiệm chọn 18/11/2026)",
+   "id": "DN_hoc_van",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
    "sap_neo": [
-    "ý định quay lại"
+    "Mô hình chính bổ sung `TrinhDoHocVan`"
    ],
+   "mo_ta": "Mô hình chính bổ sung trình độ học vấn (gộp mức như mô hình thăm dò: 1 vào 2, 7 vào 6) (đề cương (9))",
    "tham_so": {
-    "ty_le": [
-     "g2",
-     "g3"
-    ],
-    "nguong_ty_le": 4,
-    "cot_cum": "ma_ban_kham",
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham",
+      "trinhdohocvan"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham",
+      "trinhdohocvan"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "bien_the": "thuong",
+     "gop_muc_thua": {
+      "trinhdohocvan": {
+       "toi_thieu": 20,
+       "dich": {
+        "1": "2",
+        "7": "6"
+       }
+      }
+     }
+    },
     "loc": "PhieuHopLe == 1"
    }
   },
   {
-   "id": "P2_hoi_tu",
-   "vai": "phu",
-   "sap_muc": "§2",
-   "mo_ta": "SHLNBChung_TinhToan đối chiếu hội tụ với G1",
-   "chua_tu_dong": "tương quan hội tụ chưa có công cụ trong run_stats_analysis — thống kê viên chạy tay",
-   "sap_neo": [
-    "SHLNBChung_TinhToan"
-   ]
-  },
-  {
-   "id": "DN_ppo",
-   "vai": "do_nhay",
-   "sap_muc": "§4, §9",
-   "mo_ta": "Partial proportional odds / generalized ordered logit khi vi phạm tỷ lệ odds",
-   "chua_tu_dong": "chưa có công cụ — thống kê viên chạy tay (R VGAM/ordinal::clm nominal=)",
-   "sap_neo": [
-    "Partial proportional odds"
-   ]
-  },
-  {
-   "id": "DN_rcs",
-   "vai": "do_nhay",
-   "sap_muc": "§4, §9",
-   "mo_ta": "Phi tuyến thời gian chờ: spline RCS 3 nút / theo phân vị",
-   "chua_tu_dong": "chưa có công cụ — thống kê viên chạy tay (R rms::rcs)",
-   "sap_neo": [
-    "restricted cubic spline"
-   ]
-  },
-  {
-   "id": "DN_firth",
+   "id": "DN_tu_dien",
    "vai": "do_nhay",
    "sap_muc": "§9",
-   "mo_ta": "Logistic thường vs Firth (chỉ khi separation)",
-   "chua_tu_dong": "chưa có công cụ — thống kê viên chạy tay (R logistf)",
    "sap_neo": [
-    "Firth"
-   ]
+    "Loại phiếu có hỗ trợ ghi"
+   ],
+   "mo_ta": "Loại phiếu có hỗ trợ ghi (mode_tra_loi 2/3), chạy lại mô hình chính trên tập tự điền (đề cương (4))",
+   "tham_so": {
+    "outcome": "g1",
+    "outcome_type": "ordinal",
+    "group": "thoigian_cho",
+    "don_vi_phoi_nhiem": 15,
+    "covariates": [
+     "tuoi",
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "suckhoe_tudanhgia",
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
+    ],
+    "hiep_bien_phan_loai": [
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
+    ],
+    "cot_cum": "ma_ban_kham",
+    "loc": "PhieuHopLe == 1 and mode_tra_loi == 1",
+    "bien_thua": {
+     "bien": [
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "toi_thieu": 20
+    }
+   }
   },
   {
-   "id": "DN_anh_huong",
+   "id": "DN_khong_hen",
    "vai": "do_nhay",
    "sap_muc": "§9",
-   "mo_ta": "Có/không điểm ảnh hưởng; mô hình đầy đủ vs rút gọn",
-   "chua_tu_dong": "cần phán đoán của thống kê viên trên chẩn đoán mô hình",
    "sap_neo": [
-    "Có/không điểm ảnh hưởng"
-   ]
+    "Chỉ người không được hẹn trước giờ khám"
+   ],
+   "mo_ta": "Chỉ người không được hẹn trước giờ khám (co_hen_gio = 2), bỏ co_hen_gio khỏi bộ hiệu chỉnh (đề cương (12))",
+   "tham_so": {
+    "outcome": "g1",
+    "outcome_type": "ordinal",
+    "group": "thoigian_cho",
+    "don_vi_phoi_nhiem": 15,
+    "covariates": [
+     "tuoi",
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "suckhoe_tudanhgia",
+     "co_yeucau_bacsi",
+     "uu_tien_kham"
+    ],
+    "hiep_bien_phan_loai": [
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "co_yeucau_bacsi",
+     "uu_tien_kham"
+    ],
+    "cot_cum": "ma_ban_kham",
+    "loc": "PhieuHopLe == 1 and co_hen_gio == 2",
+    "bien_thua": {
+     "bien": [
+      "uu_tien_kham"
+     ],
+     "toi_thieu": 20
+    }
+   }
   },
   {
    "id": "DN_hon_hop",
    "vai": "do_nhay",
    "sap_muc": "§4, §9",
-   "mo_ta": "Mô hình thứ tự hệ số chặn ngẫu nhiên theo ma_ban_kham",
-   "chua_tu_dong": "không có ở đường Python — khối bổ sung SPSS (GENLINMIXED) và R (ordinal::clmm) khi kiểm chéo gate G6; < 15 bàn khám thì đây là phân tích CHÍNH (§4)",
    "sap_neo": [
-    "hệ số chặn ngẫu nhiên theo `ma_ban_kham`"
-   ]
+    "hệ số chặn ngẫu nhiên theo `ma_ban_kham`",
+    "số bàn khám < 15"
+   ],
+   "mo_ta": "Logistic thứ tự hệ số chặn ngẫu nhiên theo bàn khám (ordinal::clmm); dưới 15 bàn khám thì đây là phân tích CHÍNH theo SAP §4 (đề cương (3))",
+   "tham_so": {
+    "loai_bo_sung": "hon_hop",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "nguong_cum": 15
+    },
+    "loc": "PhieuHopLe == 1"
+   }
   },
   {
    "id": "DN_trong_so",
    "vai": "do_nhay",
-   "sap_muc": "§4, §9",
-   "mo_ta": "Có/không trọng số hậu phân tầng (svyolr; postStratify cho Mục tiêu 1)",
-   "chua_tu_dong": "Python không hỗ trợ trọng số — R survey / khối bổ sung SPSS Complex Samples khi kiểm chéo; kiểm quy tắc kích hoạt trước",
+   "sap_muc": "§3, §4, §9",
    "sap_neo": [
     "Có/không trọng số hậu phân tầng",
+    "Trọng số theo thiết kế chọn mẫu"
+   ],
+   "mo_ta": "Quy tắc kích hoạt trọng số (tầng ngày × khung giờ, gộp tầng nₕ < 10, lệch > 20%) trên nₕ/Nₕ HIS; khi kích hoạt: tỷ lệ hài lòng CÓ trọng số là phân tích chính Mục tiêu 1 (KTC Wilson cỡ mẫu hiệu dụng) và svyolr là độ nhạy Mục tiêu 2",
+   "tham_so": {
+    "loai_bo_sung": "trong_so",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "che_do": "kich_hoat",
+     "nguong_hai_long": 4,
+     "nguong_lech": 0.2,
+     "n_toi_thieu": 10,
+     "bien_ngay": "ngay_trong_tuan",
+     "bien_khung": "khunggio_kham",
+     "tep_n_tang": "his_tong_hop/N_tang_HIS.csv"
+    },
+    "loc": "PhieuHopLe == 1 and trang_thai_ghep_his == 1"
+   }
+  },
+  {
+   "id": "DN_thiet_ke",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
     "Ước lượng theo thiết kế"
-   ]
+   ],
+   "mo_ta": "Ước lượng theo thiết kế: chùm bàn khám + hậu phân tầng ngày × khung giờ (postStratify, không khai strata) cho tỷ lệ hài lòng và svyolr (đề cương (5))",
+   "tham_so": {
+    "loai_bo_sung": "trong_so",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "che_do": "thiet_ke",
+     "nguong_hai_long": 4,
+     "nguong_lech": 0.2,
+     "n_toi_thieu": 10,
+     "bien_ngay": "ngay_trong_tuan",
+     "bien_khung": "khunggio_kham",
+     "tep_n_tang": "his_tong_hop/N_tang_HIS.csv"
+    },
+    "loc": "PhieuHopLe == 1 and trang_thai_ghep_his == 1"
+   }
+  },
+  {
+   "id": "DN_rcs",
+   "vai": "do_nhay",
+   "sap_muc": "§4, §9",
+   "sap_neo": [
+    "restricted cubic spline 3 nút"
+   ],
+   "mo_ta": "Phi tuyến thời gian chờ: spline bậc ba giới hạn 3 nút (Harrell) trong mô hình chính; kiểm định phi tuyến và cOR P75 so với P25 (đề cương (7))",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "bien_the": "rcs"
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "DN_phan_vi",
+   "vai": "do_nhay",
+   "sap_muc": "§4, §9",
+   "sap_neo": [
+    "phân tích theo phân vị thời gian chờ"
+   ],
+   "mo_ta": "Thời gian chờ theo tứ phân vị (Q2–Q4 so với Q1) trong mô hình chính (đề cương (7))",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "bien_the": "phan_vi"
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "DN_hieu_dung",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "Thời gian chờ hiệu dụng"
+   ],
+   "mo_ta": "Thay thoigian_cho bằng thoigian_cho_hieudung trong mô hình chính, cOR mỗi 15 phút (đề cương (10))",
+   "tham_so": {
+    "outcome": "g1",
+    "outcome_type": "ordinal",
+    "group": "thoigian_cho_hieudung",
+    "don_vi_phoi_nhiem": 15,
+    "covariates": [
+     "tuoi",
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "suckhoe_tudanhgia",
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
+    ],
+    "hiep_bien_phan_loai": [
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
+    ],
+    "cot_cum": "ma_ban_kham",
+    "loc": "PhieuHopLe == 1",
+    "bien_thua": {
+     "bien": [
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "toi_thieu": 20
+    }
+   }
+  },
+  {
+   "id": "DN_co_cau_truc",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "Loại các lượt có cờ cấu trúc giờ làm việc"
+   ],
+   "mo_ta": "Loại các lượt lấy số trước giờ khoa gọi người bệnh đầu tiên hoặc chờ vắt qua nghỉ trưa (đề cương (11))",
+   "tham_so": {
+    "outcome": "g1",
+    "outcome_type": "ordinal",
+    "group": "thoigian_cho",
+    "don_vi_phoi_nhiem": 15,
+    "covariates": [
+     "tuoi",
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "suckhoe_tudanhgia",
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
+    ],
+    "hiep_bien_phan_loai": [
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
+    ],
+    "cot_cum": "ma_ban_kham",
+    "loc": "PhieuHopLe == 1 and (la_thieu(layso_truoc_giokham) or layso_truoc_giokham != 1) and (la_thieu(cho_qua_nghitrua) or cho_qua_nghitrua != 1)",
+    "bien_thua": {
+     "bien": [
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "toi_thieu": 20
+    }
+   }
   },
   {
    "id": "DN_gop_muc",
    "vai": "do_nhay",
    "sap_muc": "§9",
-   "mo_ta": "Gộp mức G1 khi lệch trần (mức < 20 quan sát)",
-   "chua_tu_dong": "quy tắc gộp phụ thuộc phân bố — thống kê viên áp rồi chạy lại",
    "sap_neo": [
     "Quy tắc gộp mức G1"
-   ]
+   ],
+   "mo_ta": "Gộp mức G1 dưới 20 quan sát về phía giữa thang (1 → 2 → 3, không gộp mức 5, không dưới 3 mức) rồi chạy mô hình chính; bảng 5 mức gốc vẫn in đủ (MT1_phan_bo_g1)",
+   "tham_so": {
+    "loai_bo_sung": "thu_tu",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "bien_the": "gop_muc",
+     "nguong_gop": 20
+    },
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "DN_mo_rong_ty_le",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "Tập phân tích mở rộng"
+   ],
+   "mo_ta": "Tập phân tích mở rộng (mọi phiếu có G1, không áp ngưỡng loại phiếu 2 và 3): tỷ lệ hài lòng chung (đề cương (13))",
+   "tham_so": {
+    "ty_le": [
+     "g1"
+    ],
+    "nguong_ty_le": 4,
+    "cot_cum": "ma_ban_kham",
+    "loc": "(PhieuHopLe == 1 or PhieuHopLe == 0) and la_thieu(g1) == 0"
+   }
+  },
+  {
+   "id": "DN_mo_rong_mo_hinh",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "Tập phân tích mở rộng"
+   ],
+   "mo_ta": "Tập phân tích mở rộng: mô hình chính trên mọi phiếu có G1 (đề cương (13))",
+   "tham_so": {
+    "outcome": "g1",
+    "outcome_type": "ordinal",
+    "group": "thoigian_cho",
+    "don_vi_phoi_nhiem": 15,
+    "covariates": [
+     "tuoi",
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "suckhoe_tudanhgia",
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
+    ],
+    "hiep_bien_phan_loai": [
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "co_yeucau_bacsi",
+     "co_hen_gio",
+     "uu_tien_kham"
+    ],
+    "cot_cum": "ma_ban_kham",
+    "loc": "(PhieuHopLe == 1 or PhieuHopLe == 0) and la_thieu(g1) == 0",
+    "bien_thua": {
+     "bien": [
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "toi_thieu": 20
+    }
+   }
   },
   {
    "id": "DN_bo_ve",
    "vai": "do_nhay",
    "sap_muc": "§9",
-   "mo_ta": "Phân tích giới hạn cho người bỏ về trước khi khám (f từ số liệu tổng hợp HIS)",
-   "chua_tu_dong": "dùng số liệu tổng hợp HIS, không có trong bộ dữ liệu phiếu — tính tay theo công thức §9",
    "sap_neo": [
     "Phân tích giới hạn cho người bỏ về"
-   ]
-  },
-  {
-   "id": "MO_dap_ung",
-   "vai": "mo_ta",
-   "sap_muc": "§3",
-   "sap_neo": [
-    "Đáp ứng và người từ chối"
    ],
-   "mo_ta": "Tỷ lệ đồng ý, hoàn thành phiếu, phiếu hợp lệ, đáp ứng chung; so sánh người từ chối với người tham gia theo nhóm tuổi, giới, khung giờ (n (%) hai nhóm, chỉ mô tả)",
-   "chua_tu_dong": "Dữ liệu ở sổ theo dõi chọn mẫu và từ chối (_so-chon-mau-tu-choi.csv), ngoài bộ dữ liệu phiếu — thống kê viên lập bảng mô tả theo SAP §3"
-  },
-  {
-   "id": "MO_do_luong",
-   "vai": "mo_ta",
-   "sap_muc": "§3",
-   "sap_neo": [
-    "Đặc tính đo lường của bộ câu hỏi"
-   ],
-   "mo_ta": "Đặc tính đo lường trong mẫu (đề cương 4.5.3): phân bố điểm, Cronbach's alpha A–D, alpha/omega G1–G3, sàn–trần, EFA nửa 1 / CFA (WLSMV) nửa 2",
-   "chua_tu_dong": "run_stats_analysis chưa có EFA/CFA/omega — thống kê viên chạy bằng R psych/lavaan (SAP §10) theo seed §10"
-  },
-  {
-   "id": "TD_ky_vong",
-   "vai": "phu",
-   "sap_muc": "§5",
-   "sap_neo": [
-    "vai trò trung gian của kỳ vọng"
-   ],
-   "mo_ta": "Phân tích thăm dò định trước vai trò trung gian của kỳ vọng (chenh_kyvong, xacnhan_kyvong) — trình bày riêng, không thay mô hình chính",
-   "chua_tu_dong": "Phương pháp đã chọn (SAP §5: trung gian nhân quả dựa trên hồi quy, gói R `mediation` — PI chọn phương án A 15/11/2026, thống kê viên xác nhận khi ký) — run_stats_analysis chưa hỗ trợ; thống kê viên chạy bằng R theo SAP §5/§10"
+   "mo_ta": "Phân tích giới hạn cho người bỏ về: khoảng [p̂·(1 − f); p̂·(1 − f) + f] với p̂ là tỷ lệ chính (có trọng số nếu quy tắc kích hoạt), f từ HIS; Mục tiêu 2: trung vị [KTPV] thời gian chờ nhóm bỏ về so với nhóm được khám (mô tả)",
+   "tham_so": {
+    "loai_bo_sung": "trong_so",
+    "cau_hinh": {
+     "outcome": "g1",
+     "x": "thoigian_cho",
+     "x_don_vi": 15,
+     "covariates": [
+      "tuoi",
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "suckhoe_tudanhgia",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "phan_loai": [
+      "gioitinh",
+      "noicutru",
+      "cobhyt",
+      "lydokham",
+      "khunggio_kham",
+      "ngay_trong_tuan",
+      "co_yeucau_bacsi",
+      "co_hen_gio",
+      "uu_tien_kham"
+     ],
+     "cum": "ma_ban_kham",
+     "bien_thua": {
+      "bien": [
+       "co_hen_gio",
+       "uu_tien_kham"
+      ],
+      "toi_thieu": 20
+     },
+     "che_do": "gioi_han_bo_ve",
+     "nguong_hai_long": 4,
+     "nguong_lech": 0.2,
+     "n_toi_thieu": 10,
+     "bien_ngay": "ngay_trong_tuan",
+     "bien_khung": "khunggio_kham",
+     "tep_n_tang": "his_tong_hop/N_tang_HIS.csv",
+     "tep_bo_ve": "his_tong_hop/bo_ve_HIS.csv"
+    },
+    "loc": "PhieuHopLe == 1 and trang_thai_ghep_his == 1"
+   }
   }
- ],
- "nguoi_duyet": "THONG_KE_VIEN:TKV-C1A-01:2026-11-18:759cd21142dd"
+ ]
 }
