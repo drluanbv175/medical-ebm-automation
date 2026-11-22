@@ -2897,6 +2897,34 @@ def _khong_so(muc: str, ly_do: str, *, py: dict | None = None, sp: dict | None =
     return {"muc": muc, "python": py, "spss": sp, "kiem": {}, "trang_thai": "khong_so_duoc", "ghi_chu": ly_do}
 
 
+#: (22/11/2026, việc H — truy 5 dòng «lệch nhỏ» của giả lập rct_cum) GENLIN /REPEATED CORRTYPE=INDEPENDENT COVB=ROBUST
+#: của SPSS cho SE sandwich theo cụm KHÔNG hiệu chỉnh mẫu nhỏ (CR0) và KTC/p theo z. Đo trên dữ liệu khoá rct_cum
+#: (N = 320, G = 40): KTC SPSS của PR thô «nhom» [1,20328; 1,78771] trùng đúng sandwich::vcovCL(type = "HC0",
+#: cadjust = FALSE) + z [1,203275; 1,787713]. Python (statsmodels cov_type="cluster") và R (vc_cum) dùng CR1 =
+#: CR0·G/(G−1)·(N−1)/(N−K) + t(G−1). Hai phép khác nhau bằng một hệ số đóng ⇒ QUY ĐỔI kết quả SPSS rồi so với dung sai
+#: CHẶT (không còn miễn «khác phương pháp»): SE₁ = SE₀·√(G/(G−1)·(N−1)/(N−K)), SE₀ = nửa độ rộng KTC Wald z / 1,95996.
+Z_975 = 1.959963984540054
+
+
+def quy_doi_cr0_cr1(sp: dict, so_cum: int, n: int, k: int, ty_so: bool) -> dict | None:
+    """Kết quả GEE robust của SPSS (CR0, KTC/p theo z) ⇒ CR1 + t(G−1) như Python. None khi thiếu số để quy đổi."""
+    from scipy import stats as st  # noqa: PLC0415
+
+    ci = sp.get("ci") or [None, None]
+    b = _beta(sp.get("uoc_luong"), ty_so)
+    lo, hi = (_beta(x, ty_so) for x in ci) if None not in ci else (None, None)
+    if b is None or lo is None or hi is None or not so_cum or so_cum < 2 or not n or n <= k:
+        return None
+    se1 = (hi - lo) / (2 * Z_975) * ((so_cum / (so_cum - 1)) * ((n - 1) / (n - k))) ** 0.5
+    q = float(st.t.ppf(0.975, so_cum - 1))
+    f = (lambda x: float(__import__("math").exp(x))) if ty_so else float
+    p_moi = float(2 * st.t.sf(abs(b / se1), so_cum - 1)) if se1 > 0 else None
+    return {"uoc_luong": sp.get("uoc_luong"), "ci": [f(b - q * se1), f(b + q * se1)], "p": p_moi}
+
+
+GHI_CHU_CR0_CR1 = "SPSS GEE robust (CR0 + z) đã quy đổi sang CR1 + t(G−1): SE × √(G/(G−1)·(N−1)/(N−K))"
+
+
 def doi_chieu(tom: dict, kq: dict) -> list[dict]:
     """Mọi mục Python CÓ (hoặc báo lỗi/bỏ qua) đều sinh một dòng — không bỏ dòng im lặng (bản cũ báo «1 khớp, mã 0»
     khi Python lỗi hoặc SPSS thiếu bảng)."""
@@ -2966,13 +2994,19 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                     )
                 )
                 continue
+            sp_so = {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]}
+            qd = (quy_doi_cr0_cr1(sp_so, int((mv.get("cluster") or {}).get("so_cum") or 0), int(mv.get("n") or 0),
+                                  len(mv.get("results") or []) + 1, ty_so)
+                  if cum and not co_thu_tu else None)
             dong.append(
                 so_mot(
                     f"{ten_mv} ({mv.get('model', '?')}) — {v}",
                     {"uoc_luong": uoc, "ci": r.get("CI_95"), "p": r.get("p")},
-                    {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]},
+                    qd or sp_so,
                     phuong_phap_khac=(
-                        "hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich có hiệu chỉnh mẫu nhỏ (Python)"
+                        None
+                        if qd is not None
+                        else "hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich có hiệu chỉnh mẫu nhỏ (Python)"
                         if cum
                         else "statsmodels lấy SE từ Hessian xấp xỉ"
                         if mv.get("model") == "ordinal_logit_po"
@@ -2982,6 +3016,9 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                     lam_tron=LAM_TRON["ty_so" if ty_so else "beta"],
                 )
             )
+            if qd is not None:
+                dong[-1]["ghi_chu"] = " · ".join(x for x in (dong[-1]["ghi_chu"], GHI_CHU_CR0_CR1) if x)
+                dong[-1]["spss_goc"] = sp_so
     pr = tom.get("poisson_pr")
     if pr is not None:
         if pr.get("error"):
@@ -2996,17 +3033,31 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                                           py={"uoc_luong": r.get(khoa_py)}))  # fmt: skip
                     continue
                 pr_cum = pr.get("cov_type") == "cluster"
+                sp_so = {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]}
+                ghi_qd = None
+                if pr_cum:  # K = số tham số của CHÍNH mô hình (PR thô: nhóm biến của v; hiệu chỉnh: mọi biến) + hằng số
+                    nb = pr.get("nhom_bien") or {}
+                    k = (1 + (len(next((ds for ds in nb.values() if v in ds), [v])) if khoa_py == "PR"
+                              else len(pr.get("results") or [])))
+                    qd = quy_doi_cr0_cr1(sp_so, int((pr.get("cluster") or {}).get("so_cum") or 0),
+                                         int(pr.get("n") or 0), k, True)
+                    if qd is not None:
+                        sp_so, ghi_qd = qd, GHI_CHU_CR0_CR1
                 dong.append(
                     so_mot(
                         f"Poisson {'theo cụm' if pr_cum else 'HC0'} — {nhan} — {v}",
                         {"uoc_luong": r.get(khoa_py), "ci": r.get("CI_95"), "p": r.get("p")},
-                        {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]},
-                        phuong_phap_khac=("hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich CR1 + t(G−1) (Python)"
-                                          if pr_cum else None),
+                        sp_so,
+                        phuong_phap_khac=(None if ghi_qd or not pr_cum
+                                          else "hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich CR1 + t(G−1) (Python) — "
+                                               "thiếu N/G để quy đổi"),
                         ty_so=True,
                         lam_tron=LAM_TRON["ty_so"],
                     )
                 )
+                if ghi_qd:
+                    dong[-1]["ghi_chu"] = " · ".join(x for x in (dong[-1]["ghi_chu"], ghi_qd) if x)
+                    dong[-1]["spss_goc"] = {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]}
     sv = tom.get("survival") or {}
     nhom = (tom.get("dac_ta_phan_tich") or {}).get("group")
     if sv.get("error"):
