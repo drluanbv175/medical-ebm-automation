@@ -418,6 +418,10 @@ def _chan_doan(goc: Dict[str, Any]) -> Dict[str, Any]:
               "Chẩn đoán chân thực: sàng lọc, đo đàn hồi (có lượt không hợp lệ), xét nghiệm máu, FIB-4 máy tự tính")
     dong_y = "[tc_tuoi18] = '1' and [tc_gan_nhiem_mo] = '1' and [lt_ruou] = '0' and [lt_viem_gan_virus] = '0'"
     hop_le = "[lsm_hop_le] = '1'"
+    # 22/11/2026 (STARD 2015 mục 21b): PI khai `alternative_diagnosis_variable = chan_doan_khac` ở đặc tả G10 kế thừa
+    # từ kịch bản gốc ⇒ phiếu chân thực phải có đúng trường đó (thiếu thì đề cương lẫn bản thảo để trống mục 21b).
+    # Nhãn và lựa chọn lấy từ phiếu gốc — một nguồn duy nhất, không chép tay.
+    _x, kieu_khac, nhan_khac, lua_khac = next(b for b in goc["bien_so"]["bo_bien"] if b[0] == "chan_doan_khac")[:4]
     _dat_bo_bien(kb, [
         _t("record_id", "text", "Mã nghiên cứu", form="sang_loc", phan="A. Sàng lọc và đồng ý"),
         _t("ngay_kham", "text", "Ngày khám", kt="date_dmy", lo="2027-03-01", hi="2027-12-31", form="sang_loc"),
@@ -442,6 +446,8 @@ def _chan_doan(goc: Dict[str, Any]) -> Dict[str, Any]:
         _t("lsm_kpa", "text", "Độ đàn hồi gan (kPa)", kt="number", lo="2", hi="75", form="dan_hoi", nhanh=hop_le),
         _t("xo_hoa_tien_trien", "radio", "Xơ hoá tiến triển theo đo đàn hồi ≥ 10 kPa (KẾT CỤC CHÍNH)",
            "0, Không | 1, Có", form="dan_hoi", nhanh=hop_le),
+        _t("chan_doan_khac", kieu_khac, nhan_khac, lua_khac, form="dan_hoi",
+           nhanh=f"{hop_le} and [xo_hoa_tien_trien] = '0'"),
         _t("ast", "text", "AST (U/L)", kt="integer", lo="5", hi="1000", form="xet_nghiem", nhanh=DU,
            phan="D. Xét nghiệm máu (cùng lần khám)"),
         _t("alt", "text", "ALT (U/L)", kt="integer", lo="5", hi="1000", form="xet_nghiem", nhanh=DU),
@@ -467,6 +473,9 @@ HINH_MAU_CHAN_DOAN: Dict[str, Any] = {
     "can_nang": {"chuan": (68, 11)}, "chieu_cao": {"chuan": (162, 8)}, "dtd": {"p": 0.3}, "tha": {"p": 0.4},
     "lsm_hop_le": {"p": 0.94}, "lsm_kpa": {"lognorm": (7.8, 1.6)},
     "xo_hoa_tien_trien": {"cong_thuc": "if([lsm_kpa] >= 10, 1, 0)"},
+    # chẩn đoán ở người không xơ hoá tiến triển: TẤT ĐỊNH theo độ đàn hồi đã mô phỏng — giả định của bộ mô phỏng, không
+    # phải ngưỡng lâm sàng (< 8 kPa ⇒ 1, còn lại ⇒ 2); công thức không rút số ngẫu nhiên nên mọi trường khác giữ nguyên
+    "chan_doan_khac": {"cong_thuc": "if([lsm_kpa] < 8, 1, 2)"},
     **{xn: {"theo_dieu_kien": [
         ["[lsm_hop_le] = '1'", {"tuyen_tinh": {"chan": c, "he_so": [["lsm_kpa", h]], "sd": sd}}],
         ["", {"chuan": _XN_KHI_KHONG_LSM[xn]}]]}

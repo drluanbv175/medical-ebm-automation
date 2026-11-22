@@ -426,3 +426,75 @@ def test_k18_chua_ap_mo_rong_consort_cho_ban_thao():
     md = "Thử nghiệm ngẫu nhiên theo cụm, không kém hơn, phòng khám là đơn vị phân bổ."
     assert {"CONSORT Cluster 2012", "CONSORT NI 2012"} <= set(dict(KCM.chuan_ap_dung("rct", md)))
     assert not {"CONSORT Cluster 2012", "CONSORT NI 2012"} & set(dict(TB.chuan_ap_dung_ban_thao("rct", md)))
+
+
+# ═════════════════════════════════════════════ biến PI khai phải có trên phiếu của MỌI kịch bản
+def test_bien_khai_o_dac_ta_g10_co_tren_phieu_moi_kich_ban():
+    """Biến PI khai ở đặc tả G10 (`*_variable`: mức độ bệnh STARD 21a, chẩn đoán khác 21b…) phải là một trường của
+    phiếu thu thập của CHÍNH kịch bản — kể cả kịch bản chân thực thay phiếu và biến thể kế thừa. Thiếu ⇒ bộ sinh đề
+    cương chỉ in ô trống (không bịa tên biến) và K17 chặn; đo 22/11/2026: kịch bản chẩn đoán chân thực khai
+    `chan_doan_khac` nhưng phiếu không có trường đó ⇒ STARD 21b thiếu ở cả đề cương lẫn bản thảo."""
+    import gia_lap_bien_the_kho as BTK  # noqa: PLC0415
+    import gia_lap_chan_thuc as GCT  # noqa: PLC0415
+    import gia_lap_dinh_ky as GL  # noqa: PLC0415
+
+    tat = {**GL.KICH_BAN, **BTK.kich_ban_kho(), **GCT.kich_ban_chan_thuc()}
+    lech, dem = [], 0
+    for ma, kb in tat.items():
+        dt = (kb.get("ho_so_tron_vong") or {}).get("dac_ta_G10") or {}
+        ten = {b[0] for b in (kb.get("bien_so") or {}).get("bo_bien") or ()}
+        for k, v in dt.items():
+            if k.endswith("_variable") and isinstance(v, str) and v.strip():
+                dem += 1
+                if v not in ten:
+                    lech.append((ma, k, v))
+    assert dem >= 4 and not lech, lech
+
+
+def test_phieu_chan_doan_chan_thuc_ghi_chan_doan_khac_dung_nhanh_va_khong_doi_du_lieu_khac():
+    """Trường «chẩn đoán khác» của phiếu chẩn đoán chân thực: cùng nhãn và lựa chọn với kịch bản gốc, chỉ hiện khi đo
+    đàn hồi hợp lệ VÀ không xơ hoá tiến triển; giá trị tất định theo độ đàn hồi đã mô phỏng (không rút thêm số ngẫu
+    nhiên ⇒ mọi trường khác của dữ liệu giữ nguyên)."""
+    import gia_lap_chan_thuc as GCT  # noqa: PLC0415
+    import gia_lap_dinh_ky as GL  # noqa: PLC0415
+
+    kb = GCT.kich_ban_chan_thuc()["diagnostic_chan_thuc"]
+    goc = {b[0]: b for b in GL.KICH_BAN["chan_doan"]["bien_so"]["bo_bien"]}["chan_doan_khac"]
+    bo = {b[0]: b for b in kb["bien_so"]["bo_bien"]}
+    assert bo["chan_doan_khac"][1:4] == goc[1:4]
+    assert kb["bien_so"]["meta_bien"]["chan_doan_khac"]["nhanh"] == "[lsm_hop_le] = '1' and [xo_hoa_tien_trien] = '0'"
+    thu_tu = [b[0] for b in kb["bien_so"]["bo_bien"]]
+    assert thu_tu.index("chan_doan_khac") == thu_tu.index("xo_hoa_tien_trien") + 1
+    meta = kb["bien_so"]["meta_bien"]
+    assert meta["chan_doan_khac"]["form"] == meta["xo_hoa_tien_trien"]["form"] == "dan_hoi"  # phần chuẩn tham chiếu
+
+    import copy  # noqa: PLC0415
+
+    import sinh_du_lieu_redcap as SR  # noqa: PLC0415
+
+    hm = kb["du_lieu_redcap"]["hinh_mau"]
+    moi = SR.sinh(GCT.tu_dien_cua(kb), 400, hm, seed=7)
+    cu_kb = copy.deepcopy(kb)
+    cu_kb["bien_so"]["bo_bien"] = [b for b in cu_kb["bien_so"]["bo_bien"] if b[0] != "chan_doan_khac"]
+    cu = SR.sinh(GCT.tu_dien_cua(cu_kb), 400, hm, seed=7)
+    assert [{k: r[k] for k in c} for r, c in zip(moi, cu)] == cu  # thêm trường không đổi ô nào của dữ liệu cũ
+    co_gia_tri = [r for r in moi if r["chan_doan_khac"] is not None]
+    assert co_gia_tri and all(r["lsm_hop_le"] == 1 and r["xo_hoa_tien_trien"] == 0 for r in co_gia_tri)
+    assert all(r["chan_doan_khac"] == (1 if r["lsm_kpa"] < 8 else 2) for r in co_gia_tri)
+    assert all(r["chan_doan_khac"] is None for r in moi if r["lsm_hop_le"] != 1 or r["xo_hoa_tien_trien"] == 1)
+
+
+def test_mo_rong_rct_chi_doc_phan_thiet_ke_cua_chinh_de_tai():
+    """Phần mở rộng cụm/không kém hơn áp theo thiết kế CỦA ĐỀ TÀI (tên, mục tiêu, phương pháp), không theo câu nhắc
+    nghiên cứu khác ở Đặt vấn đề/Tổng quan, tên bài trong tài liệu tham khảo hay phần bàn luận."""
+    nen = ("# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC\n\n# 1. ĐẶT VẤN ĐỀ\n\nThiếu thử nghiệm không kém hơn về tái khám từ xa.\n\n"
+           "# 2. MỤC TIÊU NGHIÊN CỨU\n\n1. So sánh tỷ lệ kiểm soát huyết áp giữa hai nhóm.\n\n"
+           "# 3. TỔNG QUAN TÀI LIỆU\n\n## 3.2. Các bằng chứng hiện có\n\nMột thử nghiệm ngẫu nhiên theo cụm ở Anh.\n\n"
+           "# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n\n## 4.1. Thiết kế nghiên cứu\n\n{tk}\n\n"
+           "# 5. DỰ KIẾN KẾT QUẢ\n\n## 5.5. Dự kiến bàn luận\n\nSo với thử nghiệm không kém hơn của Smith.\n\n"
+           "# 7. TÀI LIỆU THAM KHẢO\n\n1. Smith J. A cluster randomised non-inferiority trial. BMJ. 2020.\n")
+    mo_rong = {"CONSORT Cluster 2012", "CONSORT NI 2012"}
+    vuot_troi = nen.format(tk="Thử nghiệm ngẫu nhiên song song hai nhánh, phân bổ cá nhân, khung vượt trội.")
+    assert not mo_rong & set(dict(KCM.chuan_ap_dung("rct", vuot_troi)))
+    cum_ni = nen.format(tk="Thử nghiệm ngẫu nhiên theo cụm, khung không kém hơn, phòng khám là đơn vị phân bổ.")
+    assert mo_rong <= set(dict(KCM.chuan_ap_dung("rct", cum_ni)))

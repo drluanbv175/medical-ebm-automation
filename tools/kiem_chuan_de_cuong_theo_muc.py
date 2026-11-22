@@ -24,7 +24,8 @@ CÁCH KIỂM (tất định, không gọi mạng):
      chặn (GRAMMS chờ khối định tính của bộ sinh — `CHUAN_DA_DOI_CHIEU_CHUA_CHAN`). TREND 2004 đối chiếu từng mục với
      Bảng 1 bản gốc. SQUIRE 2.0, CARE 2013, TREND 2004 chưa có văn bản nào trong hệ để kiểm chứng tiêu chí ⇒ ⚪ «chưa
      đo được» (`CHUAN_CHUA_CO_VAN_BAN`), chuẩn cơ sở chưa đo ⇒ không báo đạt. Thêm phần mở rộng CONSORT 2010 cho thử
-     nghiệm cụm và không kém hơn (`CHUAN_DIEU_KIEN_RCT`).
+     nghiệm cụm và không kém hơn (`CHUAN_DIEU_KIEN_RCT`) — điều kiện chỉ đọc phần đề tài tự nêu thiết kế
+     (`van_thiet_ke_de_tai`: bỏ Đặt vấn đề/Tổng quan, tài liệu tham khảo, phụ lục, bàn luận).
 
 MỨC ĐỘ: `bat_buoc` (mục phương pháp phải có trong đề cương) · `ke_hoach` (mục kết quả/bàn luận — đề cương phải lên kế
 hoạch: khung bảng, sơ đồ chọn mẫu, phần hạn chế) · `bao_cao` (chỉ áp khi viết bài báo, vd tiêu đề/tóm tắt — liệt kê,
@@ -695,6 +696,27 @@ CHUAN_DIEU_KIEN_RCT: Tuple[Tuple[str, str, str], ...] = (
     ("CONSORT Cluster 2012", CUM_NGAU_NHIEN, "thử nghiệm ngẫu nhiên theo cụm"),
     ("CONSORT NI 2012", KHONG_KEM_HON, "thử nghiệm không kém hơn hoặc tương đương"),
 )
+#: Khối KHÔNG mô tả thiết kế của chính đề tài: chương mở đầu (nhắc nghiên cứu khác), tài liệu tham khảo (tên bài),
+#: phụ lục và phần bàn luận. Điều kiện của phần mở rộng RCT chỉ đọc phần còn lại — «Thiếu thử nghiệm không kém hơn…» ở
+#: Đặt vấn đề hay tên một bài «cluster randomised trial» trong danh mục tham khảo không biến thử nghiệm vượt trội cá
+#: nhân thành thử nghiệm không kém hơn/theo cụm (22/11/2026).
+_KHOI_NGOAI_THIET_KE = re.compile(r"ĐẶT VẤN ĐỀ|TỔNG QUAN|GIỚI THIỆU|INTRODUCTION|BACKGROUND|TÀI LIỆU THAM KHẢO|"
+                                  r"REFERENCES|PHỤ LỤC|APPENDIX|BÀN LUẬN|DISCUSSION", re.IGNORECASE)
+
+
+def van_thiet_ke_de_tai(md: str) -> str:
+    """Văn bản đề cương trừ các khối `_KHOI_NGOAI_THIET_KE` (kể cả khối con của chúng) — nơi đề tài tự nêu thiết kế:
+    tên đề tài, thông tin chung, tóm tắt, mục tiêu, phương pháp, kế hoạch."""
+    dong = md.split("\n")
+    bo = [False] * len(dong)
+    for p in tach_phan(md):
+        if p.tieu_de != "(bìa)" and _KHOI_NGOAI_THIET_KE.search(p.tieu_de):
+            dau = p.dong_dau - 1
+            for i in range(dau, min(dau + p.van.count("\n") + 1, len(dong))):
+                bo[i] = True
+    return "\n".join(d for d, b in zip(dong, bo) if not b)
+
+
 _KHONG_NGUOI_THAM_GIA = frozenset({"systematic_review"})
 NGUON_CHUAN: Dict[str, str] = {
     "STROBE 2007": "von Elm E et al. PLoS Med 2007;4(10):e296 (PMID 17941714); E&E PMID 17941715",
@@ -770,7 +792,8 @@ def chuan_ap_dung(thiet_ke: str, md: str) -> List[Tuple[str, str]]:
         if all(co_dieu_kien(m, md) for m in ((mau,) if isinstance(mau, str) else mau)):
             ra.append((ten, ly_do))
     if ma == "rct":
-        ra += [(ten, ly_do) for ten, mau, ly_do in CHUAN_DIEU_KIEN_RCT if co_dieu_kien(mau, md)]
+        van_tk = van_thiet_ke_de_tai(md)
+        ra += [(ten, ly_do) for ten, mau, ly_do in CHUAN_DIEU_KIEN_RCT if co_dieu_kien(mau, van_tk)]
     ra.append(("Việt Nam", "mọi đề tài có người tham gia thực hiện tại Việt Nam"))
     return ra
 
