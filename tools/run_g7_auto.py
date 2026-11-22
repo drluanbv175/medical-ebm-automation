@@ -51,7 +51,7 @@ import sys as _sys_r4
 import unicodedata
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -1113,17 +1113,22 @@ def dung_hinh_g6(out_dir: Path) -> list[str]:
     return dong
 
 
-def dung_ket_cuc_phu_g6(out_dir: Path) -> Optional[list[str]]:
+def dung_ket_cuc_phu_g6(out_dir: Path, vai: str = "phu", chon: Optional[Callable[[dict], bool]] = None,
+                        tieu_de_khoi: Optional[str] = None, ten_loai: str = "kết cục phụ",
+                        khoi_fn: Optional[Callable[[dict, str, str], list[str]]] = None) -> Optional[list[str]]:
     """§4 Kết cục PHỤ từ chỉ mục chạy trọn SAP (`G6_SAP_ket_qua.json` của chay_sap_g6 — mỗi phân tích một tóm tắt
     `<gate>_analysis_summary.json`). Giả lập lần 3 (15/11/2026): §4 luôn là ô trống dù G6 đã chạy các kết cục phụ SAP.
 
     Mỗi phân tích vai «phu»: DA_CHAY ⇒ tóm tắt riêng phải đạt CÙNG luật với tóm tắt chính (`_tom_tat_g6_mot_tep`: sha256
     trùng bản khoá…) và mọi số chép phải có NGUYÊN VĂN trong tóm tắt đó (`kiem_so_trich_g6`) — không đạt ⇒ ô [CẦN THỐNG
     KÊ VIÊN] kèm lý do cho RIÊNG phân tích đó; CHUA_TU_DONG/LOI ⇒ ô [CẦN THỐNG KÊ VIÊN] kèm lý do G6 ghi. Chỉ mục chạy
-    trên dữ liệu khác bản khoá ⇒ không chép gì. None ⇒ không có chỉ mục hoặc không có phân tích phụ (giữ ô cũ)."""
+    trên dữ liệu khác bản khoá ⇒ không chép gì. None ⇒ không có chỉ mục hoặc không có phân tích phụ (giữ ô cũ).
+
+    22/11/2026 (PRISMA 2020 mục 20c): cùng đường, cùng luật kiểm cho vai khác (`vai`, vd «nhom_con») — `chon` lọc theo
+    mục ĐẶC TẢ (chỉ mục không có trong đặc tả thì bỏ), `khoi_fn(tóm tắt, tên tệp, gate)` dựng khối chép số."""
     out_dir = Path(out_dir)
     cm = G7Q._read_json(out_dir / TEP_SAP_KET_QUA_G6)
-    phu = [x for x in (cm.get("phan_tich") or []) if isinstance(x, dict) and x.get("vai") == "phu"] \
+    phu = [x for x in (cm.get("phan_tich") or []) if isinstance(x, dict) and x.get("vai") == vai] \
         if isinstance(cm, dict) else []
     # Thẩm định #277 (V4): đối chiếu với ĐẶC TẢ SAP G6 (G6_DAC_TA_SAP.json) — chỉ mục bị `chay --chi` ghi đè làm kết
     # cục phụ khác biến mất im lặng; đặc tả/SAP đổi sau lượt chạy; tóm tắt chạy lại tay với kết cục khác.
@@ -1135,29 +1140,32 @@ def dung_ket_cuc_phu_g6(out_dir: Path) -> Optional[list[str]]:
     except Exception:  # noqa: BLE001 — chưa có/không đọc được đặc tả ⇒ chỉ dựa chỉ mục (như trước)
         CSG, dac_ta, kiem_dt = None, None, None
     phu_dac_ta = {str(pt.get("id")): pt for pt in ((dac_ta or {}).get("phan_tich") or [])
-                  if isinstance(pt, dict) and pt.get("vai") == "phu" and pt.get("id")}
+                  if isinstance(pt, dict) and pt.get("vai") == vai and pt.get("id") and (chon is None or chon(pt))}
+    if chon is not None:
+        phu = [x for x in phu if str(x.get("id")) in phu_dac_ta]
     if not phu and not phu_dac_ta:
         return None
     manifest = G7Q._read_json(out_dir / "DATA_LOCK_manifest.json")
     moc_khoa = G7Q._thoi_diem(manifest.get("locked_at"))
     if manifest.get("status") != "LOCKED_FOR_ANALYSIS" or moc_khoa is None:
-        return ["[CẦN KẾT QUẢ THẬT — có chỉ mục SAP G6 nhưng dữ liệu chưa khoá (DATA_LOCK_manifest) — không chép kết cục "
-                "phụ]  "]
+        return [f"[CẦN KẾT QUẢ THẬT — có chỉ mục SAP G6 nhưng dữ liệu chưa khoá (DATA_LOCK_manifest) — không chép "
+                f"{ten_loai}]  "]
     sha_khoa = str(manifest.get("sha256") or "").strip().lower()
     dl = cm.get("du_lieu_khoa") if isinstance(cm.get("du_lieu_khoa"), dict) else {}
     sha_cm = str(dl.get("sha256") or "").strip().lower()
     if sha_cm and sha_khoa and sha_cm != sha_khoa:
         return [f"[CẦN KẾT QUẢ THẬT — {TEP_SAP_KET_QUA_G6} chạy trên dữ liệu KHÁC bản khoá hiện hành (sha256 lệch) — "
-                "chạy lại `chay_sap_g6.py chay`; không chép kết cục phụ]  "]
+                f"chạy lại `chay_sap_g6.py chay`; không chép {ten_loai}]  "]
     if kiem_dt is not None:
         if kiem_dt.get("sap_khop") is False:
             return ["[CẦN THỐNG KÊ VIÊN — SAP đã ĐỔI sau khi soạn đặc tả G6 (G6_DAC_TA_SAP.json) — soạn lại đặc tả, chạy "
-                    "lại chay_sap_g6; không chép kết cục phụ]  "]
+                    f"lại chay_sap_g6; không chép {ten_loai}]  "]
         dau_cm = str((cm.get("dac_ta") or {}).get("dau") or "") if isinstance(cm.get("dac_ta"), dict) else ""
         if dau_cm and kiem_dt.get("dau") and dau_cm != kiem_dt.get("dau"):
             return [f"[CẦN THỐNG KÊ VIÊN — {TEP_SAP_KET_QUA_G6} chạy theo đặc tả CŨ (dấu {_trong_o(dau_cm, 20)} ≠ "
-                    f"{_trong_o(kiem_dt.get('dau'), 20)}) — chạy lại `chay_sap_g6.py chay`; không chép kết cục phụ]  "]
-    dong = [f"*Kết cục phụ — chép từ chỉ mục SAP G6 (`{TEP_SAP_KET_QUA_G6}`), mỗi phân tích một tóm tắt riêng*  ", ""]
+                    f"{_trong_o(kiem_dt.get('dau'), 20)}) — chạy lại `chay_sap_g6.py chay`; không chép {ten_loai}]  "]
+    dong = [tieu_de_khoi or f"*Kết cục phụ — chép từ chỉ mục SAP G6 (`{TEP_SAP_KET_QUA_G6}`), mỗi phân tích một tóm tắt "
+                            "riêng*  ", ""]
     for x in phu:
         tieu_de = f"**`{_mot_dong(x.get('id'), 60)}`** (SAP {_mot_dong(x.get('sap_muc') or '—', 20)})"
         if x.get("mo_ta"):
@@ -1191,7 +1199,7 @@ def dung_ket_cuc_phu_g6(out_dir: Path) -> Optional[list[str]]:
             dong += [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — {ten} đã đổi sau khi lập chỉ mục (ước lượng khác chỉ mục) — "
                      "chạy lại `chay_sap_g6.py chay`]  ", ""]
             continue
-        khoi = _khoi_uoc_luong_g6(tt, ten, tien_to=gate)
+        khoi = khoi_fn(tt, ten, gate) if khoi_fn else _khoi_uoc_luong_g6(tt, ten, tien_to=gate)
         lech = kiem_so_trich_g6("\n".join(khoi), van_ban)
         if lech or not khoi:
             ly = (f"tự kiểm: số không có nguyên văn trong {ten}: {', '.join(lech[:6])}" if lech
@@ -1203,9 +1211,27 @@ def dung_ket_cuc_phu_g6(out_dir: Path) -> Optional[list[str]]:
     for id_ in [i for i in phu_dac_ta if i not in da_co]:
         pt = phu_dac_ta[id_]
         dong += [f"**`{_mot_dong(id_, 60)}`** (SAP {_mot_dong(pt.get('sap_muc') or '—', 20)}): [CẦN THỐNG KÊ VIÊN — SAP "
-                 f"cam kết kết cục phụ này nhưng {TEP_SAP_KET_QUA_G6} chưa có — chạy `chay_sap_g6.py chay` đủ đặc tả "
+                 f"cam kết {ten_loai} này nhưng {TEP_SAP_KET_QUA_G6} chưa có — chạy `chay_sap_g6.py chay` đủ đặc tả "
                  "(không `--chi`)]  ", ""]
     return dong
+
+
+def _la_phan_nhom_gop(pt: dict) -> bool:
+    ts = pt.get("tham_so") if isinstance(pt.get("tham_so"), dict) else {}
+    return ts.get("loai_dac_thu") == "gop" and bool(ts.get("phan_nhom"))
+
+
+def dung_phan_nhom_g6(out_dir: Path) -> Optional[list[str]]:
+    """§3b PHÂN NHÓM TIỀN ĐỊNH của phân tích gộp (PRISMA 2020 mục 20c, 22/11/2026): lượt `nhom_con` của chay_sap_g6 có
+    `phan_nhom` — CÙNG luật kiểm như kết cục phụ (sha256 bản khoá, đặc tả còn hiệu lực, ước lượng trùng chỉ mục, mọi
+    số nguyên văn trong tóm tắt của chính lượt đó); chỉ chép RR từng phân nhóm + kiểm định khác biệt giữa nhóm. Thiết
+    kế khác/không có lượt phân nhóm gộp ⇒ None (bản thảo không đổi)."""
+    dong = dung_ket_cuc_phu_g6(
+        out_dir, vai="nhom_con", chon=_la_phan_nhom_gop, ten_loai="phân nhóm",
+        tieu_de_khoi=f"*Phân nhóm tiền định — chép từ chỉ mục SAP G6 (`{TEP_SAP_KET_QUA_G6}`), mỗi phân tích một tóm tắt "
+                     "riêng; chỉ diễn giải thăm dò*  ",
+        khoi_fn=lambda tt, _ten, _gate: _khoi_phan_nhom_gop_g6((tt.get("dac_thu") or {}).get("phan_nhom")))
+    return ["**§3b Phân nhóm tiền định (SAP):**  ", *dong] if dong else None
 
 
 def doc_tom_tat_g6_hop_le(out_dir: Path) -> dict:
@@ -1432,15 +1458,27 @@ def _khoi_dac_thu_g6(loai: Any, kq: Any, nguon: str) -> list[str]:
                 ra.append(f"| `{_mot_dong(h.get('bien'), 60)}` | {_so_g6(h.get('or'))} | {_ci_g6(h.get('ci_95'))} | "
                           f"{_p_g6(h.get('p'))} |")
     elif loai == "gop":
+        tung = [t for t in kq.get("tung_nghien_cuu") or [] if isinstance(t, dict)]
+        # 22/11/2026 (PRISMA 2020 mục 19): số biến cố/số người TỪNG NHÁNH của từng nghiên cứu — chỉ khi G6 ghi đủ cho
+        # mọi nghiên cứu (tóm tắt cũ không có ⇒ bảng như trước, không thêm ô chờ)
+        co_dem = bool(tung) and all(all(isinstance(t.get(x), (int, float)) and not isinstance(t.get(x), bool)
+                                        for x in ("su_kien_can_thiep", "n_can_thiep", "su_kien_chung", "n_chung"))
+                                    for t in tung)
         ra += [f"Phân tích gộp (G6, `{nguon}`): k = {_so_g6(kq.get('k'))} nghiên cứu; RR gộp (hiệu ứng ngẫu nhiên) = "
                f"{_so_g6(kq.get('rr_gop_ngau_nhien'))} (95% CI {_ci_g6(kq.get('ci_95'))}); RR gộp (hiệu ứng cố định) = "
                f"{_so_g6(kq.get('rr_gop_co_dinh'))} (95% CI {_ci_g6(kq.get('ci_95_co_dinh'))}) {N}  ",
                f"Không đồng nhất: Q = {_so_g6(kq.get('q'))} (df = {_so_g6(kq.get('df'))}), I² = "
                f"{_so_g6(kq.get('i2_pct'))}%, τ² = {_so_g6(kq.get('tau2'))} {N}  ", "",
-               "| Nghiên cứu | RR | 95% CI |", "|---|---|---|"]
-        for t in kq.get("tung_nghien_cuu") or []:
-            if isinstance(t, dict):
-                ra.append(f"| {_mot_dong(t.get('nghien_cuu'), 60)} | {_so_g6(t.get('rr'))} | {_ci_g6(t.get('ci_95'))} |")
+               "| Nghiên cứu | RR | 95% CI |" + (" Biến cố/số người — nhánh can thiệp | Biến cố/số người — nhánh chứng |"
+                                                  if co_dem else ""),
+               "|---|---|---|" + ("---|---|" if co_dem else "")]
+        for t in tung:
+            ra.append(f"| {_mot_dong(t.get('nghien_cuu'), 60)} | {_so_g6(t.get('rr'))} | {_ci_g6(t.get('ci_95'))} |"
+                      + (f" {_so_g6(t['su_kien_can_thiep'])}/{_so_g6(t['n_can_thiep'])} | "
+                         f"{_so_g6(t['su_kien_chung'])}/{_so_g6(t['n_chung'])} |" if co_dem else ""))
+        ra += _khoi_sai_lech_cong_bo_g6(kq.get("egger"))
+        ra += _khoi_tuyet_doi_g6(kq.get("hieu_ung_tuyet_doi"), kq.get("tong"))
+        ra += _khoi_phan_nhom_gop_g6(kq.get("phan_nhom"))
     elif loai == "chan_doan":
         au = kq.get("auc") if isinstance(kq.get("auc"), dict) else {}
         ra += [f"Độ chính xác chẩn đoán (G6, `{nguon}`): AUC = {_so_g6(au.get('auc'))} (95% CI {_ci_g6(au.get('ci_95'))}) "
@@ -1455,6 +1493,121 @@ def _khoi_dac_thu_g6(loai: Any, kq: Any, nguon: str) -> list[str]:
     else:
         return []
     return ra + [""]
+
+
+def _khoi_sai_lech_cong_bo_g6(eg: Any) -> list[str]:
+    """PRISMA 2020 mục 21 (22/11/2026): kiểm định Egger G6 chạy theo SAP §5 (k ≥ ngưỡng) — chép t, df, p nguyên văn;
+    không chạy ⇒ chép lý do G6 ghi. Nhận định bất đối xứng là việc tác giả (không có câu kết luận máy viết)."""
+    if not isinstance(eg, dict) or not eg:
+        return []
+    N = NHAN_DOI_CHIEU_G6
+    if eg.get("da_chay") is True:
+        return ["", f"Sai lệch công bố — kiểm định Egger (hồi quy có trọng số của log RR theo sai số chuẩn; k = "
+                    f"{_so_g6(eg.get('k'))}): hệ số bất đối xứng = {_so_g6(eg.get('he_so_bat_doi_xung'))}, t = "
+                    f"{_so_g6(eg.get('t'))}, df = {_so_g6(eg.get('df'))}, p = {_p_g6(eg.get('p'))} {N}  "]
+    return ["", f"Sai lệch công bố — kiểm định Egger không chạy (G6): {_mot_dong(eg.get('ly_do') or '—', 260)}  "]
+
+
+def _khoi_tuyet_doi_g6(hu: Any, tong: Any) -> list[str]:
+    """Tổng số người, biến cố hai nhánh và hiệu ứng tuyệt đối trên 1000 người do G6 tính (khuôn bảng tóm tắt phát hiện
+    GRADE) — chỉ chép."""
+    if not (isinstance(hu, dict) and isinstance(tong, dict) and hu and tong):
+        return []
+    N = NHAN_DOI_CHIEU_G6
+    return [f"Tổng các nghiên cứu (G6): {_so_g6(tong.get('nguoi'))} người — nhánh can thiệp "
+            f"{_so_g6(tong.get('su_kien_can_thiep'))}/{_so_g6(tong.get('n_can_thiep'))}, nhánh chứng "
+            f"{_so_g6(tong.get('su_kien_chung'))}/{_so_g6(tong.get('n_chung'))} biến cố/số người {N}  ",
+            f"Hiệu ứng tuyệt đối (G6; nguy cơ nhóm chứng = tổng biến cố/tổng người nhánh chứng): "
+            f"{_so_g6(hu.get('bien_co_chung_moi_1000'))} so với {_so_g6(hu.get('bien_co_can_thiep_moi_1000'))} biến cố "
+            f"trên 1000 người; hiệu số {_so_g6(hu.get('hieu_so_moi_1000'))} trên 1000 (95% CI "
+            f"{_ci_g6(hu.get('ci_95_hieu_so_moi_1000'))}) {N}  "]
+
+
+def _khoi_phan_nhom_gop_g6(pn: Any) -> list[str]:
+    """PRISMA 2020 mục 20c (22/11/2026): phân nhóm tiền định G6 — RR gộp từng phân nhóm + kiểm định khác biệt giữa
+    nhóm (Q, df, p) chép nguyên văn; G6 không kiểm định (một phân nhóm) ⇒ chép lý do."""
+    if not isinstance(pn, dict) or not isinstance(pn.get("nhom"), list) or not pn["nhom"]:
+        return []
+    N = NHAN_DOI_CHIEU_G6
+    ra = ["", f"Phân nhóm theo `{_mot_dong(pn.get('bien'), 60)}` (G6; gộp riêng từng phân nhóm) {N}  ", "",
+          "| Phân nhóm | k | RR | 95% CI | I² (%) | Nghiên cứu |", "|---|---|---|---|---|---|"]
+    for g in pn["nhom"]:
+        if isinstance(g, dict):
+            ra.append(f"| {_o_bang1(g.get('nhan') or g.get('ma'))} | {_so_g6(g.get('k'))} | {_so_g6(g.get('rr'))} | "
+                      f"{_ci_g6(g.get('ci_95'))} | {_so_g6(g.get('i2_pct'))} | "
+                      f"{_mot_dong(', '.join(map(str, g.get('nghien_cuu') or [])), 400)} |")
+    if pn.get("q_giua_nhom") is not None:
+        ra += ["", f"Khác biệt giữa các phân nhóm: Q = {_so_g6(pn['q_giua_nhom'])}, df = "
+                   f"{_so_g6(pn.get('df_giua_nhom'))}, p = {_p_g6(pn.get('p_giua_nhom'))} {N}  "]
+    elif pn.get("ly_do"):
+        ra += ["", f"Khác biệt giữa các phân nhóm: không kiểm định (G6) — {_mot_dong(pn['ly_do'], 200)}  "]
+    return ra
+
+
+def _o_dac_diem(v: Any) -> str:
+    """Một ô bảng đặc điểm từng nghiên cứu: số chép nguyên văn (`_so_g6`), chữ (nhãn lựa chọn) qua `_o_bang1`; dữ liệu
+    khoá không ghi ⇒ «—» (không phải ô chờ: giá trị trống là dữ kiện của bộ dữ liệu)."""
+    if v is None or (isinstance(v, str) and not v.strip()):
+        return "—"
+    if isinstance(v, (int, float)) and not isinstance(v, bool):
+        return _so_g6(v)
+    return _o_bang1(v)
+
+
+def _bang_dac_diem_nc_g6(bd: Any) -> list[str]:
+    """Bảng đặc điểm TỪNG nghiên cứu (G6 `bang_dac_diem_nghien_cuu`, PRISMA 2020 mục 17): cột = nhãn từ điển G5 do G6
+    ghi, một dòng mỗi nghiên cứu. [] nếu tóm tắt không mang bảng dùng được."""
+    if not (isinstance(bd, dict) and isinstance(bd.get("cot"), list) and isinstance(bd.get("dong"), list)
+            and bd["dong"]):
+        return []
+    cot = [c for c in bd["cot"] if isinstance(c, dict) and c.get("bien")]
+    nc = bd.get("nhan_nghien_cuu") if isinstance(bd.get("nhan_nghien_cuu"), dict) else {}
+    ra = ["| " + " | ".join([_mot_dong(nc.get("nhan") or "Nghiên cứu", 80)]
+                            + [_mot_dong(c.get("nhan") or c["bien"], 80) for c in cot]) + " |",
+          "|" + "---|" * (len(cot) + 1)]
+    for d in bd["dong"]:
+        if isinstance(d, dict):
+            gt = d.get("gia_tri") if isinstance(d.get("gia_tri"), dict) else {}
+            ra.append("| " + " | ".join([_mot_dong(d.get("nghien_cuu"), 60)]
+                                        + [_o_dac_diem(gt.get(c["bien"])) for c in cot]) + " |")
+    return ra
+
+
+#: chỗ tên kết cục trong khung tóm tắt phát hiện — thay SAU bước tự kiểm số (tên kết cục do G1 chốt, không phải số G6)
+_CHO_TEN_KET_CUC = "⟪KẾT_CỤC⟫"
+
+
+def khoi_tom_tat_phat_hien_g6(ket_qua_g6: dict, ten_ket_cuc: str) -> list[str]:
+    """Khung BẢNG TÓM TẮT PHÁT HIỆN (GRADE, SAP §5 khuôn tổng quan — PRISMA 2020 mục 22) từ số G6 đã có: số nghiên cứu,
+    số người, nguy cơ hai nhánh và hiệu số trên 1000 người, RR gộp. Mức chắc chắn GRADE là PHÁN ĐOÁN CỦA NGƯỜI (5 lĩnh
+    vực) ⇒ máy KHÔNG xếp mức, để ô chờ tác giả. Chỉ dựng cho phân tích gộp có `hieu_ung_tuyet_doi` + `tong`; mọi số tự
+    kiểm nguyên văn trong tóm tắt G6 (lệch ⇒ không dựng)."""
+    if not (ket_qua_g6 or {}).get("da_dung"):
+        return []
+    tt = ket_qua_g6.get("tom_tat_g6") or {}
+    kq = tt.get("dac_thu") if tt.get("loai_dac_thu") == "gop" else None
+    if not isinstance(kq, dict):
+        return []
+    hu, tong = kq.get("hieu_ung_tuyet_doi"), kq.get("tong")
+    if not (isinstance(hu, dict) and isinstance(tong, dict) and hu and tong):
+        return []
+    dong = (f"| {_CHO_TEN_KET_CUC} | {_so_g6(kq.get('k'))} ({_so_g6(tong.get('nguoi'))}) | "
+            f"{_so_g6(hu.get('bien_co_chung_moi_1000'))} | {_so_g6(hu.get('bien_co_can_thiep_moi_1000'))} | "
+            f"{_so_g6(hu.get('hieu_so_moi_1000'))} ({_ci_g6(hu.get('ci_95_hieu_so_moi_1000'))}) | "
+            f"{_so_g6(kq.get('rr_gop_ngau_nhien'))} ({_ci_g6(kq.get('ci_95'))}) | "
+            # chữ ô KHÔNG chứa «tác giả»: bước điền ô của giả lập 24 kịch bản khớp «tác giả» với TÊN người (22/11/2026
+            # — bản chân thực từng ghi «ThS. Trần Thị B» vào cột mức chắc chắn)
+            "[CẦN XẾP MỨC CHẮC CHẮN GRADE — nhóm nghiên cứu đánh giá năm lĩnh vực: nguy cơ sai lệch, không nhất quán, "
+            "gián tiếp, thiếu chính xác, sai lệch công bố; máy không xếp] |")
+    if kiem_so_trich_g6(dong, ket_qua_g6.get("van_ban_g6") or ""):
+        return []
+    return ["**§3c Bảng tóm tắt phát hiện (GRADE):**  ",
+            f"*Bảng tóm tắt phát hiện — số chép nguyên văn từ G6 (`{ket_qua_g6.get('nguon')}`); mức chắc chắn do nhóm "
+            f"tác giả xếp theo GRADE (SAP), máy không xếp* {NHAN_DOI_CHIEU_G6}  ", "",
+            "| Kết cục | Số nghiên cứu (số người) | Nguy cơ nhóm chứng (trên 1000) | Nguy cơ nhóm can thiệp (trên 1000) | "
+            "Hiệu số trên 1000 (95% CI) | RR gộp ngẫu nhiên (95% CI) | Mức chắc chắn (GRADE) |",
+            "|---|---|---|---|---|---|---|", dong.replace(_CHO_TEN_KET_CUC, _mot_dong(ten_ket_cuc or "Kết cục chính", 120)),
+            ""]
 
 
 def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6") -> list[str]:
@@ -1576,7 +1729,20 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
     # run_stats_analysis.bang1_cho_tom_tat) ⇒ chép NGUYÊN VĂN chuỗi G6 đã định dạng; tóm tắt cũ (chỉ n_per_group) ⇒ ô
     # trống như trước. Chỉ tên biến trong bảng (nhãn có thể chứa số — «<140/90» — nằm ở chú giải ngoài khối tự kiểm).
     bien_bang1 = _bang1_tu_g6(t1, n_theo_nhom)
-    if bien_bang1:
+    # 22/11/2026 (PRISMA 2020 mục 17): tổng quan–gộp ⇒ Bảng 1 là ĐẶC ĐIỂM TỪNG NGHIÊN CỨU (G6 bang_dac_diem_nghien_cuu),
+    # không phải «đặc điểm nền người tham gia» trung bình gộp mọi nghiên cứu của khuôn nghiên cứu gốc
+    bd = tt.get("bang_dac_diem_nghien_cuu") if tt.get("loai_dac_thu") == "gop" else None
+    bang_nc = _bang_dac_diem_nc_g6(bd)
+    k_nc: Optional[str] = None
+    if isinstance(bd, dict) and bd.get("error"):
+        s2 = [f"[CẦN THỐNG KÊ VIÊN — G6 báo lỗi bảng đặc điểm từng nghiên cứu: {_trong_o(bd['error'])}]  "]
+        bien_bang1, n_theo_nhom = [], None
+    elif bang_nc:
+        k_nc = _so_g6(bd.get("k")) if isinstance(bd.get("k"), int) else str(len(bd["dong"]))
+        s2 = [f"*Đặc điểm từng nghiên cứu chép nguyên văn từ tóm tắt G6 (`{nguon}`, bang_dac_diem_nghien_cuu); «—» = "
+              f"dữ liệu khoá không ghi* {N}  ", "", *bang_nc, ""]
+        bien_bang1, n_theo_nhom = [], None
+    elif bien_bang1:
         # Thẩm định #277 (V1): tra ô theo khoá nhóm GỐC của G6 (nhãn có khoảng trắng cuối/NFD/«|» từng làm khoá đã chuẩn
         # hoá trượt ⇒ ô «N/A» thay giá trị); chỉ chuẩn hoá khi HIỂN THỊ.
         nhom_goc = list(t1["n_per_group"])
@@ -1612,7 +1778,8 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
         s5 += _bang_mo_hinh_g6("Nhạy cảm OLS (G6, `G6_table6_sensitivity_linear.txt`)", tt["sensitivity_linear"])
 
     ket = {"da_dung": True, "nguon": nguon, "n_total_txt": _so_g6(tt["n_total"]), "n_theo_nhom": n_theo_nhom,
-           "bien_bang1": bien_bang1, "s1": s1, "s2": s2, "s3": s3, "s5": s5}
+           "bien_bang1": bien_bang1, "s1": s1, "s2": s2, "s3": s3, "s5": s5, "k_nghien_cuu": k_nc,
+           "tom_tat_g6": tt, "van_ban_g6": g6.get("van_ban") or ""}
     lech = kiem_so_trich_g6("\n".join(s1 + s2 + s3 + s5), g6.get("van_ban") or "")
     if lech:
         return {"da_dung": False, "ly_do": f"tự kiểm: số không có nguyên văn trong {nguon}: {', '.join(lech[:6])} "
@@ -2720,8 +2887,11 @@ def generate_manuscript(
             "*Lý do loại trừ chính:* [CẦN KẾT QUẢ THẬT — liệt kê số/lý do]  ",
             f"*(Xem {flow_label} — sinh từ kết quả thật)*",
             "",
-            "**§2 Đặc điểm nền — Bảng 1:**  ",
-            f"*Bảng 1. Đặc điểm nền người tham gia (N = {kq6['n_total_txt']} — G6)*  ",
+            *(["**§2 Đặc điểm các nghiên cứu — Bảng 1:**  ",
+               f"*Bảng 1. Đặc điểm các nghiên cứu được đưa vào tổng hợp (k = {kq6['k_nghien_cuu']} — G6)*  "]
+              if kq6.get("k_nghien_cuu") else
+              ["**§2 Đặc điểm nền — Bảng 1:**  ",
+               f"*Bảng 1. Đặc điểm nền người tham gia (N = {kq6['n_total_txt']} — G6)*  "]),
             *kq6["s2"],
             "",
             table1_shell,
@@ -2730,6 +2900,8 @@ def generate_manuscript(
             *(kq6["s3"] or ["[CẦN KẾT QUẢ THẬT — tóm tắt G6 không có ước lượng kết cục chính]  ", ""]),
             "*(Xem file Table2.docx — từ G6 03_analysis.R)*",
             "",
+            *([*kq6["phan_nhom"], ""] if kq6.get("phan_nhom") else []),
+            *(kq6.get("tom_tat_phat_hien") or []),
             "**§4 Kết cục phụ — Bảng 3:**  ",
             *(kq6.get("s4") or ["[CẦN KẾT QUẢ THẬT — tóm tắt G6 không chứa kết cục phụ; phân tích theo SAP §2/§8]  "]),
             "*(Xem file Table3.docx — từ G6)*",
@@ -3629,7 +3801,17 @@ def main() -> None:
     if ket_qua_g6.get("da_dung"):
         ket_qua_g6["s4"] = dung_ket_cuc_phu_g6(out_dir)   # kết cục phụ của chay_sap_g6 (giả lập lần 3)
         ket_qua_g6["hinh"] = dung_hinh_g6(out_dir)          # hình G6 tự sinh cùng lượt chạy SAP (21/11/2026)
-    if ket_qua_g6.get("da_dung") and ket_qua_g6.get("bien_bang1"):
+        # 22/11/2026 (PRISMA 2020 mục 20c, 22): phân nhóm tiền định + khung tóm tắt phát hiện GRADE của phân tích gộp
+        ket_qua_g6["phan_nhom"] = dung_phan_nhom_g6(out_dir)
+        g1_gp = _g1_g2_g7(out_dir)[0]
+        po_g1 = (g1_gp.get("primary_outcome") if isinstance(g1_gp, dict) else None) or {}
+        ket_qua_g6["tom_tat_phat_hien"] = khoi_tom_tat_phat_hien_g6(
+            ket_qua_g6, _gia_tri_chot(po_g1.get("name")) if isinstance(po_g1, dict) else "")
+    if ket_qua_g6.get("da_dung") and ket_qua_g6.get("k_nghien_cuu"):
+        table1_shell = ("*Bảng 1: một dòng mỗi nghiên cứu được đưa vào tổng hợp (PRISMA 2020 mục 17); giá trị chép từ dữ "
+                        "liệu đã khoá qua G6, mã lựa chọn đổi sang nhãn từ điển G5; số biến cố từng nhánh ở bảng kết quả "
+                        "từng nghiên cứu (§3).*")
+    elif ket_qua_g6.get("da_dung") and ket_qua_g6.get("bien_bang1"):
         table1_shell = chu_giai_bang1_g6(redcap_vars, ket_qua_g6["bien_bang1"])   # bảng đã chép từ G6 ở nháp §2
     else:
         table1_shell = build_table1_shell(
