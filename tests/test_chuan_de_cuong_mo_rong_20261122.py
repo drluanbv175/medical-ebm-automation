@@ -498,3 +498,53 @@ def test_mo_rong_rct_chi_doc_phan_thiet_ke_cua_chinh_de_tai():
     assert not mo_rong & set(dict(KCM.chuan_ap_dung("rct", vuot_troi)))
     cum_ni = nen.format(tk="Thử nghiệm ngẫu nhiên theo cụm, khung không kém hơn, phòng khám là đơn vị phân bổ.")
     assert mo_rong <= set(dict(KCM.chuan_ap_dung("rct", cum_ni)))
+
+
+# ═════════════════════════════════════════════ RECORD 2015 mục 13.1 — chọn quần thể từ dữ liệu thường quy
+def _nguon_gia(tmp_path: Path, tk: str, loai_tru: list, nguon=("hồ sơ bệnh án", "xét nghiệm máu"), meta=None):
+    from types import SimpleNamespace  # noqa: PLC0415
+
+    s = {("data_collection", "source"): list(nguon)}
+    return SimpleNamespace(thiet_ke=tk, g1={"exclusion_criteria": loai_tru}, out=tmp_path, study="X",
+                           meta=meta or {}, s=lambda *k: s.get(k))
+
+
+_THUONG_QUY = "Số liệu trích từ hồ sơ bệnh án điện tử."
+
+
+def test_record_13_1_loc_theo_san_co_chat_luong_tu_quyet_dinh_da_chot(tmp_path):
+    n = _nguon_gia(tmp_path, "diagnostic", ["Uống rượu nguy hại", "Không đo được độ đàn hồi gan hợp lệ"])
+    ra = SDC.chon_quan_the_thuong_quy(n, _THUONG_QUY)
+    loc = ra[0]
+    assert loc.startswith("- Chọn quần thể từ dữ liệu thường quy (hồ sơ bệnh án; xét nghiệm máu)")
+    # lọc dữ liệu: tiêu chuẩn loại trừ về số đo + lý do loại trên sơ đồ chọn của thiết kế (khuôn G6 vẽ)
+    for x in ("không đo được độ đàn hồi gan hợp lệ", "không làm tiêu chuẩn tham chiếu", "kết quả không xác định"):
+        assert x in loc, x
+    for x in ("uống rượu", "không đủ tiêu chuẩn", "từ chối"):  # tiêu chuẩn lâm sàng/tham gia không phải lọc dữ liệu
+        assert x not in loc.lower(), x
+    assert ra[1].startswith("- Sơ đồ chọn ghi số người ở từng bước (người bệnh đủ điều kiện → làm xét nghiệm")
+    assert SDC.chon_quan_the_thuong_quy(n, "Phỏng vấn người bệnh bằng phiếu.") == []  # không dùng dữ liệu thường quy
+
+
+def test_record_13_1_doc_so_so_do_luong_cua_de_tai_khong_in_so(tmp_path):
+    (tmp_path / "SO_DO_LUONG_X.csv").write_text(
+        "buoc,n,loai,nhanh,ly_do\nHồ sơ trong khung chọn mẫu,812,chinh,,\nLoại,40,loai,,"
+        "Hồ sơ thiếu dữ liệu HbA1c: 31; Hồ sơ trùng lặp: 9\nĐưa vào phân tích,772,chinh,,\n",
+        encoding="utf-8", newline="\n")
+    ra = SDC.chon_quan_the_thuong_quy(_nguon_gia(tmp_path, "cross_sectional", []), _THUONG_QUY)
+    assert "hồ sơ thiếu dữ liệu HbA1c; hồ sơ trùng lặp" in ra[0]
+    assert "hồ sơ trong khung chọn mẫu → đưa vào phân tích" in ra[1]
+    assert not any(c.isdigit() for c in "".join(ra).replace("HbA1c", ""))  # kế hoạch, không chép số của sổ
+
+
+def test_record_13_1_khong_co_loc_du_lieu_thi_o_trong_va_k17_bao_thieu(tmp_path):
+    n = _nguon_gia(tmp_path, "case_control", ["Có thai", "Thiếu máu nặng"])  # khuôn bệnh–chứng: lý do lâm sàng
+    ra = SDC.chon_quan_the_thuong_quy(n, _THUONG_QUY)
+    assert ra == [f"- Lọc theo độ sẵn có và chất lượng dữ liệu khi chọn quần thể: {CHAM}"]
+    goc = ("# ĐỀ CƯƠNG\n\n# 1. ĐẶT VẤN ĐỀ\n\nNội dung.\n\n# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n\n"
+           "## 4.4. Cỡ mẫu và phương pháp chọn mẫu\n\n"
+           "### 4.4.2. Phương pháp chọn mẫu\n\nTrích hồ sơ bệnh án điện tử.\n\n{dong}\n")
+    trong = _ket_qua(goc.format(dong=ra[0]), "cross_sectional")[("RECORD 2015", "13.1")]
+    co = SDC.chon_quan_the_thuong_quy(_nguon_gia(tmp_path, "diagnostic", []), _THUONG_QUY)
+    du = _ket_qua(goc.format(dong="\n".join(co)), "cross_sectional")[("RECORD 2015", "13.1")]
+    assert trong.trang_thai == "thieu" and du.trang_thai == "dat"

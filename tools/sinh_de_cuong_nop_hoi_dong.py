@@ -1832,6 +1832,66 @@ def du_lieu_thuong_quy(n: "Nguon", van: str) -> bool:
     return KCM.co_dieu_kien(KCM.DU_LIEU_THUONG_QUY, van)
 
 
+DAU_CHON_THUONG_QUY = "@@CHON_QUAN_THE_THUONG_QUY@@"
+#: lý do loại/tiêu chuẩn loại trừ nói về ĐỘ SẴN CÓ hay CHẤT LƯỢNG của dữ liệu (không có số đo, số đo không hợp lệ, kết
+#: quả không xác định, hồ sơ thiếu/trùng, mất dấu) — khác tiêu chuẩn lâm sàng («không đủ tiêu chuẩn», «thiếu máu»,
+#: «không có điện thoại» không phải lọc dữ liệu)
+_DL = r"(dữ liệu|số liệu|kết cục|kết quả|thông tin|số đo|xét nghiệm|hồ sơ|giá trị|tiêu chuẩn tham chiếu)"
+_LOC_DU_LIEU_RE = re.compile(r"\bthiếu " + _DL + r"|\bkhông (đủ|có) " + _DL + r"|\bkhông (đo|làm|xác định|đọc|ghép|tìm)"
+                             r"\b|hợp lệ|trùng lặp|mất (theo dõi|dấu|liên lạc)", re.IGNORECASE)
+
+
+def so_do_chon(n: "Nguon") -> Tuple[List[str], List[str]]:
+    """(các bước chính, các lý do loại) của sơ đồ chọn CỦA ĐỀ TÀI: sổ `SO_DO_LUONG_<mã>.csv` khi đã có, không thì khuôn
+    sơ đồ của thiết kế (`ve_bieu_do.mau_so_do_luong`, khuôn hồ sơ có sẵn theo `la_hoi_cuu`) — đúng các hộp G6 vẽ ở
+    Hình sơ đồ chọn. Chỉ lấy NHÃN bước và nhãn lý do; không lấy số."""
+    import csv  # noqa: PLC0415
+
+    import ve_bieu_do as VB  # noqa: PLC0415
+
+    p = n.out / f"SO_DO_LUONG_{n.study}.csv"
+    hang: List[Dict[str, str]] = []
+    if p.is_file():
+        with p.open(encoding="utf-8", newline="") as fh:
+            hang = list(csv.DictReader(fh))
+    else:
+        try:
+            hang = VB.mau_so_do_luong(n.thiet_ke, hoi_cuu=VB.la_hoi_cuu(n.meta))
+        except SystemExit:  # thiết kế chưa có khuôn sơ đồ
+            hang = []
+    chinh = list(dict.fromkeys(lam_sach(r.get("buoc")) for r in hang
+                               if r.get("loai") == "chinh" and lam_sach(r.get("buoc"))))
+    ly_do = list(dict.fromkeys(lam_sach(x.split(":")[0]) for r in hang if r.get("loai") == "loai"
+                               for x in str(r.get("ly_do") or "").split(";") if lam_sach(x.split(":")[0])))
+    return chinh, ly_do
+
+
+def chon_quan_the_thuong_quy(n: "Nguon", van: str) -> List[str]:
+    """RECORD 2015 mục 13.1 (22/11/2026, giả lập 8 kịch bản nền: chẩn đoán và dự báo thiếu mục này): đề tài dùng dữ liệu
+    thường quy ⇒ kế hoạch mô tả chọn quần thể, gồm lọc theo độ sẵn có và chất lượng dữ liệu — lấy từ quyết định đã chốt:
+    nguồn số liệu (G1), tiêu chuẩn loại trừ nói về dữ liệu, lý do loại trên sơ đồ chọn của đề tài (`so_do_chon`). Cùng
+    cách đề tài thật hồi cứu HIS viết («Sơ đồ chọn: … số bị loại theo từng lý do …»). Không có điều kiện lọc nào về dữ
+    liệu ⇒ ô trống (không chèn câu chung). Đo trên TOÀN văn bằng cùng biểu thức với K17 (thay ở `dung_de_cuong`)."""
+    van = van.replace(DAU_CHON_THUONG_QUY, "")
+    if n.thiet_ke in ("sr_ma", "qualitative") or not du_lieu_thuong_quy(n, van):
+        return []
+    loai_tru = [_thuong(x) for x in _danh_sach(n.g1.get("exclusion_criteria") or n.s("population", "exclusion"))]
+    chinh, ly_do = so_do_chon(n)
+    loc: List[str] = []
+    for x in loai_tru + [_thuong(y) for y in ly_do]:
+        if _LOC_DU_LIEU_RE.search(x) and x.lower() not in {y.lower() for y in loc}:
+            loc.append(x)
+    if not loc:
+        return [f"- Lọc theo độ sẵn có và chất lượng dữ liệu khi chọn quần thể: {CHAM}"]
+    nguon = "; ".join(_thuong(x) for x in nguon_so_lieu(n))
+    ra = ["- Chọn quần thể từ dữ liệu thường quy" + (f" ({nguon})" if nguon else "") + ": áp tiêu chuẩn lựa chọn và "
+          "loại trừ ở mục đối tượng nghiên cứu, rồi lọc theo độ sẵn có và chất lượng dữ liệu — " + "; ".join(loc) + "."]
+    if chinh:
+        ra.append("- Sơ đồ chọn ghi số người ở từng bước (" + " → ".join(_thuong(c) for c in chinh)
+                  + ") và số bị loại theo từng lý do.")
+    return ra
+
+
 def _mo_ta_chon_mau(n: "Nguon") -> str:
     ma = [str(x) for x in (n.g1.get("sampling_design") or [])]
     if "toan_bo" in ma:
@@ -2068,6 +2128,7 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
     if tk != "sr_ma":
         loc = dieu_kien_loc(n)
         dong += [f"### 4.{so[0]}.2. Phương pháp chọn mẫu", "", chon or CHAM, ""] + (loc + [""] if loc else [])
+        dong += [DAU_CHON_THUONG_QUY, ""]  # RECORD 13.1 — thay khi đã có toàn văn (`chon_quan_the_thuong_quy`)
     # Khối riêng theo thiết kế
     if tk == "rct":
         muc("Can thiệp và nhóm chứng")
@@ -2718,6 +2779,7 @@ def dung_de_cuong(n: Nguon) -> str:
     # RECORD 19.1 cần TOÀN văn (phụ lục, phiếu) để biết đề tài có dùng dữ liệu thường quy không — cùng phép đo của K17
     van = van.replace(DAU_THUONG_QUY, "\n".join(he_qua_thuong_quy(n, van)))
     van = van.replace(DAU_DOI_CHIEU_MA, "\n".join(kiem_dinh_ma(n, van)))
+    van = van.replace(DAU_CHON_THUONG_QUY, "\n".join(chon_quan_the_thuong_quy(n, van)))
     return don_cuoi(van)
 
 
