@@ -1,9 +1,41 @@
-# Quy chế Hội đồng Khoa học máy cấp đề tài — QC-HDKH-3.0
+# Quy chế Hội đồng Khoa học máy cấp đề tài — QC-HDKH-4.0
 
-- Khoá ngày: 2026-11-22 · SHA-256 quy chế: `9dfe8b71a7960cd93d376e6c0f61fc9257e3dbe73255d0c06220eca577c1791d`
+- Khoá ngày: 2026-11-22 · SHA-256 quy chế: `2d9b45215b23f2a9154120c694d1ded088cdfb724e379a7cfb71705032d1f4b3`
 - Mục đích: Chấm tài liệu nghiên cứu (đề cương, SAP, bản thảo, báo cáo nghiệm thu) theo thể thức Hội đồng Khoa học, tư vấn — không thay hội đồng thật.
 - Công cụ: `tools/hoi_dong_khoa_hoc.py` (văn bản này sinh bằng lệnh `ke-hoach --ghi`).
 
+
+## 0. Phân chia thế mạnh (QC-HDKH-4.0)
+
+- Công cụ tất định của hệ (luật K1–K18, chấm sống cổng G0–G10, nhất quán xuyên cổng, cỡ mẫu G3, biên nhận trích dẫn A12, kiểm cấu trúc báo cáo, rào biên tập) — mọi việc ĐO được; 0 USD.
+- Claude API (Batch) — các ghế đọc ĐỘC LẬP, song song, MỘT lần thẩm định mỗi phiên bản tài liệu; không dùng cho việc công cụ đo được, không lặp đọc toàn văn.
+- Agent Claude Code của hệ — thẩm định nhận xét cần tra cứu/tính lại, biên tập, thẩm tra chỉnh sửa, trọng tài đo báo nhầm, chốt cuối tham-dinh-dau-ra; có công cụ và doctrine; qua phiếu việc máy-kiểm-được.
+- Claude Code (phiên điều phối) — giao phiếu việc, chẩn đoán vòng kẹt, sửa công cụ khi máy sai.
+- Chủ nhiệm / thống kê viên / bác sĩ — mọi nội dung đã khoá (SAP, bộ biến, đăng ký, xung đột lợi ích, kinh phí, nhân sự), ký cổng; nhận danh sách «cần dữ kiện».
+
+## 0b. Doctrine agent theo ghế (bản chụp khoá)
+
+- Tệp `docs/hoi-dong/DOCTRINE_GHE.json`, SHA 15329797dee91e66ff70633cf3370a80157ecf66c8f32582247991f9b0eb6140; tối đa 6000 ký tự mỗi agent.
+- Gắn ghế: pb1 ← thiet-ke-nghien-cuu; pb2 ← huong-dan-lam-sang; uv_tk ← co-mau-nghien-cuu, phan-tich-thong-ke; uv_dd ← dao-duc-dang-ky; uv_tl ← kiem-chung-trich-dan, tong-quan-y-van; uv_kt ← kinh-te-y-te
+- Ghế chuyên thiết kế: rct ← an-toan-nghien-cuu; cohort ← bien-so-nghien-cuu; case_control ← bien-so-nghien-cuu; cross_sectional ← bien-so-nghien-cuu; diagnostic ← tham-dinh-do-chinh-xac-chan-doan; prediction ← mo-hinh-tien-luong; sr_ma ← meta-phan-tich; qualitative ← nghien-cuu-dinh-tinh
+
+## 0c. Giao việc cho agent Claude Code
+
+- cho_agent: mã thoát 5: phiếu việc ghi ở hoi_dong_khoa_hoc/viec_agent/, Claude Code giao đúng agent (lệnh viec-agent), agent ghi JSON vào đường dẫn định sẵn
+- tham_dinh: nhận xét đã qua chủ tịch → agent sở hữu chuyên môn của ghế; «sai» phải có cơ sở tai_lieu_da_dap_ung/cong_cu/chuan_khong_doi; agent phải phán đúng đối chứng âm, sai ⇒ không áp phán quyết của agent đó; nhận xét bị bác có chứng minh ⇒ không phải sửa, ghi biên bản
+- bien_tap: {'pb1': 'thiet-ke-nghien-cuu', 'pb2': 'viet-ban-thao', 'uv_tk': 'co-mau-nghien-cuu', 'uv_dd': 'dao-duc-dang-ky', 'uv_tl': 'viet-ban-thao', 'uv_kt': 'kinh-te-y-te'}
+- tham_tra: agent sở hữu của ghế đã nêu — cùng luật máy-kiểm như thẩm tra API
+- chot_cuoi: tham-dinh-dau-ra BẮT BUỘC trước khi trình bác sĩ; lỗi đã xác minh ⇒ thành yêu cầu sửa của vòng sau
+- trong_tai_mac_dinh: agent trong-tai-tranh-bien (API Fable chỉ khi chọn --trong-tai api)
+- hieu_chuan: chế độ kết hợp chỉ có hiệu lực khi hiệu chuẩn cũng chạy chế độ kết hợp
+
+## 0d. Rào nội dung đã khoá
+
+- thay thế chạm vùng khoá ⇒ loại, yêu cầu thành «vượt thẩm quyền — cần dữ kiện»; bản đã qua hội đồng mà chốt cuối nêu lỗi vượt thẩm quyền ⇒ hoàn nguyên đúng các khối chạm vùng khoá/dòng bị nêu về bản gốc, giữ các khối khác.
+- Luôn khoá (đề mục): `(?i)kế hoạch phân tích thống kê|\bSAP\b|bảng biến|mã hoá|mã hóa|biến phái sinh|phiếu thu thập|kinh phí|dự trù|danh sách (?:các )?cán bộ|nhân lực|đăng ký nghiên cứu|xung đột lợi ích`
+- Khoá khi SAP đã chốt (G4 đạt hoặc sẵn sàng ký): `(?i)xử lý (?:và phân tích )?số liệu|phân tích (?:số liệu|thống kê|dữ liệu)|cỡ mẫu|dự kiến kết quả|khung bảng|biến số|chỉ số nghiên cứu|biến dự báo|kết cục`
+- Không khoá khi đề mục gần nhất là: `(?i)bàn luận|hạn chế|tổng quan|đặt vấn đề|mục tiêu|tính cấp thiết`
+- Dòng khai báo bị khoá: `(?i)^\s*(?:[-*+]\s*)?\**\s*(?:đăng ký nghiên cứu|xung đột lợi ích|nguồn kinh phí|kinh phí|tài trợ)\s*\**\s*:`
 ## 1. Thành phần (chấm độc lập)
 
 - **Phản biện 1 — Phương pháp luận nghiên cứu** — mục trọng tâm 2, 3: thiết kế có phù hợp câu hỏi và mục tiêu không; kiểm soát sai lệch chọn, đo lường, nhiễu; quần thể, tiêu chuẩn chọn–loại, kỹ thuật chọn mẫu; định nghĩa biến và kết cục; công cụ đo (COSMIN khi có thang đo); đề cương đáp ứng TỪNG mục của chuẩn báo cáo áp dụng cho thiết kế (danh sách ở hồ sơ kiểm máy).
@@ -74,10 +106,10 @@
 
 ### báo cáo tổng hợp kết quả (nghiệm thu) (`--loai bao_cao`, tệp `BAO_CAO_TONG_HOP_{s}.md`, vòng kín: không)
 
-1. Tính cấp thiết, ý nghĩa khoa học và thực tiễn
-2. Mục tiêu và phương pháp nghiên cứu; phương pháp tính toán và kỹ thuật
-3. Kết quả
-4. Chất lượng văn bản, tài liệu trích dẫn (đầy đủ, rõ ràng, xác thực, lôgíc)
+1. Tính cấp thiết, ý nghĩa khoa học và thực tiễn của đề tài
+2. Mục tiêu và phương pháp nghiên cứu; phương pháp tính toán và kỹ thuật đã sử dụng
+3. Kết quả nghiên cứu
+4. Chất lượng của Báo cáo tổng hợp đề tài nghiên cứu, sản phẩm trung gian, tài liệu trích dẫn (đầy đủ, rõ ràng, xác thực và lôgíc)
 - Lưu ý: đối chiếu kết quả với mục tiêu và nội dung đã đăng ký trong đề cương; mức độ hoàn thành; sản phẩm đúng như đăng ký.
 - Chuẩn: như bản thảo (K18, có số liệu) + Phiếu nhận xét mục 3 «Kết quả».
 
@@ -106,7 +138,8 @@
 
 - Lỗi cài (de_cuong): khong_nguon — khẳng định số liệu không có trích dẫn ở đặt vấn đề; nhan_qua — ngôn ngữ nhân quả vượt thiết kế quan sát; kiem_dinh_sai — kiểm định thống kê sai loại biến; tieu_chuan_mau_thuan — tiêu chuẩn loại trừ mâu thuẫn tiêu chuẩn chọn; muc_tieu_khong_phan_tich — mục tiêu không có phương pháp/phân tích tương ứng; dong_thuan_sai — quyền rút lui trái nguyên tắc tự nguyện.
 - Lỗi cài (sap): kiem_dinh_sai — kiểm định thống kê sai loại biến; du_lieu_thieu — thay dữ liệu thiếu bằng trung bình mẫu, không phân tích độ nhạy; da_so_sanh — chọn kết cục theo p nhỏ nhất, không hiệu chỉnh đa so sánh; loai_ngoai_lai — loại quan sát khỏi phân tích chính không ghi lý do; doi_ket_cuc — đổi kết cục chính sau khi xem dữ liệu; dien_giai_p — diễn giải p ≥ 0,05 là tương đương.
-- Lỗi cài (ban_thao_va_bao_cao): khong_nguon — khẳng định số liệu không có trích dẫn ở phần mở đầu; kiem_dinh_sai — kiểm định thống kê sai loại biến; so_lieu_mau_thuan — số người phân tích mâu thuẫn với phần còn lại của bài; khai_quat_qua_muc — khái quát kết quả vượt quần thể nghiên cứu; ket_luan_vuot_ket_qua — kết luận về kết cục không được nghiên cứu; du_lieu_dinh_danh — công bố dữ liệu định danh người tham gia.
+- Lỗi cài (ban_thao): khong_nguon — khẳng định số liệu không có trích dẫn ở phần mở đầu; kiem_dinh_sai — kiểm định thống kê sai loại biến; so_lieu_mau_thuan — số người phân tích mâu thuẫn với phần còn lại của bài; khai_quat_qua_muc — khái quát kết quả vượt quần thể nghiên cứu; ket_luan_vuot_ket_qua — kết luận về kết cục không được nghiên cứu; du_lieu_dinh_danh — công bố dữ liệu định danh người tham gia.
+- Lỗi cài (bao_cao): khong_nguon — khẳng định số liệu không có trích dẫn ở phần mở đầu; kiem_dinh_sai — kiểm định thống kê sai loại biến; so_lieu_mau_thuan — số người phân tích mâu thuẫn với phần còn lại của bài; khai_quat_qua_muc — khái quát kết quả vượt quần thể nghiên cứu; ket_luan_vuot_ket_qua — kết luận về kết cục không được nghiên cứu; du_lieu_dinh_danh — công bố dữ liệu định danh người tham gia; khuyen_nghi_khong_can_cu — khuyến nghị không dựa trên kết luận của đề tài (hướng dẫn mục III.12).
 - Lỗi đặc thù thiết kế (đề cương): `rct` tk_phan_bo_lo — không che giấu phân bổ (chẵn/lẻ, biết trước nhóm); `cohort` tk_chon_theo_ket_cuc — chọn nhóm không phơi nhiễm theo kết cục; `case_control` tk_chung_theo_phoi_nhiem — chọn nhóm chứng theo phơi nhiễm; `cross_sectional` tk_mau_lech — ước lượng tỷ lệ trên mẫu chỉ gồm người đã có biến chứng; `diagnostic` tk_xac_minh_mot_phan — chỉ người test dương tính được làm tiêu chuẩn tham chiếu; `prediction` tk_khong_kiem_dinh — đánh giá mô hình trên chính dữ liệu xây dựng, không kiểm định; `sr_ma` tk_tim_hep_chon_ket_qua — chỉ tìm một cơ sở dữ liệu và chỉ nhận nghiên cứu có ý nghĩa thống kê; `qualitative` tk_co_mau_thong_ke — tính cỡ mẫu định tính bằng công thức thống kê.
 - Ghép một–một trong ±3 dòng; độ nhạy tối thiểu 0.8333 mỗi bản, trên ≥ 5 lỗi cài; đề cương có thiết kế xác định: phải bắt được lỗi đặc thù thiết kế.
 - theo TỪNG đề tài và TỪNG loại tài liệu: kết luận chỉ có hiệu lực (và vòng kín chỉ chạy) khi độ nhạy đạt, lỗi đặc thù được bắt, VÀ đo báo nhầm hợp lệ đạt — cùng SHA.
@@ -159,6 +192,7 @@
 - 2.0 (22/11/2026): đo thật dưới 1.1 — mỗi vòng hội đồng đọc lại TOÀN VĂN và nêu vấn đề mới (BTM 10→13→13, C1a 10→15→14), không hội tụ. Bác sĩ chọn quy trình THẨM TRA CHỈNH SỬA như hội đồng thật: vòng 1 thẩm định toàn diện; các vòng sau mỗi thành viên chỉ thẩm tra yêu cầu mình đã nêu (đã giải quyết — trích bằng chứng / chưa giải quyết / cần dữ kiện của người có thẩm quyền) và lỗi mới CHỈ trong đoạn vừa sửa. Bắt đầu lại từ đề cương gốc; hiệu chuẩn lại.
 - 2.1 (22/11/2026): đo thật dưới 2.0 — hội tụ (BTM 13→8→7→5, C1a 22→10→9→4) nhưng chưa thông qua sau 4 vòng vì ba lỗi QUY TRÌNH: phản hồi thẩm tra hỏng JSON bị tính là «chưa giải quyết» (4/5 yêu cầu còn lại của BTM); biên tập viên không được báo lý do rào đã loại bản sửa nên lặp lại bản bị loại; K10 bắt nhầm «khoảng tin cậy 95%» là số liệu. Sửa: phản hồi hỏng ⇒ nộp lại tối đa 2 lần rồi mới fail-safe; biên tập viên nhận lý do chưa đạt của người thẩm tra và lý do rào loại; tối đa 6 vòng. Bắt đầu lại từ đề cương gốc; hiệu chuẩn lại.
 - 3.0 (22/11/2026, bác sĩ duyệt bốn việc): (a) ghế uỷ viên CHUYÊN THIẾT KẾ theo thiết kế đã chốt ở G1 (8 thiết kế) + ghế kinh tế y tế khi có cấu phần kinh tế, túc số quá bán; (b) ĐO BÁO NHẦM — trọng tài độc lập khác model phán từng nhận xét ngoài lỗi cài, có đối chứng dương/âm để kiểm chính trọng tài; hiệu lực kết luận cần CẢ độ nhạy lẫn độ chính xác; (c) lỗi cài đặc thù từng thiết kế để hiệu chuẩn trên đủ 8 thiết kế; (d) mở rộng sang SAP, bản thảo bài báo và báo cáo tổng hợp kết quả (nghiệm thu), mỗi loại một phiếu, bộ chuẩn và bộ lỗi cài riêng; vòng kín vẫn chỉ cho đề cương. Mọi hiệu chuẩn cũ hết hiệu lực.
+- 4.0 (22/11/2026, bác sĩ: «phải kết hợp đồng thời Claude Code, các Agent và hệ thống», «phân chia thế mạnh từng thành phần», chọn «kết hợp có trọng tâm»): API chỉ họp thẩm định độc lập MỘT lần mỗi phiên bản tài liệu; mỗi ghế mang doctrine agent của hệ (bản chụp khoá) và bằng chứng công cụ của hệ; thẩm định nhận xét, biên tập, thẩm tra, chốt cuối và trọng tài đo báo nhầm do agent Claude Code làm qua phiếu việc máy-kiểm-được. Đo thật cùng ngày: chốt kiểm tham-dinh-dau-ra trả về CẢ HAI đề cương «thông qua» theo 2.1 (biên tập viên API sửa vào SAP đã khoá, mã hoá biến đã duyệt, đăng ký, xung đột lợi ích) ⇒ thêm RÀO NỘI DUNG ĐÃ KHOÁ và chốt cuối bắt buộc trước khi trình bác sĩ.
 
 Nguyên văn mọi lời dặn gửi hội đồng nằm trong mã và được tính vào SHA ở trên — sửa một chữ là đổi quy chế.
 

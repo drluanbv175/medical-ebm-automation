@@ -34,10 +34,6 @@
 
 (Họ tên và chữ ký)
 
-**VIỆN TRƯỞNG**
-
-(Họ tên và chữ ký — nếu Khoa trực thuộc Viện)
-
 **THÀNH PHỐ HỒ CHÍ MINH, 2026**
 
 ---
