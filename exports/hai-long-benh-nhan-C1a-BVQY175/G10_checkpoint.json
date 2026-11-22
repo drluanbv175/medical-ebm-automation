@@ -1,7 +1,7 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-11-22T15:04:54.106877",
+  "generated_at": "2026-11-22T16:14:35.054243",
   "gate_status": "BLOCKED — chờ input đời-thực",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
@@ -113,17 +113,17 @@
     "study_spec_json": "exports/hai-long-benh-nhan-C1a-BVQY175/STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
     "decision_package_md": "exports/hai-long-benh-nhan-C1a-BVQY175/GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
     "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json",
-    "de_cuong_md_sha256": "6663196f7b3edfce889ba8801e2a6de58107ae9a63c4e6e0b7f6490b450b5c1b",
-    "de_cuong_docx_sha256": "ada05b3be5271ebbc0f3aae0db19fbf663b63ac8aa68421b0436fa73329ff88a"
+    "de_cuong_md_sha256": "cf9d054eaf102bd0b1c1bc9b3ddbd88e4e5ea730b142e5b6cfbd518b4657c7bc",
+    "de_cuong_docx_sha256": "e94f7f2c0c60184f3d7c76d7dbd3df67ca38904f3a1831845008f893a4fe53f9"
   },
   "quality_gate": {
-    "status": "BLOCKED",
+    "status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
     "report": "G10_QUALITY_REPORT.json",
-    "package_sha256": "2592fe8396beed3917c3ff57c23c31f726c80ce4e01f190f0095e7b6cd078cd5",
+    "package_sha256": "b67addb45eac637492e66ebcd4de209a0ab613442a731e2bd32dcfb4112752a8",
     "human_approval_valid": false,
     "external_submission_state": "NOT_PERFORMED_OR_PROVEN_BY_G10"
   },
-  "release_package_ready": false,
+  "release_package_ready": true,
   "release_package_locked": false,
   "n_de_cuong_sections": 18,
   "n_protocol_core_items": 24,
@@ -133,11 +133,11 @@
     "files": {
       "final_protocol_md": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "6663196f7b3edfce889ba8801e2a6de58107ae9a63c4e6e0b7f6490b450b5c1b"
+        "sha256": "cf9d054eaf102bd0b1c1bc9b3ddbd88e4e5ea730b142e5b6cfbd518b4657c7bc"
       },
       "final_protocol_docx": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "ada05b3be5271ebbc0f3aae0db19fbf663b63ac8aa68421b0436fa73329ff88a"
+        "sha256": "e94f7f2c0c60184f3d7c76d7dbd3df67ca38904f3a1831845008f893a4fe53f9"
       },
       "study_spec": {
         "path": "STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
@@ -181,15 +181,15 @@
       },
       "checkpoint_g2": {
         "path": "G2_checkpoint.json",
-        "sha256": "48996f44a10abec0e0f244a2f49e93fd28627d57850a988d46d174d385f0b71b"
+        "sha256": "59558ce375fa08820c77bb6458778d9f8e360cae587c3740b39ae8d2e663ee3d"
       },
       "checkpoint_g3": {
         "path": "G3_checkpoint.json",
-        "sha256": "f6804ff8921a9df0920ca840705f619c2551f3fdfe6a4cf77e6aac8a3ba586ca"
+        "sha256": "a6f6c8f2b7901745f1cda3f9cc0b460daddf635a9427fa69985572d978e53527"
       },
       "checkpoint_g4": {
         "path": "G4_checkpoint.json",
-        "sha256": "c32d0ef5e60347191bb57e661ef3f01aa88501885144617f74236f3f662b3724"
+        "sha256": "99df5dc8cbc5524736ea4ae92d8658e596443749fc509d5d8587d5bd33ba512a"
       },
       "g1_protocol_design": {
         "path": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -197,11 +197,11 @@
       },
       "g2_registration_draft": {
         "path": "G2_REGISTRATION_DRAFT_hai-long-benh-nhan-C1a-BVQY175.json",
-        "sha256": "2838ce294170ba40fe3443bfc2a51273e84c5c5a7d2a285f5b032eb86e93c313"
+        "sha256": "8bd075b7b9a312a3c11f9b0d2d56da72271587a199ccd143f5aae621027a5e7e"
       },
       "g3_sample_size": {
         "path": "G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "aac3bd1764152811f35d970803476b435371f0f3084c4d3ca70d9ba898bcf36a"
+        "sha256": "4662288f100dfa026bac6b47441a4dd06371f73dbaaeed2f90a3726696bc2fcd"
       },
       "irb_protocol_md": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -212,15 +212,15 @@
         "sha256": "852e8f024ae94e55297d30835f08407dc0ba4e1a1d26fbd6e4d989a37b2bd707"
       }
     },
-    "package_sha256": "2592fe8396beed3917c3ff57c23c31f726c80ce4e01f190f0095e7b6cd078cd5"
+    "package_sha256": "b67addb45eac637492e66ebcd4de209a0ab613442a731e2bd32dcfb4112752a8"
   },
   "needs_input": {
     "blocked": true,
-    "reason_code": "MISSING_G10_RELEASE_READINESS",
-    "human_message": "Gói G10 chưa đạt hợp đồng release-readiness/nhất quán/toàn vẹn.",
+    "reason_code": "MISSING_G10_RELEASE_APPROVAL",
+    "human_message": "Gói G10 đã đủ tiêu chí kỹ thuật nhưng chưa có phê duyệt PI trên đúng manifest.",
     "remediation": {
       "action": "rerun_with_real_input",
-      "command": "Hoàn tất exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json rồi chạy python tools/g10_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175",
+      "command": "python tools/approve_gate.py --study hai-long-benh-nhan-C1a-BVQY175 --gate G10 --artifact /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G10_checkpoint.json --reviewer-role PI --reviewer-ref <MA_THAM_CHIEU_KHONG_PII>",
       "study_meta_patch": {},
       "must_not_fabricate": [
         "approval_ledger.json",

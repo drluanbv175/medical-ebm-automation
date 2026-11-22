@@ -1,6 +1,6 @@
 # A6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DRAFT)
 **Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175  
-**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày:** 2026-11-20 | **Thiết kế:** cross_sectional | **N dự kiến:** 1000 (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê 630)  
+**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày:** 2026-11-22 | **Thiết kế:** cross_sectional | **N dự kiến:** 1000 (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê 630)  
 **Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC Ô CÒN TRỐNG VÀ XÁC NHẬN
 
 > **BẢO MẬT:** KHÔNG đưa PII vào pipeline. Chỉ xử lý bản đã khử định danh trong môi trường cục bộ được đơn vị cho phép; dữ liệu không được gửi tới mô hình AI.
