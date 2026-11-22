@@ -188,7 +188,10 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
   dấu chấm (viết 0,1), số từ 5 chữ số chưa nhóm nghìn (10.000), ngày ISO (viết dd/mm/yyyy), ngoặc kép thẳng hoặc «»
   (dùng “…”), «vs» (viết «so với»), chữ IN HOA nhấn mạnh trong câu ngoài phụ lục, loại biến «Định danh/thứ bậc», tên
   bảng/hình hai ngoặc liền; bảng chữ viết tắt hai mục cùng nghĩa (SD và ĐLC), mục không dùng, không xếp theo vần tiếng
-  Việt. K9 chặn bảng dồn nhiều mức/biến vào một ô («Giới | Nam; Nữ») — mỗi biến một hàng, mỗi mức một dòng. Máy
+  Việt; số đo sai chuẩn (`loi_so_do`, bác sĩ 22/11/2026 «tất cả phải đúng chuẩn»): huyết áp ghi «≥ 180/110 mmHg»
+  (thiếu mmHg, «≥180/110», «140 / 90» đều bị chặn), một khoảng trắng giữa số và đơn vị («100 mg», «37,5 °C»; riêng
+  «%» viết liền «48,3%»), ký hiệu đơn vị đúng chữ (mL, mg/dL, mmol/L, g/dL, kg/m² — không «ml», «mg/dl», «kg/m2»), dấu
+  so sánh cách số («≥ 18 tuổi», «p < 0,001»). Bộ giả lập soát luật số đo trên MỌI văn bản đề tài sinh ra. K9 chặn bảng dồn nhiều mức/biến vào một ô («Giới | Nam; Nữ») — mỗi biến một hàng, mỗi mức một dòng. Máy
   KHÔNG đo được, agent tự soát trước khi trả: (a) bảng đa biến và forest plot cùng biến, cùng nhóm tham chiếu với mô
   hình chính của SAP (biến có/không lấy «Không» làm tham chiếu, biến khác lấy mã nhỏ nhất); (b) bước tăng của biến
   liên tục đúng SAP («mỗi 10 năm», «mỗi 15 phút», biến thứ bậc đưa dạng số ghi «mỗi mức tăng»); (c) cột phân tích chính
@@ -284,6 +287,13 @@ Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation
 - **Sơ đồ luồng là hình BẮT BUỘC (22/11/2026, kiểm toàn hệ 11 khâu):** RCT theo CONSORT 2025 mục 22a–b; STARD 19; PRISMA 16a; TRIPOD+AI. Với STROBE, mục 13a–b bắt buộc số người từng giai đoạn và lý do loại, còn 13c chỉ «cân nhắc» sơ đồ — hệ vẫn đặt sơ đồ là bắt buộc vì nó trình bày đúng số đó.
   - Số lấy từ sổ sàng lọc THẬT ghi vào `exports/<mã>/SO_DO_LUONG_<mã>.csv`. Lượt G6 đầu dựng mẫu đúng các hộp chuẩn, cột n để trống; người điền xong thì chạy lại `chay_sap_g6.py chay`. Hộp cuối mỗi nhánh phải bằng n phân tích chính của G6, lệch ⇒ G6 báo LỖI.
   - Agent KHÔNG điền thay số sàng lọc. Chưa có số thì bản thảo ghi rõ hình còn thiếu; không ước tính.
+  - Sổ đã đủ số và khớp số học ⇒ `run_g7_auto.py` tự viết §1 Tuyển chọn (STROBE 13a–b; CONSORT 2025 22a–b): số từng
+    giai đoạn kèm lý do có số; RCT thêm câu phân bổ ngẫu nhiên và số đưa vào phân tích theo TỪNG NHÓM CÓ TÊN (tên nhóm
+    từ cột «Choices» của từ điển G5 — không viết «nhóm 0/1»). Mẫu sổ RCT có hộp «Nhận can thiệp theo phân bổ» (22a).
+- **Tác hại theo nhóm (RCT, CONSORT 2025 mục 7, 27, 29 — 22/11/2026):** SAP §15 khai «Cách phân tích tổn hại»; phân
+  tích neo §15 vào mục «§4b Tác hại theo nhóm» (không lẫn «Kết cục phụ»); Bàn luận cân đối lợi ích–tác hại bằng số
+  G6; «§3 Mục tiêu» nêu mục tiêu mô tả tác hại khi SAP đã định nghĩa tổn hại. Bảng 1 chỉ gồm biến NỀN (số đo sau ngẫu
+  nhiên hoá như huyết áp tháng 6 không vào Bảng 1).
   - Giả lập trọn vòng (`kiem_gia_lap_16.py`) đỏ khi còn hình bắt buộc thiếu.
 
 ## Ranh giới

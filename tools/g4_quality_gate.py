@@ -168,7 +168,7 @@ STANDARDS_BASIS: Sequence[Mapping[str, str]] = (
     },
     {
         "standard": "Ogundimu EO et al. J Clin Epidemiol 2016;76:175-82 (PMID 26964707)",
-        "scope": "Nguồn thật của ngưỡng EPV≥10 cho hồi quy logistic/Cox đa biến",
+        "scope": "Nguồn thật của ngưỡng EPV ≥ 10 cho hồi quy logistic/Cox đa biến",
         "pmid": "26964707",
     },
     {

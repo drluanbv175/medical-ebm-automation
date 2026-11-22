@@ -451,9 +451,12 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
     ("19", "chung"): (("han_che", "ban_luan", "sai_so"), "ke_hoach",
                       "Bàn hạn chế: nguồn sai lệch hoặc thiếu chính xác, kèm chiều tác động có thể có.",
                       (_y("hạn chế/sai lệch", r"hạn chế|sai lệch|sai số"),
-                       _y("chiều tác động của sai lệch", r"(ước lượng|đánh giá) (quá )?(cao|thấp)|làm (tăng|giảm)|"
+                       # 22/11/2026: «làm ước tính cao», «lệch theo cả hai hướng» (đoạn hạn chế bệnh–chứng giả lập) là
+                       # cách viết chuẩn tiếng Việt của chiều tác động — mẫu cũ chỉ nhận «ước lượng» ⇒ báo thiếu nhầm
+                       _y("chiều tác động của sai lệch", r"(ước lượng|ước tính|đánh giá) (quá )?(cao|thấp)|"
+                                                         r"làm (ước (lượng|tính) )?(quá )?(tăng|giảm|cao|thấp)|"
                                                          r"thấp hơn thực tế|cao hơn thực tế|"
-                                                         r"chiều|hướng về")), None, "", True),
+                                                         r"chiều|(cả )?hai hướng|hướng về")), None, "", True),
     ("20", "chung"): ((), "bao_cao", "Diễn giải thận trọng khi viết bài báo.", ()),
     ("21", "chung"): (("han_che", "ban_luan"), "ke_hoach", "Bàn phạm vi suy rộng (giá trị ngoại) của kết quả.",
                       (_y("suy rộng/giá trị ngoại", r"suy rộng|khái quát|giá trị ngoại|tính đại diện|áp dụng cho",

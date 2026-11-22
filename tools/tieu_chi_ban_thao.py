@@ -604,9 +604,12 @@ _CONSORT: Dict[str, tuple] = {
                                              r"cầu|available|lưu (trữ|tại))"))),
     "4": (("cuoi", "phuong_phap"), "Nêu nơi và cách truy cập dữ liệu cá nhân đã khử định danh (kèm từ điển dữ liệu), "
                                    "mã thống kê và tài liệu khác.",
-          (_y("dữ liệu cá nhân đã khử định danh", r"dữ liệu[^.]{0,60}(khử định danh|giả danh|cá nhân|gốc)|bộ dữ liệu|"
-                                                  r"(không|chưa) chia sẻ dữ liệu|individual (participant )?data",
-              so_lieu=True),
+          # 22/11/2026: «dữ liệu cá thể» = individual participant data (đã nhận bản tiếng Anh) — tuyên bố tác giả
+          # của giả lập «Dữ liệu cá thể không chia sẻ công khai…» từng bị báo thiếu yếu tố này. Không vắt qua dòng: nhãn
+          # «**Tính có sẵn dữ liệu:**» + chữ đầu dòng sau từng làm dòng NHÃN thành bằng chứng
+          (_y("dữ liệu cá nhân đã khử định danh", r"dữ liệu[^.\n]{0,60}(khử định danh|giả danh|cá nhân|cá thể|gốc)|"
+                                                  r"bộ dữ liệu|(không|chưa) chia sẻ dữ liệu|"
+                                                  r"individual (participant )?data", so_lieu=True),
            _y("mã thống kê/từ điển dữ liệu", r"mã (phân tích|lệnh|thống kê|nguồn)|script|code|từ điển dữ liệu|"
                                              r"data dictionary|(không|chưa) chia sẻ", so_lieu=True),
            _y("cách truy cập", r"theo yêu cầu|kho (lưu trữ|dữ liệu)|repository|truy cập|cung cấp|on request",
@@ -688,8 +691,12 @@ _CONSORT: Dict[str, tuple] = {
     "20b": (("phuong_phap",), "Nếu làm mù: nêu cách làm mù và độ tương tự của can thiệp.",
             (_y("cách làm mù", r"(giống|tương tự) nhau|giả dược|cách làm mù|che (nhãn|mã)|tách (biệt|riêng) (vai trò|"
                                r"người)|placebo|identical|similar"),), TC.LAM_MU, "có làm mù"),
+    # 22/11/2026 (thử nghiệm không kém hơn giả lập): SAP §4 «Hiệu tỷ lệ (risk difference) + 95%CI (Newcombe) so với
+    # biên Δ» là phương pháp so sánh nhóm nhưng không khớp TC.PP_THONG_KE ⇒ THIẾU GIẢ. Chỉ thêm TÊN phương pháp: «CI»
+    # trơn có ở câu cố định «mọi ước lượng kèm 95%CI» của MỌI bản thảo; «hiệu số tỷ lệ» có ở dòng thiết kế «biên hiệu
+    # số tỷ lệ −10 điểm %» (mô tả biên, không phải phương pháp) — cả hai sẽ thành bằng chứng giả.
     "21a": (("phuong_phap",), "Nêu phương pháp thống kê so sánh các nhóm cho kết cục chính, phụ và tác hại.",
-            (_y("phương pháp thống kê", TC.PP_THONG_KE),
+            (_y("phương pháp thống kê", TC.PP_THONG_KE + r"|risk difference|Newcombe"),
              _y("kết cục chính", r"kết cục chính|phân tích chính|primary"))),
     "21b": (("phuong_phap",), "Định nghĩa ai được đưa vào từng phân tích và ở nhóm nào.",
             (_y("quần thể phân tích", r"ý định điều trị|\bITT\b|theo đề cương|per[- ]protocol|(mọi|tất cả) (người|đối "
@@ -727,9 +734,13 @@ _CONSORT: Dict[str, tuple] = {
                           "hoạch).",
             (_y("thực hiện thực tế/tuân thủ", r"tuân thủ|thực tế (nhận|được)|đúng (kế hoạch|đề cương)|nhận đủ|"
                                               r"fidelity|adhere"),)),
+    # 22/11/2026 (giả lập đầu–cuối RCT): «chăm sóc thường quy» là TÊN NHÓM CHỨNG — «`0` = Chăm sóc thường quy» (mã
+    # nhóm trong dữ liệu khoá), «nhóm chăm sóc thường quy: 118», «so với chăm sóc thường quy» — từng làm 24b ĐẠT GIẢ.
+    # Chỉ nhận cụm này khi câu nói mỗi nhóm NHẬN nó («cả hai nhóm tiếp tục chăm sóc thường quy»).
     "24b": (("ket_qua",), "Nêu chăm sóc đồng thời mỗi nhóm nhận được.",
-            (_y("chăm sóc đồng thời", r"chăm sóc (đồng thời|đi kèm|thường quy)|điều trị (đi kèm|phối hợp|đồng thời|"
-                                      r"nền)|thuốc (dùng )?(kèm|phối hợp)|concomitant"),)),
+            (_y("chăm sóc đồng thời", r"chăm sóc (đồng thời|đi kèm)|(nhận|tiếp tục|duy trì|vẫn được|đều được|cùng "
+                                      r"được)[^.;\n]{0,40}chăm sóc thường quy|điều trị (đi kèm|phối hợp|đồng thời|nền)|"
+                                      r"thuốc (dùng )?(kèm|phối hợp)|concomitant"),)),
     "25": (("ket_qua",), "Có bảng đặc điểm nền nhân khẩu và lâm sàng theo từng nhóm.",
            (_y("bảng đặc điểm nền", r"(Bảng|Table)\s*\d+[.:]?[^\n]{0,20}(Đặc điểm|baseline|characteristics)|"
                                     r"Đặc điểm (nền|ban đầu|chung)", de_muc=True),

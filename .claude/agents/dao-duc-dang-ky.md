@@ -180,7 +180,7 @@ Phân loại nguy cơ tổng thể: ☐ Tối thiểu ☐ Nhỏ hơn tối thi�
 2. QUY TRÌNH THỰC HIỆN
    Nếu đồng ý tham gia, anh/chị sẽ được yêu cầu:
    - [bước 1 — ví dụ: trả lời bộ câu hỏi ~20 phút]
-   - [bước 2 — ví dụ: lấy 5 ml máu tĩnh mạch]
+   - [bước 2 — ví dụ: lấy 5 mL máu tĩnh mạch]
    - [bước 3 — ví dụ: tái khám sau 3 tháng]
    Tổng thời gian tham gia ước tính: ___ [đơn vị].
 
