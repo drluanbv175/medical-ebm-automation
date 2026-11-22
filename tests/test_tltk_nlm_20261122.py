@@ -50,6 +50,16 @@ def test_bai_tap_chi_thieu_trang_bi_bat():
     assert D.yeu_to_nlm(BAI.replace(":45-51", ":e70241"))["thieu"] == []  # mã bài (e-location) được nhận
 
 
+def test_vi_tri_trong_so_dac_biet_va_bai_khong_phan_trang():
+    """22/11/2026: số đặc biệt ghi theo PubMed («Spec Iss 5», vd PMID 39735519: 2024;34(Spec Iss 1):1-2); bài điện tử
+    thật sự không phân trang và không có mã bài ghi độ dài trong ngoặc vuông theo NLM Citing Medicine («[about 3 p.]»).
+    Ngoặc vuông không có đơn vị trang (vd số trích dẫn «[3]») KHÔNG thay được trang."""
+    assert D.yeu_to_nlm(BAI.replace("2026;67(7):45-51.", "2026;67(Spec Iss 5):288-92."))["thieu"] == []
+    assert D.yeu_to_nlm(BAI.replace(":45-51", ":[about 3 p.]"))["thieu"] == []
+    assert D.yeu_to_nlm(BAI.replace(":45-51", ":[5 p.]"))["thieu"] == []
+    assert D.yeu_to_nlm(BAI.replace(":45-51", ":[3]"))["thieu"] == ["trang hoặc mã bài (năm;tập(số):trang)"]
+
+
 def test_quy_tac_tac_gia_nlm():
     bay = "A B, C D, E F, G H, I J, K L, M N. Tiêu đề bài. Tạp chí. 2020;1(1):1-5."
     assert any("6 tác giả đầu" in x for x in D.yeu_to_nlm(bay)["thieu"])

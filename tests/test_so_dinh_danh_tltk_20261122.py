@@ -101,7 +101,12 @@ def test_k13_doc_so_trang_theo_crossref(tmp_path):
     _so(d)
     sau = K.loi_k13_nlm(md, d)
     assert any(x.startswith("K13 TLTK [1]") and "Crossref ghi «35-41»" in x for x in sau)
-    assert not any(x.startswith("K13 TLTK [2]") for x in sau)  # Crossref xác nhận nguồn không ghi trang
+    # Crossref không ghi trang ⇒ VẪN đòi trang (không miễn — Crossref thiếu trường page không chứng minh bài không có
+    # trang), thông điệp chỉ nơi lấy trang và cách ghi NLM cho bài không phân trang
+    m2 = [x for x in sau if x.startswith("K13 TLTK [2]")]
+    assert m2 and "Crossref không ghi trang: lấy trang in trên bản PDF" in m2[0] and "[about N p.]" in m2[0]
+    md3 = md.replace("Tạp chí Y học Việt Nam. 2024;540(1).", "Tạp chí Y học Việt Nam. 2024;540(1):341-6.")
+    assert md3 != md and not any(x.startswith("K13 TLTK [2]") for x in K.loi_k13_nlm(md3, d))
     # dòng đổi sau khi lập sổ ⇒ mục sổ hết hiệu lực, quay về đòi trang
     md2 = md.replace("Tạp chí Y học Việt Nam. 2024", "Tạp chí Y học Việt Nam (bản sửa). 2024")
     assert any(x.startswith("K13 TLTK [2]") for x in K.loi_k13_nlm(md2, d))
