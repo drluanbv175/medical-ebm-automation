@@ -289,4 +289,30 @@ Cần bác sĩ kiểm chứng.
 4. Không PII trong biên bản (công cụ quét SĐT/CCCD/email); dùng mã tham chiếu.
 5. Cùng họ mô hình ⇒ tách ngữ cảnh giảm mù chung nhưng KHÔNG khử thiên lệch hệ thống; rào cuối vẫn là người.
 
+## 8. Hội đồng Khoa học máy CẤP ĐỀ TÀI (22/11/2026)
+
+Bác sĩ giao ngày 22/11/2026: «đúng chuẩn hay không vẫn do hội đồng chấm — xây hội đồng đúng chuẩn tốt nhất, kết hợp API
+Claude». Hội đồng cổng (mục 1–7) chấm từng NHIỆM VỤ. Hội đồng này chấm TRỌN đề cương theo thể thức Hội đồng Khoa học:
+`medical-ebm-automation/tools/hoi_dong_khoa_hoc.py`.
+
+- **Thành phần:** Phản biện 1 (phương pháp luận) · Phản biện 2 (chuyên môn lâm sàng) · Uỷ viên thống kê · Uỷ viên đạo
+  đức–pháp lý–liêm chính · Uỷ viên tổng quan–trích dẫn. Năm người chấm ĐỘC LẬP mục 1–4 của Phiếu nhận xét (Phụ lục 2),
+  thang 1–5 có mốc, và nêu tồn tại (mục 5). Chủ tịch tổng hợp; thư ký là máy tất định.
+- **Nhận xét:** phải trích NGUYÊN VĂN kèm số dòng; máy kiểm trong ±3 dòng. Không khớp hoặc có PII ⇒ không vào biên bản
+  (liệt kê riêng, không giấu).
+- **Chủ tịch:** chỉ giữ, hạ mức, hoặc loại kèm lý do; không thêm nhận xét, không sửa điểm.
+- **Kết luận:** do máy tính theo luật cố định (`ket_luan_tat_dinh`); túc số ≥ 3 bản chấm hợp lệ.
+- **Hiệu chuẩn:** `hieu-chuan --tao` cài 6 lỗi đã biết vào bản sao → họp bản sao → `--cham` đo độ nhạy (ghép một–một).
+  Đây là cách chứng minh chất lượng hội đồng bằng số. Bất biến 5 ở trên vẫn đúng: cùng họ mô hình nên độc lập chỉ ở
+  mức ngữ cảnh.
+- **Chi phí:** Claude Batch API, có TÍNH PHÍ ⇒ `uoc-tinh` (0 gọi API) rồi hỏi bác sĩ. Đo 22/11: ≈ 0,7 USD mỗi lần họp
+  một đề cương, trần ≈ 2,6 USD; báo bác sĩ theo mức ×2 như mục 5.
+- **Quy chế khoá trước khi họp** (bác sĩ 22/11: «quy trình khoa học nghiêm ngặt, lên kế hoạch kỹ lưỡng ngay từ đầu, trung thực tuyệt đối»):
+  - Mọi luật VÀ nguyên văn mọi lời dặn gom vào quy chế `QC-HDKH-x.y` có SHA-256. Văn bản quy chế ở `medical-ebm-automation/docs/QUY-CHE-HOI-DONG-KHOA-HOC-MAY.md` (test buộc khớp SHA của mã).
+  - Phiên mang SHA lúc khởi tạo; quy chế đổi ⇒ phiên hết hiệu lực, họp lại.
+  - Kết luận chỉ có HIỆU LỰC, và vòng kín chỉ chạy, khi hội đồng đã hiệu chuẩn đạt ≥ 5/6 lỗi cài DƯỚI CÙNG SHA. Đổi quy chế ⇒ hiệu chuẩn lại.
+- **Vòng kín** (bác sĩ 22/11: hội đồng không thông qua thì phải chỉnh sửa theo hội đồng): `vong-kin --goi-api --ap-dung`. Biên tập viên đề xuất thay thế nguyên văn; máy chỉ áp thay thế qua rào (không số/trích dẫn mới, K1–K17 không tăng lỗi theo mã, nhất quán không tăng lệch; xấu đi ⇒ hoàn nguyên). Họp lại tới khi thông qua, tối đa 3 vòng; chỉ trình bác sĩ bản đã thông qua kèm nhật ký thay đổi.
+- **Bất biến 1–4** áp nguyên: TƯ VẤN, không thay Hội đồng Khoa học/Đạo đức thật, biên bản gắn SHA-256 tài liệu.
+  Nhận xét đã xác minh là căn cứ để agent sửa; đề cương đổi thì họp lại.
+
 Cần bác sĩ kiểm chứng.
