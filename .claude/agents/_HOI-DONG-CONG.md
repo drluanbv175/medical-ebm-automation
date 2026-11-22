@@ -136,6 +136,13 @@ nợ, «giải quyết theo nguyên tắc».
    (Validity & Reliability) · tôn trọng đối tượng nghiên cứu · kiểm soát chất lượng liên tục. Ô chưa có phép đo ⇒ ⚪
    «chưa đo được», KHÔNG BAO GIỜ xanh; mỗi ô ⚪ là việc hệ phải xây tiếp (phép đo mới, có kiểm đột biến), không coi là
    đạt, không bỏ qua.
+6b. **Đề cương tốt và đọc từng đơn vị trước khi giao** (bác sĩ, nguyên văn): «Một đề cương nghiên cứu y khoa tốt
+   phải trả lời được một câu hỏi có giá trị bằng phương pháp khoa học phù hợp, khả thi về triển khai, tuân thủ đạo đức
+   và tạo ra kết quả có thể kiểm chứng» — năm tiêu chí tổng đứng trên ma trận mục 6. «Đề cương phải được đọc từng câu
+   từng chữ trước khi hoàn thành đưa cho tôi»; «đảm bảo đề cương hoàn thiện từng chữ, câu, bảng, đồ thị… đúng chuẩn đề
+   cương nghiên cứu y khoa». Trước khi giao: MỌI đơn vị của bản hiện hành (câu, hàng bảng, hình/đồ thị kèm chú thích và
+   dữ liệu vẽ, công thức) có bản ghi đọc gắn mã băm của đơn vị — đối chiếu nguồn, số liệu, chuẩn trình bày; đơn vị sửa
+   sau khi đọc ⇒ đọc lại. Đọc ở khâu CUỐI, sau khi các khâu trước đã khoá. Thiếu bản ghi đọc ⇒ chưa «hoàn thành».
 7. **Không sổ nợ:** không dùng sổ nợ, miễn trừ tay hay bánh cóc «chỉ giảm» để chốt/CI xanh khi chuẩn chưa đạt; thiếu
    mục thì sửa tại NGUỒN tới 0; chốt đỏ khi thiếu bất kỳ mục nào. Sổ nợ cũ chỉ được xoá về 0 — không ghi thêm, không
    gia hạn.
@@ -146,7 +153,7 @@ nợ, «giải quyết theo nguyên tắc».
    danh sách việc treo; dữ kiện thật chỉ người có (số phê duyệt, dữ liệu thu thập…) ghi là «mục chưa đạt chuẩn: thiếu
    dữ kiện thật X» của sản phẩm. Khoá máy-đọc (`cho_nguoi`, `con_lai_cho_nguoi`, «CHỜ NGƯỜI (vai)», `ket_luan`…) giữ
    nguyên — chỉ đổi lời trình bày.
-9. **Nhắc lại:** điều phối tổng và mọi điều phối cổng chép NGUYÊN câu nguyên tắc tổng và các mục 2/4/6/7/8 vào ĐẦU mỗi
+9. **Nhắc lại:** điều phối tổng và mọi điều phối cổng chép NGUYÊN câu nguyên tắc tổng và các mục 2/4/6/6b/7/8 vào ĐẦU mỗi
    lời giao việc cho agent nhiệm vụ, và đối chiếu lại trước khi bàn giao (mục 5–7 của khối guardrail cuối mọi agent,
    cấy bằng `tools/enforce_agent_guardrails.py --refresh`).
 
