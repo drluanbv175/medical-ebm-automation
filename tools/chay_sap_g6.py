@@ -23,8 +23,12 @@ từng bộ tham số — dễ sót, dễ lệch SAP, không có chỗ nào cho 
   }
   • vai ∈ chinh (đúng MỘT, chạy với gate G6 — tệp G6_analysis_summary.json chính thức) · phu · nhom_con · do_nhay ·
     mo_ta; phân tích khác chạy với gate G6_<id> (tệp riêng, không ghi đè nhau).
-  • `chua_tu_dong` = phân tích SAP cam kết mà hệ CHƯA có công cụ (vd spline RCS, partial PO) — liệt kê rõ trong chỉ mục
-    là «chờ thống kê viên làm tay», không bỏ im.
+  • `chua_tu_dong` = phân tích SAP cam kết mà hệ CHƯA có công cụ — liệt kê rõ trong chỉ mục, không bỏ im. Từ 22/11/2026
+    mọi loại từng ghi «chờ làm tay» (spline RCS, partial PO, Firth, hệ số chặn ngẫu nhiên, trọng số hậu phân tầng,
+    gộp mức, điểm ảnh hưởng, trung gian, bảng chéo, chuỗi khâu, đáp ứng, đặc tính đo lường…) đã có đường máy:
+    `tham_so.loai_bo_sung` + `tham_so.cau_hinh` ⇒ phan_tich_sap_bo_sung.py (cấu hình kiểm bằng chính mô-đun đó).
+  • `tham_so.bien_thua` = {bien, toi_thieu}: quy tắc bỏ biến thưa định trước của SAP — đếm trên quần thể phân tích
+    trước khi gọi run_stats_analysis, biến có một nhóm dưới ngưỡng bị bỏ khỏi covariates; quyết định ghi vào chỉ mục.
   • `sha256_sap` khác SAP hiện tại ⇒ đặc tả CŨ (SAP đã sửa đổi) — từ chối chạy.
   • nguoi_duyet do THỐNG KÊ VIÊN/PI ghi kèm dấu đặc tả (lệnh `kiem` in ra) — agent soạn đặc tả, KHÔNG ghi cột duyệt;
     sửa đặc tả sau khi duyệt ⇒ hết hiệu lực. Chưa duyệt ⇒ từ chối chạy (đề tài synthetic_test: cảnh báo).
@@ -109,6 +113,18 @@ THAM_SO = {
     "phan_tich_nhan_to": ("--phan-tich-nhan-to", "nhan_to"),
     "tang": ("--tang", "ds"),
     "thieu": ("--thieu", "thieu"),
+    # 22/11/2026 (bác sĩ: «việc máy làm được thì làm trọn»): phân tích SAP trước đây «chờ làm tay» — bảng chéo, chuỗi
+    # khâu, KTC hiệu chỉnh quần thể hữu hạn, đáp ứng, đặc tính đo lường, biến thể mô hình thứ tự (spline, phân vị,
+    # tương tác, gộp mức, điểm ảnh hưởng, yếu tố riêng), tỷ số chênh tương xứng một phần, hệ số chặn ngẫu nhiên, Firth,
+    # trọng số hậu phân tầng, trung gian — chạy bằng phan_tich_sap_bo_sung.py (cấu hình JSON kiểm bằng chính mô-đun đó).
+    "loai_bo_sung": ("--loai", "bo_sung"),
+    "cau_hinh": ("--cau-hinh", "cau_hinh"),
+    # Quy tắc BỎ BIẾN THƯA định trước của SAP (vd C1a §5: `co_hen_gio`, `uu_tien_kham` bỏ khỏi mô hình nếu một nhóm
+    # dưới 20 phiếu hợp lệ) — áp TRƯỚC khi gọi run_stats_analysis, chỉ dựa trên phân bố của chính biến; không thành cờ.
+    "bien_thua": (None, "bien_thua"),
+    # Quy tắc GIẢM THAM SỐ khi EPV dưới ngưỡng, theo thứ tự định trước (vd BTM §5: gộp nhóm đối tượng → gộp phòng khám →
+    # bỏ số nhóm thuốc, dừng ngay khi EPV ≥ 10) — áp trước khi gọi run_stats_analysis, chỉ đếm kết cục và số tham số.
+    "quy_tac_epv": (None, "quy_tac_epv"),
 }
 DAC_THU = ("chan_doan", "du_bao", "gop", "dinh_tinh", "kinh_te")
 NHAN_TO = ("efa_cfa",)
@@ -184,6 +200,22 @@ def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
     elif kieu == "thieu":
         if v not in ("listwise", "pairwise"):
             return [f"{ten}: phải là listwise hoặc pairwise"]
+    elif kieu == "bo_sung":
+        import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+        if v not in PSB.LOAI:
+            return [f"{ten}: phải thuộc {sorted(PSB.LOAI)}"]
+    elif kieu == "cau_hinh":
+        if not isinstance(v, dict) or not v:
+            return [f"{ten}: cần đối tượng JSON không rỗng"]
+    elif kieu == "bien_thua":
+        import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+        return PSB.kiem_bien_thua(v, ten)
+    elif kieu == "quy_tac_epv":
+        import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+        return PSB.kiem_quy_tac_epv(v, ten)
     elif kieu == "bt":
         if not chuoi_an_toan(v):
             return [f"{ten}: cần biểu thức (không bắt đầu bằng «-»)"]
@@ -246,7 +278,17 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         for k, v in ts.items():
             if k in THAM_SO:
                 loi += [f"{pid}: {x}" for x in _kiem_gia_tri(k, THAM_SO[k][1], v)]
-        if ts.get("phan_tich_nhan_to") or ts.get("tang") or ts.get("thieu"):
+        if ts.get("loai_bo_sung") or ts.get("cau_hinh"):
+            import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+            if not ts.get("loai_bo_sung") or not isinstance(ts.get("cau_hinh"), dict):
+                loi.append(f"{pid}: loai_bo_sung và cau_hinh phải đi cùng nhau")
+            else:
+                loi += [f"{pid}: {x}" for x in PSB.kiem_cau_hinh(ts["loai_bo_sung"], ts["cau_hinh"])]
+            thua = [x for x in ts if x not in ("loai_bo_sung", "cau_hinh", "loc")]
+            if thua:
+                loi.append(f"{pid}: tham số không áp dụng cho phân tích bổ sung: {', '.join(thua)}")
+        elif ts.get("phan_tich_nhan_to") or ts.get("tang") or ts.get("thieu"):
             # giá trị cấu trúc (EFA/CFA): tham số khác không có nghĩa với phan_tich_nhan_to_r.py — báo ngay khi kiểm
             if not ts.get("phan_tich_nhan_to"):
                 loi.append(f"{pid}: tang/thieu chỉ dùng kèm phan_tich_nhan_to")
@@ -267,6 +309,17 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
                 loi.append(f"{pid}: tham số không áp dụng cho phân tích {ts['loai_dac_thu']}: {', '.join(thua)}")
         elif not ts.get("outcome") and not ts.get("time") and not ts.get("ty_le"):
             loi.append(f"{pid}: cần outcome, hoặc time+event, hoặc ty_le")
+        if ts.get("bien_thua") and isinstance(ts["bien_thua"], dict):
+            ngoai = [b for b in ts["bien_thua"].get("bien") or [] if b not in (ts.get("covariates") or [])]
+            if ngoai:
+                loi.append(f"{pid}: bien_thua chỉ áp cho hiệp biến của mô hình — không có trong covariates: "
+                           f"{', '.join(ngoai)}")
+        if ts.get("quy_tac_epv") and isinstance(ts["quy_tac_epv"], dict):
+            cov = set(ts.get("covariates") or [])
+            ngoai = [b for bu in ts["quy_tac_epv"].get("buoc") or [] if isinstance(bu, dict)
+                     for b in [*(bu.get("thay") or {}), *(bu.get("bo") or [])] if b not in cov]
+            if ngoai:
+                loi.append(f"{pid}: quy_tac_epv thay/bỏ biến không có trong covariates: {', '.join(ngoai)}")
         if bool(ts.get("time")) != bool(ts.get("event")):
             loi.append(f"{pid}: time và event phải đi cùng nhau")
         if pt.get("vai") == "chinh":
@@ -290,6 +343,8 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         for pt in ds:
             if not qt or not isinstance(pt, dict) or not isinstance(pt.get("tham_so"), dict):
                 continue
+            if pt["tham_so"].get("loai_bo_sung") in _quan_the_rieng():
+                continue  # loại tự khai hai quần thể trong cấu hình (vd so sánh người bị loại với mẫu)
             bien, gia = qt
             if re.search(rf"\b{re.escape(bien)}\b", str(pt["tham_so"].get("loc") or "")):
                 continue
@@ -461,6 +516,12 @@ def kiem_phu_sap(dt: dict, sap_text: str) -> dict:
             "neo_phu_dinh": phu_dinh}
 
 
+def _quan_the_rieng() -> tuple:
+    import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+    return PSB.QUAN_THE_RIENG
+
+
 def gate_cua(pt: dict) -> str:
     return "G6" if pt.get("vai") == "chinh" else f"G6_{pt['id']}"
 
@@ -469,6 +530,11 @@ def doi_so_run_stats(pt: dict) -> list[str]:
     ds: list[str] = []
     for k, v in (pt.get("tham_so") or {}).items():
         co, kieu = THAM_SO[k]
+        if co is None:  # xử lý trước khi chạy (bien_thua) — không thành cờ
+            continue
+        if kieu == "cau_hinh":
+            ds += [co, json.dumps(v, ensure_ascii=False, sort_keys=True)]
+            continue
         if kieu == "ds":
             ds += [co, ",".join(v)]
         elif kieu == "ds_rieng":
@@ -534,6 +600,10 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
                          **{k.replace(".", "_"): cs.get(k) for k in ("cfi.scaled", "tli.scaled", "rmsea.scaled",
                                                                      "srmr")},
                          "phan_loai": nt.get("phan_loai_theo_nguong_dinh_truoc")}
+    if tom.get("bo_sung") is not None:  # 22/11/2026: phân tích bổ sung — khoá chính đọc nhanh; bảng đủ ở tóm tắt
+        bs = tom["bo_sung"]
+        ra["bo_sung"] = {"loai": tom.get("loai_bo_sung"),
+                         "khoa": sorted(k for k in bs if k not in ("canh_bao", "phien_ban_goi", "phien_ban_r"))[:12]}
     sv = tom.get("survival") or {}
     if (sv.get("adjusted") or {}).get("HR") is not None:
         ra["hr_hieu_chinh"] = {k: sv["adjusted"].get(k) for k in ("HR", "CI_95", "p")}
@@ -624,6 +694,36 @@ def lenh_duyet(args) -> int:
     return 0 if sau == "DA_DUYET" else 1
 
 
+def ap_bien_thua_dac_ta(study: str, pt: dict) -> tuple[dict, dict]:
+    """Áp quy tắc bỏ biến thưa (tham_so.bien_thua) lên MỘT mục đặc tả: đếm phân bố của từng biến trên ĐÚNG quần thể
+    phân tích (dữ liệu khoá + biến phái sinh + `loc`), biến có một nhóm dưới ngưỡng bị bỏ khỏi covariates và
+    hiep_bien_phan_loai. Trả (mục đã sửa — bản sao, không đụng đặc tả trên đĩa; bảng quyết định)."""
+    import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+    ts = dict(pt["tham_so"])
+    bt = ts.pop("bien_thua")
+    df, _csv, _man = PSB.doc_df(study, list(bt["bien"]), ts.get("loc"))
+    kq = PSB.quy_tac_bien_thua(df, bt["bien"], int(bt["toi_thieu"]))
+    ts = PSB.ap_bien_thua(ts, kq, "covariates", "hiep_bien_phan_loai")
+    if not ts.get("hiep_bien_phan_loai"):
+        ts.pop("hiep_bien_phan_loai", None)
+    return dict(pt, tham_so=ts), kq
+
+
+def ap_quy_tac_epv_dac_ta(study: str, pt: dict) -> tuple[dict, dict]:
+    """Áp quy tắc giảm tham số theo EPV (tham_so.quy_tac_epv) lên MỘT mục: EPV đếm trên ĐÚNG quần thể phân tích.
+    Trả (mục đã sửa — bản sao; nhật ký từng bước)."""
+    import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+    ts = dict(pt["tham_so"])
+    q = ts.pop("quy_tac_epv")
+    moi = [m for b in q["buoc"] for m in (b.get("thay") or {}).values()]
+    can = [ts["outcome"], ts["group"], *(ts.get("covariates") or []), *moi]
+    df, _csv, _man = PSB.doc_df(study, can, ts.get("loc"))
+    ts, nk = PSB.quy_tac_epv(df, ts, q)
+    return dict(pt, tham_so=ts), nk
+
+
 def lenh_chay(args) -> int:
     d = thu_muc(args.study)
     dt = doc_dac_ta(d)
@@ -654,9 +754,35 @@ def lenh_chay(args) -> int:
             continue
         gate = gate_cua(pt)
         ts_pt = pt.get("tham_so") or {}
+        if ts_pt.get("quy_tac_epv"):  # giảm tham số theo thứ tự định trước — chỉ đếm kết cục và cấu trúc biến
+            try:
+                pt, qe = ap_quy_tac_epv_dac_ta(args.study, pt)
+            except Exception as e:  # noqa: BLE001
+                muc |= {"gate": gate, "trang_thai": "LOI", "ly_do": f"quy tắc EPV: {e}"[:500]}
+                ket.append(muc)
+                ma = 1
+                print(f"   ✗ lỗi quy tắc EPV — {e}")
+                continue
+            muc["quy_tac_epv"] = qe
+            ts_pt = pt.get("tham_so") or {}
+            print(f"   quy tắc EPV: áp tới bước {qe['buoc_ap']} · EPV cuối {qe['epv_cuoi']:.2f}")
+        if ts_pt.get("bien_thua"):  # quy tắc bỏ biến thưa định trước — phân bố của chính biến, trước khi xem kết cục
+            try:
+                pt, bt = ap_bien_thua_dac_ta(args.study, pt)
+            except Exception as e:  # noqa: BLE001
+                muc |= {"gate": gate, "trang_thai": "LOI", "ly_do": f"quy tắc biến thưa: {e}"[:500]}
+                ket.append(muc)
+                ma = 1
+                print(f"   ✗ lỗi quy tắc biến thưa — {e}")
+                continue
+            muc["bien_thua"] = bt
+            print(f"   quy tắc biến thưa: bỏ {bt['bo'] or 'không biến nào'} (ngưỡng {bt['toi_thieu']})")
         if ts_pt.get("phan_tich_nhan_to"):  # R psych/lavaan — tự đọc bộ khoá bằng cùng hàm của cổng; không kiểm chéo
             lenh = [sys.executable, str(TOOLS / "phan_tich_nhan_to_r.py"), "chay", "--study", args.study,
                     "--gate", gate, *doi_so_run_stats(pt)]  # fmt: skip
+        elif ts_pt.get("loai_bo_sung"):  # phân tích SAP bổ sung — tự đọc bộ khoá bằng cùng hàm của cổng
+            lenh = [sys.executable, str(TOOLS / "phan_tich_sap_bo_sung.py"), "--study", args.study, "--gate", gate,
+                    *doi_so_run_stats(pt)]  # fmt: skip
         else:
             cong_cu = "phan_tich_thiet_ke_dac_thu.py" if (pt.get("tham_so") or {}).get("loai_dac_thu") else \
                 "run_stats_analysis.py"
