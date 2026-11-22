@@ -1093,6 +1093,11 @@ _SQUIRE: Dict[str, tuple] = {
 }
 
 # ═══════════════════════════════ CHEERS 2022 (economic hoặc có cấu phần kinh tế) ═══════════════════════════════
+#: CHEERS 19 — lời khai KHÔNG phân tích phân bố (quyết định đã khai) hoặc CHƯA phân tích kèm lý do: chữ phủ định ở
+#: đầu lần khớp ⇒ luật «không cung cấp thông tin» của K17 nhận là bằng chứng (23/11/2026)
+_DOI_PB = r"(tác động|ảnh hưởng|phân bố|công bằng|nhóm (thu nhập|kinh tế|xã hội)|vùng)"
+_PHAN_BO_KHAI = (r"không (phân tích|ước tính|đánh giá)[^.;]{0,80}?" + _DOI_PB
+                 + r"|chưa (phân tích|ước tính|đánh giá)[^.;]{0,80}?" + _DOI_PB + r"[^.]{0,200}\b(vì|do)\b")
 _CHEERS: Dict[str, tuple] = {
     "1": ((), "bao_cao", "Tiêu đề nêu đánh giá kinh tế và can thiệp so sánh.", ()),
     "2": ((), "bao_cao", "Tóm tắt có cấu trúc.", ()),
@@ -1137,7 +1142,9 @@ _CHEERS: Dict[str, tuple] = {
     "18": (("kinh_te", "phan_tich"), "bat_buoc", "Mô tả cách ước lượng khác biệt kết quả theo phân nhóm.",
            (_y("không đồng nhất theo phân nhóm", r"phân nhóm|nhóm nhỏ|không đồng nhất"),)),
     "19": (("kinh_te", "phan_tich"), "bat_buoc", "Mô tả phân bố tác động giữa các cá nhân/nhóm (công bằng).",
-           (_y("tác động phân bố", r"phân bố|công bằng|equity|nhóm (thu nhập|kinh tế)"),)),
+           # 23/11/2026 (luật «không cung cấp thông tin»): «không phân tích … theo nhóm/phân bố» là quyết định đã
+           # khai, CHEERS 2022 cho phép; «chưa phân tích …» (để sau) chỉ nhận khi kèm lý do (`_PHAN_BO_KHAI`)
+           (_y("tác động phân bố", _PHAN_BO_KHAI + r"|phân bố|công bằng|equity|nhóm (thu nhập|kinh tế)"),)),
     "20": (("kinh_te", "phan_tich"), "bat_buoc", "Mô tả phương pháp đặc trưng hoá bất định.",
            (_y("phân tích bất định", r"phân tích độ nhạy|xác suất|\bPSA\b|\bCEAC\b|bất định"),)),
     "21": (("kinh_te", "dao_duc", "pho_bien"), "bat_buoc", "Mô tả cách thu hút người bệnh/cộng đồng tham gia thiết kế.",
