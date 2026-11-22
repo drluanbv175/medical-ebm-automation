@@ -41,13 +41,38 @@ KHOI = {
         "qualitative_approach": "Phân tích chủ đề theo Braun và Clarke",
         "chon_mau": "Chọn có chủ đích theo kết quả tháng 6",
         "co_mau_du_kien": "Khoảng 16–20 người",
-        "data_collection_method": "Phỏng vấn sâu bán cấu trúc 30–45 phút",
+        "data_collection_method": ("Phỏng vấn sâu bán cấu trúc 30–45 phút; thu thập song song với phân tích tới khi"
+                                   " bão hoà"),
         "saturation_criterion": "Ba cuộc phỏng vấn liên tiếp không có mã mới",
         "phan_tich": "Hai người mã hoá độc lập",
         "interview_guide": [{"chu_de": "Rào cản", "cau_hoi": "Điều gì khiến anh/chị quên uống thuốc?",
-                             "goi_mo": ["Anh/chị có thể cho một ví dụ không?"]}]},
+                             "goi_mo": ["Anh/chị có thể cho một ví dụ không?"]}],
+        # 22/11/2026: COREQ 2007/SRQR 2014 bật chặn ở đề cương nộp ⇒ khối hỗn hợp ĐẦY ĐỦ phải khai quy trình định tính
+        # (hon_hop.KHOA_QUY_TRINH_DINH_TINH) — khối thiếu các khoá này nay bị chặn đúng luật (sửa fixture, không nới)
+        "research_paradigm": "Hệ hình thực dụng: cấu phần định tính giải thích kết quả định lượng",
+        "interviewer": ("Người phỏng vấn là cán bộ nghiên cứu định tính của nhóm (nữ, thạc sĩ y tế công cộng), đã "
+                        "được tập huấn phỏng vấn sâu; nghiên cứu viên này trực tiếp phỏng vấn, không điều trị và "
+                        "không quen biết người tham gia"),
+        "participant_information": "Người phỏng vấn giới thiệu bản thân, vai trò và mục đích phỏng vấn",
+        "researcher_reflexivity": ("Người phỏng vấn biết kết quả định lượng nên có thể thiên về giải thích có lợi "
+                                   "cho can thiệp; nhóm ghi nhật ký phản tư sau mỗi cuộc phỏng vấn"),
+        "participant_approach": "Liên hệ qua điện thoại người được chọn, hẹn lịch phỏng vấn",
+        "non_participation": "Số người từ chối hoặc rút lui và lý do ghi vào sổ tuyển chọn",
+        "interview_setting": "Phòng riêng của phòng khám, chỉ có người phỏng vấn và người tham gia",
+        "interview_guide_pilot": "Hướng dẫn phỏng vấn đã thử trước trên 2 người bệnh ngoài mẫu",
+        "repeat_interviews": "Mỗi người tham gia được phỏng vấn một lần, không phỏng vấn lại",
+        "recording_field_notes": "Ghi âm khi người tham gia đồng ý; ghi chép thực địa sau mỗi cuộc phỏng vấn",
+        "transcript_return": "Không gửi lại bản gỡ băng; bản tóm tắt chủ đề được kiểm tra lại với người tham gia",
+        "coding_process": ("Hai người mã hoá độc lập xây dựng bộ mã từ 3 bản gỡ băng đầu; chủ đề rút ra theo hướng "
+                           "quy nạp, phân tích song song với thu thập; quản lý mã bằng bảng tính có kiểm soát phiên "
+                           "bản, lưu nhật ký quyết định mã hoá; kết quả trình bày theo chủ đề kèm trích lời đã khử "
+                           "định danh và mô tả dày bối cảnh")},
     "tich_hop": {"thoi_diem": "Sau khi khoá phân tích định lượng", "cach": "Kết nối theo chọn mẫu và bảng tích hợp",
                  "nguoi": "Chủ nhiệm và nghiên cứu viên định tính",
+                 "han_che": ("Hạn chế do kết hợp: người được phỏng vấn đã biết kết quả huyết áp của mình nên lời kể "
+                             "định tính có thể bị kết quả định lượng định hướng"),
+                 "hieu_biet_du_kien": ("Kết hợp hai cấu phần giúp giải thích vì sao một số người vẫn không đạt "
+                                       "kiểm soát"),
                  "chu_de": [{"chu_de": "Người không đạt kiểm soát dù nhận tin nhắn",
                              "dinh_luong": "Tỷ lệ không đạt kiểm soát nhóm can thiệp",
                              "dinh_tinh": "Rào cản uống thuốc đều đặn"}]},

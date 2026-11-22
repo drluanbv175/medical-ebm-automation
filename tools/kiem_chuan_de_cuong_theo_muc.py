@@ -16,8 +16,9 @@ CÁCH KIỂM (tất định, không gọi mạng):
   3. Mục «if applicable» chỉ xét khi đề cương có điều kiện tương ứng (vd 12d cắt ngang khi có chọn mẫu cụm/gom cụm).
   4. Chuẩn chưa có tiêu chí tự động ⇒ «chua_do» (⚪), KHÔNG BAO GIỜ tính là đạt.
   5. (21/11/2026, tối) 12 chuẩn còn lại — SPIRIT, PRISMA-P, STARD, TRIPOD+AI, COREQ, SRQR, GRAMMS, SQUIRE, CHEERS,
-     TREND, CARE, COSMIN — có tiêu chí ở `tieu_chi_chuan_de_cuong.py`. Chuẩn chưa đối chiếu được bảng gốc (TREND, COREQ,
-     SRQR) báo «canh_bao» (⚠), không làm K17 đỏ. ⚪ chỉ còn cho mã thiết kế ngoài bảng và ISPOR BIA GPP II 2014.
+     TREND, CARE, COSMIN — có tiêu chí ở `tieu_chi_chuan_de_cuong.py`. Chuẩn chưa đối chiếu được bảng gốc (TREND) báo
+     «canh_bao» (⚠), không làm K17 đỏ; COREQ, SRQR đối chiếu bản in lại toàn văn bảng gốc và chặn từ 22/11/2026.
+     ⚪ chỉ còn cho mã thiết kế ngoài bảng và ISPOR BIA GPP II 2014.
      Phân xử trên 8 đề cương giả lập + 2 đề cương thật: `docs/K17-PHAN-XU-12-CHUAN-20261121.md`.
 
 MỨC ĐỘ: `bat_buoc` (mục phương pháp phải có trong đề cương) · `ke_hoach` (mục kết quả/bàn luận — đề cương phải lên kế
@@ -1062,7 +1063,7 @@ def loi_k17(md: str, thiet_ke: str) -> List[str]:
 
 
 def canh_bao_k17(md: str, thiet_ke: str) -> List[str]:
-    """Cảnh báo K17 (không chặn nộp): mục thiếu của chuẩn chưa đối chiếu bảng gốc (TREND, COREQ, SRQR) hoặc của chuẩn
+    """Cảnh báo K17 (không chặn nộp): mục thiếu của chuẩn chưa đối chiếu bảng gốc (TREND) hoặc của chuẩn
     còn chờ bộ sinh phủ (`CHUAN_CHO_BO_SINH`). Vẫn phải bổ sung trước khi trình Hội đồng."""
     kq = doi_chieu(md, thiet_ke)
     ra = []
