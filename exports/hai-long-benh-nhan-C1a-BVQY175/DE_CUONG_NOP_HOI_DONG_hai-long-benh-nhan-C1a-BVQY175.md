@@ -690,7 +690,7 @@ Quy ước trình bày: biến định lượng mô tả bằng trung bình ± �
 
 **Hình 3.1. Sơ đồ tuyển chọn đối tượng nghiên cứu (theo STROBE)**
 
-*Ghi chú:* Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu.
+*Ghi chú:* Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu. Các lý do loại và ra khỏi nghiên cứu được ghi nhận: không thuộc danh sách số được chọn; bỏ về trước khi khám, ngoài khung mẫu; không đủ tiêu chuẩn, kể cả chuyển nhập viện hoặc cấp cứu; không gặp được để mời; từ chối tham gia; không nộp phiếu; không trả lời câu G1; bỏ trống từ 7/30 câu Phần 2 trở lên; bỏ trống toàn bộ một lĩnh vực A–E. Ô có nhiều lý do: mỗi trường hợp được tính một lần, theo lý do đầu tiên mà trường hợp đó gặp.
 
 **Bảng 3.1. Đặc điểm chung của đối tượng nghiên cứu (n = 1.000)**
 
