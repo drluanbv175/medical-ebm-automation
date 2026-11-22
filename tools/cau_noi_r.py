@@ -72,7 +72,7 @@ BASE = S.BASE
 MA_OK, MA_LECH, MA_KHONG_DO, MA_TU_CHOI = S.MA_OK, S.MA_LECH, S.MA_KHONG_DO, S.MA_TU_CHOI
 CAN_KIEM = S.CAN_KIEM
 TuChoi, KhongDoDuoc = S.TuChoi, S.KhongDoDuoc
-GOI_CAN = ("jsonlite", "sandwich", "lmtest", "survival", "ordinal")
+GOI_CAN = ("jsonlite", "sandwich", "lmtest", "survival", "ordinal", "mice")  # mice: chỉ khi có Bảng 5 (MI)
 KHO_CRAN = "https://cloud.r-project.org"
 # keep_default_na của pandas 2.x — chỉ dùng khi máy sinh script không có pandas (bình thường đọc thẳng từ pandas).
 NA_PANDAS_DU_PHONG = (
@@ -429,7 +429,8 @@ MAU_R = r"""# ══════════════════════
 # Sinh bởi tools/cau_noi_r.py cu-phap (@@LUC@@) — tái lập ĐÚNG các mô hình của run_stats_analysis.py theo đặc tả G6
 # (khoá dac_ta_phan_tich của G6_analysis_summary.json). KHÔNG sửa tay — sinh lại bằng cu-phap.
 # Chạy:    Rscript --vanilla @@STUDY@@_phan_tich.R [<CSV đã khoá> [<tệp JSON ra>]]
-# RStudio: sửa DU_LIEU / TEP_RA ở mục 0 rồi Source. Gói cần: jsonlite, sandwich, lmtest, survival, ordinal.
+# RStudio: sửa DU_LIEU / TEP_RA ở mục 0 rồi Source. Gói cần: jsonlite, sandwich, lmtest, survival, ordinal (+ mice
+# khi có Bảng 5 gán đa trị).
 # Kiểm chéo kỹ thuật — không thay thống kê viên, không đổi trạng thái cổng G6. Cần bác sĩ kiểm chứng.
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 
@@ -451,7 +452,8 @@ CUM <- @@CUM@@
 DON_VI_PHOI_NHIEM <- @@DON_VI@@  # --don-vi-phoi-nhiem của Python (chỉ nhánh thứ tự)
 # Chuỗi pandas.read_csv coi là THIẾU (keep_default_na) — chép từ pandas @@PANDAS@@ lúc sinh script.
 NA_PANDAS <- @@NA_PANDAS@@
-GOI_CAN <- c("jsonlite", "sandwich", "lmtest", "survival", "ordinal")
+@@KHOI_MI@@
+GOI_CAN <- c("jsonlite", "sandwich", "lmtest", "survival", "ordinal", if (MI_CO) "mice")
 
 dung <- function(ma, ...) {
   thong_diep <- paste0(...)
@@ -579,6 +581,19 @@ trung_vi_lifelines <- function(thoi_gian, n_nguy_co, n_bien_co) {
     if (length(khac)) thay <- khac[1]
   }
   list(tv = tv, thay = thay)
+}
+# Luật Rubin (22/11/2026, Bảng 5): Q = ma trận hệ số (m × p), U = danh sách ma trận hiệp phương sai trong bộ.
+# Q̄ = trung bình; T = Ū + (1 + 1/m)·B; KTC/p theo t(df_t) (cụm: G − 1) hoặc z (df_t = Inf) — như Python _gop_rubin.
+gop_rubin <- function(Q, U, df_t = Inf) {
+  m <- nrow(Q)
+  qbar <- colMeans(Q)
+  B <- stats::cov(Q)
+  Tt <- Reduce(`+`, U) / m + (1 + 1 / m) * B
+  se <- sqrt(diag(Tt))
+  q <- if (is.finite(df_t)) stats::qt(0.975, df_t) else stats::qnorm(0.975)
+  p <- if (is.finite(df_t)) 2 * stats::pt(-abs(qbar / se), df_t) else 2 * stats::pnorm(-abs(qbar / se))
+  list(b = qbar, se = se, lo = qbar - q * se, hi = qbar + q * se, p = p, mcse = sqrt(diag(B) / m),
+       suy_luan = if (is.finite(df_t)) "t(G-1)" else "z")
 }
 # <<< ham-kiem-thu
 vc_cum <- function(fit, cum) sandwich::vcovCL(fit, cluster = cum, type = "HC1", cadjust = TRUE)
@@ -747,6 +762,103 @@ if (co(KET_CUC) && co(NHOM) && LOAI == "ordinal") {
   })
 }
 
+# ── 5b. Gán đa trị — multiple_imputation_model() (Bảng 5; 22/11/2026) ─────────────────────────────────
+# mice pmm (MI_M bộ, 10 vòng) → mô hình phân tích trên TỪNG bộ → gộp Rubin: Q̄, T = Ū + (1 + 1/m)·B. Có cụm ⇒
+# sandwich theo cụm CR1 (vc_cum) + suy luận t(G−1); không cụm ⇒ z — đúng quy ước Python (Poisson không cụm: HC0).
+# Gán theo NHÁNH (như _mi_tu_lap của Python): cột nguồn có Branching Logic không làm biến dự báo cho cột khác, giá trị
+# ở hàng nhánh không thoả không vào dữ liệu gán, sau mỗi bộ trở lại «không áp dụng» rồi TÍNH LẠI biến phái sinh từ công
+# thức đã duyệt. Thuật toán gán của R (mice) khác Python (statsmodels) ⇒ đối chiếu theo sai số Monte Carlo
+# (cau_noi_r.doi_chieu), không đòi khớp từng bộ gán.
+if (!is.na(MI_KHONG_DUNG_DUOC)) KET$mi_khong_dung_duoc <- MI_KHONG_DUNG_DUOC
+if (MI_CO && co(KET_CUC) && co(NHOM)) {
+  KET$mi <- khoi("mi", {
+    so_hoa <- function(x) suppressWarnings(as.numeric(x))
+    d0 <- if (co(CUM)) D[!is.na(D[[CUM]]), , drop = FALSE] else D
+    pt <- MI_BIEN_PT[MI_BIEN_PT %in% names(d0)]
+    khung_cot <- setdiff(pt, MI_THU_DONG)
+    for (v in MI_THU_DONG) khung_cot <- c(khung_cot, setdiff(MI_NGUON[[v]], khung_cot))
+    nhanh <- names(MI_NHANH)[names(MI_NHANH) %in% khung_cot]
+    for (s in nhanh) for (x in MI_DIEU_KIEN[[s]]) {
+      if (!x %in% khung_cot && x %in% names(d0) && anyNA(so_hoa(d0[[x]]))) khung_cot <- c(khung_cot, x)
+    }
+    k <- as.data.frame(lapply(d0[khung_cot], so_hoa), check.names = FALSE)
+    an <- stats::setNames(paste0("v", seq_along(khung_cot)), khung_cot)  # tên an toàn cho mice
+    names(k) <- unname(an)
+    kiem_nhanh <- list()
+    for (s in nhanh) {
+      th <- MI_NHANH[[s]](d0)
+      ngoai <- !is.na(th) & !th
+      k[[an[[s]]]][ngoai] <- NA
+      kiem_nhanh[[s]] <- list(so_hang_ngoai_nhanh = sum(ngoai),
+                              con_gia_tri_ngoai_nhanh = sum(!is.na(k[[an[[s]]]][ngoai])))
+    }
+    pred <- mice::make.predictorMatrix(k)
+    for (s in nhanh) pred[rownames(pred) != an[[s]], an[[s]]] <- 0
+    for (s in nhanh) kiem_nhanh[[s]]$so_cot_dung_lam_du_bao <- sum(pred[, an[[s]]])
+    imp <- mice::mice(k, m = MI_M, method = "pmm", predictorMatrix = pred, maxit = 10, seed = MI_HAT,
+                      printFlag = FALSE)
+    bo <- lapply(seq_len(MI_M), function(i) {
+      di <- d0
+      ci <- mice::complete(imp, i)
+      for (c in khung_cot) di[[c]] <- ci[[an[[c]]]]
+      for (s in nhanh) {
+        th <- MI_NHANH[[s]](di)
+        di[[s]][is.na(th) | !th] <- NA
+      }
+      if (length(MI_THU_DONG)) di <- .mi_tinh_lai(di)
+      di
+    })
+    con <- sum(vapply(bo, function(di) sum(!stats::complete.cases(di[, pt, drop = FALSE])), 0))
+    if (con > 0) stop("còn ", con, " hàng thiếu biến phân tích sau gán (biến phái sinh không xác định ngoài nhóm con)")
+    muc <- lapply(stats::setNames(MI_PHAN_LOAI, MI_PHAN_LOAI),
+                  function(c) sort(unique(unlist(lapply(bo, function(di) so_hoa(di[[c]]))))))
+    df_t <- if (co(CUM)) df_cum(d0[[CUM]]) else Inf
+    Q <- NULL
+    U <- list()
+    ten <- NULL
+    for (di in bo) {
+      X <- list()
+      for (b in pt[-1]) {
+        if (b %in% MI_PHAN_LOAI) {
+          for (mm in muc[[b]][-1]) X[[paste0(b, "_", as.integer(mm))]] <- as.numeric(so_hoa(di[[b]]) == mm)
+        } else {
+          X[[b]] <- so_hoa(di[[b]])
+        }
+      }
+      kh <- khung(so_hoa(di[[pt[1]]]), X)
+      ct <- stats::as.formula(paste(".y ~", kh$ve_phai))
+      fit <- switch(MI_LOAI,
+        poisson = stats::glm(ct, data = kh$df, family = stats::poisson(link = "log"),
+                             control = stats::glm.control(1e-10, 200)),
+        binary = stats::glm(ct, data = kh$df, family = stats::binomial(), control = stats::glm.control(1e-10, 200)),
+        stats::lm(ct, data = kh$df))
+      V <- if (co(CUM)) vc_cum(fit, di[[CUM]]) else if (MI_LOAI == "poisson") sandwich::vcovHC(fit, type = "HC0")
+           else stats::vcov(fit)
+      if (!is.null(ten) && !identical(names(coef(fit)), colnames(Q))) stop("tham số khác nhau giữa các bộ gán")
+      Q <- rbind(Q, coef(fit))
+      U[[length(U) + 1]] <- V
+      ten <- kh$ten
+    }
+    g <- gop_rubin(Q, U, df_t)
+    mu <- MI_LOAI != "continuous"
+    he <- list()
+    for (vk in names(ten)) {
+      ci <- c(g$lo[[vk]], g$hi[[vk]])
+      he[[ten[[vk]]]] <- list(uoc_luong = if (mu) exp(g$b[[vk]]) else g$b[[vk]], ci = if (mu) exp(ci) else ci,
+                              p = g$p[[vk]], b = g$b[[vk]], se = g$se[[vk]], mcse = g$mcse[[vk]])
+    }
+    ma_gan <- list()
+    for (v in MI_THU_DONG) {
+      thieu <- is.na(so_hoa(d0[[v]]))
+      tab <- table(unlist(lapply(bo, function(di) so_hoa(di[[v]])[thieu])))
+      ma_gan[[v]] <- as.list(stats::setNames(as.integer(tab), names(tab)))
+    }
+    list(mo_hinh = MI_MO_HINH, m = nrow(Q), n = nrow(d0), suy_luan = g$suy_luan,
+         so_cum = if (co(CUM)) length(unique(d0[[CUM]])) else NA, he_so = he,
+         ma_da_gan = if (length(ma_gan)) ma_gan else NULL, kiem_nhanh = if (length(kiem_nhanh)) kiem_nhanh else NULL)
+  })
+}
+
 # ── 6. Sống còn — survival_model() + kaplan_meier_summary() ──────────────────────────────────────────
 if (co(THOI_GIAN) && co(BIEN_CO) && co(NHOM)) {
   hb <- HIEP_BIEN[HIEP_BIEN %in% names(D)]
@@ -819,9 +931,86 @@ def ma_r_bien_gia(dt: dict) -> str:
     return "# ── 2c. Biến giả hiệp biến phân loại (tham chiếu = mã nhỏ nhất) ──\n" + "\n".join(dong) + "\n"
 
 
+#: Hạt giống cố định của khối gán đa trị R — lượt chạy lại cho đúng cùng số (tái lập); khác hạt giống Python (bộ sinh
+#: số khác nhau), nên đối chiếu MI dùng sai số Monte Carlo.
+HAT_GIONG_MI_R = 20261122
+_MO_HINH_MI = {"poisson_hc0_mi": "poisson", "poisson_cluster_mi": "poisson", "logistic_mi": "binary",
+               "linear_mi": "continuous"}
+
+
+def nhanh_sang_r(bt: str) -> str:
+    """Branching Logic REDCap ⇒ hàm R vector hoá `function(d) (...)` trên data.frame. Dùng CÙNG bộ tách token với
+    `nhap_lieu_excel.danh_gia_logic` (một ngữ pháp): [biến] ⇒ số, '1' ⇒ 1, = ⇒ ==, <> ⇒ !=, and/or ⇒ & / |. Hằng chữ
+    không phải số ⇒ LogicKhongHo (không đoán phép so chữ)."""
+    import nhap_lieu_excel as NLE  # noqa: PLC0415
+
+    ra = []
+    for loai, v in NLE._tach_token(bt):
+        if loai == "ref":
+            m = re.fullmatch(r"\[([A-Za-z0-9_]+)(?:\(([A-Za-z0-9_-]+)\))?\]", v)
+            ten = f"{m.group(1)}___{m.group(2)}" if m.group(2) else m.group(1)
+            ra.append(f"suppressWarnings(as.numeric(d[[{chuoi_r(ten)}]]))")
+        elif loai == "str":
+            try:
+                ra.append(repr(float(v[1:-1])))
+            except ValueError as e:
+                raise NLE.LogicKhongHo(f"so sánh chữ «{v}» chưa hỗ trợ ở bản R") from e
+        elif loai == "num":
+            ra.append(repr(float(v)))
+        elif loai == "op":
+            ra.append({"=": "==", "<>": "!="}.get(v, v))
+        elif loai == "kw":
+            ra.append("&" if v.lower() == "and" else "|")
+        else:
+            ra.append(v)
+    return "function(d) (" + " ".join(ra) + ")"
+
+
+def khoi_mi_r(tom: dict, d: Path, csv_p: Path) -> str:
+    """Tham số khối gán đa trị R (mục 0 của script) từ lượt Python: Bảng 5 có kết quả ⇒ MI_CO TRUE, cùng biến phân tích,
+    cùng m, cùng mô hình; gán theo nhánh ⇒ nhánh dịch sang R + hàm tính lại biến phái sinh (tools/bien_phai_sinh.py).
+    Python không chạy MI (không thiếu, bỏ qua, lỗi) ⇒ MI_CO FALSE."""
+    mi = (tom or {}).get("multiple_imputation") or {}
+    dt = (tom or {}).get("dac_ta_phan_tich") or {}
+    tat = ("MI_CO <- FALSE\nMI_M <- 0L\nMI_HAT <- 0L\nMI_LOAI <- \"\"\nMI_MO_HINH <- \"\"\nMI_BIEN_PT <- character(0)\n"
+           "MI_PHAN_LOAI <- character(0)\nMI_THU_DONG <- character(0)\nMI_NGUON <- list()\nMI_NHANH <- list()\n"
+           "MI_DIEU_KIEN <- list()\n.mi_tinh_lai <- function(di) di\nMI_KHONG_DUNG_DUOC <- NA_character_\n")
+    if not mi.get("results") or mi.get("skipped") or mi.get("error") or mi.get("model") not in _MO_HINH_MI:
+        return tat
+    import bien_phai_sinh as BPS  # noqa: PLC0415
+
+    gn = mi.get("gan_theo_nhanh") or {}
+    thu_dong = list((gn.get("bien") or {}).keys())
+    nguon = {v: list((gn["bien"][v] or {}).get("nguon") or []) for v in thu_dong}
+    nhanh = dict(gn.get("nhanh") or {})
+    tinh_lai = "function(di) di"
+    if thu_dong:
+        ma = BPS.ma_r_tinh_lai(d, csv_p, thu_dong, ((tom.get("bien_phai_sinh") or {}).get("cot_ngay")), "di")
+        tinh_lai = "function(di) {\n" + ma + "di\n}"
+    bien = [dt.get("outcome"), dt.get("group"), *(dt.get("covariates") or [])]
+    return "\n".join([
+        "# Bảng 5 — gán đa trị (sinh từ multiple_imputation của lượt Python)",
+        "MI_CO <- TRUE",
+        f"MI_M <- {int(mi.get('n_imputations') or 0)}L",
+        f"MI_HAT <- {HAT_GIONG_MI_R}L",
+        f"MI_LOAI <- {chuoi_r(_MO_HINH_MI[mi['model']])}",
+        f"MI_MO_HINH <- {chuoi_r(mi['model'])}",
+        f"MI_BIEN_PT <- {vec_r([b for b in bien if b])}",
+        f"MI_PHAN_LOAI <- {vec_r(list((dt.get('hiep_bien_phan_loai') or {}).keys()))}",
+        f"MI_THU_DONG <- {vec_r(thu_dong)}",
+        "MI_NGUON <- list(" + ", ".join(f"{chuoi_r(v)} = {vec_r(ds)}" for v, ds in nguon.items()) + ")",
+        "MI_NHANH <- list(" + ", ".join(f"{chuoi_r(c)} = {nhanh_sang_r(bt)}" for c, bt in nhanh.items()) + ")",
+        "MI_DIEU_KIEN <- list(" + ", ".join(f"{chuoi_r(c)} = {vec_r(BPS.cot_cua_nhanh(bt))}"
+                                            for c, bt in nhanh.items()) + ")",
+        f".mi_tinh_lai <- {tinh_lai}",
+        "MI_KHONG_DUNG_DUOC <- NA_character_",
+        "",
+    ])
+
+
 def sinh_script_r(
     study: str, csv_p: Path, sha: str, tep_ra: Path, dt: dict, loai: str, don_vi: float | None,
-    khoi_phai_sinh: str = "",
+    khoi_phai_sinh: str = "", khoi_mi: str | None = None,
 ) -> str:
     na, ver_pd = na_pandas()
     thay = {
@@ -841,6 +1030,7 @@ def sinh_script_r(
         "@@DON_VI@@": gia_tri_r(don_vi, so=True),
         "@@PANDAS@@": ver_pd,
         "@@NA_PANDAS@@": vec_r(na),
+        "@@KHOI_MI@@": khoi_mi if khoi_mi is not None else khoi_mi_r({}, Path("."), csv_p),
     }
     # MỘT lượt thay (regex): giá trị đã thay KHÔNG bị quét lại — tên cột chứa «@@…@@» không thể kéo mã R khác vào
     # script (lượt rà 14/11/2026: thay tuần tự từng khoá đã cho tiêm mã R qua tên cột).
@@ -938,9 +1128,17 @@ def lenh_cu_phap(args) -> int:
     (r_dir / "ket_qua").mkdir(parents=True, exist_ok=True)
     tep_ra = r_dir / "ket_qua" / f"{args.study}_r_tho.json"
     script = r_dir / f"{args.study}_phan_tich.R"
+    import nhap_lieu_excel as NLE  # noqa: PLC0415
+
+    try:
+        khoi_mi = khoi_mi_r(tom, d, csv_p)
+    except (BPS.TuChoi, BPS.LoiCongThuc, NLE.LogicKhongHo) as e:
+        # không dựng được khối R của Bảng 5 ⇒ khối tắt; đối chiếu sẽ ghi «không so được» kèm lý do (không im lặng)
+        khoi_mi = khoi_mi_r({}, d, csv_p) + f"MI_KHONG_DUNG_DUOC <- {chuoi_r(str(e)[:200])}\n"
+        canh_bao.append(f"Bảng 5 (MI) không dựng được khối R: {e}")
     script.write_text(
-        sinh_script_r(args.study, csv_p, man["sha256"], tep_ra, dt, loai, don_vi, khoi_ps), encoding="utf-8",
-        newline="\n",
+        sinh_script_r(args.study, csv_p, man["sha256"], tep_ra, dt, loai, don_vi, khoi_ps, khoi_mi),
+        encoding="utf-8", newline="\n",
     )
     dac = {
         "study": args.study,
@@ -2211,6 +2409,103 @@ def _kaplan_meier(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
     return ra
 
 
+# ── Bảng 5 (gán đa trị) — dung sai theo SAI SỐ MONTE CARLO (22/11/2026) ──
+# Python (statsmodels MICEData/MICE, pmm) và R (mice, pmm) gán bằng thuật toán khác nhau, hạt giống khác nhau ⇒ KHÔNG
+# đòi khớp từng bộ gán; đòi khớp KẾT LUẬN GỘP. Căn cứ: sai số Monte Carlo của ước lượng gộp là √(B/m) (White, Royston &
+# Wood, Stat Med 2011, PMID 21225900); B ước lượng với m − 1 bậc tự do (B̂ ~ B·χ²(m−1)/(m−1)) nên dao động rộng ⇒ lấy B
+# LỚN hơn của hai phía và lượng tử t(m−1).
+#   • ước lượng gộp b (thang mô hình: log PR/OR, β):  |b_R − b_Py| ≤ c·√(B*/m_Py + B*/m_R),  c = t(1 − α/2; m − 1)
+#   • sai số chuẩn gộp:  |SE_R/SE_Py − 1| ≤ c·√2·½·λ*·√(2/(m − 1)) + MI_SAN_SE  (λ* = (1 + 1/m)·B*/SE² — phần SE do B;
+#     MI_SAN_SE cho biến thiên của Ū giữa hai lượt gán)
+#   • KTC: mỗi cận ≤ dung sai b + q·dung sai SE (q: lượng tử suy luận của chính phép); cách suy luận (t(G−1) / z) và số
+#     ca phải trùng.
+# Hiệu chỉnh trên mô phỏng Poisson theo cụm (72 phép so Python ↔ R, m = 20): |Δb|/√(2B*/m) độ lệch chuẩn 1,11, lớn nhất
+# 2,9; lệch SE/σ lớn nhất 2,66; hệ số FMI thấp lệch SE ≤ 0,98 % — dưới ngưỡng c ≈ 4,9 (α = 10⁻⁴, m = 20).
+# m < MI_M_TOI_THIEU ⇒ B không chặn được ⇒ «không so được».
+MI_M_TOI_THIEU = 10
+MI_ALPHA = 1e-4
+MI_SAN_SE = 0.01
+
+
+def dung_sai_mi(py: dict, r: dict, m_py: int, m_r: int) -> dict:
+    """Dung sai đối chiếu MỘT hệ số của Bảng 5 (xem chú thích trên). py/r: {b, se, mcse} trên thang mô hình."""
+    from scipy import stats as st  # noqa: PLC0415
+
+    df = max(min(m_py, m_r) - 1, 1)
+    c = float(st.t.ppf(1 - MI_ALPHA / 2, df))
+    b_lon = max(m_py * float(py["mcse"]) ** 2, m_r * float(r["mcse"]) ** 2)
+    tol_b = c * (b_lon / m_py + b_lon / m_r) ** 0.5 + 1e-6
+    lam = min(1.0, max((1 + 1 / m_py) * b_lon / float(py["se"]) ** 2, (1 + 1 / m_r) * b_lon / float(r["se"]) ** 2))
+    tol_se = c * 2 ** 0.5 * 0.5 * lam * (2 / df) ** 0.5 + MI_SAN_SE
+    return {"c": round(c, 3), "df": df, "B_lon": b_lon, "tol_b": tol_b, "tol_se_tuong_doi": tol_se}
+
+
+def _mi(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
+    """Đối chiếu Bảng 5 (MI) theo sai số Monte Carlo — mỗi hệ số một dòng; Python có MI mà R không ra ⇒ «không so được»
+    kèm lý do (không bao giờ im lặng như trước 22/11/2026, khi Bảng 5 không có bản R)."""
+    import math  # noqa: PLC0415
+
+    mi, rr = tom.get("multiple_imputation"), kq.get("mi")
+    if not mi or mi.get("skipped"):
+        return [] if rr is None else [_khong_so("Gán đa trị (Bảng 5) — toàn mô hình", "R chạy MI mà Python bỏ qua")]
+    if mi.get("error") or not mi.get("results"):
+        return [_khong_so("Gán đa trị (Bảng 5) — toàn mô hình", f"Python KHÔNG ra Bảng 5: {_loi_py(mi)}")]
+    ten_mh = f"Gán đa trị ({mi.get('model')}, m = {mi.get('n_imputations')})"
+    if rr is None:
+        ly_do = (kq.get("mi_khong_dung_duoc") or loi_r.get("mi")
+                 or "vắng trong G6_r_ket_qua.json (script R cũ — sinh lại)")
+        return [_khong_so(f"{ten_mh} — toàn mô hình", f"R KHÔNG ra Bảng 5: {ly_do}")]
+    m_py, m_r = int(mi.get("n_imputations") or 0), int(rr.get("m") or 0)
+    if min(m_py, m_r) < MI_M_TOI_THIEU:
+        return [_khong_so(f"{ten_mh} — toàn mô hình", f"m = {min(m_py, m_r)} < {MI_M_TOI_THIEU}: sai số Monte Carlo "
+                                                     "không chặn được (B ước lượng với m − 1 bậc tự do)")]
+    suy_py = "t(G-1)" if mi.get("cluster") else "z"
+    ra, da_dung = [], set()
+    mu = mi.get("model") != "linear_mi"
+    for x in mi["results"]:
+        v = x.get("variable")
+        ten_r, hr = _tim(rr.get("he_so"), v)
+        if ten_r:
+            da_dung.add(ten_r)
+        uoc = next((x[k] for k in ("PR_adj", "OR_adj", "beta") if k in x), None)
+        py = {"uoc_luong": uoc, "ci": x.get("CI_95"), "p": x.get("p")}
+        if hr is None:
+            ra.append(_khong_so(f"{ten_mh} — {v}", "R không có hệ số cùng tên", py=py))
+            continue
+        if uoc is None or any(x.get(k) is None for k in ("b", "se", "mcse")):
+            ly = ("Python: mô hình không hội tụ — đã gỡ số" if uoc is None
+                  else "Python không ghi b/se/mcse (tóm tắt G6 cũ — chạy lại run_stats_analysis.py)")
+            ra.append(_khong_so(f"{ten_mh} — {v}", ly, py=py, r=_r(hr)))
+            continue
+        ds = dung_sai_mi(x, hr, m_py, m_r)
+        db = abs(float(hr["b"]) - float(x["b"]))
+        dse = abs(float(hr["se"]) / float(x["se"]) - 1)
+        q = max((math.log(x["CI_95"][1]) if mu else x["CI_95"][1]) - float(x["b"]), 0) / float(x["se"]) \
+            if x.get("CI_95") else 1.96
+        tol_ci = ds["tol_b"] + q * ds["tol_se_tuong_doi"] * float(x["se"])
+        bien = (lambda a: math.log(a)) if mu else (lambda a: a)
+        dci = (max(abs(bien(a) - bien(b)) for a, b in zip(hr["ci"], x["CI_95"]))
+               if _co_ci(hr.get("ci")) and _co_ci(x.get("CI_95")) else None)
+        kiem = {"b": db <= ds["tol_b"], "se": dse <= ds["tol_se_tuong_doi"],
+                "ci": None if dci is None else dci <= tol_ci, "suy_luan": rr.get("suy_luan") == suy_py}
+        ghi = (f"|Δb| {db:.4f} ≤ {ds['tol_b']:.4f} · |SE_R/SE_Py − 1| {dse:.3f} ≤ {ds['tol_se_tuong_doi']:.3f}"
+               + (f" · |ΔKTC| {dci:.4f} ≤ {tol_ci:.4f}" if dci is not None else "")
+               + f" (c = t(1 − α/2; {ds['df']}) = {ds['c']}, α = {MI_ALPHA:g}; dung sai theo sai số Monte Carlo)")
+        if not kiem["suy_luan"]:
+            ghi += f" · SUY LUẬN KHÁC: Python {suy_py}, R {rr.get('suy_luan')}"
+        tt = "khop" if all(v_ is not False for v_ in kiem.values()) else "lech"
+        n_py, n_r = mi.get("n_total"), rr.get("n")
+        if n_py is not None and n_r is not None and int(n_py) != int(n_r):
+            tt = "lech"
+            ghi += f" · SỐ CA KHÁC: Python {n_py}, R {n_r}"
+        ra.append({"muc": f"{ten_mh} — {v}" + (f" (R: {ten_r})" if ten_r != v else ""), "python": py, "r": _r(hr),
+                   "kiem": kiem, "trang_thai": tt, "ghi_chu": ghi, "n": {"python": n_py, "r": n_r}, "dung_sai": ds})
+    for ten_r, hr in (rr.get("he_so") or {}).items():
+        if ten_r not in da_dung:
+            ra.append(_khong_so(f"{ten_mh} — {ten_r}", "Python không có hệ số này", r=_r(hr)))
+    return ra
+
+
 def doi_chieu(tom: dict, r: dict) -> list[dict]:
     """Đối chiếu tóm tắt G6 (Python) với KẾT QUẢ R ĐẦY ĐỦ (`G6_r_ket_qua.json`: ket_qua · loi · so_ca_doc)."""
     kq = r.get("ket_qua") or {}
@@ -2256,6 +2551,7 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
         dong += _he_so_hai_phia("Poisson HC0 — PR thô", tho_py, kq.get("poisson_tho"), loi_r.get("poisson"), ("PR",))
         dong += _he_so_hai_phia("Poisson HC0 — PR hiệu chỉnh", pr, kq.get("poisson_hieu_chinh"), loi_r.get("poisson"),
                                 ("PR_adj",))  # fmt: skip
+    dong += _mi(tom, kq, loi_r)
     dong += _song_con(tom, kq, loi_r)
     dong += _kaplan_meier(tom, kq, loi_r)
     return dong
@@ -2303,6 +2599,8 @@ def lenh_doi_chieu(args) -> int:
             "p_tuyet_doi": S.TOL_P,
             "p_tuong_doi": NGUONG_P_TUONG_DOI,
             "p_san_tuyet_doi": SAN_P_TUYET_DOI,
+            "mi": {"alpha": MI_ALPHA, "m_toi_thieu": MI_M_TOI_THIEU, "san_se": MI_SAN_SE,
+                   "can_cu": "sai số Monte Carlo √(B/m), B lớn hơn của hai phía, lượng tử t(m − 1)"},
         },
         "r_phien_ban": kq.get("r_phien_ban"),
         "goi_phien_ban": kq.get("goi_phien_ban"),
@@ -2323,7 +2621,9 @@ def lenh_doi_chieu(args) -> int:
         "",
         f"{kq.get('r_phien_ban') or 'R ?'} ({goi or '?'}) · {ket['luc']} · dữ liệu khoá SHA-256 {sha_r[:16]}… · "
         f"ngưỡng: ước lượng ±{S.TOL_UOC:.1%}, KTC ±{S.TOL_CI:.1%}, p lệch ≤ {S.TOL_P} VÀ ≤ max({SAN_P_TUYET_DOI:g}; "
-        f"{NGUONG_P_TUONG_DOI:.0%} của p lớn hơn); số ca phải bằng nhau; không có miễn trừ «khác phương pháp».",
+        f"{NGUONG_P_TUONG_DOI:.0%} của p lớn hơn); số ca phải bằng nhau; không có miễn trừ «khác phương pháp». "
+        f"Bảng 5 (gán đa trị): dung sai theo sai số Monte Carlo √(B/m), B lớn hơn của hai phía, t(m − 1), "
+        f"α = {MI_ALPHA:g}, m ≥ {MI_M_TOI_THIEU} (chi tiết ở từng dòng).",
         "",
         f"Tổng: {dem['khop']} khớp · {dem['lech']} lệch · {dem['khong_so_duoc']} không so được"
         + (" — CHƯA đối chiếu trọn: có mục chỉ một phía ra số (mã 2)." if dem["khong_so_duoc"] else "."),

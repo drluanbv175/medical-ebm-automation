@@ -1412,6 +1412,21 @@ def khoi_cho_cau_noi(
     return ma, ds, muc
 
 
+def ma_r_tinh_lai(study_dir: Path, csv_khoa: Path, ten: list[str], cot_ngay: list[str] | None = None,
+                  bien_d: str = "di") -> str:
+    """(22/11/2026) Mã R tính lại các biến phái sinh `ten` (kèm phụ thuộc) vào data.frame `bien_d` — cho khối gán đa
+    trị theo nhánh của cầu nối R: mỗi bộ gán tính lại biến phái sinh từ cột nguồn đã gán, cùng công thức đã duyệt."""
+    bien = doc_dac_ta(study_dir)
+    df = _doc_csv_chu(csv_khoa)
+    dm = DanhMuc(cot=set(df.columns), ngay=set(cot_ngay or []), nguon="cột dữ liệu khoá + cột ngày đã dùng")
+    kq = kiem_dac_ta(bien, dm)
+    hong = [t for t in bao_dong(kq, ten) if kq.trang_thai.get(t) in ("LOI", "CHUA_CO_CONG_THUC", "NGOAI_TANG")]
+    if hong:
+        raise TuChoi("không sinh được mã R tính lại: " + ", ".join(f"{t} ({kq.trang_thai[t]})" for t in hong))
+    ma, _ = ma_r(kq, ten, ngay=dm.ngay, bien_d=bien_d)
+    return ma
+
+
 # ─────────────────────────────── lọc quần thể phân tích (F3) ───────────────────────────────
 
 TEN_LOC = "ebm_loc"
