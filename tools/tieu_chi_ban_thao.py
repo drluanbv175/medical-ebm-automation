@@ -688,8 +688,12 @@ _CONSORT: Dict[str, tuple] = {
     "20b": (("phuong_phap",), "Nếu làm mù: nêu cách làm mù và độ tương tự của can thiệp.",
             (_y("cách làm mù", r"(giống|tương tự) nhau|giả dược|cách làm mù|che (nhãn|mã)|tách (biệt|riêng) (vai trò|"
                                r"người)|placebo|identical|similar"),), TC.LAM_MU, "có làm mù"),
+    # 22/11/2026 (thử nghiệm không kém hơn giả lập): SAP §4 «Hiệu tỷ lệ (risk difference) + 95%CI (Newcombe) so với
+    # biên Δ» là phương pháp so sánh nhóm nhưng không khớp TC.PP_THONG_KE ⇒ THIẾU GIẢ. Chỉ thêm TÊN phương pháp: «CI»
+    # trơn có ở câu cố định «mọi ước lượng kèm 95%CI» của MỌI bản thảo; «hiệu số tỷ lệ» có ở dòng thiết kế «biên hiệu
+    # số tỷ lệ −10 điểm %» (mô tả biên, không phải phương pháp) — cả hai sẽ thành bằng chứng giả.
     "21a": (("phuong_phap",), "Nêu phương pháp thống kê so sánh các nhóm cho kết cục chính, phụ và tác hại.",
-            (_y("phương pháp thống kê", TC.PP_THONG_KE),
+            (_y("phương pháp thống kê", TC.PP_THONG_KE + r"|risk difference|Newcombe"),
              _y("kết cục chính", r"kết cục chính|phân tích chính|primary"))),
     "21b": (("phuong_phap",), "Định nghĩa ai được đưa vào từng phân tích và ở nhóm nào.",
             (_y("quần thể phân tích", r"ý định điều trị|\bITT\b|theo đề cương|per[- ]protocol|(mọi|tất cả) (người|đối "
