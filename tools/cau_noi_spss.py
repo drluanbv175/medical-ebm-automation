@@ -2115,6 +2115,21 @@ def them_bien_gia(man: dict, dt: dict) -> dict:
     return man2
 
 
+def ty_le_tu_tom_tat(tom: dict) -> tuple[list[str], float | None]:
+    """(cột tỷ lệ, ngưỡng) của lượt Python: đặc tả mới ghi thẳng; tóm tắt cũ ⇒ suy từ khoá ty_le (định nghĩa
+    «cột ≥ x»). Dùng chung cho cầu nối SPSS và R (`cau_noi_r.ty_le_tu_tom_tat`)."""
+    dt = (tom or {}).get("dac_ta_phan_tich") or {}
+    if dt.get("ty_le"):
+        return list(dt["ty_le"]), dt.get("nguong_ty_le")
+    ds = [x for x in (tom or {}).get("ty_le") or [] if isinstance(x, dict) and x.get("cot")]
+    nguong = None
+    for x in ds:
+        m = re.search(r"≥\s*(-?[\d.]+)\s*$", str(x.get("dinh_nghia") or ""))
+        if m:
+            nguong = float(m.group(1))
+    return [x["cot"] for x in ds], nguong
+
+
 def dac_ta(args) -> dict:
     tom_day_du = _doc_json(thu_muc_de_tai(args.study) / f"{args.gate}_analysis_summary.json")
     tom = tom_day_du.get("dac_ta_phan_tich") or {}
@@ -2129,6 +2144,7 @@ def dac_ta(args) -> dict:
     bg = tom.get("hiep_bien_phan_loai") or {}
     dt["hiep_bien_phan_loai"] = {c: v for c, v in bg.items() if c in dt["covariates"]}
     dt["loc"] = tom.get("loc")  # F3: quần thể phân tích của lượt Python (để kiểm lệch đặc tả)
+    dt["ty_le"], dt["nguong_ty_le"] = ty_le_tu_tom_tat(tom_day_du)  # 23/11/2026: Bảng 1b (tỷ lệ + KTC Wilson)
     pl = dt["hiep_bien_phan_loai"]
     dt["covariates_mo_hinh"] = [t for c in dt["covariates"] for t in (pl[c]["ten"] if c in pl else [c])]
     # OR theo MỖI k đơn vị phơi nhiễm (C1a: mỗi 15 phút chờ) — thiếu thì SPSS tính theo mỗi phút ⇒ «lệch» giả
@@ -2183,6 +2199,10 @@ def cu_phap_phan_tich(
     y, g, t, e, cum = ten(dt["outcome"]), ten(dt["group"]), ten(dt["time"]), ten(dt["event"]), ten(dt["cot_cum"])
     cov = [ten(c) for c in (dt.get("covariates_mo_hinh") or dt["covariates"])]
     so = {b["ten"]: b["so"] for b in man["bien"]}
+    if dt.get("ty_le"):
+        trung = sorted(b["ten"] for b in man["bien"] if b["ten"].lower() in _BIEN_TAM_TY_LE)
+        if trung:
+            raise TuChoi(f"biến trong .sav trùng biến tạm của khối Bảng 1b: {', '.join(trung)} — đổi tên trước")
     loai = dt["outcome_type"]
     if y and loai == "auto":
         m = bien[dt["outcome"]].get("muc")
@@ -2351,8 +2371,82 @@ def cu_phap_phan_tich(
             "Cox: SPSS xử lý thời điểm trùng bằng Breslow, lifelines bằng Efron ⇒ HR lệch rất nhỏ "
             "khi có nhiều thời điểm trùng"
         )
+    if dt.get("ty_le"):
+        dong += _cu_phap_ty_le(dt, ten, so, cum, thu_muc_kq)
     dong += ["OMSEND TAG='ebm_spv'.", ""]
     return "\n".join(dong), canh_bao, phu
+
+
+#: Biến tạm của khối Bảng 1b (tiền tố ebm_ — .sav có biến trùng tên thì từ chối, như khối bổ sung).
+_BIEN_TAM_TY_LE = ("ebm_x", "ebm_y", "ebm_w", "ebm_khoa", "ebm_moi", "ebm_n", "ebm_e", "ebm_k", "ebm_p", "ebm_vs",
+                   "ebm_de", "ebm_z", "ebm_hs", "ebm_nh", "ebm_mau", "ebm_tam", "ebm_nua", "ebm_lo", "ebm_hi")
+
+
+def _cu_phap_ty_le(dt: dict, ten, so: dict, cum: str | None, thu_muc_kq: Path) -> list[str]:
+    """Bảng 1b bằng SPSS (23/11/2026) — tỷ lệ + KTC 95 % Wilson của run_stats_analysis.ty_le_wilson_cum.
+
+    - Wilson độc lập: thủ tục PROPORTIONS /ONESAMPLE … CITYPES=WILSON_SCORE (cài đặt riêng của SPSS).
+    - Có cụm: SPSS không có Wilson theo cụm sẵn ⇒ tính từ thành phần. Phương sai thiết kế của tỷ lệ lấy từ
+      CSDESCRIPTIVES (Complex Samples, kế hoạch CLUSTER=<cụm> ESTIMATOR=WR, trọng số 1 — tuyến tính hoá:
+      K/(K−1)·Σ(t_c − p·m_c)²/n², đo 23/11/2026 trùng Python tới 15 chữ số); DE = SE²/[p(1−p)/n] chặn dưới 1;
+      n hiệu dụng = n/DE × (z/t_{K−1})² (Dean & Pagano 2015) rồi KTC Wilson trên n hiệu dụng — đúng công thức Python.
+    Quần thể: bộ dữ liệu đang mở (đã qua biến phái sinh và lọc F3) bỏ ca thiếu cột tỷ lệ (và cột cụm) — như
+    `df[[cot, cum]].dropna()` của Python. Mỗi cột chạy trên BẢN SAO bộ dữ liệu, xong trở về bản gốc."""
+    dong = ["DATASET NAME ebm_goc WINDOW=FRONT."]
+
+    def khoi(tag: str, lenh: list[str]) -> None:  # cùng dạng khối OMS của cu_phap_phan_tich
+        tep = dd_spss(thu_muc_kq / ("oms_" + tag + ".xml"))
+        dong.append(f"OMS /SELECT TABLES /DESTINATION FORMAT=OXML OUTFILE={tep} /TAG='{tag}'.")
+        dong.extend(lenh)
+        dong.append(f"OMSEND TAG='{tag}'.")
+
+    ng = dt.get("nguong_ty_le")
+    for i, cot in enumerate(dt["ty_le"], 1):
+        x = ten(cot)
+        doi_so = [] if so.get(x) else [f"COMPUTE ebm_x = NUMBER({x}, F40.0)."]  # cột chữ mang số ⇒ như pd.to_numeric
+        x = x if so.get(x) else "ebm_x"
+        dk = " AND ".join(f"NOT MISSING({v})" for v in [x, *([cum] if cum else [])])
+        dong += [f"DATASET COPY ebm_tl_{i}.", f"DATASET ACTIVATE ebm_tl_{i}.", *doi_so, f"SELECT IF ({dk}).",
+                 f"COMPUTE ebm_y = ({x} >= {ng!r})." if ng is not None else f"COMPUTE ebm_y = {x}.",
+                 "COMPUTE ebm_w = 1.", "COMPUTE ebm_khoa = 1.", "EXECUTE."]  # fmt: skip
+        khoi(f"ty_le_{i}", ["PROPORTIONS /ONESAMPLE ebm_y TESTVAL=0.5 TESTTYPES=NONE CITYPES=WILSON_SCORE",
+                            "  /SUCCESS VALUE=LEVEL(1) /CRITERIA CILEVEL=95 /MISSING SCOPE=ANALYSIS"
+                            " USERMISSING=EXCLUDE."])  # fmt: skip
+        if cum:
+            ke = dd_spss(thu_muc_kq / f"ty_le_{i}.csaplan")
+            dong += [
+                f"CSPLAN ANALYSIS /PLAN FILE={ke}",
+                f"  /PLANVARS ANALYSISWEIGHT=ebm_w /DESIGN CLUSTER={cum} /ESTIMATOR TYPE=WR.",
+                f"DATASET DECLARE ebm_cs_{i}.",
+                "OMS /SELECT TABLES /IF COMMANDS=['CSDescriptives'] SUBTYPES=['Univariate Statistics']",
+                f"  /DESTINATION FORMAT=SAV OUTFILE=ebm_cs_{i} VIEWER=NO /TAG='ebm_cs_{i}'.",
+                f"CSDESCRIPTIVES /PLAN FILE={ke} /SUMMARY VARIABLES=ebm_y /MEAN /STATISTICS SE COUNT.",
+                f"OMSEND TAG='ebm_cs_{i}'.",
+                f"DATASET ACTIVATE ebm_cs_{i}.", "COMPUTE ebm_khoa = 1.", "EXECUTE.",
+                f"DATASET ACTIVATE ebm_tl_{i}.", f"SORT CASES BY {cum}.", "COMPUTE ebm_moi = 1.",
+                f"IF ($CASENUM > 1) ebm_moi = ({cum} <> LAG({cum})).",
+                "AGGREGATE /OUTFILE=* /BREAK=ebm_khoa /ebm_n = N /ebm_e = SUM(ebm_y) /ebm_k = SUM(ebm_moi).",
+                # chiều ghép: bộ đã gộp là /FILE, bảng OMS là /TABLE (chiều ngược lại SPSS 31 báo lỗi cú pháp)
+                f"MATCH FILES /FILE=* /TABLE=ebm_cs_{i} /BY ebm_khoa.",
+                "COMPUTE ebm_p = ebm_e / ebm_n.",
+                "COMPUTE ebm_vs = ebm_p * (1 - ebm_p) / ebm_n.",
+                "COMPUTE ebm_de = 1.",
+                "IF (ebm_vs > 0) ebm_de = MAX(1, StandardError ** 2 / ebm_vs).",
+                "COMPUTE ebm_z = IDF.NORMAL(0.975, 0, 1).",
+                "COMPUTE ebm_hs = (ebm_z / IDF.T(0.975, ebm_k - 1)) ** 2.",
+                "COMPUTE ebm_nh = ebm_n / ebm_de * ebm_hs.",
+                "COMPUTE ebm_mau = 1 + ebm_z ** 2 / ebm_nh.",
+                "COMPUTE ebm_tam = (ebm_p + ebm_z ** 2 / (2 * ebm_nh)) / ebm_mau.",
+                "COMPUTE ebm_nua = ebm_z * SQRT(ebm_p * (1 - ebm_p) / ebm_nh + ebm_z ** 2 / (4 * ebm_nh ** 2))"
+                " / ebm_mau.",
+                "COMPUTE ebm_lo = MAX(0, ebm_tam - ebm_nua).",
+                "COMPUTE ebm_hi = MIN(1, ebm_tam + ebm_nua).",
+            ]
+            khoi(f"ty_le_cum_{i}", ["SUMMARIZE /TABLES=ebm_n ebm_e ebm_k ebm_p StandardError ebm_de ebm_lo ebm_hi",
+                                    "  /FORMAT=LIST NOCASENUM NOTOTAL /CELLS=NONE."])  # fmt: skip
+            dong.append(f"DATASET CLOSE ebm_cs_{i}.")
+        dong += ["DATASET ACTIVATE ebm_goc.", f"DATASET CLOSE ebm_tl_{i}."]
+    return dong
 
 
 def bien_ten(man: dict, ten: str) -> dict:
@@ -2371,10 +2465,10 @@ def lenh_cu_phap(args) -> int:
     man = them_loc(args.study, them_bien_phai_sinh(args.study, man, args.gate), args.gate)
     dt = dac_ta(args)
     man = them_bien_gia(man, dt)
-    if not dt["outcome"] and not (dt["time"] and dt["event"]):
+    if not dt["outcome"] and not (dt["time"] and dt["event"]) and not dt.get("ty_le"):
         raise TuChoi(
             "thiếu đặc tả: chưa có G6_analysis_summary.json với khoá dac_ta_phan_tich — truyền --outcome/--group/"
-            "--covariates (hoặc --time/--event) như run_stats_analysis.py"
+            "--covariates (hoặc --time/--event, hoặc tỷ lệ --ty-le) như run_stats_analysis.py"
         )
     d = thu_muc_de_tai(args.study)
     kq = d / "spss" / "ket_qua"
@@ -2547,6 +2641,36 @@ def doc_ket_qua(thu_muc_kq: Path, dt: dict, man: dict) -> dict:
     bs = bang("poisson_hieu_chinh", "parameterestimates")
     if bs:
         ra["poisson_hieu_chinh"] = {"thang": "PR", "he_so": doi_ten(he_so(bs[-1], mu=True))}
+    tl = doc_ty_le(thu_muc_kq, dt)
+    if tl:
+        ra["ty_le"] = tl
+    return ra
+
+
+def doc_ty_le(thu_muc_kq: Path, dt: dict) -> dict:
+    """Bảng 1b từ OXML: PROPORTIONS (Wilson độc lập) + bảng SUMMARIZE của khối theo cụm ⇒ {cột: {...}}."""
+    ra: dict = {}
+    for i, cot in enumerate(dt.get("ty_le") or [], 1):
+        mot: dict = {}
+        p = thu_muc_kq / f"oms_ty_le_{i}.xml"
+        bs = [b for b in phang_oxml(p) if _chuan_bang(b["bang"]) == "onesampleproportionsconfidenceintervals"] \
+            if p.exists() else []
+        if bs:
+            o = {tuple(x["cot"]): x["so"] for x in bs[-1]["o"]}
+            n, e = o.get(("Observed", "Trials")), o.get(("Observed", "Successes"))
+            mot.update(n=int(n) if n is not None else None, so_su_kien=int(e) if e is not None else None,
+                       ty_le=o.get(("Observed", "Proportion")),
+                       ci_doc_lap=[o.get(("95% Confidence Interval", "Lower")),
+                                   o.get(("95% Confidence Interval", "Upper"))])  # fmt: skip
+        p = thu_muc_kq / f"oms_ty_le_cum_{i}.xml"
+        bs = [b for b in phang_oxml(p) if _chuan_bang(b["bang"]) == "report"] if p.exists() else []
+        if bs:
+            o = {(x["cot"] or [""])[-1].strip(): x["so"] for x in bs[-1]["o"]}
+            mot.update(n_cum=int(o["ebm_n"]) if o.get("ebm_n") is not None else None,
+                       so_cum=int(o["ebm_k"]) if o.get("ebm_k") is not None else None, ty_le_cum=o.get("ebm_p"),
+                       se_thiet_ke=o.get("StandardError"), de=o.get("ebm_de"), ci=[o.get("ebm_lo"), o.get("ebm_hi")])
+        if mot:
+            ra[cot] = mot
     return ra
 
 
@@ -2925,6 +3049,94 @@ def quy_doi_cr0_cr1(sp: dict, so_cum: int, n: int, k: int, ty_so: bool) -> dict 
 GHI_CHU_CR0_CR1 = "SPSS GEE robust (CR0 + z) đã quy đổi sang CR1 + t(G−1): SE × √(G/(G−1)·(N−1)/(N−K))"
 
 
+#: (23/11/2026, việc (2)) Hồi quy THỨ TỰ theo cụm: SPSS GENLIN MULTINOMIAL CUMLOGIT /REPEATED CORRTYPE=INDEPENDENT
+#: COVB=ROBUST cho β trùng statsmodels nhưng SE KHÔNG phải CR0 của Python: đo trên dữ liệu 600 ca, 30 cụm — SPSS
+#: nhom 0,2055564 · tuoi 0,0070874; statsmodels CR0 0,2083790 · 0,0068475 (tỷ số 0,986 và 1,035 — ngược chiều, không
+#: có hệ số đóng nào quy đổi được). Tái lập bằng tay: sandwich CR0 với bánh mì THÔNG TIN KỲ VỌNG (Fisher) cho đúng số
+#: SPSS tới 7–8 chữ số; bánh mì −Hessian QUAN SÁT cho đúng statsmodels. Liên kết cumulative logit không chính tắc nên
+#: hai bánh mì khác nhau theo dữ liệu ⇒ công thức quy đổi riêng: Python ghi kèm SE bánh mì Fisher CR0
+#: (run_stats_analysis.se_cr0_fisher_thu_tu) ⇒ SE_qđ = SE_SPSS × SE_Python / SE_Fisher_CR0_Python, KTC/p theo t(G−1).
+#: SE_qđ trùng SE Python ⇔ SE của SPSS trùng SE bánh mì Fisher mà Python tính từ CÙNG điểm số theo cụm — vẫn so với
+#: dung sai chặt như mọi dòng.
+GHI_CHU_THU_TU_CUM = ("SPSS GEE thứ tự (sandwich CR0, bánh mì Fisher, z) đã quy đổi sang bánh mì Hessian quan sát CR1 "
+                      "+ t(G−1) của Python: SE × SE_Python / SE_Fisher_CR0_Python")
+
+
+def quy_doi_thu_tu_cum(sp: dict, r_py: dict, so_cum: int) -> dict | None:
+    """Kết quả GEE thứ tự theo cụm của SPSS ⇒ cùng phương pháp Python. None khi tóm tắt Python thiếu SE để quy đổi."""
+    from scipy import stats as st  # noqa: PLC0415
+
+    se_py, se_f = r_py.get("se"), r_py.get("se_cr0_fisher")
+    ci = sp.get("ci") or [None, None]
+    if not se_py or not se_f or not so_cum or so_cum < 2 or None in ci or not sp.get("uoc_luong"):
+        return None
+    b, lo, hi = (math.log(x) for x in (sp["uoc_luong"], *ci))
+    se1 = (hi - lo) / (2 * Z_975) * float(se_py) / float(se_f)
+    q = float(st.t.ppf(0.975, so_cum - 1))
+    return {"uoc_luong": sp["uoc_luong"], "ci": [math.exp(b - q * se1), math.exp(b + q * se1)],
+            "p": float(2 * st.t.sf(abs(b / se1), so_cum - 1)) if se1 > 0 else None}
+
+
+#: Bảng 1b là phép TẤT ĐỊNH (không lấy mẫu, không lặp): SPSS/R và Python phải trùng tới đơn vị làm tròn của tóm tắt
+#: Python — tỷ lệ/KTC làm tròn 4 chữ số lẻ (nửa đơn vị 0,00005), DE 3 chữ số (0,0005). Dung sai chung TOL_UOC/TOL_CI
+#: (0,5 %/1,5 %) quá lỏng cho phép này: bỏ K/(K−1) chỉ dời cận KTC ≈ 0,001 — vẫn lọt dung sai chung.
+DUNG_SAI_TY_LE, DUNG_SAI_DE = 0.00005, 0.0005
+
+
+def _dong_tat_dinh(muc: str, py: dict, sp: dict, tran: float, n_py=None, n_sp=None) -> dict:
+    """Một dòng phép tất định: ước lượng và cận KTC lệch ≤ `tran` (đơn vị làm tròn của Python), cùng SỐ CA."""
+    kt = {"uoc_luong": _gan(sp.get("uoc_luong"), py.get("uoc_luong"), tran=tran)}
+    ci_py, ci_sp = py.get("ci"), sp.get("ci")
+    co_py = bool(ci_py) and None not in ci_py
+    co_sp = bool(ci_sp) and None not in ci_sp
+    kt["ci"] = all(_gan(a, b, tran=tran) for a, b in zip(ci_sp, ci_py)) if co_py and co_sp else None
+    ghi = []
+    if kt["uoc_luong"] is None or (co_py != co_sp):
+        tt = "khong_so_duoc"
+        ghi.append("một phía thiếu số" + (" (KTC)" if co_py != co_sp else ""))
+    elif all(v for v in kt.values() if v is not None):
+        tt = "khop"
+    else:
+        tt = "lech"
+    if n_py is not None and n_sp is not None and int(n_py) != int(n_sp):
+        tt = "lech"
+        ghi.append(f"SỐ CA KHÁC: Python {n_py}, SPSS {n_sp}")
+    ghi.append(f"phép tất định — dung sai đơn vị làm tròn của Python ±{tran:g}")
+    return {"muc": muc, "python": py, "spss": sp, "kiem": kt, "trang_thai": tt, "ghi_chu": " · ".join(ghi),
+            "n": {"python": n_py, "spss": n_sp}}
+
+
+def doi_chieu_ty_le(tom: dict, kq: dict) -> list[dict]:
+    """Bảng 1b: tỷ lệ + KTC Wilson độc lập (PROPORTIONS) và theo cụm (CSDESCRIPTIVES + n/DE·(z/t)²) + DE."""
+    ds, sk = [x for x in tom.get("ty_le") or [] if isinstance(x, dict)], kq.get("ty_le")
+    if not ds:
+        return [] if not sk else [_khong_so("Tỷ lệ Wilson (Bảng 1b)", "SPSS tính tỷ lệ mà Python không có")]
+    if not sk:
+        return [_khong_so("Tỷ lệ Wilson (Bảng 1b) — toàn bộ", "SPSS không ra bảng tỷ lệ (xem nhật ký chạy)")]
+    ra = []
+    for x in ds:
+        cot = x.get("cot")
+        s = sk.get(cot) or {}
+        if x.get("error"):
+            ra.append(_khong_so(f"Tỷ lệ — {cot}", f"Python lỗi: {x['error']}", sp={"uoc_luong": s.get("ty_le")}))
+            continue
+        if not s:
+            ra.append(_khong_so(f"Tỷ lệ — {cot}", "SPSS không có cột này", py={"uoc_luong": x.get("ty_le")}))
+            continue
+        ra.append(_dong_tat_dinh(f"Tỷ lệ + KTC Wilson độc lập — {cot}",
+                                 {"uoc_luong": x.get("ty_le"), "ci": x.get("CI_95_wilson_doc_lap")},
+                                 {"uoc_luong": s.get("ty_le"), "ci": s.get("ci_doc_lap")}, DUNG_SAI_TY_LE,
+                                 x.get("n"), s.get("n")))  # fmt: skip
+        if x.get("CI_95") is not None or s.get("ci") is not None:
+            ra.append(_dong_tat_dinh(f"Tỷ lệ + KTC Wilson theo cụm (n/DE·(z/t)²) — {cot}",
+                                     {"uoc_luong": x.get("ty_le"), "ci": x.get("CI_95")},
+                                     {"uoc_luong": s.get("ty_le_cum"), "ci": s.get("ci")}, DUNG_SAI_TY_LE,
+                                     x.get("n"), s.get("n_cum")))  # fmt: skip
+            ra.append(_dong_tat_dinh(f"Hiệu ứng thiết kế (DE) — {cot}", {"uoc_luong": x.get("hieu_ung_thiet_ke")},
+                                     {"uoc_luong": s.get("de")}, DUNG_SAI_DE, x.get("n"), s.get("n_cum")))
+    return ra
+
+
 def doi_chieu(tom: dict, kq: dict) -> list[dict]:
     """Mọi mục Python CÓ (hoặc báo lỗi/bỏ qua) đều sinh một dòng — không bỏ dòng im lặng (bản cũ báo «1 khớp, mã 0»
     khi Python lỗi hoặc SPSS thiếu bảng)."""
@@ -2995,9 +3207,14 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                 )
                 continue
             sp_so = {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]}
-            qd = (quy_doi_cr0_cr1(sp_so, int((mv.get("cluster") or {}).get("so_cum") or 0), int(mv.get("n") or 0),
-                                  len(mv.get("results") or []) + 1, ty_so)
-                  if cum and not co_thu_tu else None)
+            so_cum_mv = int((mv.get("cluster") or {}).get("so_cum") or 0)
+            if cum and co_thu_tu:  # 23/11/2026: GEE thứ tự — bánh mì Fisher CR0 + z ⇒ quy đổi theo SE Python ghi
+                qd = quy_doi_thu_tu_cum(sp_so, r, so_cum_mv)
+                ghi_qd = GHI_CHU_THU_TU_CUM
+            else:
+                qd = (quy_doi_cr0_cr1(sp_so, so_cum_mv, int(mv.get("n") or 0), len(mv.get("results") or []) + 1,
+                                      ty_so) if cum else None)
+                ghi_qd = GHI_CHU_CR0_CR1
             dong.append(
                 so_mot(
                     f"{ten_mv} ({mv.get('model', '?')}) — {v}",
@@ -3006,7 +3223,8 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                     phuong_phap_khac=(
                         None
                         if qd is not None
-                        else "hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich có hiệu chỉnh mẫu nhỏ (Python)"
+                        else "hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich có hiệu chỉnh mẫu nhỏ (Python) — tóm tắt "
+                        "thiếu số để quy đổi (chạy lại run_stats_analysis bản ≥ 23/11/2026)"
                         if cum
                         else "statsmodels lấy SE từ Hessian xấp xỉ"
                         if mv.get("model") == "ordinal_logit_po"
@@ -3017,7 +3235,7 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                 )
             )
             if qd is not None:
-                dong[-1]["ghi_chu"] = " · ".join(x for x in (dong[-1]["ghi_chu"], GHI_CHU_CR0_CR1) if x)
+                dong[-1]["ghi_chu"] = " · ".join(x for x in (dong[-1]["ghi_chu"], ghi_qd) if x)
                 dong[-1]["spss_goc"] = sp_so
     pr = tom.get("poisson_pr")
     if pr is not None:
@@ -3080,15 +3298,18 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                 lam_tron=LAM_TRON["ty_so"],
             )
         )
+    dong += doi_chieu_ty_le(tom, kq)
     return dong
 
 
 def lech_dac_ta(dt_spss: dict, dt_py: dict, tom: dict) -> list[str]:
     """Đặc tả SPSS đã chạy khác đặc tả Python ở đâu (rỗng = trùng)."""
     ra = []
-    for k in ("outcome", "group", "time", "event", "cot_cum", "loc"):
+    for k in ("outcome", "group", "time", "event", "cot_cum", "loc", "nguong_ty_le"):
         if (dt_spss.get(k) or None) != (dt_py.get(k) or None):
             ra.append(f"{k}: SPSS {dt_spss.get(k)!r} · Python {dt_py.get(k)!r}")
+    if dt_py.get("ty_le") is not None and list(dt_spss.get("ty_le") or []) != list(dt_py.get("ty_le") or []):
+        ra.append(f"ty_le: SPSS {dt_spss.get('ty_le')} · Python {dt_py.get('ty_le')}")
     if sorted(dt_spss.get("covariates") or []) != sorted(dt_py.get("covariates") or []):
         ra.append(f"covariates: SPSS {dt_spss.get('covariates')} · Python {dt_py.get('covariates')}")
     lo_s, lo_p = dt_spss.get("outcome_type"), dt_py.get("outcome_type")

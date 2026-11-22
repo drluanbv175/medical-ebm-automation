@@ -1725,6 +1725,46 @@ def ap_don_vi_phoi_nhiem(df: pd.DataFrame, cot: str, don_vi) -> pd.DataFrame:
     return ra
 
 
+def se_cr0_fisher_thu_tu(model, X: pd.DataFrame, ma_y: np.ndarray, nhom_cum: np.ndarray) -> list | None:
+    """SE sandwich theo cụm CR0 với bánh mì THÔNG TIN KỲ VỌNG (Fisher) cho hệ số dốc của OrderedModel logit — CHỈ để
+    đối chiếu SPSS, không thay SE chính.
+
+    23/11/2026 (đo trên dữ liệu thứ tự 600 ca, 30 cụm): SPSS GENLIN MULTINOMIAL CUMLOGIT /REPEATED CORRTYPE=INDEPENDENT
+    COVB=ROBUST cho β TRÙNG statsmodels nhưng SE = sandwich CR0 với bánh mì Fisher Σᵢ Σⱼ Pᵢⱼ sᵢⱼ sᵢⱼᵀ (trùng 7–8 chữ
+    số), còn statsmodels dùng bánh mì −Hessian QUAN SÁT rồi CR1 G/(G−1)·(N−1)/(N−K) (K = hệ số dốc + ngưỡng) và
+    t(G−1). Với liên kết cumulative logit (không chính tắc) hai bánh mì khác nhau theo dữ liệu, không theo một hệ số
+    đóng ⇒ cầu nối SPSS cần đúng con số này để quy đổi (cau_noi_spss.quy_doi_thu_tu_cum)."""
+    try:
+        from scipy.stats import logistic  # noqa: PLC0415
+
+        k = X.shape[1]
+        beta = np.asarray(model.params, dtype=float)[:k]
+        nguong = np.asarray(model.model.transform_threshold_params(model.params), dtype=float)  # [−∞, θ…, +∞]
+        xa = X.to_numpy(dtype=float)
+        eta = nguong[None, :] - (xa @ beta)[:, None]
+        fe = logistic.pdf(eta)
+        P = np.diff(logistic.cdf(eta), axis=1)  # n × J
+        n, J = P.shape
+        with np.errstate(divide="ignore", invalid="ignore"):
+            S = np.zeros((n, J, k + J - 1))
+            S[:, :, :k] = (-(fe[:, 1:] - fe[:, :-1]) / P)[:, :, None] * xa[:, None, :]
+            for j in range(J):
+                if j < J - 1:
+                    S[:, j, k + j] += fe[:, j + 1] / P[:, j]
+                if j > 0:
+                    S[:, j, k + j - 1] -= fe[:, j] / P[:, j]
+        if not np.isfinite(S).all():
+            return None
+        I_kv = np.einsum("nj,nja,njb->ab", P, S, S)
+        s_y = S[np.arange(n), np.asarray(ma_y, dtype=int)]
+        tong = pd.DataFrame(s_y).groupby(np.asarray(nhom_cum)).sum().to_numpy()
+        B = np.linalg.inv(I_kv)
+        V = B @ (tong.T @ tong) @ B
+        return [float(x) for x in np.sqrt(np.diag(V))[:k]]
+    except Exception:  # noqa: BLE001 — chỉ số phụ cho kiểm chéo; không tính được thì bỏ, không làm hỏng mô hình chính
+        return None
+
+
 def ordinal_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: list,
                   cluster_col: str | None = None) -> dict:
     """Hồi quy logistic thứ tự (proportional odds, statsmodels OrderedModel) → OR hiệu chỉnh + KTC 95%.
@@ -1786,6 +1826,13 @@ def ordinal_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates
                                round(float(np.exp(conf.loc[v, 1])), 3)],
                      "p": round(float(model.pvalues[v]), 4)}
         results.append(_gan_co_khong_hoi_tu(entry, ly_do, ("OR_adj", "CI_95", "p")))
+    if cluster_col:  # 23/11/2026: SE chính chưa làm tròn + SE bánh mì Fisher CR0 — để cầu nối SPSS quy đổi GEE robust
+        se_f = se_cr0_fisher_thu_tu(model, X, np.asarray(y.cat.codes), pd.factorize(data[cluster_col])[0])
+        for k_, (v, r) in enumerate(zip(bien, results)):
+            r["se"] = float(bse[v])
+            if se_f is not None:
+                r["se_cr0_fisher"] = se_f[k_]
+        out["k_tham_so"] = int(len(model.params))
     out.update({"results": results, "aic": round(float(model.aic), 2),
                 "cov_type": "cluster" if cluster_col else "nonrobust",
                 "convergence": model.mle_retvals.get("converged", True)})

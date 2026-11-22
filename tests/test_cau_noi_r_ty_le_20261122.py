@@ -4,7 +4,8 @@ Trước đây mọi phân tích cắt ngang chỉ mô tả (tỷ lệ Wilson) g
 tái lập. Nay script R tính lại ĐỘC LẬP — KTC Wilson lấy từ `stats::prop.test(correct = FALSE)` (cài đặt riêng của R),
 DE từ phương sai tuyến tính hoá theo cụm, hiệu chỉnh bậc tự do (z/t_{K−1})² (Dean & Pagano 2015) — và `doi_chieu` so
 với dung sai bằng ĐƠN VỊ LÀM TRÒN của tóm tắt Python (phép tất định: không có sai số Monte Carlo). `kiem_cheo_g6` chấm
-được: R khớp ⇒ cả lượt KHỚP; SPSS ghi «không đo được» kèm lý do kỹ thuật. Dữ liệu mô phỏng, không PII.
+được: R khớp ⇒ cả lượt KHỚP. Bản SPSS (23/11/2026): tests/test_cau_noi_spss_ty_le_20261123.py.
+Dữ liệu mô phỏng, không PII.
 """
 
 from __future__ import annotations
@@ -232,11 +233,10 @@ def test_that_ty_le_cum_co_nguong_python_khop_r_va_kiem_cheo_g6_khop(tmp_path, m
     for phia in ("python", "r"):
         assert _tim_lai(cum_dong[phia], 0.6), (phia, cum_dong[phia])
     monkeypatch.setattr(KC, "EXPORTS", S.EXPORTS)
-    with contextlib.redirect_stdout(io.StringIO()):
-        assert KC.main(["chay", "--study", "TY-CUM"]) == 0
+    with contextlib.redirect_stdout(io.StringIO()):  # phần SPSS: tests/test_cau_noi_spss_ty_le_20261123.py
+        assert KC.main(["chay", "--study", "TY-CUM", "--chi", "r"]) == 0
     kc = json.loads((S.EXPORTS / "TY-CUM" / "G6_kiem_cheo.json").read_text(encoding="utf-8"))
     assert kc["trang_thai"] == KC.KHOP and kc["phan_mem"]["r"]["trang_thai"] == KC.KHOP, kc
-    assert kc["phan_mem"]["spss"]["trang_thai"] == KC.KHONG_DO_DUOC and kc["phan_mem"]["spss"]["ly_do"]
 
 
 @CAN_R
