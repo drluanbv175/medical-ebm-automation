@@ -54,3 +54,14 @@ def test_kiem_goi_k10(tmp_path):
     (tmp_path / f"DE_CUONG_NOP_HOI_DONG_{s}.md").write_text(_md("Tỷ lệ 30% ở người cao tuổi."), encoding="utf-8",
                                                            newline="\n")
     assert any(x.startswith("K10") for x in K.kiem(tmp_path, s))
+
+
+def test_muc_tin_cay_va_muc_y_nghia_la_quy_uoc_khong_phai_so_lieu():
+    # 22/11/2026: Hội đồng Khoa học máy — «khoảng tin cậy 95%» trong dự kiến bàn luận bị bắt nhầm ⇒ bản sửa bị loại.
+    assert K.loi_k10(_md("Diễn giải tỷ số chênh theo độ lớn và khoảng tin cậy 95%, không chỉ dựa vào giá trị p.")) == []
+    assert K.loi_k10(_md("Ước lượng kèm KTC 95% và kiểm định ở mức ý nghĩa 5%.")) == []
+    assert K.loi_k10(_md("Báo cáo hiệu ứng kèm 95% CI.")) == []
+    # có cận số theo sau ⇒ vẫn là KẾT QUẢ, vẫn phải có nguồn
+    assert len(K.loi_k10(_md("Tỷ số chênh 1,8 (khoảng tin cậy 95%: 1,1–2,9) ở nhóm chờ lâu."))) == 1
+    assert len(K.loi_k10(_md("Nguy cơ tăng rõ, KTC 95% 1,2–3,4 ở người cao tuổi."))) == 1
+    assert len(K.loi_k10(_md("Khoảng tin cậy 95% gồm cả 1, tỷ lệ 30% ở nhóm chờ lâu."))) == 1

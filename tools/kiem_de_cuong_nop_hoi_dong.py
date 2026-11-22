@@ -227,6 +227,14 @@ _SO_KET_QUA_RE = re.compile(
     r"|\b(?:a?OR|AOR|aPR|PR|RR|HR|IRR)\s*[=:]?\s*\d"           # thước đo hiệu ứng
     r"|\bKTC\s*95|\b95\s*%\s*CI"                                # khoảng tin cậy
     r"|\d\s*±\s*\d")                                            # trung bình ± độ lệch chuẩn
+# 22/11/2026 (đo thật, Hội đồng Khoa học máy QC-HDKH-2.0 trên C1a): «diễn giải tỷ số chênh theo độ lớn và khoảng tin cậy
+# 95%» trong «Dự kiến bàn luận» bị K10 coi là số liệu không nguồn ⇒ bản bổ sung bàn luận mục tiêu 2 bị loại hai lần. Mức
+# tin cậy/mức ý nghĩa là QUY ƯỚC PHƯƠNG PHÁP, không phải kết quả nghiên cứu. Chỉ bỏ cụm quy ước khi KHÔNG có cận số theo
+# sau — «KTC 95%: 0,28–0,98», «khoảng tin cậy 95% (1,1–2,3)» vẫn là kết quả và vẫn phải có nguồn.
+_QUY_UOC_MUC_RE = re.compile(
+    r"(?:khoảng tin cậy|KTC|độ tin cậy|mức tin cậy|mức ý nghĩa)\s*(?:là\s*)?\d+(?:[.,]\d+)?\s?%"
+    r"(?!\s*[:=]?\s*\(?\s*\d)"
+    r"|\b\d+(?:[.,]\d+)?\s?%\s*CI\b(?!\s*[:=]?\s*\(?\s*\d)", re.I)
 _TRICH_DAN_RE = re.compile(r"\[\d+(?:\s*[–,-]\s*\d+)*\]")
 _HET_CAU_RE = re.compile(r"(?<=[.!?])\s+(?=[A-ZÀ-Ỹ\[(«])")
 
@@ -268,7 +276,7 @@ def loi_k10(md: str) -> List[str]:
             continue
         for cau in _HET_CAU_RE.split(s):
             for md_ in _menh_de(cau):
-                if _SO_KET_QUA_RE.search(md_) and not _TRICH_DAN_RE.search(md_):
+                if _SO_KET_QUA_RE.search(_QUY_UOC_MUC_RE.sub(" ", md_)) and not _TRICH_DAN_RE.search(md_):
                     loi.append(f"K10 dòng {so}: số liệu không có trích dẫn trong cùng mệnh đề — «{md_[:90]}» "
                                "(không có nguồn thật trong danh mục ⇒ loại con số)")
     return loi
