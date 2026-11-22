@@ -651,6 +651,9 @@ def ve_forest(ds: Sequence[Dict[str, Any]], do: str, dich: Path, phuong_phap: st
     trong_so = dict(zip([id(e) for e in ds], g_tong["trong_so_pt"]))
     hang: List[Dict[str, Any]] = []
     ket_nhom: Dict[str, Dict[str, Any]] = {}
+    # 22/11/2026: kiểm định khác biệt giữa nhóm dùng MỌI phân nhóm, kể cả phân nhóm chỉ một nghiên cứu (ước lượng của
+    # chính nó) — như RevMan và metafor (rma trên ước lượng nhóm); trùng `phan_tich_thiet_ke_dac_thu.phan_nhom_gop` (G6)
+    uoc_nhom: Dict[str, Dict[str, Any]] = {}
     for ten_nhom in (nhom_ds if co_nhom else [""]):
         cac = [e for e in ds if (e["nhom"] == ten_nhom or not co_nhom)]
         if co_nhom:
@@ -659,10 +662,12 @@ def ve_forest(ds: Sequence[Dict[str, Any]], do: str, dich: Path, phuong_phap: st
         if co_nhom:
             if len(cac) >= 2:
                 gn = gop([e["yi"] for e in cac], [e["vi"] for e in cac], phuong_phap, hk)
-                ket_nhom[ten_nhom] = gn
+                ket_nhom[ten_nhom] = uoc_nhom[ten_nhom] = gn
                 hang.append({"loai": "kim_cuong", "g": gn, "chu": "Phân nhóm" if ngon_ngu == "vi" else "Subtotal",
                              "trong_so": sum(trong_so[id(e)] for e in cac)})
                 hang.append({"loai": "chu", "chu": _dong_khong_dong_nhat(gn, ngon_ngu), "nho": True})
+            elif cac:
+                uoc_nhom[ten_nhom] = {"mu": cac[0]["yi"], "se": math.sqrt(cac[0]["vi"])}
             hang.append({"loai": "trong"})
     ten_mh = nhan("gop_co_dinh" if phuong_phap.upper() == "FE" else "gop_ngau_nhien", ngon_ngu)
     if hk:
@@ -674,8 +679,8 @@ def ve_forest(ds: Sequence[Dict[str, Any]], do: str, dich: Path, phuong_phap: st
     hang.append({"loai": "chu", "nho": True, "chu": f"{nhan('kiem_dinh_tong', ngon_ngu)}: {'t' if hk else 'z'} = "
                  f"{so(g_tong['thong_ke'], 2, ngon_ngu)}, {BC.p_chu(g_tong['p'], ngon_ngu)}"})
     kiem_nhom = None
-    if co_nhom and len(ket_nhom) >= 2:
-        kiem_nhom = kiem_dinh_khac_biet_nhom(ket_nhom)
+    if co_nhom and len(uoc_nhom) >= 2:
+        kiem_nhom = kiem_dinh_khac_biet_nhom(uoc_nhom)
         hang.append({"loai": "chu", "nho": True,
                      "chu": f"{nhan('khac_biet_nhom', ngon_ngu)}: χ² = {so(kiem_nhom['Q'], 2, ngon_ngu)} "
                             f"(df = {kiem_nhom['df']}), {BC.p_chu(kiem_nhom['p'], ngon_ngu)}"})

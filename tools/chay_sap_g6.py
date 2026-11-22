@@ -96,6 +96,8 @@ THAM_SO = {
     "n_can_thiep": ("--n-can-thiep", "s"),
     "su_kien_chung": ("--su-kien-chung", "s"),
     "n_chung": ("--n-chung", "s"),
+    # 22/11/2026 (PRISMA 2020 mục 20c): phân nhóm tiền định của SAP §7 — gộp riêng từng nhóm + Q giữa nhóm
+    "phan_nhom": ("--phan-nhom", "s"),
     "chu_de": ("--chu-de", "s"),
     # 16/11/2026 (biến thể khó): đánh giá chi phí–hiệu quả đi kèm thử nghiệm — CHEERS 2022
     "nhom": ("--nhom", "s"),
@@ -259,7 +261,8 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
             thieu = [x for x in PTD.LOAI.get(ts["loai_dac_thu"], ()) if ts.get(x) in (None, "", [])]
             if thieu:
                 loi.append(f"{pid}: phân tích {ts['loai_dac_thu']} thiếu tham số: {', '.join(thieu)}")
-            thua = [x for x in ts if x not in (*PTD.LOAI.get(ts["loai_dac_thu"], ()), "loai_dac_thu", "loc")]
+            thua = [x for x in ts if x not in (*PTD.LOAI.get(ts["loai_dac_thu"], ()),
+                                               *PTD.LOAI_TUY_CHON.get(ts["loai_dac_thu"], ()), "loai_dac_thu", "loc")]
             if thua:  # tham số của run_stats_analysis không có nghĩa với phân tích đặc thù — báo ngay khi kiểm
                 loi.append(f"{pid}: tham số không áp dụng cho phân tích {ts['loai_dac_thu']}: {', '.join(thua)}")
         elif not ts.get("outcome") and not ts.get("time") and not ts.get("ty_le"):
@@ -511,6 +514,12 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
             ra["du_bao"] = {"c_statistic": dt_["c_statistic"]["auc"], "brier": dt_["brier"]}
         elif loai == "gop":
             ra["gop"] = {"rr": dt_["rr_gop_ngau_nhien"], "ci_95": dt_["ci_95"], "i2": dt_["i2_pct"], "k": dt_["k"]}
+            eg, pn = dt_.get("egger") or {}, dt_.get("phan_nhom") or {}
+            if eg.get("da_chay"):
+                ra["gop"]["egger_p"] = eg["p"]
+            if pn.get("q_giua_nhom") is not None:
+                ra["gop"] |= {"phan_nhom": pn["bien"], "q_giua_nhom": pn["q_giua_nhom"],
+                              "p_giua_nhom": pn["p_giua_nhom"]}
         elif loai == "kinh_te":
             ra["kinh_te"] = {"icer": dt_["icer"], "delta_c": dt_["delta_c"], "delta_e": dt_["delta_e"],
                              "goc_phan_tu": dt_["goc_phan_tu"], "nmb_tai_wtp": dt_["nmb_tai_wtp"]}

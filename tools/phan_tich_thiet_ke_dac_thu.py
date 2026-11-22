@@ -9,6 +9,9 @@ qua G6 mà KHÔNG có một con số nào (chay_sap_g6 ghi «không tự động
   chan_doan  AUC (thống kê Mann–Whitney, KTC Hanley–McNeil) + độ nhạy/độ đặc hiệu/PPV/NPV tại NGƯỠNG SAP (KTC Wilson).
   du_bao     hồi quy logistic: OR từng yếu tố dự báo, C-statistic (AUC của xác suất dự đoán), điểm Brier.
   gop        RR gộp hiệu ứng ngẫu nhiên DerSimonian–Laird + RR hiệu ứng cố định (nghịch đảo phương sai), τ², Q, I²;
+             (22/11/2026, PRISMA 2020 mục 17/19/20c/21) biến cố/số người từng nhánh của từng nghiên cứu, tổng và hiệu
+             ứng tuyệt đối trên 1000 người, kiểm định Egger khi k ≥ 10 (SAP §5), phân nhóm tiền định `--phan-nhom`
+             (SAP §7: DL riêng từng nhóm + Q giữa nhóm), bảng đặc điểm từng nghiên cứu cho Bảng 1 của tổng quan;
              ô 0 ⇒ cộng 0,5 vào cả bốn ô của nghiên cứu đó (cùng quy ước metafor «only0»).
   dinh_tinh  tần suất từng chủ đề đã mã hoá (mô tả — phân tích chủ đề vẫn là việc của nhóm nghiên cứu).
   kinh_te    (16/11/2026, biến thể khó) đánh giá chi phí–hiệu quả ĐI KÈM thử nghiệm trên dữ liệu cá thể: chi phí và
@@ -33,6 +36,7 @@ import argparse
 import csv
 import json
 import math
+import re
 import shutil
 import subprocess
 import sys
@@ -61,6 +65,8 @@ LOAI = {
     "dinh_tinh": ("chu_de",),
     "kinh_te": ("nhom", "chi_phi", "hieu_qua", "nguong_wtp"),
 }
+#: tham số TUỲ CHỌN theo loại (22/11/2026): gộp — biến phân nhóm tiền định của SAP §7 (Q giữa nhóm)
+LOAI_TUY_CHON = {"gop": ("phan_nhom",)}
 SO_LAP_KT, HAT_GIONG_KT = 2000, 20261115  # bootstrap kinh tế: số lần lặp + seed (ghi vào kết quả, R dùng cùng seed)
 BOI_SO_WTP = (0.0, 0.25, 0.5, 1.0, 1.5, 2.0, 3.0)  # CEAC: λ = bội số × ngưỡng WTP SAP khai
 NHAN_GOC = {"dong_bac": "Đông Bắc (tốn hơn, hiệu quả hơn)", "dong_nam": "Đông Nam (rẻ hơn, hiệu quả hơn)",
@@ -154,32 +160,148 @@ def _o_rr(a: float, n1: float, c: float, n0: float):
     return math.log((a / n1) / (c / n0)), 1 / a - 1 / n1 + 1 / c - 1 / n0
 
 
-def gop(hang: List[Dict[str, Any]], nhan: str, a: str, n1: str, c: str, n0: str) -> Dict[str, Any]:
-    tung = []
-    for r in hang:
-        yi, vi = _o_rr(float(r[a]), float(r[n1]), float(r[c]), float(r[n0]))
-        tung.append({"nghien_cuu": str(r[nhan]), "log_rr": yi, "var": vi, "rr": math.exp(yi),
-                     "ci_95": [math.exp(yi - Z * math.sqrt(vi)), math.exp(yi + Z * math.sqrt(vi))]})
+def _so_dem(v: Any) -> Any:
+    """Số đếm chép từ dữ liệu khoá: giá trị nguyên ⇒ int (tóm tắt ghi «77», không «77.0» — G7 chép nguyên văn)."""
+    f = float(v)
+    return int(f) if f.is_integer() else f
+
+
+def _ma_nhom(v: Any) -> str:
+    """Mã phân nhóm dạng chuỗi, cùng khoá với nhãn lựa chọn của từ điển G5 (pandas đọc mã 2 thành 2.0)."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v).strip()
+
+
+def _gop_dl(tung: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """DerSimonian–Laird + nghịch đảo phương sai trên log RR của các nghiên cứu (`log_rr`, `var`). k = 1 ⇒ τ² = 0, Q = 0
+    (như metafor::rma). Trả cả μ, se ở thang log để phân nhóm kiểm định khác biệt giữa nhóm trên đúng các số này."""
     k = len(tung)
-    if k < 2:
-        raise TuChoi("phân tích gộp cần ≥ 2 nghiên cứu")
     w = [1 / t["var"] for t in tung]
     sw = sum(w)
     tb_co_dinh = sum(wi * t["log_rr"] for wi, t in zip(w, tung)) / sw
     q = sum(wi * (t["log_rr"] - tb_co_dinh) ** 2 for wi, t in zip(w, tung))
-    tau2 = max(0.0, (q - (k - 1)) / (sw - sum(wi * wi for wi in w) / sw))
+    c = sw - sum(wi * wi for wi in w) / sw
+    tau2 = max(0.0, (q - (k - 1)) / c) if c > 0 else 0.0
     ws = [1 / (t["var"] + tau2) for t in tung]
     sws = sum(ws)
     tb = sum(wi * t["log_rr"] for wi, t in zip(ws, tung)) / sws
     se, se_cd = math.sqrt(1 / sws), math.sqrt(1 / sw)
-    for t, wi in zip(tung, ws):
-        t["trong_so_ngau_nhien_pct"] = 100 * wi / sws
     return {"rr_gop_ngau_nhien": math.exp(tb), "ci_95": [math.exp(tb - Z * se), math.exp(tb + Z * se)],
             "rr_gop_co_dinh": math.exp(tb_co_dinh), "ci_95_co_dinh": [math.exp(tb_co_dinh - Z * se_cd),
                                                                         math.exp(tb_co_dinh + Z * se_cd)],
             "tau2": tau2, "q": q, "df": k - 1, "i2_pct": (max(0.0, (q - (k - 1)) / q) * 100) if q > 0 else 0.0,
-            "k": k, "phuong_phap": "DerSimonian–Laird (ngẫu nhiên) + nghịch đảo phương sai (cố định); RR, log",
-            "tung_nghien_cuu": tung}
+            "k": k, "log_rr_gop": tb, "se_log_rr_gop": se, "trong_so": [100 * wi / sws for wi in ws]}
+
+
+#: SAP §5 của khuôn tổng quan («biểu đồ phễu + kiểm định Egger khi ≥ 10 nghiên cứu») = Cochrane Handbook 13.3.5.4
+EGGER_K_TOI_THIEU = 10
+
+
+def egger(yi: Sequence[float], vi: Sequence[float]) -> Dict[str, Any]:
+    """Kiểm định Egger (Egger 1997, PMID 9310563): hồi quy có trọng số 1/vᵢ của log RR theo sai số chuẩn √vᵢ, kiểm hệ
+    số của sai số chuẩn bằng t với k − 2 bậc tự do — cùng phép của metafor::regtest(model = "lm", predictor = "sei") và
+    của biểu đồ phễu (`bieu_do_gop.egger`). Chạy khi k ≥ EGGER_K_TOI_THIEU; dưới ngưỡng ⇒ `da_chay` False kèm lý do."""
+    from scipy import stats  # noqa: PLC0415
+
+    k = len(yi)
+    if k < EGGER_K_TOI_THIEU:
+        return {"da_chay": False, "k": k, "nguong_k": EGGER_K_TOI_THIEU,
+                "ly_do": f"k = {k} < {EGGER_K_TOI_THIEU} nghiên cứu — SAP §5 chỉ kiểm định Egger khi ≥ "
+                         f"{EGGER_K_TOI_THIEU} nghiên cứu (kém lực khi ít hơn, Cochrane Handbook 13.3.5.4)"}
+    x = [math.sqrt(v) for v in vi]
+    w = [1 / v for v in vi]
+    sw, swx, swy = sum(w), sum(a * b for a, b in zip(w, x)), sum(a * b for a, b in zip(w, yi))
+    swxx, swxy = sum(a * b * b for a, b in zip(w, x)), sum(a * b * c for a, b, c in zip(w, x, yi))
+    d = sw * swxx - swx * swx
+    if d <= 1e-12 * sw * swxx:
+        return {"da_chay": False, "k": k, "nguong_k": EGGER_K_TOI_THIEU,
+                "ly_do": "mọi nghiên cứu cùng sai số chuẩn — không ước lượng được hồi quy Egger"}
+    b1 = (sw * swxy - swx * swy) / d
+    b0 = (swy - b1 * swx) / sw
+    s2 = sum(wi * (y - b0 - b1 * xi) ** 2 for wi, xi, y in zip(w, x, yi)) / (k - 2)
+    se_b1 = math.sqrt(s2 * sw / d)
+    t = b1 / se_b1
+    return {"da_chay": True, "k": k, "nguong_k": EGGER_K_TOI_THIEU, "he_so_bat_doi_xung": b1, "se": se_b1,
+            "chan_hoi_quy": b0, "t": t, "df": k - 2, "p": float(2 * stats.t.sf(abs(t), k - 2)),
+            "phuong_phap": "Egger: hồi quy có trọng số 1/v của log RR theo sai số chuẩn, kiểm định t (k − 2 bậc tự "
+                           "do) hệ số của sai số chuẩn — metafor::regtest(model = \"lm\", predictor = \"sei\")"}
+
+
+def khoa_ma_nhom(m: str) -> tuple:
+    """Thứ tự phân nhóm: mã số theo giá trị (1, 2, …, 10), mã chữ sau — bảng §3b của G7 và forest cùng thứ tự."""
+    return (0, float(m), m) if re.fullmatch(r"-?\d+(\.\d+)?", m) else (1, 0.0, m)
+
+
+def phan_nhom_gop(tung: Sequence[Dict[str, Any]], bien: str, nhan_nhom: Optional[Dict[str, str]] = None
+                  ) -> Dict[str, Any]:
+    """Phân nhóm tiền định (SAP §7): gộp DL RIÊNG từng phân nhóm (τ² riêng, như RevMan và metafor fit từng tập con) rồi
+    kiểm định khác biệt giữa nhóm Q = Σ w_g (μ_g − μ̄)², w_g = 1/se_g², df = G − 1 — tương đương metafor::rma(yi = μ_g,
+    sei = se_g, method = "FE")$QE. Phân nhóm chỉ một nghiên cứu vẫn vào kiểm định bằng chính ước lượng của nó."""
+    from scipy import stats  # noqa: PLC0415
+
+    nhan_nhom = nhan_nhom or {}
+    ma = sorted({t["nhom"] for t in tung}, key=khoa_ma_nhom)
+    nhom = []
+    for m in ma:
+        con = [t for t in tung if t["nhom"] == m]
+        g = _gop_dl(con)
+        nhom.append({"ma": m, "nhan": nhan_nhom.get(m, m), "k": g["k"], "rr": g["rr_gop_ngau_nhien"],
+                     "ci_95": g["ci_95"], "tau2": g["tau2"], "q": g["q"], "df": g["df"], "i2_pct": g["i2_pct"],
+                     "log_rr": g["log_rr_gop"], "se_log_rr": g["se_log_rr_gop"],
+                     "nghien_cuu": [t["nghien_cuu"] for t in con]})
+    ra: Dict[str, Any] = {"bien": bien, "nhom": nhom, "so_nhom": len(nhom),
+                          "phuong_phap": "Gộp DerSimonian–Laird riêng từng phân nhóm; kiểm định khác biệt giữa nhóm Q "
+                                         "= Σ w_g (μ_g − μ̄)², w_g = 1/se_g², χ² với G − 1 bậc tự do"}
+    if len(nhom) < 2:
+        return ra | {"ly_do": "chỉ có một phân nhóm trong dữ liệu — không kiểm định khác biệt giữa nhóm"}
+    wg = [1 / g["se_log_rr"] ** 2 for g in nhom]
+    mbar = sum(w * g["log_rr"] for w, g in zip(wg, nhom)) / sum(wg)
+    qb = sum(w * (g["log_rr"] - mbar) ** 2 for w, g in zip(wg, nhom))
+    return ra | {"q_giua_nhom": qb, "df_giua_nhom": len(nhom) - 1,
+                 "p_giua_nhom": float(stats.chi2.sf(qb, len(nhom) - 1))}
+
+
+def gop(hang: List[Dict[str, Any]], nhan: str, a: str, n1: str, c: str, n0: str, phan_nhom: Optional[str] = None,
+        nhan_nhom: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+    tung = []
+    for r in hang:
+        yi, vi = _o_rr(float(r[a]), float(r[n1]), float(r[c]), float(r[n0]))
+        tung.append({"nghien_cuu": str(r[nhan]), "log_rr": yi, "var": vi, "rr": math.exp(yi),
+                     "ci_95": [math.exp(yi - Z * math.sqrt(vi)), math.exp(yi + Z * math.sqrt(vi))],
+                     # 22/11/2026 (PRISMA 2020 mục 19): thống kê tóm tắt TỪNG NHÁNH của từng nghiên cứu — số chép
+                     # nguyên từ dữ liệu khoá (trước chỉ có log RR/var); hiệu chỉnh 0,5 khi có ô 0 ghi rõ
+                     "su_kien_can_thiep": _so_dem(r[a]), "n_can_thiep": _so_dem(r[n1]),
+                     "su_kien_chung": _so_dem(r[c]), "n_chung": _so_dem(r[n0]),
+                     "hieu_chinh_o_0": bool(min(float(r[a]), float(r[c])) == 0 or float(r[a]) == float(r[n1])
+                                            or float(r[c]) == float(r[n0])),
+                     **({"nhom": _ma_nhom(r[phan_nhom])} if phan_nhom else {})})
+    k = len(tung)
+    if k < 2:
+        raise TuChoi("phân tích gộp cần ≥ 2 nghiên cứu")
+    g = _gop_dl(tung)
+    for t, wi in zip(tung, g.pop("trong_so")):
+        t["trong_so_ngau_nhien_pct"] = wi
+    tong = {x: _so_dem(sum(float(t[x]) for t in tung))
+            for x in ("su_kien_can_thiep", "n_can_thiep", "su_kien_chung", "n_chung")}
+    tong["nguoi"] = _so_dem(float(tong["n_can_thiep"]) + float(tong["n_chung"]))
+    # Hiệu ứng tuyệt đối dự kiến của bảng tóm tắt phát hiện (GRADE, khuôn GRADEpro): nguy cơ nhóm chứng = tỷ lệ gộp thô
+    # nhóm chứng; hiệu số trên 1000 người = 1000 · nguy cơ chứng · (RR − 1), KTC từ KTC của RR gộp ngẫu nhiên.
+    ncc = float(tong["su_kien_chung"]) / float(tong["n_chung"])
+    rr, (lo, hi) = g["rr_gop_ngau_nhien"], g["ci_95"]
+    ra = {**{x: v for x, v in g.items() if x not in ("log_rr_gop", "se_log_rr_gop")},
+          "phuong_phap": "DerSimonian–Laird (ngẫu nhiên) + nghịch đảo phương sai (cố định); RR, log",
+          "tung_nghien_cuu": tung, "tong": tong,
+          "hieu_ung_tuyet_doi": {"nguy_co_nhom_chung": ncc, "bien_co_chung_moi_1000": 1000 * ncc,
+                                 "bien_co_can_thiep_moi_1000": 1000 * ncc * rr,
+                                 "hieu_so_moi_1000": 1000 * ncc * (rr - 1),
+                                 "ci_95_hieu_so_moi_1000": [1000 * ncc * (lo - 1), 1000 * ncc * (hi - 1)],
+                                 "cach_tinh": "nguy cơ nhóm chứng = tổng biến cố / tổng người nhánh chứng; hiệu số = "
+                                              "1000 × nguy cơ chứng × (RR gộp ngẫu nhiên − 1), KTC theo KTC của RR"},
+          "egger": egger([t["log_rr"] for t in tung], [t["var"] for t in tung])}
+    if phan_nhom:
+        ra["phan_nhom"] = phan_nhom_gop(tung, phan_nhom, nhan_nhom)
+    return ra
 
 
 def dinh_tinh(hang: List[Dict[str, Any]], chu_de: str) -> Dict[str, Any]:
@@ -252,14 +374,15 @@ def kinh_te(hang: List[Dict[str, Any]], nhom: str, chi_phi: str, hieu_qua: str, 
                        "cùng góc phần tư (thống trị/bị thống trị), không xếp hạng như ICER dương."}
 
 
-def tinh(loai: str, hang: List[Dict[str, Any]], ts: Dict[str, Any]) -> Dict[str, Any]:
+def tinh(loai: str, hang: List[Dict[str, Any]], ts: Dict[str, Any],
+         nhan_nhom: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     if loai == "chan_doan":
         return chan_doan(hang, ts["tham_chieu"], ts["chi_so"], float(ts["nguong"]))
     if loai == "du_bao":
         return du_bao(hang, ts["outcome"], list(ts["covariates"]))
     if loai == "gop":
         return gop(hang, ts["nhan_nghien_cuu"], ts["su_kien_can_thiep"], ts["n_can_thiep"], ts["su_kien_chung"],
-                   ts["n_chung"])
+                   ts["n_chung"], ts.get("phan_nhom") or None, nhan_nhom)
     if loai == "kinh_te":
         return kinh_te(hang, ts["nhom"], ts["chi_phi"], ts["hieu_qua"], float(ts["nguong_wtp"]))
     return dinh_tinh(hang, ts["chu_de"])
@@ -274,8 +397,20 @@ def cac_so_doi_chieu(loai: str, kq: Dict[str, Any]) -> Dict[str, float]:
         return {"c_statistic": kq["c_statistic"]["auc"], "brier": kq["brier"],
                 **{f"or_{h['bien']}": h["or"] for h in kq["he_so"][1:]}}
     if loai == "gop":
-        return {"rr_gop": kq["rr_gop_ngau_nhien"], "ci_duoi": kq["ci_95"][0], "ci_tren": kq["ci_95"][1],
-                "tau2": kq["tau2"], "i2": kq["i2_pct"]}
+        ra = {"rr_gop": kq["rr_gop_ngau_nhien"], "ci_duoi": kq["ci_95"][0], "ci_tren": kq["ci_95"][1],
+              "tau2": kq["tau2"], "i2": kq["i2_pct"]}
+        hu = kq.get("hieu_ung_tuyet_doi") or {}
+        if hu:
+            ra |= {"nguy_co_chung": hu["nguy_co_nhom_chung"], "hieu_so_1000": hu["hieu_so_moi_1000"]}
+        eg = kq.get("egger") or {}
+        if eg.get("da_chay"):
+            ra |= {"egger_t": eg["t"], "egger_p": eg["p"]}
+        pn = kq.get("phan_nhom") or {}
+        for g in pn.get("nhom") or []:
+            ra[f"rr_nhom_{g['ma']}"] = g["rr"]
+        if pn.get("q_giua_nhom") is not None:
+            ra |= {"q_giua_nhom": pn["q_giua_nhom"], "p_giua_nhom": pn["p_giua_nhom"]}
+        return ra
     if loai == "kinh_te":  # đại lượng TẤT ĐỊNH — bootstrap phụ thuộc bộ sinh số ngẫu nhiên của từng phần mềm, không so
         ra = {"chi_phi_tb_1": kq["chi_phi_tb"]["can_thiep"], "chi_phi_tb_0": kq["chi_phi_tb"]["so_sanh"],
               "hieu_qua_tb_1": kq["hieu_qua_tb"]["can_thiep"], "hieu_qua_tb_0": kq["hieu_qua_tb"]["so_sanh"],
@@ -343,9 +478,10 @@ def _bien_bang1(df: Any, loai: str, ts: Dict[str, Any], nhom: Optional[str]) -> 
     return RSA.bien_bang1_mo_ta(df, list(df.columns), (nhom, ts.get("nhan_nghien_cuu"), ts.get("chu_de")))
 
 
-def _nhan_lua_chon(study: str) -> Dict[str, Dict[str, str]]:
-    """{biến: {mã: nhãn}} của trường radio/dropdown ≥ 3 lựa chọn trong từ điển G5 (hoặc bộ biến riêng G3) — biến mã hoá
-    nhiều mức (loại thuốc, NYHA) phải là biến PHÂN LOẠI ở Bảng 1, không phải «2.00 [1.00–3.00]»."""
+def _nhan_lua_chon(study: str, toi_thieu: int = 3) -> Dict[str, Dict[str, str]]:
+    """{biến: {mã: nhãn}} của trường radio/dropdown ≥ `toi_thieu` lựa chọn trong từ điển G5 (hoặc bộ biến riêng G3) —
+    biến mã hoá nhiều mức (loại thuốc, NYHA) phải là biến PHÂN LOẠI ở Bảng 1, không phải «2.00 [1.00–3.00]»; bảng đặc
+    điểm từng nghiên cứu và phân nhóm (gộp) dùng mọi trường có lựa chọn (`toi_thieu` = 2)."""
     d = thu_muc_de_tai(study)
     tep = next((x for x in (d / f"G5_REDCap_dictionary_{study}.csv", d / "_bo-bien-rieng.csv") if x.is_file()), None)
     if tep is None:
@@ -360,7 +496,7 @@ def _nhan_lua_chon(study: str) -> Dict[str, Dict[str, str]]:
                 ma, _, nhan = muc.partition(",")
                 if ma.strip() and nhan.strip():
                     lua[ma.strip()] = nhan.strip()
-            if len(lua) >= 3:
+            if len(lua) >= toi_thieu:
                 ra[str(r.get("Variable / Field Name") or "").strip()] = lua
     return ra
 
@@ -387,6 +523,68 @@ def bang1_dac_thu(study: str, loai: str, ts: Dict[str, Any]) -> Optional[Dict[st
         return RSA.table1_descriptive(df, nhom, _bien_bang1(df, loai, ts, nhom), kiem_dinh_nen=True)
     except (TuChoi, ValueError, ZeroDivisionError, KeyError) as e:
         return {"error": f"không dựng được Bảng 1: {e}"}
+
+
+def _nhan_truong(study: str) -> Dict[str, str]:
+    """{biến: nhãn} của từ điển G5 (hoặc bộ biến riêng G3) — tiêu đề cột của bảng đặc điểm từng nghiên cứu."""
+    d = thu_muc_de_tai(study)
+    tep = next((x for x in (d / f"G5_REDCap_dictionary_{study}.csv", d / "_bo-bien-rieng.csv") if x.is_file()), None)
+    if tep is None:
+        return {}
+    with tep.open(encoding="utf-8-sig", newline="") as fh:
+        return {str(r.get("Variable / Field Name") or "").strip(): str(r.get("Field Label") or "").strip()
+                for r in csv.DictReader(fh) if str(r.get("Variable / Field Name") or "").strip()}
+
+
+def _gia_tri_o(v: Any, lua: Optional[Dict[str, str]]) -> Any:
+    """Một ô của bảng đặc điểm: mã lựa chọn ⇒ nhãn từ điển; số nguyên ⇒ int; số thực/chuỗi giữ nguyên; trống ⇒ None."""
+    if v is None or (isinstance(v, float) and v != v) or (isinstance(v, str) and not v.strip()):
+        return None
+    if lua:
+        return lua.get(_ma_nhom(v), _ma_nhom(v))
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, (int, float)):  # DataFrame.to_dict("records") trả kiểu Python gốc
+        return _so_dem(v)
+    return str(v).strip()
+
+
+def bang_dac_diem_nghien_cuu(study: str, ts: Dict[str, Any], dung: Sequence[str]) -> Dict[str, Any]:
+    """Bảng ĐẶC ĐIỂM TỪNG NGHIÊN CỨU được đưa vào tổng hợp (PRISMA 2020 mục 17, 22/11/2026) — thay «Bảng 1. Đặc điểm nền
+    người tham gia» (trung bình gộp mọi nghiên cứu, khuôn nghiên cứu gốc) mà G7 từng chép cho tổng quan. Một dòng mỗi
+    nghiên cứu ĐÃ VÀO phân tích (`dung` — nhãn nghiên cứu sau khi bỏ ca thiếu), cùng quần thể (`loc`); cột = biến của
+    dữ liệu khoá qua bộ lọc Bảng 1 dùng chung, trừ nhãn nghiên cứu và số biến cố (trình bày ở bảng kết quả từng nghiên
+    cứu); mã lựa chọn đổi sang nhãn từ điển G5, giá trị chép nguyên. Lỗi ⇒ {"error": …}."""
+    import run_stats_analysis as RSA  # noqa: PLC0415
+
+    nhan = ts["nhan_nghien_cuu"]
+    can = [str(ts[k]) for k in LOAI["gop"]] + ([str(ts["phan_nhom"])] if ts.get("phan_nhom") else [])
+    try:
+        df, _csv, _man = _doc_df_khoa(study, can, ts.get("loc"))
+        bo = (nhan, ts["su_kien_can_thiep"], ts["su_kien_chung"])
+        cot = RSA.bien_bang1_mo_ta(df, [c for c in df.columns if not str(c).startswith("_")], bo)
+        lua, ten = _nhan_lua_chon(study, toi_thieu=2), _nhan_truong(study)
+        dung_set = {str(x) for x in dung}
+        dong = [{"nghien_cuu": str(r[nhan]), "gia_tri": {c: _gia_tri_o(r[c], lua.get(c)) for c in cot}}
+                for r in df.to_dict("records") if str(r[nhan]) in dung_set]
+    except (TuChoi, ValueError, KeyError) as e:
+        return {"error": f"không dựng được bảng đặc điểm từng nghiên cứu: {e}"}
+    if not dong:
+        return {"error": "không còn nghiên cứu nào của phân tích trong dữ liệu khoá"}
+    return {"cot": [{"bien": c, "nhan": ten.get(c) or c} for c in cot], "dong": dong, "k": len(dong),
+            "nhan_nghien_cuu": {"bien": nhan, "nhan": ten.get(nhan) or nhan},
+            "ghi_chu": "Một dòng mỗi nghiên cứu được đưa vào tổng hợp; giá trị chép từ dữ liệu đã khoá, mã lựa chọn "
+                       "đổi sang nhãn từ điển G5."}
+
+
+def _ghi_nguyen_tu(p: Path, noi_dung: str) -> None:
+    """Ghi tệp qua tệp tạm cùng thư mục + os.replace (không để tệp dở dang khi lỗi giữa chừng), xuống dòng LF."""
+    import os  # noqa: PLC0415
+
+    tam = p.with_name(f".{p.name}.tam")
+    with tam.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(noi_dung)
+    os.replace(tam, p)
 
 
 def _g4_da_khoa(study: str) -> None:
@@ -432,7 +630,22 @@ def kich_ban_r(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
                 'm <- metafor::rma(yi, vi, data = es, method = "DL")\n'
                 'ghi("rr_gop", exp(as.numeric(m$b))); ghi("ci_duoi", exp(m$ci.lb)); ghi("ci_tren", exp(m$ci.ub))\n'
                 'ghi("tau2", m$tau2); ghi("i2", m$I2)\nprint(m)\n'
-                '# metafor::forest(m, atransf = exp)  # biểu đồ rừng\n')
+                # 22/11/2026: hiệu ứng tuyệt đối của bảng tóm tắt phát hiện (GRADE) — cùng cách tính Python
+                f'ncc <- sum(df[["{ts["su_kien_chung"]}"]]) / sum(df[["{ts["n_chung"]}"]])\n'
+                'ghi("nguy_co_chung", ncc); ghi("hieu_so_1000", 1000 * ncc * (exp(as.numeric(m$b)) - 1))\n'
+                # Egger — SAP §5: chỉ khi ≥ EGGER_K_TOI_THIEU nghiên cứu (Python chỉ so khi đã chạy)
+                f'if (nrow(es) >= {EGGER_K_TOI_THIEU}) {{ e <- metafor::regtest(m, model = "lm", predictor = "sei")\n'
+                '  ghi("egger_t", e$zval); ghi("egger_p", e$pval); print(e) }\n'
+                + (f'g <- as.character(df[["{ts["phan_nhom"]}"]]); g <- sub("\\\\.0+$", "", g)\n'
+                   '# Phân nhóm SAP §7: DL riêng từng phân nhóm; Q giữa nhóm = QE mô hình cố định trên ước lượng nhóm\n'
+                   'mu <- c(); se <- c()\n'
+                   'for (lv in unique(g)) { mg <- metafor::rma(yi, vi, data = es[g == lv, ], method = "DL")\n'
+                   '  mu <- c(mu, as.numeric(mg$b)); se <- c(se, mg$se); ghi(paste0("rr_nhom_", lv), '
+                   'exp(as.numeric(mg$b))) }\n'
+                   'if (length(mu) >= 2) { mb <- metafor::rma(yi = mu, sei = se, method = "FE")\n'
+                   '  ghi("q_giua_nhom", mb$QE); ghi("p_giua_nhom", mb$QEp) }\n'
+                   if ts.get("phan_nhom") else "")
+                + '# metafor::forest(m, atransf = exp)  # biểu đồ rừng\n')
     elif loai == "kinh_te":
         g, cc, ee, lam = ts["nhom"], ts["chi_phi"], ts["hieu_qua"], float(ts["nguong_wtp"])
         boi = ", ".join(repr(b) for b in BOI_SO_WTP)
@@ -461,8 +674,9 @@ def _gia_tri_spss(loai: str, ts: Dict[str, Any]) -> List[tuple[str, str]]:
         return [(ts["tham_chieu"], "F8.0"), (ts["chi_so"], "F20.10")]
     if loai == "du_bao":
         return [(ts["outcome"], "F8.0"), *[(c, "F20.10") for c in ts["covariates"]]]
-    if loai == "gop":
-        return [(ts["nhan_nghien_cuu"], "A60"), *[(ts[k], "F20.6") for k in LOAI["gop"][1:]]]
+    if loai == "gop":  # biến phân nhóm (tuỳ chọn) chỉ R dùng — đọc dạng chuỗi cho mọi kiểu mã
+        return [(ts["nhan_nghien_cuu"], "A60"), *[(ts[k], "F20.6") for k in LOAI["gop"][1:]],
+                *([(ts["phan_nhom"], "A60")] if ts.get("phan_nhom") else [])]
     if loai == "kinh_te":
         return [(ts["nhom"], "F8.0"), (ts["chi_phi"], "F20.4"), (ts["hieu_qua"], "F20.10")]
     return [(ts["chu_de"], "A400")]
@@ -514,9 +728,21 @@ def kich_ban_spss(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
                 "COMPUTE tb = swsy / sws.", "COMPUTE se = SQRT(1 / sws).", "COMPUTE rr_gop = EXP(tb).",
                 f"COMPUTE ci_duoi = EXP(tb - {Z!r} * se).", f"COMPUTE ci_tren = EXP(tb + {Z!r} * se).",
                 "COMPUTE i2 = 0.", "IF (q > 0) i2 = MAX(0, (q - (k - 1)) / q) * 100.",
-                "SELECT IF $CASENUM = 1.", "FORMATS rr_gop ci_duoi ci_tren tau2 i2 (F24.15).",
+                # 22/11/2026: hiệu ứng tuyệt đối (GRADE) + Egger dạng đóng của hồi quy có trọng số 1/vi theo √vi
+                f"AGGREGATE /OUTFILE=* MODE=ADDVARIABLES /tc=SUM({c}) /tn0=SUM({n0}).",
+                "COMPUTE nguy_co_chung = tc / tn0.", "COMPUTE hieu_so_1000 = 1000 * nguy_co_chung * (rr_gop - 1).",
+                "COMPUTE xi = SQRT(vi).", "COMPUTE wx = wi * xi.", "COMPUTE wxx = wi * xi * xi.",
+                "COMPUTE wxy = wi * xi * yi.",
+                "AGGREGATE /OUTFILE=* MODE=ADDVARIABLES /swx=SUM(wx) /swxx=SUM(wxx) /swxy=SUM(wxy).",
+                "COMPUTE dd = sw * swxx - swx * swx.", "COMPUTE b1 = (sw * swxy - swx * swy) / dd.",
+                "COMPUTE b0 = (swy - b1 * swx) / sw.", "COMPUTE ri = wi * (yi - b0 - b1 * xi) ** 2.",
+                "AGGREGATE /OUTFILE=* MODE=ADDVARIABLES /rss=SUM(ri).",
+                "COMPUTE egger_t = b1 / SQRT(rss / (k - 2) * sw / dd).",
+                "COMPUTE egger_p = 2 * (1 - CDF.T(ABS(egger_t), k - 2)).",
+                "SELECT IF $CASENUM = 1.",
+                "FORMATS rr_gop ci_duoi ci_tren tau2 i2 nguy_co_chung hieu_so_1000 egger_t egger_p (F24.15).",
                 f"SAVE TRANSLATE /OUTFILE='{ra}' /TYPE=CSV /ENCODING='UTF8' /FIELDNAMES /CELLS=VALUES /REPLACE "
-                "/KEEP=rr_gop ci_duoi ci_tren tau2 i2."]
+                "/KEEP=rr_gop ci_duoi ci_tren tau2 i2 nguy_co_chung hieu_so_1000 egger_t egger_p."]
     elif loai == "kinh_te":
         g, cc, ee = ts["nhom"], ts["chi_phi"], ts["hieu_qua"]
         than = [f"COMPUTE cc1 = {cc} * ({g} = 1).", f"COMPUTE ee1 = {ee} * ({g} = 1).",
@@ -561,8 +787,16 @@ def _doc_kq_spss(p: Path, loai: str) -> Dict[str, float]:
 
 
 # SPSS chỉ xuất các đại lượng tính được bằng RANK/AGGREGATE (dự báo: C-statistic + Brier — hai số này đã phụ thuộc mọi
-# hệ số của mô hình); R so ĐỦ mọi đại lượng kể cả OR từng yếu tố.
+# hệ số của mô hình); R so ĐỦ mọi đại lượng kể cả OR từng yếu tố. Gộp (22/11/2026): SPSS so ước lượng chung, hiệu ứng
+# tuyệt đối và Egger; phân nhóm (số nhóm thay đổi theo dữ liệu) chỉ R so.
 DAI_LUONG_SPSS = {"du_bao": ("c_statistic", "brier")}
+_CHI_R = ("rr_nhom_", "q_giua_nhom", "p_giua_nhom")
+
+
+def dai_luong_spss(loai: str, py: Dict[str, float]) -> Optional[List[str]]:
+    if loai == "gop":
+        return [k for k in py if not k.startswith(_CHI_R)]
+    return list(DAI_LUONG_SPSS[loai]) if loai in DAI_LUONG_SPSS else None
 
 
 def so_khop(py: Dict[str, float], khac: Dict[str, float], chi: Optional[Sequence[str]] = None) -> Dict[str, Any]:
@@ -619,7 +853,7 @@ def kiem_cheo(loai: str, ts: Dict[str, Any], hang: List[Dict[str, Any]], d: Path
                 ma_sps.replace(str(ngan / "dl.csv"), "<du_lieu_khoa.csv>").replace(str(sp_ra), "<ket_qua.csv>"),
                 encoding="utf-8", newline="\n")
             ma, _out, err = S.chay_spss(S.tim_spss(), ["--cu-phap", str(ngan / "kb.sps")], thu_muc=ngan, thoi_han=900)
-            ket["spss"] = (so_khop(py, _doc_kq_spss(sp_ra, loai), DAI_LUONG_SPSS.get(loai)) if sp_ra.is_file() else
+            ket["spss"] = (so_khop(py, _doc_kq_spss(sp_ra, loai), dai_luong_spss(loai, py)) if sp_ra.is_file() else
                            {"trang_thai": "LOI", "lech": [str(err)[-400:]]})
             shutil.rmtree(ngan, ignore_errors=True)
         except Exception as e:  # noqa: BLE001
@@ -659,9 +893,32 @@ def md_ket_qua(study: str, gate: str, loai: str, kq: Dict[str, Any], kc: Optiona
         dl += [f"- RR gộp (ngẫu nhiên, DL) = {so(kq['rr_gop_ngau_nhien'])} (KTC 95% {so(kq['ci_95'][0])}–"
                f"{so(kq['ci_95'][1])}); RR cố định = {so(kq['rr_gop_co_dinh'])}; τ² = {so(kq['tau2'], 4)}; "
                f"I² = {so(kq['i2_pct'], 1)}%; Q = {so(kq['q'], 2)} (df {kq['df']}); k = {kq['k']}", "",
-               "| Nghiên cứu | RR | KTC 95% | Trọng số (%) |", "|---|---|---|---|"]
-        dl += [f"| {t['nghien_cuu']} | {so(t['rr'])} | {so(t['ci_95'][0])}–{so(t['ci_95'][1])} | "
-               f"{so(t['trong_so_ngau_nhien_pct'], 1)} |" for t in kq["tung_nghien_cuu"]]
+               "| Nghiên cứu | Biến cố/N can thiệp | Biến cố/N chứng | RR | KTC 95% | Trọng số (%) |",
+               "|---|---|---|---|---|---|"]
+        dl += [f"| {t['nghien_cuu']} | {t.get('su_kien_can_thiep', '—')}/{t.get('n_can_thiep', '—')} | "
+               f"{t.get('su_kien_chung', '—')}/{t.get('n_chung', '—')} | {so(t['rr'])} | {so(t['ci_95'][0])}–"
+               f"{so(t['ci_95'][1])} | {so(t['trong_so_ngau_nhien_pct'], 1)} |" for t in kq["tung_nghien_cuu"]]
+        eg = kq.get("egger") or {}
+        if eg.get("da_chay"):
+            dl += ["", f"- Kiểm định Egger (k = {eg['k']}): hệ số bất đối xứng {so(eg['he_so_bat_doi_xung'])}, "
+                       f"t = {so(eg['t'], 2)} (df {eg['df']}), p = {so(eg['p'], 3)}"]
+        elif eg:
+            dl += ["", f"- Kiểm định Egger: không chạy — {eg.get('ly_do')}"]
+        hu = kq.get("hieu_ung_tuyet_doi") or {}
+        if hu:
+            dl.append(f"- Hiệu ứng tuyệt đối (trên 1000 người): nhóm chứng {so(hu['bien_co_chung_moi_1000'], 1)}, "
+                      f"can thiệp {so(hu['bien_co_can_thiep_moi_1000'], 1)}; hiệu số {so(hu['hieu_so_moi_1000'], 1)} "
+                      f"(KTC 95% {so(hu['ci_95_hieu_so_moi_1000'][0], 1)} đến "
+                      f"{so(hu['ci_95_hieu_so_moi_1000'][1], 1)})")
+        pn = kq.get("phan_nhom") or {}
+        if pn:
+            dl += ["", f"Phân nhóm theo `{pn['bien']}`:", "", "| Phân nhóm | k | RR | KTC 95% | I² (%) |",
+                   "|---|---|---|---|---|"]
+            dl += [f"| {g['nhan']} | {g['k']} | {so(g['rr'])} | {so(g['ci_95'][0])}–{so(g['ci_95'][1])} | "
+                   f"{so(g['i2_pct'], 1)} |" for g in pn["nhom"]]
+            if pn.get("q_giua_nhom") is not None:
+                dl += ["", f"- Khác biệt giữa phân nhóm: Q = {so(pn['q_giua_nhom'], 2)} (df {pn['df_giua_nhom']}), "
+                           f"p = {so(pn['p_giua_nhom'], 3)}"]
     elif loai == "kinh_te":
         def tien(v):
             return "—" if v is None else f"{v:,.0f}".replace(",", ".")
@@ -700,10 +957,11 @@ def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bo
         raise TuChoi(f"thiếu tham số: {', '.join(thieu)}")
     _g4_da_khoa(study)
     can = ([ts[k] for k in LOAI[loai] if k not in ("nguong", "covariates", "nguong_wtp")]
-           + list(ts.get("covariates") or []))
+           + list(ts.get("covariates") or []) + [ts[k] for k in LOAI_TUY_CHON.get(loai, ()) if ts.get(k)])
     hang, csv_khoa, bo = doc_du_lieu(study, can, ts.get("loc"))
     print(f"✓ Đọc dữ liệu khoá {csv_khoa.name}: {len(hang)} ca dùng được (loại {bo} ca thiếu dữ liệu)")
-    kq = tinh(loai, hang, ts)
+    nhan_nhom = _nhan_lua_chon(study, toi_thieu=2).get(str(ts["phan_nhom"])) if ts.get("phan_nhom") else None
+    kq = tinh(loai, hang, ts, nhan_nhom)
     d = thu_muc_de_tai(study)
     py = cac_so_doi_chieu(loai, kq)
     kc = kiem_cheo(loai, ts, hang, d, gate, py) if kiem_cheo_bat else None
@@ -728,15 +986,15 @@ def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bo
 
         loi_t1 = t1.get("error")
         tom["table1"] = {"error": loi_t1} if loi_t1 else RSA.bang1_cho_tom_tat(t1)
-        (d / f"{gate}_table1_descriptive.txt").write_text(
-            f"BẢNG 1 — ĐẶC ĐIỂM MẪU\nLỖI: {loi_t1}\n" if loi_t1 else RSA.format_table1_text(t1) + "\n",
-            encoding="utf-8", newline="\n")
-    (d / f"{gate}_analysis_summary.json").write_text(json.dumps(tom, ensure_ascii=False, indent=1), encoding="utf-8",
-                                                    newline="\n")
-    (d / f"{gate}_ket_qua.md").write_text(md_ket_qua(study, gate, loai, kq, kc), encoding="utf-8", newline="\n")
+        _ghi_nguyen_tu(d / f"{gate}_table1_descriptive.txt",
+                       f"BẢNG 1 — ĐẶC ĐIỂM MẪU\nLỖI: {loi_t1}\n" if loi_t1 else RSA.format_table1_text(t1) + "\n")
+    if loai == "gop":  # PRISMA 2020 mục 17 — đặc điểm TỪNG nghiên cứu (G7 dùng bảng này làm Bảng 1 của tổng quan)
+        tom["bang_dac_diem_nghien_cuu"] = bang_dac_diem_nghien_cuu(
+            study, ts, [t["nghien_cuu"] for t in kq["tung_nghien_cuu"]])
+    _ghi_nguyen_tu(d / f"{gate}_analysis_summary.json", json.dumps(tom, ensure_ascii=False, indent=1))
+    _ghi_nguyen_tu(d / f"{gate}_ket_qua.md", md_ket_qua(study, gate, loai, kq, kc))
     if kc is not None:
-        (d / f"{gate}_kiem_cheo.json").write_text(json.dumps(kc, ensure_ascii=False, indent=1), encoding="utf-8",
-                                                 newline="\n")
+        _ghi_nguyen_tu(d / f"{gate}_kiem_cheo.json", json.dumps(kc, ensure_ascii=False, indent=1))
         print(f"✓ Kiểm chéo SPSS/R: {kc['trang_thai']} — "
               + "; ".join(f"{k} {v['trang_thai']}" for k, v in kc["phan_mem"].items()))
     print(f"✓ {d / f'{gate}_ket_qua.md'}\n{CAN_KIEM}")
@@ -753,6 +1011,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     for k in ("tham_chieu", "chi_so", "outcome", "nhan_nghien_cuu", "su_kien_can_thiep", "n_can_thiep",
               "su_kien_chung", "n_chung", "chu_de", "nhom", "chi_phi", "hieu_qua"):
         ap.add_argument("--" + k.replace("_", "-"), dest=k, default=None)
+    ap.add_argument("--phan-nhom", dest="phan_nhom", default=None,
+                    help="gop: biến phân nhóm tiền định của SAP §7 — gộp riêng từng nhóm + Q giữa nhóm")
     ap.add_argument("--nguong", type=float, default=None)
     ap.add_argument("--nguong-wtp", dest="nguong_wtp", type=float, default=None,
                     help="kinh_te: ngưỡng sẵn lòng chi trả cho một đơn vị hiệu quả (SAP khai)")
@@ -761,6 +1021,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--kiem-cheo", action="store_true")
     a = ap.parse_args(argv)
     ts = {k: getattr(a, k) for k in LOAI[a.loai] if k != "covariates"}
+    ts |= {k: getattr(a, k) for k in LOAI_TUY_CHON.get(a.loai, ()) if getattr(a, k, None)}
     if a.loai == "du_bao":
         ts["covariates"] = [c.strip() for c in a.covariates.split(",") if c.strip()]
     if a.loc:
