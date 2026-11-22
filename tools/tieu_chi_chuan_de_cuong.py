@@ -29,11 +29,13 @@ tố», người phân xử đọc bằng chứng từng dòng.
 """
 from __future__ import annotations
 
+import re
 from typing import Dict, List, Optional, Tuple
 
 import chuan_bao_cao_items as CBC
 import protocol_checklist_items as PCI
 from kiem_chuan_de_cuong_theo_muc import (
+    DIEU_KIEN_HAM,
     DINH_TINH_CP,
     KINH_TE,
     NGAY,
@@ -404,6 +406,50 @@ LY_DO_NGUONG = (r"(ngưỡng|điểm cắt).{0,160}(theo (khuyến cáo|y văn|h
                 r"cáo|"
                 r"dùng))|(khuyến cáo|hướng dẫn|y văn).{0,80}(ngưỡng|điểm cắt)")
 XAM_LAN = r"sinh thiết|nội soi|chọc (dò|hút)|xâm lấn|thủ thuật|cản quang"
+# ── STARD 25: điều kiện «xét nghiệm đánh giá hoặc chuẩn tham chiếu là thủ thuật xâm lấn LÀM TRONG nghiên cứu» ──
+# (22/11/2026) Điều kiện cũ = có chữ `XAM_LAN` ở đâu đó ⇒ «sinh thiết» nhắc như lựa chọn đã bỏ («đo đàn hồi gan thay cho
+# sinh thiết») hay câu bối cảnh («các nghiên cứu có sinh thiết») cũng kích hoạt mục biến cố bất lợi. Nay chỉ tính khi
+# trong CÙNG một mệnh đề, thủ thuật xâm lấn được gắn vào vai trò xét nghiệm của chính nghiên cứu: nhãn «Chuẩn tham
+# chiếu: sinh thiết gan…», câu định nghĩa «Chuẩn tham chiếu/Tiêu chuẩn vàng là sinh thiết…», «Nội soi … được dùng làm
+# chuẩn tham chiếu». Mệnh đề bác bỏ («cân nhắc», «thay cho», «không dùng»…) và thủ thuật bị phủ định sát bên («không
+# xâm lấn», «không cần sinh thiết», «non-invasive», «không cản quang») không kích hoạt. «X là tiêu chuẩn vàng» (câu
+# bối cảnh chung) không kích hoạt; «X được dùng làm tiêu chuẩn vàng» thì có.
+_XL_THU_THUAT = re.compile(r"sinh thiết|nội soi|chọc (?:dò|hút)|xâm lấn|thủ thuật|cản quang|thông tim|"
+                           r"chụp (?:động )?mạch|biops(?:y|ies)|endoscop\w*|invasive|angiograph\w*|"
+                           r"catheteri[sz]ation", re.IGNORECASE)
+_XL_VAI_TRO_NC = (r"xét nghiệm (?:đánh giá|chỉ điểm|chỉ số|cần đánh giá|được đánh giá)|(?:tiêu )?chuẩn tham chiếu|"
+                  r"index test|reference standard")
+_XL_VAI_TRO = _XL_VAI_TRO_NC + r"|(?:tiêu )?chuẩn vàng"
+_XL_NHAN = re.compile(rf"(?:{_XL_VAI_TRO})\s*[*_]*\s*:", re.IGNORECASE)
+_XL_DINH_NGHIA = re.compile(rf"(?:{_XL_VAI_TRO})\b[^:]{{0,60}}?\b(?:là|bằng|dùng|sử dụng|theo|gồm|qua|dựa (?:trên|vào)|"
+                            rf"is|was|by)\b", re.IGNORECASE)
+_XL_DUNG_LAM = re.compile(rf"^.{{0,80}}?\b(?:(?:được (?:dùng|chọn|sử dụng) )?làm (?:{_XL_VAI_TRO})|"
+                          rf"là (?:{_XL_VAI_TRO_NC})|(?:as|was) the (?:{_XL_VAI_TRO_NC}))", re.IGNORECASE)
+_XL_BAC_BO = re.compile(r"cân nhắc|xem xét|nhưng (?:không|chưa)|thay (?:cho|vì|thế)|"
+                        r"(?:không|chưa) (?:được )?(?:dùng|sử dụng|chọn|thực hiện|làm|áp dụng|tiến hành)|"
+                        r"ngoài phạm vi|considered|instead of|rather than|"
+                        r"\bnot (?:used|performed|done|chosen)\b", re.IGNORECASE)
+_XL_PHU_DINH_GAN = re.compile(r"(?:\bkhông|\bchưa|\bnon-?|\bphi)\s*(?:[\w-]+\s+){0,2}$", re.IGNORECASE)
+_XL_MENH_DE = re.compile(r"(?<!\d)\.(?!\d)|[;|\n]")
+
+
+def xam_lan_trong_nghien_cuu(van: str) -> bool:
+    """Điều kiện STARD 25 (§xam_lan_nghien_cuu): xét nghiệm đánh giá hoặc chuẩn tham chiếu của nghiên cứu là thủ thuật
+    xâm lấn được làm trong nghiên cứu (chi tiết ở chú thích trên)."""
+    for menh_de in _XL_MENH_DE.split(van):
+        if not _XL_THU_THUAT.search(menh_de) or _XL_BAC_BO.search(menh_de):
+            continue
+        for m in _XL_THU_THUAT.finditer(menh_de):
+            truoc = menh_de[:m.start()]
+            if _XL_PHU_DINH_GAN.search(truoc):
+                continue
+            if _XL_NHAN.search(truoc) or _XL_DINH_NGHIA.search(truoc) or _XL_DUNG_LAM.search(menh_de[m.start():]):
+                return True
+    return False
+
+
+DIEU_KIEN_HAM["xam_lan_nghien_cuu"] = xam_lan_trong_nghien_cuu
+XAM_LAN_NGHIEN_CUU = "§xam_lan_nghien_cuu"
 _STARD: Dict[str, tuple] = {
     "1": ((), "bao_cao", "Tiêu đề/tóm tắt nêu đây là nghiên cứu độ chính xác chẩn đoán.", ()),
     "2": ((), "bao_cao", "Tóm tắt có cấu trúc bài báo.", ()),
@@ -504,7 +550,8 @@ _STARD: Dict[str, tuple] = {
            (_y("khoảng tin cậy", r"KTC|khoảng tin cậy|\bCI\b"),)),
     "25": (("du_kien_kq", "dao_duc", "giam_sat"), "ke_hoach",
            "Lên kế hoạch ghi nhận biến cố bất lợi do thực hiện xét nghiệm đánh giá hoặc chuẩn tham chiếu.",
-           (_y("biến cố bất lợi", r"biến cố|tai biến|bất lợi|an toàn"),), XAM_LAN, "có xét nghiệm xâm lấn"),
+           (_y("biến cố bất lợi", r"biến cố|tai biến|bất lợi|an toàn"),), XAM_LAN_NGHIEN_CUU,
+           "xét nghiệm đánh giá hoặc chuẩn tham chiếu là thủ thuật xâm lấn làm trong nghiên cứu"),
     "26": (("han_che", "ban_luan", "sai_so"), "ke_hoach", "Bàn hạn chế: nguồn sai lệch, bất định thống kê, khả năng "
                                                           "suy rộng.",
            (_y("hạn chế/sai lệch", HAN_CHE, de_muc=True), _y("suy rộng", SUY_RONG))),

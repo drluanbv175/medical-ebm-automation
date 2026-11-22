@@ -763,9 +763,37 @@ _PHU_DINH_SAU = re.compile(r"^[^.;|]{0,160}(không áp dụng|ngoài phạm vi|k
                            r"không bắt buộc trong (đề tài|nghiên cứu))", re.IGNORECASE)
 
 
+#: Điều kiện dạng HÀM (22/11/2026): biểu thức «§<tên>» ⇒ `co_dieu_kien` gọi hàm đã đăng ký (nhận văn bản, trả bool)
+#: thay vì khớp một biểu thức. Dùng khi điều kiện phải hiểu VAI TRÒ của cụm từ trong câu — vd STARD 25 chỉ áp khi
+#: chính xét nghiệm đánh giá hay chuẩn tham chiếu của nghiên cứu là thủ thuật xâm lấn, không phải khi văn bản nhắc
+#: «sinh thiết» như một lựa chọn đã bỏ. Hàm đăng ký ở mô-đun tiêu chí (`tieu_chi_chuan_de_cuong`).
+DIEU_KIEN_HAM: Dict[str, Callable[[str], bool]] = {}
+
+
+def _ham_dieu_kien(ten: str) -> Callable[[str], bool]:
+    if ten not in DIEU_KIEN_HAM:
+        import tieu_chi_chuan_de_cuong  # noqa: F401, PLC0415 — nạp trễ: mô-đun đó đăng ký hàm và import từ tệp này
+    if ten not in DIEU_KIEN_HAM:
+        raise ValueError(f"điều kiện hàm «§{ten}» chưa đăng ký")
+    return DIEU_KIEN_HAM[ten]
+
+
+def _bo_chuong_mo_dau(md: str, cac_phan: Sequence[Phan]) -> str:
+    """Văn bản trừ các chương mở đầu (Đặt vấn đề/Tổng quan) — nơi nhắc nghiên cứu khác, không phải việc đề tài làm.
+    Đề cương không có chương cấp 1 mở đầu ⇒ giữ nguyên văn bản."""
+    cap1 = [p for p in cac_phan if p.tieu_de != "(bìa)" and p.chuong == p.tieu_de]
+    if not any(_CHUONG_MO_DAU.search(p.tieu_de) for p in cap1):
+        return md
+    return "\n".join([p.van for p in cac_phan if p.tieu_de == "(bìa)"]
+                     + [p.van for p in cap1 if not _CHUONG_MO_DAU.search(p.tieu_de)])
+
+
 def co_dieu_kien(mau: str, md: str) -> bool:
     """Điều kiện có mặt THẬT ở đề cương: bỏ lần khớp nằm trong câu phủ định («Không có phân tích phân nhóm…»,
-    «… bộ câu hỏi … — không áp dụng»). Câu phủ định từng làm bộ kiểm đòi mục không áp dụng (21/11/2026)."""
+    «… bộ câu hỏi … — không áp dụng»). Câu phủ định từng làm bộ kiểm đòi mục không áp dụng (21/11/2026).
+    Biểu thức «§<tên>» ⇒ hàm điều kiện đã đăng ký (`DIEU_KIEN_HAM`)."""
+    if mau.startswith("§"):
+        return bool(_ham_dieu_kien(mau[1:])(md))
     for m in re.finditer(mau, md, _C):
         dau = md.rfind("\n", 0, m.start()) + 1
         cuoi = md.find("\n", m.end())
@@ -803,6 +831,9 @@ def dieu_kien(mau: str, md: str, cac_phan: Optional[Sequence[Phan]] = None) -> b
             nhan = {f"⟦{k}⟧" for k in khoa}
             van = "\n".join(p.van for p in cac_phan if p.tieu_de in nhan)
         return co_dieu_kien(mau[m.end():], van)
+    if mau.startswith("§"):
+        # điều kiện hàm không phạm vi (đề cương): bỏ chương mở đầu
+        return co_dieu_kien(mau, _bo_chuong_mo_dau(md, cac_phan if cac_phan is not None else tach_phan(md)))
     return co_dieu_kien(mau, md)
 
 
@@ -867,15 +898,100 @@ def o_trong_quanh(dong: str, vt: int) -> bool:
     return bool(O_TRONG_RE.search(than[dau:min(cuoi) if cuoi else len(than)]))
 
 
-def _tim(mau: str, don_vi: Sequence[Tuple[int, str]], nhan: bool = False) -> Optional[str]:
+#: (22/11/2026) Bằng chứng phải nằm trong NỘI DUNG, không chỉ ở TÊN MỤC hay NHÃN. Đo trên bản thảo G7: dòng tiêu đề
+#: in đậm «**Đặc điểm bệnh … (STARD 2015 mục 21):**» chứa chữ của yếu tố nên làm mục «đạt» dù dòng nội dung bên dưới còn
+#: ô trống; nhãn ô đầu hàng bảng («| Sai lệch chọn | ……… |» — `o_trong_quanh` chỉ xét đúng ô chứa chữ) và nhãn đầu dòng
+#: đứng một mình («*Chẩn đoán khác:*» rồi dòng sau là ô trống) cũng vậy.
+#: Dòng nhấn mạnh trọn dòng: in đậm, hoặc nhấn mạnh bất kỳ kết thúc bằng «:».
+_NHAN_MANH_CA_DONG_RE = re.compile(r"^\s*(?:[-*+]\s+)?(\*\*|__|\*|_)(?P<t>[^\s*_].*?)\1\s*(?P<hc>:?)\s*\\?$")
+#: Chú thích hình/bảng («**Hình 2. Sơ đồ luồng…**», «*Bảng 1. …*») là NỘI DUNG — hình/bảng có thật — không phải tên mục.
+_CHU_THICH_RE = re.compile(r"(Hình|Bảng|Biểu đồ|Sơ đồ|Figure|Fig\.|Table)\s*\d", re.IGNORECASE)
+#: Nhãn đầu dòng: «**X:**», «**X**:», «*X:*», «*X*:», hoặc chữ thường «X:» (≤ 80 ký tự, không chứa «|», «*», «_»).
+_NHAN_DAU_DONG_RE = re.compile(
+    r"^\s*(?:[-*+]\s+|\d+[.)]\s+)?(?:(?P<nm>\*\*|__|\*|_)(?=\S)[^*_\n]{1,160}?(?::(?P=nm)|(?P=nm)\s*:)"
+    r"|[^\s|*_#>\-][^:|\n*_]{0,80}?:(?=\s|$))")
+#: Chữ hướng dẫn trong ngoặc của bản nháp («⟨chờ điền⟩») — không phải nội dung.
+_GOI_Y_RE = re.compile(r"⟨[^⟩]*⟩")
+
+
+def _co_noi_dung(van: str) -> bool:
+    """Còn chữ/số thật sau khi bỏ mệnh đề có ô trống, chữ hướng dẫn «⟨…⟩» và ký hiệu Markdown. Mệnh đề tách theo «|»,
+    «;», ranh giới câu và xuống dòng (ô trống ở một dòng không xoá nội dung thật của dòng khác)."""
+    for menh_de in re.split(r"[|;\n]|[.!?]\s+", _GOI_Y_RE.sub(" ", van)):
+        if O_TRONG_RE.search(menh_de):
+            continue
+        if re.search(r"[^\W_]", re.sub(r"[*_`#>]", " ", menh_de)):
+            return True
+    return False
+
+
+def la_tieu_de_nhan_manh(dong: str) -> bool:
+    """Dòng là TÊN MỤC viết bằng nhấn mạnh (không phải chú thích hình/bảng)."""
+    m = _NHAN_MANH_CA_DONG_RE.match(dong.split("\t⟦")[0].rstrip())
+    if not m or _CHU_THICH_RE.match(m.group("t").strip()):
+        return False
+    return m.group(1) in ("**", "__") or m.group("t").rstrip().endswith(":") or bool(m.group("hc"))
+
+
+def _la_dong_nhan_nhan_manh(dong: str) -> bool:
+    """Dòng mở bằng nhãn nhấn mạnh («*Phân bố…:* …») hoặc là tên mục nhấn mạnh — ranh giới nội dung của nhãn trước."""
+    m = _NHAN_DAU_DONG_RE.match(dong)
+    return la_tieu_de_nhan_manh(dong) or bool(m and m.group("nm"))
+
+
+def _noi_dung_duoi(cac_dong: Sequence[str]) -> str:
+    """Các dòng nội dung ngay dưới một tên mục/nhãn, tới nhãn hoặc tên mục nhấn mạnh kế tiếp."""
+    tiep: List[str] = []
+    for d in cac_dong:
+        t = d.split("\t⟦")[0]
+        if _la_dong_nhan_nhan_manh(t):
+            break
+        tiep.append(t)
+    return "\n".join(tiep)
+
+
+def chi_o_nhan(chu: str, vi_tri: int, de_muc: bool = False) -> bool:
+    """Lần khớp ở `vi_tri` của đơn vị `chu` chỉ nằm ở TÊN MỤC hay NHÃN, còn nội dung mà nhãn đó dẫn thì trống.
+
+    - Dòng tên mục nhấn mạnh (`la_tieu_de_nhan_manh`) và nhãn đứng cuối dòng: nội dung là các dòng sau trong cùng
+      đoạn, tới nhãn/tên mục nhấn mạnh kế tiếp («**Đặc điểm bệnh … (STARD 21):**» rồi «*Phân bố…:* 16,1» ⇒ tên mục
+      không dẫn nội dung nào của riêng nó). Yếu tố «có tiểu mục» (`de_muc`) nhận tên mục như nhận đề mục «#».
+    - Ô đầu hàng bảng (nhãn hàng): là bằng chứng khi các ô còn lại có nội dung thật và cả hàng không còn ô trống.
+    - Nhãn đầu dòng: là bằng chứng khi phần sau nhãn có nội dung thật."""
+    dau_dong = chu.rfind("\n", 0, vi_tri) + 1
+    cac_dong = chu[dau_dong:].split("\n")
+    than = cac_dong[0].split("\t⟦")[0]
+    vt = vi_tri - dau_dong
+    if vt >= len(than):  # khớp ở tiêu đề cột: `o_trong_quanh` đã xét cả hàng
+        return False
+    if la_tieu_de_nhan_manh(than):
+        return False if de_muc else not _co_noi_dung(_noi_dung_duoi(cac_dong[1:]))
+    if than.lstrip().startswith("|"):
+        bd = than.index("|")
+        kt = than.find("|", bd + 1)
+        if kt < 0 or not bd < vt < kt or not re.search(r"[^\s|]", than[kt + 1:]):
+            return False  # không phải ô đầu của hàng nhiều ô
+        return bool(O_TRONG_RE.search(than)) or not _co_noi_dung(than[kt:])
+    m = _NHAN_DAU_DONG_RE.match(than)
+    if not m or vt >= m.end():
+        return False
+    sau = than[m.end():]
+    if re.search(r"[^\s*_]", _GOI_Y_RE.sub("", sau)):
+        return not _co_noi_dung(sau)
+    return not _co_noi_dung(_noi_dung_duoi(cac_dong[1:]))
+
+
+def _tim(mau: str, don_vi: Sequence[Tuple[int, str]], nhan: bool = False, de_muc: bool = False) -> Optional[str]:
     """Bằng chứng «dòng N: «…»» của lần khớp đầu tiên trong các đơn vị; None nếu không khớp. Bỏ qua lần khớp nằm trong
-    mệnh đề còn ô trống cho chủ nhiệm điền (`o_trong_quanh`) — trừ yếu tố NHÃN cấu trúc (`nhan`)."""
+    mệnh đề còn ô trống cho chủ nhiệm điền (`o_trong_quanh`) hoặc chỉ ở tên mục/nhãn mà nội dung còn trống
+    (`chi_o_nhan`) — trừ yếu tố NHÃN cấu trúc (`nhan`)."""
     for so, chu in don_vi:
         for m in re.finditer(mau, chu, _C):
             vi_tri = m.start() + (len(m.group(0)) - len(m.group(0).lstrip()))
             n = chu.count("\n", 0, vi_tri)
             dong_day = chu.split("\n")[n]
-            if not nhan and o_trong_quanh(dong_day, vi_tri - (chu.rfind("\n", 0, vi_tri) + 1)):
+            if not nhan and (o_trong_quanh(dong_day, vi_tri - (chu.rfind("\n", 0, vi_tri) + 1))
+                             or chi_o_nhan(chu, vi_tri, de_muc)):
                 continue
             return f"dòng {so + n}: «{dong_day.split(chr(9) + '⟦')[0].strip()[:140]}»"
     return None
@@ -958,7 +1074,7 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan], *,
         kq.thieu = [f"{t} (phải cùng đoạn/dòng bảng với các yếu tố còn lại)" for t in thieu]
     else:
         for yt in can:
-            bc = _tim(yt.mau, don_vi_dm if yt.de_muc else don_vi, yt.nhan)
+            bc = _tim(yt.mau, don_vi_dm if yt.de_muc else don_vi, yt.nhan, yt.de_muc)
             (kq.bang_chung.append(f"{yt.ten} — {bc}") if bc else kq.thieu.append(yt.ten))
     for yt in cam:
         bc = _tim_cam(yt.mau, don_vi)
