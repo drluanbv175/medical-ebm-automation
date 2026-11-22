@@ -252,7 +252,9 @@ def test_bia_bia_phu_danh_sach_can_bo(ket):
     assert dau.startswith("**BỘ QUỐC PHÒNG**\n**BỆNH VIỆN MẪU 175**")
     assert dau.count("**ĐỀ CƯƠNG NGHIÊN CỨU**") == 2 and dau.count("**THÀNH PHỐ HỒ CHÍ MINH, 2026**") == 2
     assert "**Chủ nhiệm đề tài: BS. Người Thử**" in dau
-    assert "**CHỦ NHIỆM KHOA**" in dau and "**VIỆN TRƯỞNG**" in dau
+    # 22/11/2026: «Khoa Mẫu, Bệnh viện Mẫu 175» trực thuộc bệnh viện ⇒ không có khối ký Viện trưởng/Giám đốc Trung tâm,
+    # không lời hướng dẫn «— nếu …» của khuôn (luật khối ký theo đơn vị thật: test_khoi_ky_theo_don_vi_20261122.py)
+    assert "**CHỦ NHIỆM KHOA**" in dau and "**VIỆN TRƯỞNG**" not in dau and "nếu" not in dau
     # dòng phiên bản của bìa cũ nằm SAU đề mục đầu — lần chuyển đầu làm rơi mất (đo C1a/BTM 21/11, trục DC-01)
     bia_chinh = dau.split("\n---\n")[0]
     assert "**Phiên bản đề cương:** 1.0, ngày ……/……/2026" in bia_chinh
