@@ -336,7 +336,9 @@ def test_cong_phan_ci_bat_sai_va_chua_do(tmp_path):
     tot = {"cong": {"G6_5": {"trang_thai": "DAT"}, "G10": {"trang_thai": "PASS_G10_RELEASE_PACKAGE_LOCKED"}},
            "so_o_loi_may": 0,
            "du_lieu": {"de_cuong_nop": {"ma": 0},
-                       "g6": {"bieu_do": {"loi": [], "thieu_bat_buoc": [], "co_tep": True}}}}  # fmt: skip
+                       "g6": {"bieu_do": {"loi": [], "thieu_bat_buoc": [], "co_tep": True}}},
+           # 22/11/2026: báo cáo ĐẠT phải có số đo chuẩn báo cáo theo mục với 0 mục thiếu (chốt không sổ nợ)
+           "chuan_bao_cao": {"ban_thao_thieu": [], "bao_cao_thieu": [], "bao_cao_cau_truc": []}}  # fmt: skip
     for cx, mong in (({"ket": "DAT"}, []), ({"ket": "KHONG_AP_DUNG"}, []), ({"ket": "CANH_BAO"}, []),
                      ({"ket": "SAI", "lay": "or_tho", "that": 1.84, "uoc": 6.0, "ci_95": [4, 9]}, ["SAI"]),
                      ({"ket": "CHUA_DO", "lay": "auc"}, ["CHUA_DO"])):
