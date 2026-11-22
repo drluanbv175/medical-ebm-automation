@@ -427,7 +427,8 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                   "toàn văn bài này."),
         "muc_4": ("Điểm mạnh: ngẫu nhiên hoá, biên định trước trong SAP, cỡ mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn "
                   "chế: phân tích theo đề cương chưa làm được do thiếu biến tuân thủ — với thiết kế không kém hơn, "
-                  "phân tích ITT có thể thiên về kết luận không kém hơn; không làm mù người tham gia; một cơ sở."),
+                  "phân tích ITT có thể thiên về kết luận không kém hơn; không làm mù người tham gia; một cơ sở, nên "
+                  "kết quả chỉ khái quát cho người tăng huyết áp ổn định khám tại cơ sở tương tự."),
         "muc_5": ("Hàm ý cho thực hành: nếu kết luận vững ở cả ITT và per-protocol, tái khám qua điện thoại có thể "
                   "thay một phần tái khám trực tiếp cho người tăng huyết áp ổn định. Hướng tiếp: đo tuân thủ đề cương, "
                   "đánh giá chi phí và sự hài lòng."),
@@ -492,7 +493,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
     hs["dien_giai"]["muc_4"] = (
         "Điểm mạnh: ngẫu nhiên hoá theo cụm tránh nhiễm chéo giữa người bệnh cùng phòng khám, phân tích tính ICC, cỡ "
         "mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: số cụm ít làm KTC theo cụm kém ổn định, người bệnh trong cùng "
-        "phòng khám không độc lập, không làm mù.")
+        "phòng khám không độc lập, không làm mù; kết quả khái quát cho các phòng khám có cách tổ chức tương tự.")
     hs["phan_bien_G8"].update({"thiet_ke": "Thử nghiệm ngẫu nhiên theo cụm",
                                "ten_bai": "Chương trình tin nhắn theo phòng khám và kiểm soát huyết áp",
                                "checklist": "CONSORT 2010 mở rộng thử nghiệm cụm (PMID 22951546)"})
@@ -540,7 +541,9 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
     hs["dien_giai"]["muc_4"] = (
         "Điểm mạnh: dùng trọn thông tin thời gian và kiểm duyệt, cỡ mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: "
         "giả định nguy cơ tương xứng cần kiểm bằng phần dư Schoenfeld, tử vong là biến cố cạnh tranh chưa mô hình hoá, "
-        "nhiễu tồn dư của thiết kế hồi cứu.")
+        "nhiễu tồn dư của thiết kế hồi cứu. Tử vong cạnh tranh chưa mô hình hoá có thể làm ước tính cao nguy cơ tích "
+        "luỹ gãy xương theo Kaplan–Meier, còn nhiễu do chỉ định có thể làm HR cao hơn thực; kết quả chỉ khái quát cho "
+        "người từ 60 tuổi khám ngoại trú.")
     tl = dict(hs["tra_loi_G7"])
     tl.update({r"khong dien truoc khi phan tich": ("Trong {n} người ({bien_co_sc} biến cố), dùng PPI kéo dài đi kèm "
                                                    "nguy cơ tức thời gãy xương cao hơn: HR hiệu chỉnh {hr_hieu_chinh} "
@@ -594,7 +597,9 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
     hs["dien_giai"]["muc_4"] = (
         "Điểm mạnh: kế hoạch gán đa trị định trước (SAP §6), báo song song ca đầy đủ, cỡ mẫu {n} người, kiểm chéo "
         "SPSS–R khớp. Hạn chế: gán đa trị đúng khi thiếu ngẫu nhiên có điều kiện (MAR) — không kiểm chứng được từ "
-        "dữ liệu; nếu thiếu phụ thuộc chính giá trị bị thiếu (MNAR) thì cả hai cách đều có thể lệch.")
+        "dữ liệu; nếu thiếu phụ thuộc chính giá trị bị thiếu (MNAR) thì cả hai cách đều có thể sai lệch. Hướng của sai "
+        "lệch phụ thuộc cơ chế thiếu, nên kết quả ca đầy đủ được báo song song để người đọc thấy độ lớn chênh lệch; "
+        "nhiễu tồn dư của thiết kế hồi cứu vẫn còn, và kết quả chỉ khái quát cho người từ 60 tuổi khám ngoại trú.")
     tl = dict(hs["tra_loi_G7"])
     tl.update({r"khong dien truoc khi phan tich": ("Trong {n} người ({pct_thieu}% số dòng thiếu ≥ 1 hiệp biến), sau "
                                                    "gán đa trị (m = 20) dùng PPI kéo dài đi kèm nguy cơ gãy xương cao "

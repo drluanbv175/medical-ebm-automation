@@ -54,6 +54,21 @@ def kiem_mot(p: Path) -> List[str]:
     if cx.get("ket") in ("SAI", "CHUA_DO"):  # CHUA_DO chỉ xảy ra khi kịch bản có khai phép kiểm mà không đo được
         loi.append(f"độ chính xác {cx.get('ket')}: {cx.get('lay')} thật {cx.get('that')} · ước lượng {cx.get('uoc')} "
                    f"KTC {cx.get('ci_95')} {cx.get('loi') or ''}".strip())
+    # 22/11/2026 (kiểm toàn hệ 11 khâu): khâu 9–10 trước đây không có ở cổng phán — 22/24 kịch bản thiếu hình bắt buộc
+    # của chuẩn báo cáo (sơ đồ luồng) và bản diễn giải không bàn hạn chế/khái quát theo chuẩn mà CI vẫn xanh.
+    g6 = ((j.get("du_lieu") or {}).get("g6") or {})
+    bd = g6.get("bieu_do")
+    if "khong_tu_dong" not in g6:
+        if not isinstance(bd, dict) or not bd.get("co_tep"):
+            loi.append("G6 không có G6_bieu_do.json — biểu đồ kết quả chưa sinh")
+        else:
+            if bd.get("loi"):
+                loi.append(f"biểu đồ LỖI: {str(bd.get('loi'))[:200]}")
+            if bd.get("thieu_bat_buoc"):
+                loi.append(f"thiếu hình bắt buộc theo chuẩn báo cáo: {', '.join(map(str, bd['thieu_bat_buoc']))}")
+    g65 = ((j.get("cong") or {}).get("G6_5") or {})
+    if g65 and g65.get("trang_thai") != "DAT":
+        loi.append(f"bản diễn giải G6.5 = {g65.get('trang_thai')}: {'; '.join(map(str, g65.get('loi') or []))[:200]}")
     return loi
 
 

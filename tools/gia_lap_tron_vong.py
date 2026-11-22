@@ -39,6 +39,7 @@ Cần bác sĩ kiểm chứng.
 from __future__ import annotations
 
 import csv
+import io
 import json
 import math
 import os
@@ -322,7 +323,11 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
             duoi = re.match(r":\s*", tep_text[m.end():]).group(0)
             ra.append({**o, "o": o_txt + duoi, "loai": "moi_dung_vai", "dien": ""})
             continue
-        ly_do = khong_ap_dung(nhan, dong + " " + o_txt, thiet_ke, meta)
+        # 22/11/2026 (phiên K18 đo bản thảo G7): câu GỢI Ý trong ô («Ví dụ với cohort: thiếu ngẫu nhiên hóa…») không
+        # phải câu hỏi — trước đây chữ «ngẫu nhiên hóa» trong ví dụ làm ô «§5 Hạn chế» của thuần tập bị xếp «chỉ áp dụng
+        # cho thử nghiệm ngẫu nhiên», câu trả lời hạn chế của tác giả bị đè ⇒ STROBE 19 trượt. Bỏ phần ví dụ khi xét.
+        ly_do = khong_ap_dung(nhan, re.split(r"\b[Vv][íi]\s+d[ụu]\b", dong + " " + o_txt, maxsplit=1)[0], thiet_ke,
+                              meta)
         # ô KẾT QUẢ không hỏi điều đã chốt (tên kết cục ≠ kết quả của kết cục) ⇒ không lấy bảng đã chốt
         # (16/11/2026) cùng lẽ: ô đòi nhận định «sau khi có dữ liệu thật» (vd tính đại diện quần thể) là nội dung
         # MỚI của tác giả — dòng có chữ «cỡ mẫu» không biến nó thành câu hỏi lại G3.n
@@ -1370,6 +1375,100 @@ class TronVong:
                 self.du_lieu.setdefault("g6_thong_ke_vien", []).append(
                     f"bật {len(self.DONG_MO_HINH_CHINH.findall(t))} dòng mô hình chính trong 03_analysis.R")
 
+    # Tỷ lệ bị loại ở MỖI hộp loại trừ của sổ sàng lọc mô phỏng (so với hộp chính đứng trước) — theo tên hộp chuẩn.
+    _TY_LE_LOAI_LUONG = (("sàng lọc tiêu đề", 0.9), ("trước sàng lọc", 0.3), ("báo cáo bị loại", 0.65),
+                         ("không tìm được toàn văn", 0.03), ("mất theo dõi", 0.05), ("loại khỏi phân tích", 0.05),
+                         ("tiêu chuẩn tham chiếu", 0.06))
+
+    def _dien_so_do_luong(self, dt: Optional[Mapping[str, Any]] = None) -> bool:
+        """Vai nghiên cứu viên giả lập: điền sổ sàng lọc MÔ PHỎNG vào mẫu `SO_DO_LUONG_<mã>.csv` mà G6 vừa dựng (đề tài
+        thật: số THẬT từ sổ sàng lọc, máy không điền). Hộp cuối mỗi nhánh = n phân tích chính G6 (cổng hình đối chiếu);
+        nhánh (nhóm can thiệp/chứng, ca bệnh/chứng) chia theo đúng dữ liệu đã khoá; hộp loại trừ mang lý do có số, cộng
+        khớp. Trả True khi đã điền (cần chạy lại G6). Không có mẫu / mẫu đã có số ⇒ False (không ghi đè)."""
+        import hashlib  # noqa: PLC0415
+
+        import hinh_g6 as HG6  # noqa: PLC0415
+
+        p = self.out / HG6.TEP_LUONG.format(study=self.study)
+        if not p.is_file():
+            return False
+        with p.open(encoding="utf-8", newline="") as f:
+            dong = list(csv.DictReader(f))
+        if not dong or any(str(r.get("n") or "").strip() for r in dong):
+            return False
+        kq = _doc_json(self.out / "G6_SAP_ket_qua.json")
+        n_ds = int(self.du_lieu.get("n") or 0)
+        n_cuoi = HG6._n_phan_tich_chinh(kq) or n_ds
+        if n_cuoi <= 0:
+            return False
+        rng = random.Random(int(hashlib.sha256(self.ma.encode("utf-8")).hexdigest()[:8], 16))
+        ten_nhanh = [k for k in dict.fromkeys(r.get("nhanh") or "" for r in dong) if k]
+        cuoi = self._chia_nhanh_luong(ten_nhanh, n_cuoi, dt)
+
+        def _dien(hop: List[Dict[str, str]], n_hop_cuoi: int) -> int:
+            """Điền ngược từ hộp chính cuối; trả n hộp chính ĐẦU của chuỗi."""
+            cur = n_hop_cuoi
+            for r in reversed(hop):
+                if r["loai"] == "chinh":
+                    r["n"] = str(cur)
+                    continue
+                ten = r["buoc"].casefold()
+                if "loại khỏi phân tích" in ten and not ten_nhanh and n_ds >= cur and hop is truc:
+                    k = n_ds - cur  # số người tham gia có trong dữ liệu khoá nhưng không vào phân tích chính
+                else:
+                    ty = next((t for khoa, t in self._TY_LE_LOAI_LUONG if khoa in ten), 0.2)
+                    k = max(1, round(cur * ty / (1 - ty) * rng.uniform(0.8, 1.2)))
+                ly = [x.split(":")[0].strip() for x in (r.get("ly_do") or "").split(";") if x.strip()]
+                if ly:
+                    w = [rng.uniform(0.2, 1.0) * (0.55 ** i) for i in range(len(ly))]
+                    so = [int(k * x / sum(w)) for x in w]
+                    so[0] += k - sum(so)
+                    r["ly_do"] = "; ".join(f"{a}: {b}" for a, b in zip(ly, so))
+                r["n"] = str(k)
+                cur += k
+            return cur
+
+        truc = [r for r in dong if not r.get("nhanh")]
+        dau = {t: _dien([r for r in dong if r.get("nhanh") == t], cuoi[t]) for t in ten_nhanh}
+        if truc:
+            _dien(truc, sum(dau.values()) if ten_nhanh else n_cuoi)
+        b = io.StringIO()
+        w = csv.DictWriter(b, fieldnames=["buoc", "n", "loai", "nhanh", "ly_do"], lineterminator="\n",
+                           extrasaction="ignore")
+        w.writeheader()
+        w.writerows(dong)
+        tam = p.with_name(p.name + ".tam")
+        tam.write_text(b.getvalue(), encoding="utf-8", newline="\n")
+        tam.replace(p)
+        self.buoc.append({"buoc": "Nghiên cứu viên điền sổ sàng lọc (sơ đồ luồng)", "lenh": "—", "ma": 0,
+                          "crash": False, "cuoi": [f"{len(dong)} hộp · n phân tích = {n_cuoi}"]})
+        return True
+
+    def _chia_nhanh_luong(self, ten_nhanh: Sequence[str], n_cuoi: int,
+                          dt: Optional[Mapping[str, Any]]) -> Dict[str, int]:
+        """n phân tích của từng nhánh theo dữ liệu đã khoá: nhánh «Can thiệp»/«Ca bệnh» = giá trị 1 của biến nhóm (RCT)
+        hoặc biến kết cục (bệnh–chứng); thiếu biến/dữ liệu ⇒ chia đều. Tổng luôn = n phân tích chính."""
+        if not ten_nhanh:
+            return {}
+        ts = next((x.get("tham_so") or {} for x in ((dt or {}).get("phan_tich") or []) if x.get("vai") == "chinh"),
+                  {})
+        bien = ts.get("outcome") if self.thiet_ke == "case_control" else ts.get("group")
+        dem1 = dem = 0
+        for tep in sorted((self.out / "05_clean_locked").glob("*.csv")) if bien else []:
+            with tep.open(encoding="utf-8", newline="") as f:
+                for r in csv.DictReader(f):
+                    v = str(r.get(bien) or "").strip()
+                    if v:
+                        dem += 1
+                        dem1 += v in ("1", "1.0")
+            break
+        n1 = round(n_cuoi * dem1 / dem) if dem and len(ten_nhanh) == 2 else n_cuoi // len(ten_nhanh)
+        ra = {t: (n1 if i == 0 else 0) for i, t in enumerate(ten_nhanh)}
+        con = [t for t in ten_nhanh[1:]]
+        for i, t in enumerate(con):
+            ra[t] = (n_cuoi - n1) // len(con) + (1 if i < (n_cuoi - n1) % len(con) else 0)
+        return ra
+
     def g6(self) -> None:
         self.chay("G6 sinh script phân tích", "run_g6_auto.py", "--study", self.study)
         a7 = self.out / f"G6_A7_ANALYSIS_SCRIPTS_{self.study}.md"
@@ -1380,6 +1479,12 @@ class TronVong:
             self.chay("G6 kiểm đặc tả SAP", "chay_sap_g6.py", "kiem", "--study", self.study)
             self.chay("G6 chạy trọn SAP + kiểm chéo SPSS/R", "chay_sap_g6.py", "chay", "--study", self.study,
                       "--kiem-cheo", timeout=7200)
+            # 22/11/2026 (kiểm toàn hệ 11 khâu): lượt G6 đầu chỉ dựng MẪU sơ đồ luồng (cột n trống ⇒ CHUA_DU_SO) —
+            # 22/24 kịch bản trước đây thiếu hình bắt buộc mà không ai đỏ. Vai nghiên cứu viên điền sổ sàng lọc rồi chạy
+            # lại G6 — ĐÚNG đường hướng dẫn cho đề tài thật («điền cột n bằng số THẬT từ sổ sàng lọc rồi chạy lại G6»).
+            if self._dien_so_do_luong(dt):
+                self.chay("G6 chạy lại sau khi điền sổ sàng lọc (sơ đồ luồng)", "chay_sap_g6.py", "chay", "--study",
+                          self.study, "--kiem-cheo", timeout=7200)
             kq = _doc_json(self.out / "G6_SAP_ket_qua.json")
             self.du_lieu["g6"] = {"dem": kq.get("dem"), "phan_tich": [
                 {k: x.get(k) for k in ("id", "vai", "trang_thai", "kiem_cheo", "ly_do", "uoc_luong")}

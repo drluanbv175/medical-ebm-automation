@@ -72,6 +72,71 @@ _CUM_NHAN_QUA = (
     (re.compile(r"\bgây\s+ra\b", re.I), "«gây ra»"),
     (re.compile(r"\blà\s+nguyên\s+nhân\b", re.I), "«là nguyên nhân»"),
 )
+
+# ── Hạn chế & khả năng khái quát theo chuẩn báo cáo của từng thiết kế (22/11/2026) ────────────────────────────────────
+# VÌ SAO: kiểm toàn hệ 11 khâu (bác sĩ 22/11/2026) đo 24 kịch bản giả lập: 11 bản diễn giải không bàn khả năng khái
+# quát, 11 bản phần hạn chế không nêu nguồn sai lệch, chỉ 2 bản (tổng quan gộp) nói hướng sai lệch — luật cũ chỉ đòi chữ
+# «hạn chế» nên tất cả lọt. Số mục lấy đúng danh mục chuẩn đã đối chiếu bản gốc ở `run_g7_auto.CHECKLIST_ITEMS`:
+# CONSORT 2025 mục 30 · STROBE mục 19 (sai lệch/độ chính xác, CẢ hướng lẫn độ lớn) và 21 (khái quát) · STARD 2015 mục
+# 26 · TRIPOD+AI mục 26 · PRISMA 2020 mục 23b/23c · SRQR mục 18 (chuyển giao) và 19 (hạn chế, độ tin cậy).
+# Máy chỉ đo CÓ BÀN hay không (khớp cụm từ), KHÔNG chấm nội dung đúng — người chấm chéo vẫn đọc.
+_SAI_LECH = re.compile(
+    r"sai\s+lệch|thiên\s+lệch|gây\s+nhiễu|\bnhiễu\b|bất\s+định|(?:độ\s+|không\s+)chính\s+xác|sai\s+số|"
+    r"khoảng\s+tin\s+cậy\s+rộng|KTC\s+(?:95\s*%\s+)?rộng|cỡ\s+mẫu\s+(?:nhỏ|hạn\s+chế|chưa\s+đủ)|"
+    # nguồn sai lệch gọi theo cơ chế (một tác giả viết «không làm mù» là đã nêu nguồn sai lệch thực hiện/đo lường)
+    r"làm\s+mù|che\s+giấu\s+phân\s+bổ|nhớ\s+lại|mất\s+(?:theo\s+dõi|dấu)|lạc\s+quan|quá\s+khớp|overfit", re.I)
+_HUONG_SAI_LECH = re.compile(
+    r"(?:đánh\s+giá|ước\s+(?:lượng|tính))\s+(?:thấp|cao|quá|non)|(?:thấp|cao)\s+hơn\s+(?:thực|giá\s+trị\s+thật)|"
+    r"kéo\s+[^.]{0,60}?về\s+(?:phía\s+)?(?:giá\s+trị\s+)?(?:không|1\b|null)|về\s+phía\s+(?:không|giả\s+thuyết\s+không)|"
+    r"phóng\s+đại|làm\s+(?:mạnh|yếu|tăng|giảm)\s+(?:thêm\s+)?(?:mối\s+liên\s+quan|ước\s+lượng|hiệu\s+(?:ứng|quả)|tỷ\s+lệ)|"
+    r"hướng\s+(?:của\s+)?(?:sai\s+lệch|ảnh\s+hưởng)|độ\s+lớn\s+(?:của\s+)?(?:sai\s+lệch|ảnh\s+hưởng)|"
+    r"phân\s+tích\s+sai\s+lệch\s+định\s+lượng|E-value|giá\s+trị\s+E\b", re.I)
+_KHAI_QUAT = re.compile(
+    r"khái\s+quát|ngoại\s+suy|giá\s+trị\s+(?:bên\s+)?ngoài|tính\s+áp\s+dụng|suy\s+rộng|external\s+validity|"
+    r"generali[sz]|áp\s+dụng\s+(?:kết\s+quả\s+)?(?:cho|ở|tại|vào)\s|kiểm\s+định\s+ngoài", re.I)
+_BANG_CHUNG_SR = re.compile(  # PRISMA 2020 mục 23b — hạn chế của bằng chứng được đưa vào
+    r"nghiên\s+cứu\s+(?:gốc|thành\s+phần|được\s+đưa\s+vào)|bằng\s+chứng\s+(?:được\s+)?(?:đưa\s+vào|gốc)|"
+    r"chất\s+lượng\s+(?:của\s+)?(?:các\s+)?(?:nghiên\s+cứu|bằng\s+chứng)|không\s+đồng\s+nhất|sai\s+lệch\s+công\s+bố|"
+    r"\bGRADE\b|RoB\s*2|nguy\s+cơ\s+sai\s+lệch", re.I)
+_QUY_TRINH_SR = re.compile(  # PRISMA 2020 mục 23c — hạn chế của chính quy trình tổng quan
+    r"quy\s+trình\s+tổng\s+quan|chiến\s+lược\s+tìm|tìm\s+kiếm|cơ\s+sở\s+dữ\s+liệu|giới\s+hạn\s+ngôn\s+ngữ|"
+    r"tài\s+liệu\s+xám|sàng\s+lọc|trích\s+xuất", re.I)
+_TIN_CAY_DT = re.compile(  # SRQR mục 19 (định tính) — hạn chế về độ tin cậy của phát hiện
+    r"độ\s+tin\s+cậy|đáng\s+tin|phản\s+tư|tam\s+giác|kiểm\s+tra\s+lại\s+với\s+người\s+tham\s+gia|bão\s+h[oò]a|"
+    r"vai\s+trò\s+(?:của\s+)?(?:nhà\s+nghiên\s+cứu|người\s+phỏng\s+vấn)|trustworth|credib", re.I)
+_CHUYEN_GIAO_DT = re.compile(r"chuyển\s+giao|khái\s+quát|transferab", re.I)  # SRQR mục 18
+_THIET_KE_QUAN_SAT = ("cohort", "case_control", "cross_sectional")
+# thiết kế → [(mục cần đọc: 4 | 45, cụm phải có, chuẩn + mục, nội dung thiếu)]
+LUAT_HAN_CHE = {
+    "rct": [(4, _SAI_LECH, "CONSORT 2025 mục 30", "nguồn sai lệch hoặc độ không chính xác"),
+            (45, _KHAI_QUAT, "CONSORT 2025 mục 30", "khả năng khái quát hoá")],
+    **{tk: [(4, _SAI_LECH, "STROBE mục 19", "nguồn sai lệch hoặc độ không chính xác"),
+            (4, _HUONG_SAI_LECH, "STROBE mục 19", "hướng hoặc độ lớn của sai lệch tiềm ẩn"),
+            (45, _KHAI_QUAT, "STROBE mục 21", "khả năng khái quát hoá (giá trị bên ngoài)")]
+       for tk in _THIET_KE_QUAN_SAT},
+    "diagnostic": [(4, _SAI_LECH, "STARD 2015 mục 26", "nguồn sai lệch hoặc bất định thống kê"),
+                   (45, _KHAI_QUAT, "STARD 2015 mục 26", "khả năng khái quát hoá")],
+    "prediction": [(4, _SAI_LECH, "TRIPOD+AI mục 26", "ảnh hưởng của sai lệch hoặc bất định"),
+                   (45, _KHAI_QUAT, "TRIPOD+AI mục 26", "khả năng khái quát hoá")],
+    "sr_ma": [(4, _BANG_CHUNG_SR, "PRISMA 2020 mục 23b", "hạn chế của bằng chứng được đưa vào"),
+              (4, _QUY_TRINH_SR, "PRISMA 2020 mục 23c", "hạn chế của chính quy trình tổng quan")],
+    "qualitative": [(4, _TIN_CAY_DT, "SRQR mục 19", "hạn chế về độ tin cậy của phát hiện"),
+                    (45, _CHUYEN_GIAO_DT, "SRQR mục 18", "khả năng chuyển giao của phát hiện")],
+}
+
+
+def kiem_han_che_khai_quat(muc4: str, muc5: str, ma_thiet_ke: Optional[str]) -> List[str]:
+    """Mục 4 (hạn chế) và mục 4–5 (khái quát) có bàn đủ nội dung chuẩn báo cáo của thiết kế đòi không.
+    Không suy được thiết kế ⇒ báo lỗi (không đo được ≠ đạt) — chạy lại với --thiet-ke."""
+    if ma_thiet_ke not in LUAT_HAN_CHE:
+        return [f"không xác định được thiết kế (gặp «{ma_thiet_ke}») — chưa đối chiếu được mục hạn chế/khái quát "
+                "theo chuẩn báo cáo; chạy lại với --thiet-ke"]
+    ra = []
+    for noi, mau, chuan, noi_dung in LUAT_HAN_CHE[ma_thiet_ke]:
+        van = muc4 if noi == 4 else f"{muc4}\n{muc5}"
+        if not mau.search(van):
+            ra.append(f"{'mục 4' if noi == 4 else 'mục 4–5'} chưa bàn {noi_dung} ({chuan})")
+    return ra
 _SO = re.compile(r"[-−]?\d+(?:[.,]\d+)?")
 _KTC = re.compile(r"([-−]?\d+(?:[.,]\d+)?)\s*(?:–|—|-|;|,\s|đến|to)\s*([-−]?\d+(?:[.,]\d+)?)")
 _CHU_THICH_BANG = re.compile(r"^\**\s*Bảng\s+\d+[.:]")
@@ -99,7 +164,10 @@ def sinh_mau(study: str, out_dir: Path) -> Path:
            f"{MUC[1]}\n\n[CẦN: kết quả có ý nghĩa thống kê không, và độ lớn hiệu ứng so với ngưỡng ý nghĩa lâm sàng "
            f"(MCID/ngưỡng có nguồn) — hai trục tách riêng]\n\n"
            f"{MUC[2]}\n\n[CẦN: so với nghiên cứu trước — mỗi so sánh kèm PMID/DOI đã kiểm chứng]\n\n"
-           f"{MUC[3]}\n\n[CẦN: điểm mạnh; hạn chế (sai lệch chọn, đo lường, nhiễu, cỡ mẫu, tính khái quát)]\n\n"
+           f"{MUC[3]}\n\n[CẦN: điểm mạnh; hạn chế — nguồn sai lệch (chọn, đo lường, nhiễu) và độ không chính xác; "
+           f"nghiên cứu quan sát nêu cả HƯỚNG và ĐỘ LỚN của sai lệch tiềm ẩn (STROBE 19); tổng quan: hạn chế của "
+           f"bằng chứng và của quy trình tổng quan (PRISMA 23b/23c); định tính: độ tin cậy của phát hiện (SRQR 19); "
+           f"khả năng khái quát/chuyển giao (STROBE 21, CONSORT 2025 mục 30, SRQR 18)]\n\n"
            f"{MUC[4]}\n\n[CẦN: hàm ý cho thực hành — không vượt quá thiết kế; hướng nghiên cứu tiếp]\n\n"
            "> Cần bác sĩ kiểm chứng.\n")
     Path(out_dir).mkdir(parents=True, exist_ok=True)
@@ -301,6 +369,9 @@ def kiem(study: str, out_dir: Path, ma_thiet_ke: Optional[str] = None) -> List[s
     muc4 = _muc(van, MUC[3])
     if muc4 and "hạn chế" not in muc4[len(MUC[3]):].casefold():
         ra.append("mục 4 chưa nêu hạn chế")
+    muc5 = _muc(van, MUC[4])
+    if muc4:
+        ra.extend(kiem_han_che_khai_quat(muc4[len(MUC[3]):], muc5[len(MUC[4]):] if muc5 else "", ma_thiet_ke))
     return ra
 
 
