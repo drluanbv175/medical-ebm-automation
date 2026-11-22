@@ -8,18 +8,20 @@ gọi API tính phí; công cụ này đọc TOÀN VĂN có sẵn trên máy, kh
 
 Cách làm: tách khoảng văn bản (mặc định từ «ĐẶT VẤN ĐỀ» tới «ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP») thành từng VẾ (dấu chấm hoặc
 chấm phẩy); vế nào mang trích dẫn [n] thì mọi con số trong vế (trừ năm, số hiệu khuyến cáo/mục/bảng/mục tiêu) phải có
-trong toàn văn của CÁC tài liệu được dẫn ở chính vế đó. So linh hoạt kiểu viết: «24,9» ↔ «24.9», «316.234» ↔ «316 234»
-/ «316,234».
+trong toàn văn của CÁC tài liệu được dẫn ở chính vế đó. So linh hoạt kiểu viết: «24,9» ↔ «24.9» ↔ «24·9», «316.234» ↔
+«316 234» / «316,234», «0,78» ↔ «0.78» ↔ «.78» (bỏ số 0 đứng đầu, 22/11/2026) — chi tiết và ca cố ý KHÔNG khớp ở
+`mau_so`.
 
 Nguồn toàn văn (theo thứ tự): `exports/<mã>/toan_van_oa/PMID-<pmid>_*.xml` (JATS) → `toan_van_trong_nuoc/` và
 `toan_van_tltk/` (`DOI-<doi, «/» thành «_»>.pdf`, `TLTK-<n>.pdf`) → PDF đính kèm trong thư viện EndNote khai ở
 `~/.ebm-endnote.json` (đọc BẢN SAO `sdb.eni`, chỉ đọc; BỎ tệp `*TomTatChungCu*` — đó là bản tóm tắt do hệ thống dựng,
 không phải nguồn: ngày 20/11/2026 tệp đính kèm đầu tiên của KDIGO 2022/2024 là bản tóm tắt).
 
-GIỚI HẠN (nói thẳng): (1) số viết bằng chữ trong nguồn («Eighty-eight») máy không thấy ⇒ báo «không thấy», người đọc
-soát bằng mắt; (2) số ngắn («1,1») có thể trùng ngẫu nhiên với một chỗ khác trong bài ⇒ không chứng minh được đúng ngữ
-cảnh — đột biến chuyển «1,1%» sang sai tài liệu từng lọt; (3) chỉ kiểm SỰ CÓ MẶT của con số, không kiểm quần thể hay
-chiều liên quan — vẫn phải đọc; (4) tài liệu không có toàn văn trên máy ⇒ vế đó «chưa đối chiếu được», không phải lỗi.
+GIỚI HẠN (nói thẳng): (1) số viết bằng chữ trong nguồn («Eighty-eight») máy không thấy ⇒ báo «không thấy» (lý do kỹ
+thuật: phép so là khớp chữ số); (2) số ngắn («1,1») có thể trùng ngẫu nhiên với một chỗ khác trong bài ⇒ không chứng
+minh được đúng ngữ cảnh — đột biến chuyển «1,1%» sang sai tài liệu từng lọt; (3) chỉ kiểm SỰ CÓ MẶT của con số, không
+kiểm quần thể hay chiều liên quan; (4) tài liệu không có toàn văn trên máy ⇒ vế đó «chưa đối chiếu được», không phải
+lỗi — hệ gom toàn văn qua `tools/toan_van_trich_dan.py kiem` rồi chạy lại.
 
 Ranh giới: TƯ VẤN — không sửa đề cương, không ghi biên nhận, không mở/chặn cổng.
 Lệnh:  python3 tools/kiem_so_lieu_toan_van.py --study <mã> [--tep <.md>] [--tu "ĐẶT VẤN ĐỀ"] [--den "ĐỐI TƯỢNG"]
@@ -185,13 +187,32 @@ def van_toan_van(out_dir: Path, khoa: Dict[str, Optional[str]], endnote: Optiona
     return ""
 
 
+# Dấu thập phân trong nguồn: «.» (tiếng Anh), «,» (tiếng Việt/châu Âu), «·» (dấu chấm giữa của nhóm Lancet: «0·78»).
+_DAU_THAP_PHAN = "[.,·]"
+# Trước số thập phân bỏ số 0 đứng đầu («.78» — kiểu APA cho hệ số không vượt 1): KHÔNG được là chữ số, chữ cái hay dấu
+# phân cách — «1.78», «10.78», «p.78» (trang 78), «vol.78» không phải 0,78. Riêng «¼» được phép: pypdf dịch dấu «=» của
+# PDF Wiley thành «¼» (đo 22/11/2026 trên toàn văn Polit 2007: «S-CVI/Ave ¼ .90», «experts¼.90»), mà «¼» là ký tự \w.
+_TRUOC_THAP_PHAN_KHONG_0 = r"(?<![.,·])(?<![^\W¼_])"
+
+
 def mau_so(tok: str) -> str:
-    """Regex linh hoạt cho một con số viết kiểu Việt Nam."""
+    """Regex linh hoạt cho một con số viết kiểu Việt Nam.
+
+    Các cách viết coi là MỘT: «24,9» ↔ «24.9» ↔ «24·9»; «316.234» ↔ «316 234» / «316,234» / «316234»; số nhỏ hơn 1
+    «0,78» ↔ «0.78» ↔ «.78» (bỏ số 0 đứng đầu — 22/11/2026: đề cương C1a trích Polit 2007 «I-CVI ≥ 0,78», toàn văn
+    viết «.78» ⇒ công cụ từng báo «không thấy» sai).
+
+    KHÔNG coi là một (cố ý): «78», «7,8», «1.78»/«10.78» (số khác); «0,780» ↔ «0,78» — số 0 ở CUỐI đổi độ chính xác
+    được công bố (nguồn «.78» không cho phép viết «0,780»; nguồn «.780» viết thành «0,78» là làm tròn), mà công cụ chỉ
+    kiểm sự có mặt nguyên văn, không chấp nhận làm tròn ở bất kỳ con số nào.
+    """
     if re.fullmatch(r"\d{1,3}(?:\.\d{3})+", tok):  # 316.234 ↔ 316 234 / 316,234 / 316234
         return r"(?<![\d.,])" + r"[\s,.  ]?".join(tok.split(".")) + r"(?!\d)"
-    if "," in tok:  # 24,9 ↔ 24.9
+    if "," in tok:  # 24,9 ↔ 24.9 ↔ 24·9
         a, b = tok.split(",")
-        return rf"(?<![\d.,]){a}[.,]{b}(?!\d)"
+        if a == "0":  # 0,78 ↔ 0.78 ↔ .78
+            return rf"(?:(?<![\d.,·])0|{_TRUOC_THAP_PHAN_KHONG_0}){_DAU_THAP_PHAN}{b}(?!\d)"
+        return rf"(?<![\d.,·]){a}{_DAU_THAP_PHAN}{b}(?!\d)"
     return rf"(?<![\d.,]){tok}(?!\d)"
 
 
@@ -284,10 +305,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         for v in loi:
             print(f"✗ [{', '.join(map(str, v.tai_lieu))}] không thấy {v.khong_thay} trong toàn văn: {v.trich}…")
         for v in chua:
-            print(f"⚪ [{', '.join(map(str, v.tai_lieu))}] chưa đối chiếu được — chưa có toàn văn "
+            print(f"⚪ [{', '.join(map(str, v.tai_lieu))}] chưa đối chiếu được — máy chưa có toàn văn "
                   f"{v.thieu_toan_van} (con số chưa thấy: {v.khong_thay or 'không'}): {v.trich[:120]}…")
+        if chua:
+            print(f"   Hướng xử lý của hệ: `python3 tools/toan_van_trich_dan.py kiem --study {a.study}` xếp từng TLTK "
+                  "thiếu toàn văn vào làn gom (còn làn chưa thử ⇒ thu-thu-tai-lieu gom tiếp; đã thử đủ làn ⇒ "
+                  "`loai-bo`), rồi chạy lại công cụ này.")
         print(f"\n{a.study}: {len(loi)} vế có con số không thấy trong nguồn · {len(chua)} vế chưa đối chiếu được. "
-              "Phép kiểm chỉ xét SỰ CÓ MẶT của con số — quần thể, chiều liên quan vẫn phải đọc. Cần bác sĩ kiểm chứng.")
+              "Phạm vi đo: SỰ CÓ MẶT nguyên văn của con số trong toàn văn tài liệu được dẫn (không đo quần thể, "
+              "chiều liên quan).")
     if loi:
         return 1
     if not co_van:

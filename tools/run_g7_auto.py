@@ -3651,9 +3651,11 @@ def generate_manuscript(
             f"Cỡ mẫu được tính theo {formula_used}, {sample_size_detail}, {effect_text}. "
             f"Cần {n_adjusted} người tham gia (chi tiết xem Bảng S1 — G3 checkpoint).  "
             if (formula_used and n_adjusted)
-            # 16/11/2026: thiết kế KHÔNG tính N theo lực (tổng quan–gộp, định tính, dự báo) có N PI đã chốt ở G3
-            else (f"Cỡ mẫu đã chốt ở G3: N = {g3_n_chot} — {_N_THEO_THIET_KE.get(design_code, 'xem G3')} (chi tiết "
-                  "xem G3 checkpoint).  ") if g3_n_chot
+            # 16/11/2026: thiết kế KHÔNG tính N theo lực (tổng quan–gộp, định tính, dự báo) có N PI đã chốt ở G3.
+            # 22/11/2026: N kèm ĐƠN VỊ «người» — K18 (TRIPOD+AI 10 «cỡ mẫu cuối cùng») đòi số kèm đơn vị; trước đó mục
+            # chỉ «đạt» nhờ chữ «§2 Đối tượng» của dòng tên mục (K18 nay không nhận tên mục làm bằng chứng).
+            else (f"Cỡ mẫu đã chốt ở G3: N = {g3_n_chot} người — "
+                  f"{_N_THEO_THIET_KE.get(design_code, 'xem G3')} (chi tiết xem G3 checkpoint).  ") if g3_n_chot
             else "[CẦN CỠ MẪU TỪ G3 — chưa có kết quả tính cỡ mẫu cho đề tài này. "
                  "KHÔNG viết 'cỡ mẫu được tính theo…' khi G3 chưa chạy; chạy "
                  "`python tools/run_g3_auto.py --study <mã>` rồi sinh lại bản thảo.]  "

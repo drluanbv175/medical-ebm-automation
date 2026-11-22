@@ -125,7 +125,10 @@ def test_mi_poisson_ten_bien_gia_va_mo_hinh():
     pr_mi = next(r["PR_adj"] for r in mi["results"] if r["variable"] == "g")
     pr_cc = next(r["PR_adj"] for r in cc["results"] if r["variable"] == "g")
     assert pr_mi == pytest.approx(pr_cc, rel=0.10), (pr_mi, pr_cc)
-    assert "cụm" in RSA.multiple_imputation_model(df, "y", "g", ["tuoi"], "poisson_pr", 2, "kg", bg)["error"]
+    # 22/11/2026: MI + Poisson vững theo cụm nay ĐƯỢC hỗ trợ (bộ gán tự lập, gộp Rubin, t(G−1)) — bản cũ khẳng định
+    # «chưa hỗ trợ cụm»; kiểm số bằng mô phỏng ở tests/test_run_stats_mi_nhanh_poisson_cum_20261122.py.
+    cum = RSA.multiple_imputation_model(df, "y", "g", ["tuoi"], "poisson_pr", 2, "kg", bg)
+    assert cum["model"] == "poisson_cluster_mi" and cum["cluster"]["so_cum"] == 3, cum
 
 
 # ───────────────────────── run_stats_analysis main ─────────────────────────
