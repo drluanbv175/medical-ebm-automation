@@ -36,6 +36,11 @@ Lệnh:
   python3 tools/khung_bieu_bang.py --study <mã> --thay-chuong --ghi
         # thay ĐÚNG chương «5. DỰ KIẾN KẾT QUẢ» của đề cương nộp hiện có (giữ nguyên mọi chương khác), vẽ hình vào
         # exports/<mã>/bieu-bang/ và xuất lại Word; sao lưu bản cũ trước khi ghi.
+  python3 tools/khung_bieu_bang.py --study <mã> --nang-cap --ghi
+        # nâng cấp TẠI CHỖ chương soạn tay; chạy lại cho ra văn bản giống hệt. Hình/biểu đồ đã có ảnh được vẽ lại từ
+        # nguồn tất định hiện hành vào ĐÚNG tệp đang tham chiếu (sơ đồ chọn ← SO_DO_LUONG_<mã>.csv riêng của đề tài
+        # hoặc khung chuẩn; biểu đồ ← khung chuẩn cùng tên; biểu đồ «kịch bản độ nhạy» ← bảng độ nhạy của chương);
+        # ảnh trùng từng byte thì không ghi lại; không xác định được nguồn ⇒ giữ ảnh và in lý do.
 Mã thoát: 0 đạt/xong · 1 còn lỗi K9 · 2 thiếu dữ kiện (ma trận/đề cương) · 3 tham số sai.
 """
 from __future__ import annotations
@@ -96,6 +101,9 @@ class Bien:
     kieu: str  # nhi_phan · danh_dinh · thu_tu · lien_tuc · dem · ngay · thoi_gian_den_su_kien · nhieu_lc · van_ban
     muc: List[Tuple[str, str]] = field(default_factory=list)
     don_vi: str = ""
+    # Khoảng giá trị hợp lệ của biến điểm (vd thang 1–5) — lấy từ quy tắc mã thiếu của biến phái sinh («mức hợp lệ
+    # 1–5»); biểu đồ trung bình dùng làm trục tung (22/11/2026: Biểu đồ 3.1 C1a vẽ trục 0–1 cho điểm thang 1–5).
+    thang: Optional[Tuple[float, float]] = None
 
 
 @dataclass
@@ -140,6 +148,9 @@ class NguCanh:
     n: Optional[int] = None
     # 20/11/2026: nghiên cứu khai thác hồ sơ CÓ SẴN (miễn đồng thuận) — không có bước «mời tham gia/từ chối».
     hoi_cuu: bool = False
+    # 22/11/2026: các hộp sơ đồ luồng RIÊNG của đề tài từ `SO_DO_LUONG_<mã>.csv` (khuôn `ve_bieu_do.py
+    # mau-so-do-luong`, cùng tệp G6 dùng vẽ sơ đồ có số) — rỗng khi chưa có tệp hoặc tệp vẫn là mẫu chung của thiết kế.
+    luong: List[Dict[str, str]] = field(default_factory=list)
 
 
 # ─────────────────────────────── nạp dữ kiện ───────────────────────────────
@@ -274,7 +285,8 @@ def nap_ngu_canh(out_dir: Path, study: str, thiet_ke: str = "", muc_tieu: Option
         muc = _nhan_muc_kem_khoang(_muc_lua_chon(r.get("nhan_gia_tri")), r.get("dinh_nghia") or "", nhan)
         cu = bien.get(ten)
         bien[ten] = Bien(ten, nhan or (cu.nhan if cu else ten), cu.kieu if cu else "lien_tuc", muc or
-                         (cu.muc if cu else []), dv or (cu.don_vi if cu else ""))
+                         (cu.muc if cu else []), dv or (cu.don_vi if cu else ""),
+                         _thang_hop_le(r.get("quy_tac_ma_thieu") or "") or (cu.thang if cu else None))
     for r in ma_tran or []:  # kiểu trong ma trận là quyết định của nhóm nghiên cứu — thắng kiểu suy từ trường
         ten, kieu = (r.get("bien") or "").strip(), (r.get("kieu") or "").strip()
         if ten and ten in bien and kieu:
@@ -291,9 +303,43 @@ def nap_ngu_canh(out_dir: Path, study: str, thiet_ke: str = "", muc_tieu: Option
         n = None
     g2 = ((meta.get("gate_params") or {}).get("G2") or {})
     cach_thu = str(g1.get("data_collection_method") or meta.get("data_collection_method") or "")
-    hoi_cuu = g2.get("icf_waiver_requested") is True or bool(re.search(r"có sẵn|hồi cứu", cach_thu, re.I))
+    # 22/11/2026: đề tài THU MỚI có lấy đồng ý (icf_waiver_requested = false) không phải hồi cứu dù có khai thác thêm
+    # nguồn CÓ SẴN (C1a: phiếu tự điền + mốc thời gian chờ trên HIS) — trước đó chữ «có sẵn» làm sơ đồ chọn của C1a
+    # mất bước mời/từ chối. Chỉ khi G2 chưa khai miễn đồng thuận mới đoán theo cách thu thập.
+    mien = g2.get("icf_waiver_requested")
+    hoi_cuu = mien is True or (mien is not False and bool(re.search(r"có sẵn|hồi cứu", cach_thu, re.I)))
+    luong = _doc_csv(out_dir / f"SO_DO_LUONG_{study}.csv")
+    if luong and _la_mau_chung_luong(luong, tk):
+        luong = []
     return NguCanh(tk, list(muc_tieu or []), bien, list(ma_tran or []), list(dac.get("phan_tich") or []), n,
-                   hoi_cuu)
+                   hoi_cuu, luong)
+
+
+_THANG_RE = re.compile(r"mức hợp lệ\s*(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)", re.I)
+
+
+def _thang_hop_le(quy_tac: str) -> Optional[Tuple[float, float]]:
+    """«… mức hợp lệ 1–5» ⇒ (1.0, 5.0); không khai ⇒ None (không đoán thang)."""
+    m = _THANG_RE.search(str(quy_tac or ""))
+    if not m:
+        return None
+    a, b = (float(x.replace(",", ".")) for x in m.groups())
+    return (a, b) if a < b else None
+
+
+def _la_mau_chung_luong(dong: List[Dict[str, str]], tk: str) -> bool:
+    """Tệp sơ đồ luồng còn đúng MẪU CHUNG của thiết kế (G6 tự tạo khi chưa có, `ve_bieu_do.mau_so_do_luong`) ⇒ chưa
+    mang thông tin riêng của đề tài; khung chuẩn của thiết kế (có nhánh hồi cứu/CONSORT/STARD…) đầy đủ hơn."""
+    try:
+        import ve_bieu_do as VB  # noqa: PLC0415
+
+        mau = VB.mau_so_do_luong(tk)
+    except (SystemExit, ImportError):
+        return False
+
+    def _khoa(rs: Sequence[Dict[str, str]]) -> List[Tuple[str, ...]]:
+        return [tuple(str(r.get(c) or "").strip() for c in ("buoc", "loai", "nhanh", "ly_do")) for r in rs]
+    return _khoa(dong) == _khoa(mau)
 
 
 # ─────────────────────────────── tiện ích chữ ───────────────────────────────
@@ -384,6 +430,11 @@ def _buoc_tang(b: Optional["Bien"], ts: Dict[str, Any], ten: str) -> str:
 
 def _so(n: Optional[int]) -> str:
     return f"{n:,}".replace(",", ".") if isinstance(n, int) else X
+
+
+def _so_gon(x: float) -> str:
+    """5.0 ⇒ «5»; 2.5 ⇒ «2,5» (dấu phẩy thập phân)."""
+    return str(int(x)) if float(x).is_integer() else str(x).replace(".", ",")
 
 
 def _nhan_bien(nc: NguCanh, ten: str, khai_niem: str = "", don_vi: bool = True) -> str:
@@ -556,19 +607,64 @@ def _so_do(nc: NguCanh) -> Khung:
             buoc.append((f"Đưa vào phân tích {n}", None))
             tach = []
         ten = "Sơ đồ chọn đối tượng nghiên cứu (theo STROBE)"
-    # 21/11/2026 (STROBE 13b, RECORD 13.1): ghi chú nêu đúng các ô loại của chính sơ đồ — khi hình được vẽ ra ảnh, chữ
-    # trong ô không còn trong văn bản nên người đọc (và K17) không biết sơ đồ ghi những lý do loại nào.
-    loai = []
-    for o in [b[1] for b in buoc if b[1]] + [c for nh in tach for c in nh[1:-1]]:
-        for d in str(o).split("\n"):
-            d = re.sub(r"\s*\(n = …\)", "", d).strip(" –-")
-            if d and d not in loai and not re.match(r"(Theo dõi|Phân tích|Có tiêu chuẩn|Có bệnh)\b", d):
-                loai.append(d)
+    if nc.luong:
+        # 22/11/2026: đề tài đã có sổ sơ đồ luồng riêng (khuôn `ve_bieu_do.py mau-so-do-luong`) ⇒ các hộp lấy ĐÚNG từ
+        # tệp đó — cùng các hộp G6 sẽ điền số thật và kiểm số học — thay khung chung của thiết kế.
+        buoc, tach, loai = _buoc_tu_luong(nc.luong)
+    else:
+        # 21/11/2026 (STROBE 13b, RECORD 13.1): ghi chú nêu đúng các ô loại của chính sơ đồ — khi hình được vẽ ra ảnh,
+        # chữ trong ô không còn trong văn bản nên người đọc (và K17) không biết sơ đồ ghi những lý do loại nào.
+        loai = []
+        for o in [b[1] for b in buoc if b[1]] + [c for nh in tach for c in nh[1:-1]]:
+            for d in str(o).split("\n"):
+                d = re.sub(r"\s*\(n = …\)", "", d).strip(" –-")
+                if d and d not in loai and not re.match(r"(Theo dõi|Phân tích|Có tiêu chuẩn|Có bệnh)\b", d):
+                    loai.append(d)
     ghi = ["Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu."]
     if loai:
-        ghi.append("Các lý do loại và ra khỏi nghiên cứu được ghi nhận: " + "; ".join(x[:1].lower() + x[1:]
-                                                                                    for x in loai) + ".")
+        ghi.append(GHI_LY_DO_LOAI + " " + "; ".join(x[:1].lower() + x[1:] for x in loai) + ".")
+    if nc.luong and any(len(_ly_do_luong(r)) >= 2 for r in nc.luong if (r.get("loai") or "").strip() == "loai"):
+        # `bieu_do_bao_cao.kiem_so_hoc_luong` (G6) đòi tổng chi tiết lý do = số của ô loại ⇒ mỗi trường hợp chỉ tính
+        # một lần; ghi rõ quy ước để số điền sau khớp phép kiểm số học.
+        ghi.append(GHI_MOT_LAN)
     return Khung("hinh", ten, dac_ta={"kieu": "so_do", "buoc": buoc, "tach": tach}, ghi_chu=ghi)
+
+
+GHI_LY_DO_LOAI = "Các lý do loại và ra khỏi nghiên cứu được ghi nhận:"
+GHI_MOT_LAN = "Ô có nhiều lý do: mỗi trường hợp được tính một lần, theo lý do đầu tiên mà trường hợp đó gặp."
+
+
+def _ly_do_luong(r: Dict[str, str]) -> List[str]:
+    """«Không đủ tiêu chuẩn: ; Từ chối: 5» ⇒ ["Không đủ tiêu chuẩn", "Từ chối"] (bỏ số — khung không in số)."""
+    return [t for t in (re.sub(r"\s*[:=]\s*\d*\s*$", "", x).strip() for x in str(r.get("ly_do") or "").split(";"))
+            if t]
+
+
+def _buoc_tu_luong(dong: List[Dict[str, str]]) -> Tuple[List[Tuple[str, Optional[str]]], List[List[str]], List[str]]:
+    """Hàng của `SO_DO_LUONG_<mã>.csv` (buoc, n, loai = chinh|loai, nhanh, ly_do) ⇒ (các bước trục chung với ô loại
+    bên cạnh, các nhánh, danh sách lý do loại cho ghi chú). Khung luôn in «n = …» (số thật do G6 vẽ sau)."""
+    n = f"(n = {X})"
+
+    def _chu(r: Dict[str, str]) -> str:
+        return "\n".join([f"{str(r.get('buoc') or '').strip()} {n}"] + [f"– {t} {n}" for t in _ly_do_luong(r)])
+
+    buoc: List[List[Optional[str]]] = []
+    nhanh: Dict[str, List[str]] = {}
+    loai: List[str] = []
+    for r in dong:
+        la_loai = (r.get("loai") or "").strip().lower() == "loai"
+        if la_loai:
+            for t in _ly_do_luong(r) or [str(r.get("buoc") or "").strip()]:
+                if t and t not in loai:
+                    loai.append(t)
+        ten_nhanh = (r.get("nhanh") or "").strip()
+        if ten_nhanh:
+            nhanh.setdefault(ten_nhanh, []).append(_chu(r))
+        elif la_loai and buoc:
+            buoc[-1][1] = (buoc[-1][1] + "\n" if buoc[-1][1] else "") + _chu(r)
+        else:
+            buoc.append([_chu(r), None])
+    return [(b[0] or "", b[1]) for b in buoc], list(nhanh.values()), loai
 
 
 # ─────────────────────────────── bảng đặc điểm ───────────────────────────────
@@ -747,12 +843,19 @@ def _khung_mo_ta_kq(nc: NguCanh, k: int, ten_mt: str, kq: List[Dict[str, str]]) 
     nhi = [r for r in kq if (nc.bien.get(r["bien"].strip()) or Bien("", "", "nhi_phan")).kieu == "nhi_phan"]
     lt = [r for r in kq if (nc.bien.get(r["bien"].strip()) or Bien("", "", "nhi_phan")).kieu in ("lien_tuc", "dem")]
     co_ty_le = len(nhi) >= 2 or (bool(nhi) and len(lt) < 2)
-    nhan_bd = [_nhan_bien(nc, r["bien"].strip(), r.get("khai_niem") or "") for r in (nhi if co_ty_le else lt or kq)][:8]
+    ds_bd = (nhi if co_ty_le else lt or kq)[:8]
+    nhan_bd = [_nhan_bien(nc, r["bien"].strip(), r.get("khai_niem") or "") for r in ds_bd]
+    # 22/11/2026: trung bình của các biến điểm CÙNG thang (vd 1–5) ⇒ trục tung ghi thang và chạy tới điểm tối đa; trước
+    # đó trục luôn 0–1 với nhãn «Giá trị trung bình» không đơn vị (Biểu đồ 3.1 C1a).
+    thang = {(nc.bien.get(r["bien"].strip()) or Bien("", "", "")).thang for r in ds_bd}
+    thang_chung = next(iter(thang)) if len(thang) == 1 and None not in thang and not co_ty_le else None
+    truc_y = "Tỷ lệ (%)" if co_ty_le else "Giá trị trung bình"
+    if thang_chung:
+        truc_y += f" (thang {_so_gon(thang_chung[0])}–{_so_gon(thang_chung[1])})"
     bd = Khung("bieu_do", ("Tỷ lệ các chỉ số chính" if co_ty_le else "Giá trị trung bình các chỉ số chính")
                + f" kèm khoảng tin cậy 95% (Mục tiêu {k})",
-               dac_ta={"kieu": "cot_ktc", "nhan": nhan_bd,
-                       "truc_y": "Tỷ lệ (%)" if co_ty_le else "Giá trị trung bình",
-                       "truc_x": "", "nguon": "bảng tương ứng"},
+               dac_ta={"kieu": "cot_ktc", "nhan": nhan_bd, "truc_y": truc_y, "truc_x": "", "nguon": "bảng tương ứng",
+                       **({"y_max": thang_chung[1]} if thang_chung else {})},
                ghi_chu=["Cột là ước lượng điểm; thanh sai số là KTC 95%."])
     return [Khung("bang", ten, cot, dong, ghi), bd]
 
@@ -1005,6 +1108,24 @@ def _tach_tien_to_chung(ds: List[str]) -> Tuple[str, List[str]]:
     return dau, [_hoa_dau(x[cat + 3:]) for x in ds]
 
 
+def _tach_hau_to_chung(ds: List[str]) -> Tuple[str, List[str]]:
+    """Phần đuôi CHUNG của mọi dòng, bắt đầu sau « ; » ⇒ (đuôi chung, phần riêng). Dưới 2 dòng hoặc đuôi chung không
+    mở bằng «; » ⇒ («», ds)."""
+    if len(ds) < 2:
+        return "", list(ds)
+    import os.path as _op  # noqa: PLC0415
+    dao = _op.commonprefix([x[::-1] for x in ds])[::-1]
+    cat = dao.find("; ")
+    if cat < 0:
+        return "", list(ds)
+    hau = dao[cat + 2:].strip()
+    giu = len(dao) - cat
+    rieng = [x[:len(x) - giu].rstrip(" ;") for x in ds]
+    if not hau or any(not r for r in rieng):
+        return "", list(ds)
+    return hau, rieng
+
+
 def _khung_nhom_nho_do_nhay(nc: NguCanh) -> List[Khung]:
     ngu_canh_nho = nc
     nn = [p for p in nc.phan_tich if p.get("vai") == "nhom_con"]
@@ -1018,6 +1139,9 @@ def _khung_nhom_nho_do_nhay(nc: NguCanh) -> List[Khung]:
     # cắt 40 ký tự ⇒ 9 nhãn giống hệt). Phần chung đưa lên ghi chú/tên biểu đồ; mỗi dòng chỉ còn tên nhóm.
     mo_ta_nn = [_lam_sach_mo_ta(ngu_canh_nho, str(p.get("mo_ta") or p.get("id"))) for p in nn]
     chung_nn, rieng_nn = _tach_tien_to_chung(mo_ta_nn)
+    # 22/11/2026: quy tắc trình bày chung ở CUỐI mọi mô tả nhóm nhỏ («…; nhóm dưới 30 người chỉ báo số đếm», đặc tả
+    # BTM) lên ghi chú — trước đó nó lặp ở từng dòng và bị cắt giữa chữ trong nhãn biểu đồ («…nội tiết; nhó»).
+    hau_nn, rieng_nn = _tach_hau_to_chung(rieng_nn)
     ty_le = bool(nn) and all("ty_le" in (p.get("tham_so") or {}) or m.lower().startswith("tỷ lệ")
                              for p, m in zip(nn, mo_ta_nn))
     # Cột cuối: ước lượng là TỶ LỆ thì so bằng chênh lệch điểm phần trăm — «cùng chiều / khác chiều» chỉ có nghĩa với
@@ -1046,7 +1170,9 @@ def _khung_nhom_nho_do_nhay(nc: NguCanh) -> List[Khung]:
         ghi.append("Cột cuối: với tỷ lệ ghi chênh lệch (điểm phần trăm) so với ước lượng của phân tích chính"
                    + ("; với tỷ số ghi cùng chiều hay khác chiều với mô hình chính." if so_ty_so in cot_cuoi else "."))
     if chung_nn:
-        ghi.append(f"Các dòng nhóm nhỏ: {_thuong_dau(chung_nn)} trong từng nhóm.")
+        ghi.append(f"Các dòng nhóm nhỏ: {_thuong_dau(chung_nn)} trong từng nhóm" + (f"; {hau_nn}." if hau_nn else "."))
+    elif hau_nn:
+        ghi.append(f"Các dòng nhóm nhỏ: {hau_nn}.")
     if any(isinstance((p.get("tham_so") or {}).get("n_imputations"), int)
            and not isinstance((p.get("tham_so") or {}).get("n_imputations"), bool)
            and (p.get("tham_so") or {}).get("n_imputations") > 0 for p in nc.phan_tich):
@@ -1059,7 +1185,7 @@ def _khung_nhom_nho_do_nhay(nc: NguCanh) -> List[Khung]:
         ten_bd = (f"{_hoa_dau(chung_nn)} theo nhóm nhỏ kèm KTC 95%" if ty_le and chung_nn else
                   "Tỷ lệ theo nhóm nhỏ kèm KTC 95%" if ty_le else "Ước lượng theo nhóm nhỏ kèm KTC 95%")
         kh.append(Khung("bieu_do", ten_bd,
-                        dac_ta={"kieu": "forest", "nhan": [r[:40] for r in rieng_nn][:12] + ["Chung"],
+                        dac_ta={"kieu": "forest", "nhan": rieng_nn[:12] + ["Chung"],
                                 "ref": None if ty_le else (ref if chinh else None),
                                 "truc_x": "Tỷ lệ (%) và KTC 95%" if ty_le else "Ước lượng (KTC 95%)",
                                 "log": (not ty_le) and bool(chinh) and ref == 1.0, "phan_tram": ty_le},
@@ -1192,6 +1318,27 @@ def _plt():
     return plt
 
 
+def _vi_tri_hang_forest(nhan: Sequence[str]) -> Tuple[List[float], float]:
+    """(toạ độ dọc từng hàng, tổng chiều cao theo đơn vị hàng 0,38 inch) của forest, hàng trên cùng trước. 22/11/2026:
+    nhãn ngắt từ ba dòng trở lên (kịch bản độ nhạy) được hàng cao hơn để chữ không chồng hàng kề; nhãn một–hai dòng giữ
+    đúng một đơn vị như trước nên ảnh cũ vẽ lại không đổi."""
+    cao = [max(1.0, (0.16 * (x.count("\n") + 1) + 0.06) / 0.38) for x in nhan]
+    tong = sum(cao)
+    y, dinh = [], tong
+    for c in cao:
+        y.append(dinh - c / 2 - 0.5)
+        dinh -= c
+    return y, tong
+
+
+def _truc_so_viet(ax, truc: str) -> None:
+    """Nhãn vạch trục dấu phẩy thập phân (K11) — dùng lại `bieu_do_chung.dinh_dang_truc` của bảy họ biểu đồ G6.
+    22/11/2026: trục tung Biểu đồ 3.1 C1a in «0.2», «0.4»."""
+    import bieu_do_chung as BC  # noqa: PLC0415
+
+    BC.dinh_dang_truc(ax, "vi", truc)
+
+
 def _ngat(s: str, rong: int = 34) -> str:
     import textwrap  # noqa: PLC0415
 
@@ -1222,19 +1369,20 @@ def ve_hinh(kh: Khung, dich: Path, du_lieu: Optional[Dict[str, Any]] = None) -> 
                             ecolor="#222222", capsize=4, lw=1)
             ax.set_ylim(0, max(100 if "%" in d.get("truc_y", "") else 0, max(hi or u) * 1.15))
         else:
-            ax.set_ylim(0, 100 if "%" in d.get("truc_y", "") else 1)
+            ax.set_ylim(0, 100 if "%" in d.get("truc_y", "") else (d.get("y_max") or 1))
             ax.bar(x, [0] * len(x), width=0.6)
         ax.set_xticks(x)
         ax.set_xticklabels(nhan, fontsize=8)
         ax.set_ylabel(d.get("truc_y") or "")
+        _truc_so_viet(ax, "y")
         if d.get("truc_x"):
             ax.set_xlabel(d["truc_x"])
         ax.yaxis.grid(True, color="#dddddd", lw=0.6)
         ax.set_axisbelow(True)
     elif kieu == "forest":
         nhan = [_ngat(x, 40) for x in (d.get("nhan") or ["Yếu tố 1", "Yếu tố 2"])]
-        fig, ax = plt.subplots(figsize=(6.2, max(2.4, 0.38 * len(nhan) + 1.2)))
-        y = list(range(len(nhan)))[::-1]
+        y, tong = _vi_tri_hang_forest(nhan)
+        fig, ax = plt.subplots(figsize=(6.2, max(2.4, 0.38 * tong + 1.2)))
         ref = d.get("ref")
         log = bool(d.get("log"))
         if du_lieu and du_lieu.get("uoc_luong"):
@@ -1256,11 +1404,13 @@ def ve_hinh(kh: Khung, dich: Path, du_lieu: Optional[Dict[str, Any]] = None) -> 
             ax.set_xticks(list(range(0, 101, 20)))
         elif ref is not None:
             ax.set_xlim(ref - 1, ref + 1)
+        if not log:
+            _truc_so_viet(ax, "x")
         if ref is not None:
             ax.axvline(ref, color="#555555", lw=0.8, ls="--")
         ax.set_yticks(y)
         ax.set_yticklabels(nhan, fontsize=8)
-        ax.set_ylim(-0.8, len(nhan) - 0.2)
+        ax.set_ylim(-0.8, tong - 0.2)
         ax.set_xlabel(d.get("truc_x") or "")
     elif kieu in ("roc", "hieu_chuan"):
         fig, ax = plt.subplots(figsize=(4.2, 4.2))
@@ -1570,12 +1720,217 @@ def _so_do_tu_bang(hang: List[List[str]]) -> Optional[Khung]:
     return Khung("hinh", "", dac_ta={"kieu": "so_do", "buoc": [tuple(b) for b in buoc], "tach": []})
 
 
-def nang_cap_chuong(md: str, ngu: NguCanh, out_dir: Optional[Path], ve_anh: bool = True) -> Tuple[str, List[str]]:
+_VIET_TAT_CAU_RE = re.compile(r"^Chữ viết tắt — ((?:[^;:]+:[^;]*?)(?:; [^;:]+:[^;]*?)*)\.(?:\s+|$)", re.S)
+
+
+def _bo_nhan_ghi_chu(cu: str) -> str:
+    """Dòng ghi chú sẵn có ⇒ nội dung không nhãn. «*Ghi chú:* X» ⇒ «X»; «*X.*» (ghi chú nghiêng soạn tay) ⇒ «X.».
+    22/11/2026: trước đó chỉ bỏ dấu sao hai đầu ⇒ «Ghi chú:* X» còn sót dấu sao, chữ viết tắt cũ bị coi là giải thích
+    và bị chép lại ở lượt nâng cấp sau."""
+    s = cu.strip()
+    m = re.match(r"^\*\s*Ghi chú\s*:\s*\*\s*(.*)$", s, re.S)
+    if m:
+        return m.group(1).strip()
+    s = s.strip("*").strip()
+    return s[len("Ghi chú:"):].strip() if s.startswith("Ghi chú:") else s
+
+
+def _ghep_ghi_chu(cot: Sequence[str], than: Sequence[Sequence[str]], cu: str) -> List[str]:
+    """Ghi chú dưới bảng = câu chữ viết tắt GỘP (giữ thứ tự và định nghĩa sẵn có — kể cả viết tắt riêng của đề tài như
+    BHYT, HIS, NVYT, HC3 — rồi thêm viết tắt chuẩn còn thiếu tính từ bảng, không trùng khoá) + phần giải thích sẵn có
+    giữ nguyên. Chạy lại trên kết quả của chính nó cho ra đúng chuỗi đó (tái lập)."""
+    moi = _ghi_chu(cot, than)
+    m = _VIET_TAT_CAU_RE.match(cu or "")
+    cu_vt = [x.strip() for x in m.group(1).split("; ")] if m else []
+    giai_thich = (cu[m.end():] if m else (cu or "")).strip()
+    khoa = [x.split(":", 1)[0].strip() for x in cu_vt]
+    vt = list(cu_vt)
+    for cau in moi:
+        if cau.startswith("Chữ viết tắt — "):
+            for x in cau[len("Chữ viết tắt — "):].rstrip(".").split("; "):
+                k = x.split(":", 1)[0].strip()
+                if k not in khoa:
+                    khoa.append(k)
+                    vt.append(x.strip())
+    ra = [f"Chữ viết tắt — {'; '.join(vt)}."] if vt else []
+    ra += [c for c in moi if not c.startswith("Chữ viết tắt — ") and c not in giai_thich]
+    if giai_thich:
+        ra.append(giai_thich)
+    return ra
+
+
+_SO_DO_TEN_RE = re.compile(r"[Ss]ơ đồ.*(?:chọn|tuyển|tham gia|tiếp cận|CONSORT|STROBE|STARD|PRISMA|TRIPOD|COREQ)")
+
+
+def _nhan_ngan(s: str) -> str:
+    """Nhãn hàng biểu đồ từ ô đầu của bảng: bỏ in đậm, cắt phần diễn giải sau « (», «: », «; » hoặc «, » đầu tiên khi
+    phần trước còn ít nhất ba từ (nhãn ngắn để biểu đồ đọc được; nội dung đầy đủ ở bảng)."""
+    s = re.sub(r"\*\*", "", str(s or "")).strip()
+    cat = [i for i in (s.find(" ("), s.find(": "), s.find("; "), s.find(", ")) if i > 0 and len(s[:i].split()) >= 3]
+    return _hoa_dau(s[:min(cat)].strip()) if cat else _hoa_dau(s)
+
+
+def _bang_trong_chuong(dong: Sequence[str]) -> List[Tuple[str, List[List[str]]]]:
+    """[(tên bảng, các hàng)] của mọi bảng có tên «**Bảng c.k. …**» trong đoạn chương."""
+    ra = []
+    for i, d in enumerate(dong):
+        m = _TIEU_DE_BB.match(d.strip())
+        if not m or m.group(1) != "Bảng":
+            continue
+        j = i + 1
+        while j < len(dong) and not dong[j].strip():
+            j += 1
+        hang = []
+        while j < len(dong) and dong[j].strip().startswith("|"):
+            hang.append([o.strip() for o in dong[j].strip().strip("|").split("|")])
+            j += 1
+        ra.append((m.group(4), hang))
+    return ra
+
+
+def _forest_do_nhay_tu_chuong(dong: Sequence[str], ghi_chu: str, ngu: NguCanh) -> Tuple[Optional[Khung], str]:
+    """Biểu đồ «… mô hình chính và các kịch bản độ nhạy» của chương soạn tay ⇒ forest dựng từ CHÍNH các bảng của
+    chương: hàng «mô hình thô»/«mô hình chính» (bảng kết quả của mục tiêu) rồi từng dòng của bảng phân tích độ nhạy, trừ
+    dòng không so được với phân tích chính (cột cuối «—») và các phân tích ghi chú của biểu đồ nêu «(không gồm …)».
+    Thước đo, đường không hiệu ứng và thang log theo phân tích chính của đặc tả. Không đủ căn cứ ⇒ (None, lý do)."""
+    bang = _bang_trong_chuong(dong)
+    dn = next(((t, h) for t, h in bang if re.search(r"độ nhạy", t, re.I) and len(h) > 2), None)
+    if dn is None:
+        return None, "không thấy bảng phân tích độ nhạy trong chương"
+    cot_loai = next((c for c, x in enumerate(dn[1][0]) if x.strip().lower() == "loại"), None)
+    hang_dn = [h for h in dn[1][2:] if h and h[0].strip() and
+               (cot_loai is None or (len(h) > cot_loai and "độ nhạy" in h[cot_loai].lower()))]
+    m = re.search(r"\(không gồm ([^)]*)\)", ghi_chu or "")
+    tru = [x.strip().lower() for x in re.split(r",\s*|\s+và\s+", m.group(1))] if m else []
+    for t in tru:
+        if not any(t in re.sub(r"\*\*", "", h[0]).lower() for h in hang_dn):
+            return None, f"ghi chú loại «{t}» nhưng không có dòng tương ứng ở bảng «{dn[0][:60]}»"
+    hang_dn = [h for h in hang_dn if h[-1].strip() not in ("—", "-")
+               and not any(t in re.sub(r"\*\*", "", h[0]).lower() for t in tru)]
+    nhan: List[str] = []
+    for mau in (r"mô hình thô", r"mô hình chính"):
+        o = next((h[0] for t, hs in bang if t != dn[0] for h in hs[2:] if h and re.search(mau, h[0], re.I)), None)
+        if o is None and re.search(mau, ghi_chu or "", re.I):
+            return None, f"ghi chú nêu «{mau}» nhưng không thấy hàng tương ứng trong các bảng của chương"
+        if o is not None:
+            o = re.sub(r"\*\*", "", o).strip()
+            nhan.append(_hoa_dau(o.rsplit(", ", 1)[-1]))
+    nhan += [_nhan_ngan(h[0]) for h in hang_dn]
+    if len(nhan) < 2:
+        return None, "bảng phân tích độ nhạy không có dòng ước lượng nào"
+    ten_td, vt, ref = _thuoc_do(_phan_tich_chinh(ngu), ngu.thiet_ke)
+    return Khung("bieu_do", "", dac_ta={"kieu": "forest", "nhan": nhan, "ref": ref, "log": ref == 1.0,
+                                        "truc_x": f"{_hoa_dau(ten_td)} (KTC 95%)"}), f"bảng «{dn[0][:50]}» của chương"
+
+
+def _nguon_hinh(loai: str, ten: str, ghi_chu: str, ngu: NguCanh, khung_ds: Sequence[Khung],
+                dong: Sequence[str]) -> Tuple[Optional[Khung], str]:
+    """Nguồn tất định của một hình/biểu đồ ĐÃ CÓ trong chương ⇒ (khung để vẽ lại, mô tả nguồn) hoặc (None, lý do)."""
+    if loai == "Hình" and _SO_DO_TEN_RE.search(ten):
+        kh = _so_do(ngu)
+        if ngu.luong:
+            return kh, "sổ sơ đồ luồng của đề tài (SO_DO_LUONG)"
+        if kh.ten == ten:
+            return kh, "khung chuẩn của thiết kế"
+        return None, ("tên sơ đồ khác khung chuẩn và đề tài chưa có sổ sơ đồ luồng riêng (SO_DO_LUONG_<mã>.csv, "
+                      "khuôn `ve_bieu_do.py mau-so-do-luong`)")
+    kh = next((k for k in khung_ds if k.loai != "bang" and k.ten == ten), None)
+    if kh is not None:
+        return kh, "khung chuẩn (đặc tả và bộ biến hiện hành)"
+    if loai == "Biểu đồ" and re.search(r"kịch bản độ nhạy|phân tích độ nhạy", ten, re.I):
+        return _forest_do_nhay_tu_chuong(dong, ghi_chu, ngu)
+    return None, "không khớp khung chuẩn nào và không có bảng nguồn trong chương"
+
+
+def _ve_lai_neu_doi(kh: Khung, dich: Path) -> str:
+    """Vẽ vào tệp tạm cạnh đích; trùng từng byte với ảnh đang có ⇒ giữ nguyên tệp («giu_nguyen»), khác ⇒ thay
+    («ve_lai»)."""
+    import os  # noqa: PLC0415
+
+    tam = dich.with_name(dich.stem + ".tam-ve-lai.png")
+    try:
+        ve_hinh(kh, tam)
+        if dich.is_file() and dich.read_bytes() == tam.read_bytes():
+            return "giu_nguyen"
+        os.replace(tam, dich)
+        return "ve_lai"
+    finally:
+        if tam.exists():
+            tam.unlink()
+
+
+def _cap_nhat_ghi_chu_so_do(cu: str, kh: Khung, doi: bool) -> str:
+    """Câu máy của ghi chú sơ đồ (danh sách lý do loại, quy ước tính một lần) phải khớp các ô của ảnh: đã có ⇒ thay bằng
+    bản hiện hành; chưa có ⇒ chỉ thêm khi ảnh vừa đổi. Câu soạn tay giữ nguyên."""
+    may = [c for c in kh.ghi_chu if c.startswith(GHI_LY_DO_LOAI) or c == GHI_MOT_LAN]
+    co_may = GHI_LY_DO_LOAI in cu or GHI_MOT_LAN in cu
+    if not may or not (co_may or doi):
+        return cu
+    giu = re.sub(re.escape(GHI_LY_DO_LOAI) + r"[^.]*\.", "", cu).replace(GHI_MOT_LAN, "")
+    return re.sub(r"\s+", " ", (giu.strip() + " " + " ".join(may)).strip())
+
+
+def _ve_lai_hinh_da_co(kq: List[str], ngu: NguCanh, out_dir: Optional[Path], ve_anh: bool, da_ve: set,
+                       bao_cao: List[str], loi_ve: List[str]) -> None:
+    """Mọi hình/biểu đồ ĐÃ CÓ ảnh trong chương được vẽ lại từ nguồn tất định hiện hành vào ĐÚNG tệp đang tham chiếu
+    (22/11/2026: Biểu đồ 3.2 C1a vẫn là forest các biến hiệu chỉnh của SAP cũ dù tên và ghi chú đã đổi sang mô hình
+    chính + kịch bản độ nhạy; Hình 3.1 vẫn là quy trình chọn mẫu trước quyết định của hội đồng). Tên giữ nguyên; ghi
+    chú chỉ đổi phần câu máy của sơ đồ. Không xác định được nguồn ⇒ giữ ảnh và báo rõ, không vẽ bừa."""
+    khung_ds = [k for m in dung_khung(ngu) for k in m.khung]
+    for t, dong in enumerate(kq):
+        m = _TIEU_DE_BB.match(dong.strip())
+        if not m or m.group(1) == "Bảng":
+            continue
+        a = t - 1
+        while a >= 0 and not kq[a].strip():
+            a -= 1
+        anh = re.match(r"^!\[[^\]]*\]\(([^)]+)\)\s*$", kq[a].strip()) if a >= 0 else None
+        if not anh:
+            continue
+        rel = anh.group(1)
+        g = t + 1
+        while g < len(kq) and not kq[g].strip():
+            g += 1
+        co_ghi = g < len(kq) and kq[g].startswith("*Ghi chú:*")
+        ghi = _bo_nhan_ghi_chu(kq[g]) if co_ghi else ""
+        nhan = f"{m.group(1)} {m.group(2)}.{m.group(3)} ({rel})"
+        if rel in da_ve:
+            continue
+        kh, nguon = _nguon_hinh(m.group(1), m.group(4), ghi, ngu, khung_ds, kq)
+        if kh is None:
+            bao_cao.append(f"giữ nguyên {nhan}: không xác định được nguồn — {nguon}")
+            continue
+        if not re.fullmatch(rf"{re.escape(THU_MUC_HINH)}/[\w.-]+\.png", rel):
+            bao_cao.append(f"giữ nguyên {nhan}: tệp ngoài thư mục {THU_MUC_HINH}/ — không ghi đè")
+            continue
+        if not (ve_anh and out_dir):
+            bao_cao.append(f"(chạy khô) sẽ đối chiếu {nhan} với nguồn: {nguon}")
+            continue
+        try:
+            tt = _ve_lai_neu_doi(kh, Path(out_dir) / rel)
+        except Exception as e:  # noqa: BLE001 — thiếu matplotlib/phông: báo, không sập cả chương
+            loi_ve.append(f"{nhan}: {type(e).__name__}: {str(e)[:120]}")
+            continue
+        da_ve.add(rel)
+        bao_cao.append(f"{'vẽ lại' if tt == 've_lai' else 'không đổi'} {nhan} — nguồn: {nguon}")
+        if kh.dac_ta.get("kieu") == "so_do" and (co_ghi or kh.ghi_chu):
+            moi = _cap_nhat_ghi_chu_so_do(ghi, kh, tt == "ve_lai")
+            if moi != ghi:
+                if co_ghi:
+                    kq[g] = "*Ghi chú:* " + moi
+                else:
+                    kq[t + 1:t + 1] = ["", "*Ghi chú:* " + moi]
+
+
+def nang_cap_chuong(md: str, ngu: NguCanh, out_dir: Optional[Path], ve_anh: bool = True,
+                    bao_cao: Optional[List[str]] = None) -> Tuple[str, List[str]]:
     """Nâng cấp TẠI CHỖ chương «Dự kiến kết quả» của đề cương soạn tay (giữ nội dung bảng của nhóm nghiên cứu):
     tên bảng/hình in đậm và đánh số lại liên tục; bảng có chữ viết tắt được thêm/ghép «Ghi chú»; «Hình» dựng bằng bảng
     «Bước | Số lượng» ⇒ sơ đồ thật, tên đặt dưới; tên bảng không kèm bảng (chỉ một câu) ⇒ bảng phân tích độ nhạy/nhóm
     nhỏ dựng từ đặc tả; mỗi mục tiêu chưa có biểu đồ ⇒ thêm biểu đồ của khung chuẩn ngay sau bảng cuối của mục tiêu
-    đó."""
+    đó; hình/biểu đồ đã có ảnh ⇒ vẽ lại từ nguồn hiện hành vào đúng tệp (`bao_cao` nhận từng dòng: vẽ lại · không đổi ·
+    giữ nguyên vì không xác định được nguồn). Chạy lại trên kết quả của chính nó cho ra văn bản giống hệt."""
+    bao_cao = bao_cao if bao_cao is not None else []
     ch, bd = _chuong_du_kien(md, chi_khung=True)
     if bd < 0:
         raise ValueError("đề cương không có chương «DỰ KIẾN KẾT QUẢ»")
@@ -1588,6 +1943,7 @@ def nang_cap_chuong(md: str, ngu: NguCanh, out_dir: Optional[Path], ve_anh: bool
     dem = {"Bảng": 0, "Hình": 0, "Biểu đồ": 0}
     thu_muc = (Path(out_dir) / THU_MUC_HINH) if out_dir else None
     cuoi_mt: Dict[int, int] = {}
+    da_ve: set = set()  # ảnh vừa vẽ ở lượt này — không đối chiếu lại
 
     def _ve(kh: Khung, loai: str) -> List[str]:
         dem[loai] += 1
@@ -1597,6 +1953,7 @@ def nang_cap_chuong(md: str, ngu: NguCanh, out_dir: Optional[Path], ve_anh: bool
         if ve_anh and thu_muc is not None:
             try:
                 ve_hinh(kh, thu_muc / ten_tep)
+                da_ve.add(f"{THU_MUC_HINH}/{ten_tep}")
                 kq = [f"![{loai} {so}]({THU_MUC_HINH}/{ten_tep})", ""]
             except Exception as e:  # noqa: BLE001
                 loi_ve.append(f"{loai} {so}: {type(e).__name__}: {str(e)[:120]}")
@@ -1657,13 +2014,13 @@ def nang_cap_chuong(md: str, ngu: NguCanh, out_dir: Optional[Path], ve_anh: bool
                 n2 += 1
             cu = ch[n2].strip() if n2 < len(ch) else ""
             co_ghi_cu = cu.startswith("*") and not _TD_NGHIENG.match(cu) and not cu.startswith("**")
-            ghi_cu = cu.strip("*").strip() if co_ghi_cu else ""
-            if ghi_cu.startswith("Ghi chú:"):
-                ghi_cu = ghi_cu[len("Ghi chú:"):].strip()
-            them = _ghi_chu(hang[0], hang[2:], [ghi_cu] if ghi_cu else [])
-            ra += [""] + (["*Ghi chú:* " + " ".join(them)] if them else []) + [""]
-            if co_ghi_cu:
-                i = n2 + 1
+            them = _ghep_ghi_chu(hang[0], hang[2:], _bo_nhan_ghi_chu(cu) if co_ghi_cu else "")
+            ra += [""] + (["*Ghi chú:* " + " ".join(them), ""] if them else [])
+            # 22/11/2026: bỏ các dòng trống sẵn có sau bảng/ghi chú — khối vừa ghi đã tự kết bằng một dòng trống; giữ
+            # chúng thì mỗi lượt nâng cấp lại thêm một dòng trống (không tái lập).
+            i = n2 + 1 if co_ghi_cu else n2
+            while i < len(ch) and not ch[i].strip():
+                i += 1
         if mt:
             cuoi_mt[int(mt.group(1))] = len(ra)
     # biểu đồ cho mục tiêu chưa có biểu đồ — chèn sau bảng cuối của mục tiêu (từ dưới lên để chỉ số không trôi)
@@ -1734,6 +2091,7 @@ def nang_cap_chuong(md: str, ngu: NguCanh, out_dir: Optional[Path], ve_anh: bool
             if m:
                 dem3["Hình"] += 1
                 kq[n3] = re.sub(r"^\*\*Hình \d+\.\d+\.", f"**Hình {so_ch}.{dem3['Hình']}.", x)
+    _ve_lai_hinh_da_co(kq, ngu, out_dir, ve_anh, da_ve, bao_cao, loi_ve)
     if not any("Quy ước trình bày" in x for x in kq):
         vt = next((n3 for n3, x in enumerate(kq[1:], 1) if x.strip() and not x.startswith("#")), 1)
         kq.insert(vt + 1, "")
@@ -1776,8 +2134,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             print(f"⛔ chưa có {md_p.name}")
             return 2
         cu = md_p.read_text(encoding="utf-8")
+    bao_cao: List[str] = []
     if a.nang_cap:
-        moi, loi_ve = nang_cap_chuong(cu, nc, out_dir if a.ghi else None, ve_anh=a.ghi)
+        moi, loi_ve = nang_cap_chuong(cu, nc, out_dir if a.ghi else None, ve_anh=a.ghi, bao_cao=bao_cao)
+        for x in bao_cao:
+            print(f"  · {x}")
     else:
         dong, loi_ve, nc = chuong_moi(out_dir, a.study, ve_anh=a.ghi)
         if not a.thay_chuong:
