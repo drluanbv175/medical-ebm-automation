@@ -592,12 +592,15 @@ def tran_usd_thang_nguon(kho: Optional[str] = None) -> Tuple[Optional[float], st
     số > 0 ⇒ trần (kiểm thử), «0»/số âm/chữ lạ ⇒ khoá hẳn (dừng khẩn cấp) — không ai đặt thì không có tác dụng."""
     ten = "EBM_API_CLAUDE_TRAN_USD_THANG"
     v = os.environ.get(ten, "").strip()
-    if v:
+    cu = _gia_tri_kho(ten, kho).strip()
+    # 22/11/2026 (đo thật): `app.config` nạp kho bí mật vào os.environ (load_dotenv) ⇒ dòng trần CŨ trong kho hiện
+    # ra như biến môi trường và chặn nhầm (hội đồng khoa học 4.0 gọi chấm sống cổng ⇒ app.config ⇒ «trần 40» bị coi là
+    # công tắc OS, trái quyết định 21/11 của bác sĩ). Giá trị TRÙNG ĐÚNG dòng trong kho ⇒ là dòng kho rò vào, bỏ qua.
+    if v and v != cu:
         try:
             return float(v.replace(",", ".")), "biến môi trường"
         except ValueError:
             return 0.0, "biến môi trường (giá trị không đọc được ⇒ khoá)"
-    cu = _gia_tri_kho(ten, kho).strip()
     nguon = "theo tín dụng tài khoản (bác sĩ 21/11/2026)"
     if cu:
         nguon += f" — bỏ qua trần «{cu}» còn trong kho bí mật"
