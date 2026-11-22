@@ -59,7 +59,12 @@ TEN_MAC_DINH = "DE_CUONG_NOP_HOI_DONG_{study}.md"
 BO_TEP_HE_THONG = ("TomTatChungCu",)  # tệp do hệ thống dựng, không phải nguồn
 _SO_RE = re.compile(r"\d{1,3}(?:\.\d{3})+|\d+,\d+|\d+")
 _NAM_RE = re.compile(r"^(19|20)\d\d$")
-_SO_HIEU_RE = re.compile(r"(khuyến cáo|điểm thực hành|mục|Mục|Bảng|Hình|MT|phụ lục|Phụ lục)\s*[\d.]+[a-z]?")
+_SO_HIEU_RE = re.compile(r"(khuyến cáo|điểm thực hành|mục|Mục|Bảng|Hình|MT|phụ lục|Phụ lục)\s*[\d.]+[a-z]?"
+                         # 22/11/2026: số hiệu + ngày ban hành văn bản quy phạm («Quyết định số 56/QĐ-BYT ngày
+                         # 08/01/2024») và số mẫu phiếu («Mẫu số 2») là ĐỊNH DANH văn bản — đối chiếu ở K13/sổ định
+                         # danh, không phải số liệu quy cho nguồn
+                         r"|(?:Quyết định|Thông tư|Nghị định|Công văn|Chỉ thị|Nghị quyết)(?:\s+số)?\s*\d+(?:/\d{4})?"
+                         r"/[\wĐđ-]+(?:\s+ngày\s+\d{1,2}/\d{1,2}/\d{4})?|[Mm]ẫu(?:\s+phiếu)?\s+số\s*\d+")
 _TACH_VE_RE = re.compile(r"(?<=\.)\s+|;\s+|\n")
 
 
@@ -163,13 +168,16 @@ class NguonEndNote:
             shutil.rmtree(self._tam, ignore_errors=True)
 
 
-def van_toan_van(out_dir: Path, khoa: Dict[str, Optional[str]], endnote: Optional[NguonEndNote]) -> str:
-    """Văn bản toàn văn của một tài liệu (rỗng nếu máy không có)."""
+def tep_va_van_toan_van(out_dir: Path, khoa: Dict[str, Optional[str]],
+                        endnote: Optional[NguonEndNote]) -> "tuple[Optional[Path], str]":
+    """(tệp toàn văn, văn bản) của một tài liệu — (None, "") nếu máy không có. Thứ tự nguồn như docstring mô-đun.
+    22/11/2026: tách ra để phiếu kiểm nội dung trích dẫn (chế độ agent của `kiem_noi_dung_trich_dan.py`) chỉ đúng tệp
+    nguồn cho người đọc, cùng MỘT luật tìm tệp với phép đối chiếu số liệu."""
     if khoa.get("pmid"):
         for p in sorted((out_dir / "toan_van_oa").glob(f"PMID-{khoa['pmid']}_*.xml")):
             van = _van_xml(p)
             if van.strip():
-                return van
+                return p, van
     ung_vien: List[Path] = []
     if khoa.get("doi"):
         ten = "DOI-" + str(khoa["doi"]).replace("/", "_") + ".pdf"
@@ -179,12 +187,18 @@ def van_toan_van(out_dir: Path, khoa: Dict[str, Optional[str]], endnote: Optiona
         if p.is_file():
             van = _van_pdf(p)
             if van.strip():
-                return van
+                return p, van
     if endnote is not None:
         p = endnote.tim(khoa.get("pmid"), khoa.get("doi"))
         if p:
-            return _van_pdf(p)
-    return ""
+            van = _van_pdf(p)
+            return (p, van) if van.strip() else (None, "")
+    return None, ""
+
+
+def van_toan_van(out_dir: Path, khoa: Dict[str, Optional[str]], endnote: Optional[NguonEndNote]) -> str:
+    """Văn bản toàn văn của một tài liệu (rỗng nếu máy không có)."""
+    return tep_va_van_toan_van(out_dir, khoa, endnote)[1]
 
 
 # Dấu thập phân trong nguồn: «.» (tiếng Anh), «,» (tiếng Việt/châu Âu), «·» (dấu chấm giữa của nhóm Lancet: «0·78»).
@@ -265,12 +279,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--tu", default="ĐẶT VẤN ĐỀ", help="đề mục bắt đầu khoảng kiểm")
     ap.add_argument("--den", default="ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP", help="đề mục kết thúc khoảng kiểm (không gồm)")
     ap.add_argument("--khong-endnote", action="store_true", help="không tra PDF đính kèm EndNote")
+    ap.add_argument("--goc", type=Path, default=BASE,
+                    help="thư mục chứa exports/ (đo trên bản chép dữ liệu đề tài; mặc định: repo này)")
     ap.add_argument("--json", action="store_true")
     try:
         a = ap.parse_args(argv)
     except SystemExit:
         return 3
-    out_dir = BASE / "exports" / a.study
+    out_dir = Path(a.goc) / "exports" / a.study
     tep = Path(a.tep) if a.tep else out_dir / TEN_MAC_DINH.format(study=a.study)
     if not tep.is_file():
         print(f"Không thấy tệp {tep}")

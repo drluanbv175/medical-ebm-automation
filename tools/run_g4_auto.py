@@ -1028,6 +1028,13 @@ def _dien_khung(sap: str, khung, design_code) -> str:
     if not khung:
         return sap
     nhan = " *(điền sẵn từ quyết định đã chốt — thống kê viên/PI sửa nếu cần)*"
+    # 22/11/2026: §9 «định nghĩa thay thế» — chép CỤ THỂ từng định nghĩa đã khai ở ma trận G3 (biến, định nghĩa, căn
+    # cứ) thay dòng chung; G6 chạy tự động theo đúng các dòng này (tools/dinh_nghia_thay_the.py)
+    import dinh_nghia_thay_the as DTT  # noqa: PLC0415
+
+    sap = DTT.thay_dong_chung(sap, khung.get("dinh_nghia_thay_the") or [])
+    if design_code == "rct":  # CONSORT: quần thể theo đề cương định trước bằng biến tuân thủ của ma trận G3
+        sap = DTT.chen_theo_de_cuong(sap, khung.get("tuan_thu_de_cuong"))
     thay = {}
     if khung.get("tieu_chi_nhan"):
         thay["- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  "] = (
@@ -1152,11 +1159,25 @@ def _khung_sap(out, meta):
         "khai_niem": khai,
         "bien_cau_truc": {k: vt.get(k) for k in ("cum", "thoi_gian", "su_kien", "trong_so")},
         "bien_mo_ta": list(vt.get("mo_ta") or []),
+        "dinh_nghia_thay_the": _DTT_tu_ma_tran(dong_mt),
+        "tuan_thu_de_cuong": _DTT_tuan_thu(dong_mt),
         # 16/11/2026 (giả lập trọn vòng — định tính): G1 đã chốt cách tiếp cận, tiêu chí bão hoà và chiến lược chọn mẫu
         # ⇒ SAP định tính không hỏi lại
         "tiep_can": g1.get("qualitative_approach"), "bao_hoa": g1.get("saturation_criterion"),
         "chon_mau": g1.get("recruitment_strategy") if str(g1.get("recruitment_strategy") or "").strip() else None,
     }
+
+
+def _DTT_tu_ma_tran(dong_mt):  # noqa: N802 — tên gắn với mô-đun dinh_nghia_thay_the
+    import dinh_nghia_thay_the as DTT  # noqa: PLC0415
+
+    return DTT.tu_dong_ma_tran(dong_mt)
+
+
+def _DTT_tuan_thu(dong_mt):  # noqa: N802
+    import dinh_nghia_thay_the as DTT  # noqa: PLC0415
+
+    return DTT.tuan_thu_tu_dong_ma_tran(dong_mt)
 
 
 def _ket_cuc_chinh_da_chot(meta):

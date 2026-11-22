@@ -1,0 +1,29 @@
+# Sổ quyết định của hội đồng nghiên cứu — hai-long-benh-nhan-C1a-BVQY175
+
+- Ngày: 22/11/2026
+- Căn cứ giao việc: bác sĩ chủ nhiệm 22/11/2026 — hội đồng của hệ giải quyết dữ kiện/quyết định chuyên môn, quản lý xung đột lợi ích, hoàn thiện SAP; bác sĩ chốt đề tài/mục tiêu, nhập số liệu thật và ký.
+- Mỗi quyết định có căn cứ kiểm được (chuẩn, nguồn PMID/DOI đã kiểm rút bài, văn bản pháp quy, hoặc dữ kiện trong hồ sơ). Thay thế chỉ áp khi đoạn cũ xuất hiện đúng một lần.
+
+## Thành viên: `c1a_vai_bien_sap5.json`
+
+### G3-VAI-BIEN-SAP5 — Bộ biến/từ điển G5 còn đánh dấu duoc_dung_bacsi là biến hiệu chỉnh bắt buộc và chưa đánh dấu co_yeucau_bacsi, lệch SAP §5 sửa đổi 22/11 — mô hình chính sẽ hiệu chỉnh nhầm một hậu duệ của phơi nhiễm
+
+- Quyết định: Đồng bộ vai trò theo SAP §5 hiện hành: co_yeucau_bacsi vào nhóm biến hiệu chỉnh bắt buộc (bắt buộc nhập); duoc_dung_bacsi chuyển sang nhóm độ nhạy (SAP §9 kịch bản 8). Phát hiện bởi test tests/test_bo_bien_rieng_20260901.py (máy nhận 11 biến hiệu chỉnh khác SAP §5).
+- Căn cứ: G4_A5_SAP_FINAL §5 sửa đổi 22/11/2026 (bản sửa đổi chờ thống kê viên ký)
+- Căn cứ: Đề cương mục 2.6.5: không hiệu chỉnh biến trung gian và biến xảy ra sau phơi nhiễm
+- Thay ở `_bo-bien-rieng.csv` dòng 25
+  - Cũ: co_yeucau_bacsi,phieu_khao_sat,Đặc thù khám theo yêu cầu,radio,Câu 14. Có yêu cầu khám với một bác sĩ cụ thể không?,"1, Có | 2, Không",,,,,,,n,,,,,Điều kiện của luật nhất quán duoc_dung_bacsi (xem trường đó)
+  - Mới: co_yeucau_bacsi,phieu_khao_sat,Biến hiệu chỉnh (forced-in theo DAG — SAP §5),radio,Câu 14. Có yêu cầu khám với một bác sĩ cụ thể không?,"1, Có | 2, Không",,,,,,,y,,,,,"Forced-in ở mô hình chính (SAP §5): câu 14, xác định khi đăng ký — trước phơi nhiễm. Điều kiện của luật nhất quán duoc_dung_bacsi (xem trường đó)"
+- Thay ở `_bo-bien-rieng.csv` dòng 26
+  - Cũ: duoc_dung_bacsi,phieu_khao_sat,Biến hiệu chỉnh (forced-in theo DAG — SAP §5),radio,Câu 15. Được khám đúng bác sĩ đã yêu cầu,"1, Có | 2, Không | 7, Không áp dụng (không yêu cầu bác sĩ nào)","Nhập đúng như phiếu, kể cả khi lệch câu 14 — luật DQ01/DQ02 (`_luat-dq.csv`) tự tạo truy vấn",,,,,,y,,,,,"Forced-in ở mô hình chính (SAP §5). Luật nhất quán DQ01/DQ02 (`_luat-dq.csv`; Data Quality rule REDCap + truy vấn khi làm sạch): co_yeucau_bacsi = 2 ⇒ duoc_dung_bacsi = 7; co_yeucau_bacsi = 1 ⇒ duoc_dung_bacsi ∈ {1, 2}. KHÔNG ẩn trường theo co_yeucau_bacsi: trường ẩn bị để trống và làm mất cả nhóm không yêu cầu khỏi mô hình (lệch codebook bổ sung có chủ ý). Bỏ trống: mã thiếu cấp dự án BTR/KDD (`_ma-thieu-theo-bien.csv`; chủ nhiệm chọn 17/10/2026)"
+  - Mới: duoc_dung_bacsi,phieu_khao_sat,Đặc thù khám theo yêu cầu (độ nhạy — SAP §9),radio,Câu 15. Được khám đúng bác sĩ đã yêu cầu,"1, Có | 2, Không | 7, Không áp dụng (không yêu cầu bác sĩ nào)","Nhập đúng như phiếu, kể cả khi lệch câu 14 — luật DQ01/DQ02 (`_luat-dq.csv`) tự tạo truy vấn",,,,,,y,,,,,"Không vào mô hình chính: có thể chịu ảnh hưởng của chính thời gian chờ (hậu duệ của phơi nhiễm — SAP §5); chỉ dùng ở kịch bản độ nhạy (8) SAP §9. Luật nhất quán DQ01/DQ02 (`_luat-dq.csv`; Data Quality rule REDCap + truy vấn khi làm sạch): co_yeucau_bacsi = 2 ⇒ duoc_dung_bacsi = 7; co_yeucau_bacsi = 1 ⇒ duoc_dung_bacsi ∈ {1, 2}. KHÔNG ẩn trường theo co_yeucau_bacsi: trường ẩn bị để trống và làm mất cả nhóm không yêu cầu khỏi mô hình (lệch codebook bổ sung có chủ ý). Bỏ trống: mã thiếu cấp dự án BTR/KDD (`_ma-thieu-theo-bien.csv`; chủ nhiệm chọn 17/10/2026)"
+- Thay ở `G5_REDCap_dictionary_hai-long-benh-nhan-C1a-BVQY175.csv` dòng 25
+  - Cũ: co_yeucau_bacsi,phieu_khao_sat,Đặc thù khám theo yêu cầu,radio,Câu 14. Có yêu cầu khám với một bác sĩ cụ thể không?,"1, Có | 2, Không",,,,,,,n,,,,,Điều kiện của luật nhất quán duoc_dung_bacsi (xem trường đó)
+  - Mới: co_yeucau_bacsi,phieu_khao_sat,Biến hiệu chỉnh (forced-in theo DAG — SAP §5),radio,Câu 14. Có yêu cầu khám với một bác sĩ cụ thể không?,"1, Có | 2, Không",,,,,,,y,,,,,"Forced-in ở mô hình chính (SAP §5): câu 14, xác định khi đăng ký — trước phơi nhiễm. Điều kiện của luật nhất quán duoc_dung_bacsi (xem trường đó)"
+- Thay ở `G5_REDCap_dictionary_hai-long-benh-nhan-C1a-BVQY175.csv` dòng 26
+  - Cũ: duoc_dung_bacsi,phieu_khao_sat,Biến hiệu chỉnh (forced-in theo DAG — SAP §5),radio,Câu 15. Được khám đúng bác sĩ đã yêu cầu,"1, Có | 2, Không | 7, Không áp dụng (không yêu cầu bác sĩ nào)","Nhập đúng như phiếu, kể cả khi lệch câu 14 — luật DQ01/DQ02 (`_luat-dq.csv`) tự tạo truy vấn",,,,,,y,,,,,"Forced-in ở mô hình chính (SAP §5). Luật nhất quán DQ01/DQ02 (`_luat-dq.csv`; Data Quality rule REDCap + truy vấn khi làm sạch): co_yeucau_bacsi = 2 ⇒ duoc_dung_bacsi = 7; co_yeucau_bacsi = 1 ⇒ duoc_dung_bacsi ∈ {1, 2}. KHÔNG ẩn trường theo co_yeucau_bacsi: trường ẩn bị để trống và làm mất cả nhóm không yêu cầu khỏi mô hình (lệch codebook bổ sung có chủ ý). Bỏ trống: mã thiếu cấp dự án BTR/KDD (`_ma-thieu-theo-bien.csv`; chủ nhiệm chọn 17/10/2026)"
+  - Mới: duoc_dung_bacsi,phieu_khao_sat,Đặc thù khám theo yêu cầu (độ nhạy — SAP §9),radio,Câu 15. Được khám đúng bác sĩ đã yêu cầu,"1, Có | 2, Không | 7, Không áp dụng (không yêu cầu bác sĩ nào)","Nhập đúng như phiếu, kể cả khi lệch câu 14 — luật DQ01/DQ02 (`_luat-dq.csv`) tự tạo truy vấn",,,,,,y,,,,,"Không vào mô hình chính: có thể chịu ảnh hưởng của chính thời gian chờ (hậu duệ của phơi nhiễm — SAP §5); chỉ dùng ở kịch bản độ nhạy (8) SAP §9. Luật nhất quán DQ01/DQ02 (`_luat-dq.csv`; Data Quality rule REDCap + truy vấn khi làm sạch): co_yeucau_bacsi = 2 ⇒ duoc_dung_bacsi = 7; co_yeucau_bacsi = 1 ⇒ duoc_dung_bacsi ∈ {1, 2}. KHÔNG ẩn trường theo co_yeucau_bacsi: trường ẩn bị để trống và làm mất cả nhóm không yêu cầu khỏi mô hình (lệch codebook bổ sung có chủ ý). Bỏ trống: mã thiếu cấp dự án BTR/KDD (`_ma-thieu-theo-bien.csv`; chủ nhiệm chọn 17/10/2026)"
+
+## Tài liệu đưa vào gói ký (đã chuẩn bị theo các quyết định trên)
+
+- Không phát sinh tài liệu ký mới.

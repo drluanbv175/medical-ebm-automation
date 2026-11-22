@@ -28,7 +28,7 @@ Loại (cấu hình bắt buộc / tuỳ chọn — `LOAI`):
     tuong_quan         Spearman (KTC Fisher z, sai số Bonett–Wright) và Pearson (KTC Fisher z).
     poisson_chia_nhom  Poisson log + sai số vững: biến liên tục chia theo tứ phân vị quan sát (điểm cắt trùng thì gộp,
                        nhóm thấp nhất tham chiếu) so với mô hình tuyến tính — CÙNG tập ca đầy đủ.
-  R (`phan_tich_sap_bo_sung_r.py`)
+  R (kịch bản `kich_ban_bo_sung` của cầu nối R `cau_noi_r.py` — một cầu nối R cho mọi đường G6)
     thu_tu             biến thể mô hình thứ tự chính: rcs · phan_vi · tuong_tac · gop_muc · anh_huong · yeu_to · thuong
                        (dữ liệu biến đổi ở Python — gộp mức kết cục theo quy tắc SAP, điểm ảnh hưởng Cook > 4/n, nhóm tứ
                        phân vị, gộp mức thưa của yếu tố; R chỉ khớp mô hình).
@@ -336,13 +336,12 @@ def cot_can(loai: str, ch: Dict[str, Any]) -> List[str]:
 
 # ─────────────────────────────── tính toán thuần (không đọc tệp — test trực tiếp) ───────────────────────────────
 def wilson(k: float, n: float, z: float = Z) -> List[Optional[float]]:
+    """KTC Wilson của k/n — tính bằng `run_stats_analysis._wilson` (một công thức cho mọi đường G6); n = 0 ⇒ None."""
+    import run_stats_analysis as RSA  # noqa: PLC0415
+
     if not n:
         return [None, None]
-    p = k / n
-    mau = 1 + z * z / n
-    tam = (p + z * z / (2 * n)) / mau
-    nua = z * math.sqrt(max(0.0, p * (1 - p) / n + z * z / (4 * n * n))) / mau
-    return [max(0.0, tam - nua), min(1.0, tam + nua)]
+    return [float(x) for x in RSA._wilson(k / n, n, z)]
 
 
 def _ma(v: Any) -> str:
@@ -1222,7 +1221,6 @@ def kiem_cot_pii(d: Path, study: str, cot: Sequence[str]) -> None:
 def chay_r(loai: str, ch: Dict[str, Any], df: Any, cot: Sequence[str], d: Path, gate: str,
            study: str) -> Dict[str, Any]:
     import cau_noi_r as R  # noqa: PLC0415
-    import phan_tich_sap_bo_sung_r as PR  # noqa: PLC0415
 
     try:
         rscript = R.tim_r()
@@ -1232,11 +1230,11 @@ def chay_r(loai: str, ch: Dict[str, Any], df: Any, cot: Sequence[str], d: Path, 
     thu = d / "r"
     thu.mkdir(exist_ok=True)
     script = thu / f"{gate}_bo_sung.R"
-    _ghi(script, PR.kich_ban(loai))
+    _ghi(script, R.kich_ban_bo_sung(loai))
     with tempfile.TemporaryDirectory(prefix="psb_") as tmp:
         tep_dl, tep_kq, tep_ch = Path(tmp) / "du_lieu.csv", Path(tmp) / "ket_qua.json", Path(tmp) / "cau_hinh.json"
         df[list(cot)].to_csv(tep_dl, index=False, encoding="utf-8")
-        ch_r = dict(ch, goi_can=list(PR.GOI_CAN[loai]))
+        ch_r = dict(ch, goi_can=list(R.GOI_CAN_BO_SUNG[loai]))
         _ghi(tep_ch, json.dumps(ch_r, ensure_ascii=False))
         ma, out, err = R.chay_r(rscript, [str(script), str(tep_dl), str(tep_kq), str(tep_ch)], thu_muc=Path(tmp),
                                 thoi_han=THOI_HAN_R)

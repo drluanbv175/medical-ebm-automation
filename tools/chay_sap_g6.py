@@ -102,7 +102,12 @@ THAM_SO = {
     "n_chung": ("--n-chung", "s"),
     # 22/11/2026 (PRISMA 2020 mục 20c): phân nhóm tiền định của SAP §7 — gộp riêng từng nhóm + Q giữa nhóm
     "phan_nhom": ("--phan-nhom", "s"),
+    "mo_hinh": ("--mo-hinh", "s"),  # gộp: ngau_nhien | co_dinh (độ nhạy hiệu ứng cố định)
     "chu_de": ("--chu-de", "s"),
+    "chu_de_nguoi_2": ("--chu-de-nguoi-2", "s"),  # định tính: người mã hoá thứ hai ⇒ kappa Cohen
+    # 22/11/2026: định tính — kiểm BẰNG CHỨNG THỦ TỤC của tiêu chí độ tin cậy (credibility · dependability ·
+    # transferability) theo khuôn tools/bang_chung_dinh_tinh.py; kết quả DA_KIEM hoặc THIEU_BANG_CHUNG
+    "bang_chung": (None, "bang_chung"),
     # 16/11/2026 (biến thể khó): đánh giá chi phí–hiệu quả đi kèm thử nghiệm — CHEERS 2022
     "nhom": ("--nhom", "s"),
     "chi_phi": ("--chi-phi", "s"),
@@ -126,6 +131,8 @@ THAM_SO = {
     # bỏ số nhóm thuốc, dừng ngay khi EPV ≥ 10) — áp trước khi gọi run_stats_analysis, chỉ đếm kết cục và số tham số.
     "quy_tac_epv": (None, "quy_tac_epv"),
 }
+DON_VI_1SD = "1SD"  # đơn vị phơi nhiễm = 1 độ lệch chuẩn trên quần thể phân tích (tính lúc chạy)
+MO_HINH_GOP = ("ngau_nhien", "co_dinh")  # gộp: ước lượng báo làm kết quả (độ nhạy SAP §9 hiệu ứng cố định)
 DAC_THU = ("chan_doan", "du_bao", "gop", "dinh_tinh", "kinh_te")
 NHAN_TO = ("efa_cfa",)
 KHOA_NHAN_TO = ("phan_tich_nhan_to", "tang", "thieu", "loc")
@@ -182,15 +189,26 @@ def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
             return [f"{ten}: cần tên cột hợp lệ"]
         if ten == "outcome_type" and v not in LOAI_KC:
             return [f"outcome_type phải thuộc {LOAI_KC}"]
+        if ten == "mo_hinh" and v not in MO_HINH_GOP:
+            return [f"mo_hinh phải thuộc {MO_HINH_GOP}"]
     elif kieu in ("ds", "ds_rieng"):
         if not isinstance(v, list) or not v or not all(chuoi_an_toan(x) and TEN_RE.match(x) for x in v):
             return [f"{ten}: cần danh sách tên cột hợp lệ (không rỗng)"]
     elif kieu == "so":
+        # 22/11/2026: don_vi_phoi_nhiem «1SD» = hiệu ứng trên mỗi 1 độ lệch chuẩn của phơi nhiễm liên tục (định nghĩa
+        # thay thế SAP §9) — SD tính trên quần thể phân tích lúc chạy, ghi vào kết quả
+        if ten == "don_vi_phoi_nhiem" and v == DON_VI_1SD:
+            return []
         if isinstance(v, bool) or not isinstance(v, (int, float)):
             return [f"{ten}: cần một số"]
     elif kieu == "nguyen":
         if isinstance(v, bool) or not isinstance(v, int) or not 0 <= v <= 200:
             return [f"{ten}: cần số nguyên 0–200"]
+    elif kieu == "bang_chung":
+        import bang_chung_dinh_tinh as BCD  # noqa: PLC0415
+
+        if v not in BCD.KHUON:
+            return [f"{ten}: phải thuộc {sorted(BCD.KHUON)}"]
     elif kieu == "loai":
         if v not in DAC_THU:
             return [f"{ten}: phải thuộc {DAC_THU}"]
@@ -278,6 +296,8 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         for k, v in ts.items():
             if k in THAM_SO:
                 loi += [f"{pid}: {x}" for x in _kiem_gia_tri(k, THAM_SO[k][1], v)]
+        if ts.get("bang_chung") and len(ts) > 1:
+            loi.append(f"{pid}: mục kiểm bằng chứng chỉ khai tham số bang_chung")
         if ts.get("loai_bo_sung") or ts.get("cau_hinh"):
             import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
 
@@ -307,6 +327,8 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
                                                *PTD.LOAI_TUY_CHON.get(ts["loai_dac_thu"], ()), "loai_dac_thu", "loc")]
             if thua:  # tham số của run_stats_analysis không có nghĩa với phân tích đặc thù — báo ngay khi kiểm
                 loi.append(f"{pid}: tham số không áp dụng cho phân tích {ts['loai_dac_thu']}: {', '.join(thua)}")
+        elif ts.get("bang_chung"):  # kiểm bằng chứng thủ tục định tính — không phải mô hình (kiểm ở trên)
+            pass
         elif not ts.get("outcome") and not ts.get("time") and not ts.get("ty_le"):
             loi.append(f"{pid}: cần outcome, hoặc time+event, hoặc ty_le")
         if ts.get("bien_thua") and isinstance(ts["bien_thua"], dict):
@@ -579,7 +601,11 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
         elif loai == "du_bao":
             ra["du_bao"] = {"c_statistic": dt_["c_statistic"]["auc"], "brier": dt_["brier"]}
         elif loai == "gop":
-            ra["gop"] = {"rr": dt_["rr_gop_ngau_nhien"], "ci_95": dt_["ci_95"], "i2": dt_["i2_pct"], "k": dt_["k"]}
+            # 22/11/2026: mục đặc tả mo_hinh «co_dinh» báo ước lượng nghịch đảo phương sai (độ nhạy SAP §9)
+            co_dinh = (tom.get("dac_ta_phan_tich") or {}).get("mo_hinh") == "co_dinh"
+            ra["gop"] = {"rr": dt_["rr_gop_co_dinh" if co_dinh else "rr_gop_ngau_nhien"],
+                         "ci_95": dt_["ci_95_co_dinh" if co_dinh else "ci_95"], "i2": dt_["i2_pct"], "k": dt_["k"],
+                         "mo_hinh": "co_dinh" if co_dinh else "ngau_nhien"}
             eg, pn = dt_.get("egger") or {}, dt_.get("phan_nhom") or {}
             if eg.get("da_chay"):
                 ra["gop"]["egger_p"] = eg["p"]
@@ -591,6 +617,9 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
                              "goc_phan_tu": dt_["goc_phan_tu"], "nmb_tai_wtp": dt_["nmb_tai_wtp"]}
         else:
             ra["dinh_tinh"] = {"so_chu_de": dt_["so_chu_de"], "n": dt_["n_ban_go_bang"]}
+            if dt_.get("dong_thuan_hai_nguoi"):  # 22/11/2026: kappa hai người mã hoá (SAP §9 confirmability)
+                dth = dt_["dong_thuan_hai_nguoi"]
+                ra["dinh_tinh"] |= {"kappa": dth["kappa"], "n_cap": dth["n_cap"], "ty_le_trung": dth["ty_le_trung"]}
     if tom.get("nhan_to"):  # 21/11/2026: giá trị cấu trúc — số nhân tố gợi ý (nửa 1) + chỉ số phù hợp scaled (nửa 2)
         nt = tom["nhan_to"]
         efa, cfa = nt.get("efa") or {}, nt.get("cfa") or {}
@@ -724,6 +753,28 @@ def ap_quy_tac_epv_dac_ta(study: str, pt: dict) -> tuple[dict, dict]:
     return dict(pt, tham_so=ts), nk
 
 
+def ap_don_vi_1sd(study: str, pt: dict) -> tuple[dict, dict]:
+    """don_vi_phoi_nhiem «1SD» ⇒ số: độ lệch chuẩn (ddof = 1) của phơi nhiễm trên ĐÚNG tập ca của mô hình (quần thể
+    phân tích sau lọc, đủ kết cục · phơi nhiễm · hiệp biến) — cùng tập ca run_stats_analysis dùng. Trả (mục đã sửa —
+    bản sao; nhật ký)."""
+    import pandas as pd  # noqa: PLC0415
+    import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+    ts = dict(pt["tham_so"])
+    can = [c for c in (ts.get("outcome"), ts.get("group"), ts.get("time"), ts.get("event"),
+                       *(ts.get("covariates") or [])) if c]
+    df, _csv, _man = PSB.doc_df(study, can, ts.get("loc"))
+    x = pd.to_numeric(df[ts["group"]], errors="coerce")
+    o = df[can].notna().all(axis=1) & x.notna()
+    sd = float(x[o].std(ddof=1)) if int(o.sum()) > 1 else float("nan")
+    if not sd > 0:
+        raise TuChoi(f"không tính được độ lệch chuẩn của {ts['group']} (n = {int(o.sum())})")
+    nk = {"bien": ts["group"], "sd": sd, "n": int(o.sum()),
+          "cach_tinh": "độ lệch chuẩn mẫu (ddof = 1) trên tập ca đủ biến của mô hình"}
+    ts["don_vi_phoi_nhiem"] = sd  # run_stats_analysis + cầu nối R/SPSS chia phơi nhiễm cho 1 SD ở mọi họ mô hình
+    return dict(pt, tham_so=ts), nk
+
+
 def lenh_chay(args) -> int:
     d = thu_muc(args.study)
     dt = doc_dac_ta(d)
@@ -754,6 +805,15 @@ def lenh_chay(args) -> int:
             continue
         gate = gate_cua(pt)
         ts_pt = pt.get("tham_so") or {}
+        if ts_pt.get("bang_chung"):  # định tính: kiểm bằng chứng thủ tục — không phải phép tính, không kiểm chéo
+            import bang_chung_dinh_tinh as BCD  # noqa: PLC0415
+
+            bc = BCD.kiem(d, args.study, ts_pt["bang_chung"])
+            tt = "DA_KIEM" if bc["trang_thai"] == BCD.DA_KIEM else "THIEU_BANG_CHUNG"
+            ket.append(muc | {"gate": gate, "trang_thai": tt, "uoc_luong": bc,
+                              "ly_do": "; ".join(bc["thieu"]) or None})
+            print(f"{'✓' if tt == 'DA_KIEM' else '✗'} {pt['id']}: {bc['nhan']} — {'; '.join(bc['thieu']) or 'đủ'}")
+            continue
         if ts_pt.get("quy_tac_epv"):  # giảm tham số theo thứ tự định trước — chỉ đếm kết cục và cấu trúc biến
             try:
                 pt, qe = ap_quy_tac_epv_dac_ta(args.study, pt)
@@ -766,6 +826,18 @@ def lenh_chay(args) -> int:
             muc["quy_tac_epv"] = qe
             ts_pt = pt.get("tham_so") or {}
             print(f"   quy tắc EPV: áp tới bước {qe['buoc_ap']} · EPV cuối {qe['epv_cuoi']:.2f}")
+        if ts_pt.get("don_vi_phoi_nhiem") == DON_VI_1SD:  # định nghĩa thay thế: phơi nhiễm liên tục, mỗi 1 SD
+            try:
+                pt, sd1 = ap_don_vi_1sd(args.study, pt)
+            except Exception as e:  # noqa: BLE001
+                muc |= {"gate": gate, "trang_thai": "LOI", "ly_do": f"đơn vị 1 SD: {e}"[:500]}
+                ket.append(muc)
+                ma = 1
+                print(f"   ✗ lỗi đơn vị 1 SD — {e}")
+                continue
+            muc["don_vi_1sd"] = sd1
+            ts_pt = pt.get("tham_so") or {}
+            print(f"   đơn vị phơi nhiễm: 1 SD của {sd1['bien']} = {sd1['sd']:.4g} (n = {sd1['n']})")
         if ts_pt.get("bien_thua"):  # quy tắc bỏ biến thưa định trước — phân bố của chính biến, trước khi xem kết cục
             try:
                 pt, bt = ap_bien_thua_dac_ta(args.study, pt)
@@ -821,7 +893,9 @@ def lenh_chay(args) -> int:
                          "sha256": sha256_tep(csv_khoa)},  # fmt: skip
         "kiem_cheo": bool(args.kiem_cheo),
         "phan_tich": ket,
-        "dem": {t: sum(1 for x in ket if x["trang_thai"] == t) for t in ("DA_CHAY", "LOI", "CHUA_TU_DONG")},
+        # trạng thái kiểm bằng chứng định tính (DA_KIEM · THIEU_BANG_CHUNG) chỉ ghi khi có — giữ khuôn đếm cũ
+        "dem": {t: n for t in ("DA_CHAY", "LOI", "CHUA_TU_DONG", "DA_KIEM", "THIEU_BANG_CHUNG")
+                if (n := sum(1 for x in ket if x["trang_thai"] == t)) or t in ("DA_CHAY", "LOI", "CHUA_TU_DONG")},
         "canh_bao": (["ĐỀ TÀI GIẢ LẬP — đặc tả chưa duyệt"] if k["duyet"] != "DA_DUYET" else []),
         "disclaimer": CAN_KIEM,
     }
@@ -846,7 +920,9 @@ def lenh_chay(args) -> int:
                                newline="\n")
     dm = chi_muc["dem"]
     print(f"\n══ SAP G6 — {args.study}: {dm['DA_CHAY']} đã chạy · {dm['LOI']} lỗi · "
-          f"{dm['CHUA_TU_DONG']} chờ làm tay ══")
+          f"{dm['CHUA_TU_DONG']} chờ làm tay"
+          + (f" · bằng chứng thủ tục: {dm.get('DA_KIEM', 0)} đủ, {dm.get('THIEU_BANG_CHUNG', 0)} thiếu"
+             if dm.get("DA_KIEM") or dm.get("THIEU_BANG_CHUNG") else "") + " ══")
     print(f"✓ {d / TEP_KQ_MD}\n{CAN_KIEM}")
     return ma
 

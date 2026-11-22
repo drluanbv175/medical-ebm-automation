@@ -287,25 +287,23 @@ def test_dat_van_de_de_cuong_nop_neu_vai_tro_xet_nghiem_chan_doan():
     assert not any("Vai trò dự kiến" in d for d in SDC.chuong_dat_van_de(_nguon_dvd("diagnostic", "")))
 
 
-# ───────────────────────────── COREQ 2007 / SRQR 2014: đã đối chiếu bản in lại, chưa bật chặn ─────────────────────
-def test_coreq_srqr_da_doi_chieu_ghi_nguon_dung_va_van_chi_canh_bao():
+# ───────────────────────────── COREQ 2007 / SRQR 2014: đã đối chiếu bản in lại, bật chặn ─────────────────────────
+def test_coreq_srqr_da_doi_chieu_ghi_nguon_dung_va_chan():
     import kiem_chuan_de_cuong_theo_muc as K  # noqa: PLC0415
     import tieu_chi_chuan_de_cuong as TC  # noqa: PLC0415
 
-    assert set(TC.CHUAN_CHUA_DOI_CHIEU_GOC) == set()  # 22/11/2026: TREND 2004 đã đối chiếu Bảng 1 bản gốc
+    assert set(TC.CHUAN_CHUA_DOI_CHIEU_GOC) == set() and TC.CHUAN_DA_DOI_CHIEU_CHUA_CHAN == {}
     for chuan, nguon in (("COREQ 2007", ("PMC12567161", "PMC12731783")), ("SRQR 2014", ("PMC12027544",))):
-        ghi_chu = TC.CHUAN_DA_DOI_CHIEU_CHUA_CHAN[chuan]
+        ghi_chu = TC.NGUON_DOI_CHIEU_BAN_IN_LAI[chuan]
         # nói đúng sự thật: đối chiếu bản in lại toàn văn trong nguồn CC BY, không nói «đã đối chiếu bài gốc»
         assert "bản in lại toàn văn bảng gốc" in ghi_chu and "CC BY" in ghi_chu and "bài gốc" not in ghi_chu
         assert all(p in ghi_chu for p in nguon)
-        muc = TC.danh_sach_muc_them(chuan)
-        assert muc and all(m.chan is False and m.ly_do_khong_chan == ghi_chu for m in muc)
+        assert all(m.chan is True for m in TC.danh_sach_muc_them(chuan))
     # 22/11/2026: TREND 2004 đối chiếu Bảng 1 bản gốc ⇒ mục chặn (chưa có văn bản kiểm chứng: «chưa đo được» ở K17)
     assert all(m.chan is True for m in TC.danh_sach_muc_them("TREND 2004"))
     md = "## TÊN\n\n# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n\n## 4.1. Thiết kế nghiên cứu\n\nNghiên cứu định tính."
-    coreq = [r for r in K.doi_chieu(md, "qualitative")["ket_qua"]
-             if r.chuan == "COREQ 2007" and r.trang_thai == "canh_bao"]
-    assert coreq and all("bản in lại toàn văn" in r.ly_do for r in coreq)
+    coreq = [r for r in K.doi_chieu(md, "qualitative")["ket_qua"] if r.chuan == "COREQ 2007"]
+    assert any(r.trang_thai == "thieu" for r in coreq) and not any(r.trang_thai == "canh_bao" for r in coreq)
 
 
 def test_tieu_chi_coreq_sau_doi_chieu_nhan_lien_tiep_va_email():

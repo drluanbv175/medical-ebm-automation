@@ -47,6 +47,7 @@ import random
 import re
 import secrets
 import shutil
+import statistics
 import subprocess
 import sys
 import unicodedata
@@ -474,7 +475,7 @@ def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any
     for i in range(int(n)):
         r: Dict[str, Any] = {}
         for ten, kieu, nhan, lua, val, lo_kb, hi_kb in bien_so["bo_bien"]:
-            if ten in BIEN_TON_HAI_MO_PHONG or ten in BIEN_CHAN_DOAN_KHAC:
+            if ten in BIEN_TON_HAI_MO_PHONG or ten in BIEN_CHAN_DOAN_KHAC or ten in BIEN_SINH_RIENG:
                 continue  # sinh SAU vòng này bằng bộ số ngẫu nhiên riêng — không xê dịch số của các biến sẵn có
             if ten in ("record_id", "ma_nguoi_tham_gia", "study_id"):
                 r[ten] = f"R{i + 1:04d}"
@@ -544,7 +545,34 @@ def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any
     _sinh_chan_doan_khac(rows, bien_so, thiet_ke, kc, seed)
     if bien_the:
         _ap_bien_the(rows, bien_the, kc, pn, g3, rng)
+    _sinh_bien_rieng(rows, bien_so, thiet_ke, pn, seed)
     return rows
+
+
+#: 22/11/2026: biến sinh SAU cùng bằng bộ số ngẫu nhiên RIÊNG (seed + 33) — thêm biến không xê dịch số đã có. Thang đo
+#: gốc của phơi nhiễm (định nghĩa thay thế SAP §9) khớp phơi nhiễm nhị phân; tuân thủ đề cương của RCT (per-protocol).
+#: Giả định MÔ PHỎNG, không phải số liệu lâm sàng.
+BIEN_SINH_RIENG = frozenset({"so_thang_ppi", "so_ngay_nsaid_30", "tuan_thu_de_cuong", "chu_de_nguoi_2"})
+
+
+def _sinh_bien_rieng(rows: List[Dict[str, Any]], bien_so: Mapping[str, Any], thiet_ke: str, pn: Optional[str],
+                     seed: int) -> None:
+    ten = {b[0] for b in bien_so.get("bo_bien") or ()} & BIEN_SINH_RIENG
+    if not ten:
+        return
+    rng = random.Random(seed + 33)
+    ma = sorted({str(r.get("chu_de")) for r in rows if r.get("chu_de")})
+    for r in rows:
+        co_pn = bool(pn) and str(r.get(pn)) in ("1", "1.0")
+        if "so_thang_ppi" in ten:  # PPI kéo dài = ≥ 12 tháng liên tục; người không phơi nhiễm phần lớn không dùng
+            r["so_thang_ppi"] = rng.randint(12, 72) if co_pn else (0 if rng.random() < 0.7 else rng.randint(1, 11))
+        if "so_ngay_nsaid_30" in ten:  # «có dùng NSAID trong 30 ngày» = ≥ 1 ngày
+            r["so_ngay_nsaid_30"] = rng.randint(1, 30) if co_pn else 0
+        if "tuan_thu_de_cuong" in ten and thiet_ke == "rct":
+            r["tuan_thu_de_cuong"] = _bern(rng, 0.82 if co_pn else 0.9)
+        if "chu_de_nguoi_2" in ten:  # người mã hoá thứ hai: trùng mã người thứ nhất ~85%
+            khac = [m for m in ma if m != str(r.get("chu_de"))]
+            r["chu_de_nguoi_2"] = r.get("chu_de") if (rng.random() < 0.85 or not khac) else rng.choice(khac)
 
 
 # 22/11/2026 (CONSORT 2025 mục 27/29): tỷ lệ MÔ PHỎNG (nhóm chứng, nhóm can thiệp) của biến tổn hại trong RCT giả lập —
@@ -569,6 +597,32 @@ def _sinh_ton_hai(rows: List[Dict[str, Any]], bien_so: Mapping[str, Any], thiet_
         r["bien_co_bat_loi"] = _bern(rng, p1 if nhom else p0)
         if "bien_co_nghiem_trong" in ten:
             r["bien_co_nghiem_trong"] = _bern(rng, q1 if nhom else q0) if r["bien_co_bat_loi"] else 0
+
+
+#: 22/11/2026 (COREQ 29, SRQR S17): lời kể MÔ PHỎNG CÓ KIỂM SOÁT của người tham gia theo chủ đề đã mã hoá — kịch bản
+#: định tính «bắt đầu insulin» (cùng bốn chủ đề của dữ liệu mô phỏng, `sinh_du_lieu`/HINH_MAU_DINH_TINH).
+LOI_KE_CHU_DE: Dict[str, str] = {
+    "Sợ kim tiêm; lo phải tiêm suốt đời": "Tôi sợ kim lắm, cứ nghĩ đã bắt đầu tiêm là phải tiêm cả đời nên chần chừ "
+                                          "mãi.",
+    "Ngại hạ đường huyết khi đi làm": "Tôi đi làm ca, sợ đang làm thì bị hạ đường huyết mà không ai biết để giúp.",
+    "Gia đình hỗ trợ học cách tiêm": "Con gái tôi đi học cách tiêm cùng, tối nào cũng nhắc nên tôi yên tâm hơn nhiều.",
+    "Chi phí và việc bảo quản bút tiêm": "Nhà tôi xa, tôi lo tiền thuốc mỗi tháng và không biết cất bút tiêm thế nào "
+                                         "cho đúng.",
+}
+#: 22/11/2026 — chủ đề và lời kể MÔ PHỎNG CÓ KIỂM SOÁT của cấu phần định tính đề tài hỗn hợp «tin nhắn nhắc uống thuốc»,
+#: theo kết quả tháng 6 của người được phỏng vấn (1 = đạt kiểm soát huyết áp, 0 = không đạt).
+CHU_DE_DINH_TINH_HON_HOP: Dict[int, Tuple[Tuple[str, str], ...]] = {
+    1: (("Tin nhắn đến đúng giờ giúp hình thành thói quen uống thuốc",
+         "Tin nhắn đến đúng giờ sáng nên tôi uống thuốc luôn, lâu dần thành thói quen."),
+        ("Người nhà cùng đọc tin nhắn và nhắc thêm",
+         "Vợ tôi đọc tin nhắn cùng, hôm nào tôi quên là bà ấy nhắc ngay.")),
+    0: (("Quên thuốc khi đi làm xa hoặc đổi ca",
+         "Tôi chạy xe đường dài, tin nhắn đến lúc đang lái nên về đến nhà là quên mất."),
+        ("Tự giảm thuốc vì lo tác dụng phụ",
+         "Uống thuốc thấy mệt nên tôi tự bớt một viên, tin nhắn có nhắc nhưng tôi vẫn ngại."),
+        ("Tin nhắn đến lúc không tiện đọc",
+         "Tin nhắn hay đến giữa giờ làm, tôi không xem được nên cũng bỏ qua.")),
+}
 
 
 def ma_dang_ky_hu_cau(i: int) -> str:
@@ -1318,6 +1372,82 @@ class TronVong:
                           "lenh": G7A.TEP_LOAI_TOAN_VAN_TQ, "ma": 0, "crash": False,
                           "cuoi": [f"{len(ds)} báo cáo bị loại kèm trích dẫn và lý do"]})
 
+    def _cau_phan_dinh_tinh_hon_hop(self) -> None:
+        """Đề tài HỖN HỢP giải thích tuần tự (vai nhóm định tính giả lập, 22/11/2026 — COREQ/SRQR): sau khi khoá phân
+        tích định lượng, chọn có chủ đích người nhóm can thiệp theo kết quả tháng 6 (đạt/không đạt) từ dữ liệu đã
+        khoá, ghi người từ chối kèm lý do, phỏng vấn, gỡ băng ĐÃ KHỬ ĐỊNH DANH (mã PVnn, không mang mã người tham gia
+        của thử nghiệm) và ghi kết quả phân tích chủ đề vào `run_g7_auto.TEP_KET_QUA_DINH_TINH_HH`. Lời kể là DỮ LIỆU
+        MÔ PHỎNG CÓ KIỂM SOÁT (`CHU_DE_DINH_TINH_HON_HOP`; nhãn giả lập ở đầu mỗi bản gỡ băng và khoá `nguon` của tệp
+        kết quả); số đếm tính từ chính các bản gỡ băng đã sinh. Đề tài không khai hỗn hợp / thiếu dữ liệu khoá ⇒ không
+        làm gì."""
+        import hon_hop as HH  # noqa: PLC0415
+        import run_g7_auto as G7A  # noqa: PLC0415
+
+        if not HH.khoi(self._meta()):
+            return
+        ts = next((x.get("tham_so") or {} for x in ((self.kb.get("ho_so_tron_vong") or {}).get("g6") or [])
+                   if x.get("vai") == "chinh"), {})
+        kc, nhom = ts.get("outcome"), ts.get("group")
+        mf = _doc_json(self.out / "DATA_LOCK_manifest.json")
+        hang = _doc_csv(self.out / str(mf.get("locked_dataset_path") or "")) if mf.get("locked_dataset_path") else []
+        if not (kc and nhom and hang):
+            return
+        cs = sorted((r for r in hang if str(r.get(nhom)).strip() in ("1", "1.0")),
+                    key=lambda r: str(r.get("record_id")))
+        theo_kq = {1: [r for r in cs if str(r.get(kc)).strip() in ("1", "1.0")],
+                   0: [r for r in cs if str(r.get(kc)).strip() in ("0", "0.0")]}
+        tu_choi = {1: [("Không sắp xếp được thời gian", 1)],
+                   0: [("Không sắp xếp được thời gian", 1), ("Không đồng ý ghi âm", 1)]}
+        tu_dien = {r.get("Variable / Field Name"): r
+                   for r in _doc_csv(self.out / f"G5_REDCap_dictionary_{self.study}.csv")}
+        ma_nu = next((m.split(",")[0].strip() for m in str((tu_dien.get("gioi") or {}).get(
+            "Choices, Calculations, OR Slider Labels") or "").split("|") if m.split(",")[-1].strip() == "Nữ"), None)
+        thu = self.out / G7A.THU_MUC_BAN_GO_BANG_HH
+        thu.mkdir(parents=True, exist_ok=True)
+        so_moi = 0
+        khong: Dict[str, int] = {}
+        pv: List[Tuple[str, int, str, Mapping[str, Any]]] = []
+        for kq in (1, 0):
+            moi = theo_kq[kq][:10]
+            so_moi += len(moi)
+            bo = sum(n for _l, n in tu_choi[kq])
+            for ly, n in tu_choi[kq]:
+                khong[ly] = khong.get(ly, 0) + n
+            ds_cd = CHU_DE_DINH_TINH_HON_HOP[kq]
+            for i, r in enumerate(moi[:max(0, len(moi) - bo)]):
+                pv.append((f"PV{len(pv) + 1:02d}", kq, ds_cd[i % len(ds_cd)][0], r))
+        if not pv:
+            return
+        loi = {ten: ke for kq in CHU_DE_DINH_TINH_HON_HOP for ten, ke in CHU_DE_DINH_TINH_HON_HOP[kq]}
+        for ma, kq, cd, _r in pv:
+            (thu / f"{ma}.txt").write_text(
+                f"BẢN GỠ BĂNG ĐÃ KHỬ ĐỊNH DANH — {ma} ({GL.NHAN}; cấu phần định tính mô phỏng có kiểm soát)\n\n"
+                "Người phỏng vấn: Anh/chị có thể kể lại những tháng nhận tin nhắn nhắc uống thuốc?\n"
+                f"Người tham gia: {loi[cd]}\n"
+                "Người phỏng vấn: Theo anh/chị, tin nhắn có ích ở điểm nào và chưa phù hợp ở điểm nào?\n"
+                "Người tham gia: " + ("Tin nhắn ngắn, dễ hiểu; tôi muốn giữ giờ gửi như hiện nay.\n" if kq == 1 else
+                                      "Nên gửi vào buổi tối và nhắc lại nếu tôi chưa trả lời.\n"),
+                encoding="utf-8", newline="\n")
+        tuoi = sorted(float(r["tuoi"]) for *_x, r in pv if str(r.get("tuoi") or "").replace(".", "", 1).isdigit())
+        n_nu = sum(1 for *_x, r in pv if ma_nu is not None and str(r.get("gioi")).strip() in (ma_nu, f"{ma_nu}.0"))
+        dac = (f"{sum(1 for x in pv if x[1] == 1)} người đạt và {sum(1 for x in pv if x[1] == 0)} người không đạt kiểm "
+               "soát huyết áp tại tháng 6, đều thuộc nhóm can thiệp" + (f"; {n_nu} nữ" if ma_nu is not None else "")
+               + (f"; tuổi trung vị {int(statistics.median(tuoi))} (khoảng {int(tuoi[0])}–{int(tuoi[-1])})"
+                  if tuoi else ""))
+        nhom_kq = {1: "người đạt kiểm soát huyết áp tại tháng 6", 0: "người không đạt kiểm soát huyết áp tại tháng 6"}
+        chu_de = [{"ten": ten, "so_ban": sum(1 for x in pv if x[2] == ten),
+                   "ban_go_bang": [x[0] for x in pv if x[2] == ten], "nhom": nhom_kq[kq]}
+                  for kq in (1, 0) for ten, _k in CHU_DE_DINH_TINH_HON_HOP[kq]]
+        kq_dt = {"nguon": "MÔ PHỎNG CÓ KIỂM SOÁT — bộ giả lập trọn vòng; không phải dữ liệu người bệnh",
+                 "so_moi": so_moi, "khong_tham_gia": khong, "so_phong_van": len(pv), "dac_diem": dac,
+                 "chu_de": [c for c in chu_de if c["so_ban"]], "tong_ban": len(pv)}
+        (self.out / G7A.TEP_KET_QUA_DINH_TINH_HH).write_text(json.dumps(kq_dt, ensure_ascii=False, indent=2),
+                                                             encoding="utf-8", newline="\n")
+        self.du_lieu["cau_phan_dinh_tinh"] = {"so_moi": so_moi, "so_phong_van": len(pv)}
+        self.buoc.append({"buoc": "Nhóm định tính: chọn có chủ đích, phỏng vấn, gỡ băng, phân tích chủ đề (đề tài "
+                                  "hỗn hợp)", "lenh": G7A.TEP_KET_QUA_DINH_TINH_HH, "ma": 0, "crash": False,
+                          "cuoi": [f"mời {so_moi} · phỏng vấn {len(pv)} · {len(kq_dt['chu_de'])} chủ đề"]})
+
     def _ban_go_bang(self, hang: Sequence[Mapping[str, Any]]) -> None:
         """Đề tài ĐỊNH TÍNH: quản lý dữ liệu nộp bản gỡ băng ĐÃ KHỬ ĐỊNH DANH (mỗi người tham gia một tệp .txt, chỉ
         đọc) và khai TRANSCRIPT_manifest (băm SHA-256, deidentified, mã người rà) — việc ĐÚNG VAI trước khi khoá
@@ -1338,10 +1468,15 @@ class TronVong:
             tep = thu / f"{tid}.txt"
             if tep.exists():
                 tep.chmod(stat.S_IWUSR | stat.S_IRUSR)
+            # 22/11/2026 (COREQ 29, SRQR S17 — trích lời minh hoạ): lời người tham gia là LỜI KỂ theo chủ đề đã mã hoá
+            # (`LOI_KE_CHU_DE`), không phải nhãn mã của người phân tích — bản cũ ghi chính tên chủ đề vào miệng người
+            # tham gia. Vẫn là lời mô phỏng có kiểm soát (đầu tệp mang nhãn giả lập), không chứa mẫu PII.
+            cd = str(r.get("chu_de") or "").strip()
+            loi_ke = LOI_KE_CHU_DE.get(cd) or (f"Điều tôi nghĩ nhiều nhất lúc đó là chuyện {cd[:1].lower() + cd[1:]}."
+                                              if cd else "Lúc đầu tôi còn nhiều băn khoăn.")
             noi_dung = (f"BẢN GỠ BĂNG ĐÃ KHỬ ĐỊNH DANH — {tid} ({GL.NHAN})\n\n"
                         "Người phỏng vấn: Anh/chị cảm thấy thế nào khi được bác sĩ đề nghị bắt đầu tiêm insulin?\n"
-                        f"Người tham gia: {r.get('chu_de') or 'Tôi còn nhiều băn khoăn lúc đầu'}. "
-                        "Lúc đầu tôi ngại, nhưng được hướng dẫn kỹ thì yên tâm hơn.\n"
+                        f"Người tham gia: {loi_ke}\n"
                         "Người phỏng vấn: Điều gì giúp anh/chị duy trì việc tiêm?\n"
                         "Người tham gia: Gia đình nhắc nhở và nhân viên y tế giải thích rõ cách tiêm.\n")
             tep.write_text(noi_dung, encoding="utf-8", newline="\n")
@@ -1483,6 +1618,8 @@ class TronVong:
             ts_chinh["outcome_type"] = loai_kc_tu_sap(text)
         ds: List[Dict[str, Any]] = []
         for x in mau:
+            if x.get("tu_ma_tran"):  # 22/11/2026: dựng từ ma trận G3 + SAP §9 ở dưới, không từ hồ sơ
+                continue
             pt = {k: v for k, v in x.items() if k != "ke_thua"}
             if x is chinh:
                 pt["tham_so"] = ts_chinh
@@ -1493,6 +1630,17 @@ class TronVong:
             ds.append(pt)
         if self.thiet_ke == "rct":
             self._dac_ta_rct(ts_chinh, ds)
+        # 22/11/2026: định nghĩa thay thế + phân tích theo đề cương ĐÃ KHAI ở ma trận G3 và SAP §9 chép cụ thể ⇒ mục đặc
+        # tả dựng tự động bằng cùng mô-đun bộ sinh SAP dùng (không còn «chờ làm tay»)
+        import dinh_nghia_thay_the as DTT  # noqa: PLC0415
+        import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
+
+        ds += [pt for pt in DTT.phan_tich_g6(DTT.doc(self.out), ts_chinh)
+               if pt["sap_neo"].casefold() in text.casefold()]
+        tt = DTT.tuan_thu_tu_dong_ma_tran(MT.doc_ma_tran(self.out)[0])
+        if (self.thiet_ke == "rct" and tt and DTT.NEO_THEO_DE_CUONG.casefold() in text.casefold()
+                and not any(pt.get("id") == "DN_theo_de_cuong" for pt in ds)):
+            ds.append(DTT.phan_tich_theo_de_cuong(tt, ts_chinh))
         for i, (muc, dong) in enumerate(CS6.kiem_phu_sap({"phan_tich": ds}, text)["muc_chua_phu"], 1):
             neo = dong[2:].strip()[:60].strip()
             ds.append({"id": f"CHO_LAM_TAY_{i}", "vai": "do_nhay" if muc == "§9" else "phu", "sap_muc": muc,
@@ -1536,14 +1684,6 @@ class TronVong:
             ds.append({"id": pid, "vai": "phu", "sap_muc": "§15", "sap_neo": "Cách phân tích tổn hại", "mo_ta": mo_ta,
                        "tham_so": ts})
 
-    # Dòng mẫu do run_g6_auto để dạng chú thích: nạp RDS khoá + kiểm dấu, công thức mô hình chính, lời gọi ước lượng
-    # robust. Thống kê viên đối chiếu với SAP §4 rồi BẬT (G6-AUTO-09: chỉ dòng thi hành mới chứng minh script chạy
-    # mô hình).
-    # 16/11/2026: khuôn mọi thiết kế đánh dấu dòng mô hình chính «◆ MÔ HÌNH CHÍNH (SAP §4)» — thống kê viên bật đúng
-    # dòng đó (bệnh chứng/chẩn đoán/dự báo/tổng hợp/cắt ngang mô tả), không chỉ dòng «fit_…» của khuôn thuần tập.
-    DONG_MO_HINH_CHINH = re.compile(r"^# ((?:df <- readRDS|extracted <- read\.csv|stopifnot\(identical\(attr\(df|"
-                                    r"fit_\w+ <- |lmtest::coeftest\(fit_|(?=[^\n]*◆ MÔ HÌNH CHÍNH))[^\n]*)$", re.M)
-
     def _cong_thuc_phai_sinh(self) -> None:
         """Thống kê viên soạn công thức biến PHÁI SINH từ trường calc của từ điển (vd FIB-4) rồi ghi duyệt — đúng quy
         trình bien_phai_sinh (soan-tu-calc → duyet), CHỈ trên đề tài tổng hợp trong thư mục tạm (16/11/2026)."""
@@ -1558,14 +1698,19 @@ class TronVong:
         self._cap_nhat_bang_bien_g3("công thức biến phái sinh soạn từ trường calc")
 
     def _bat_mo_hinh_chinh(self) -> None:
+        """22/11/2026: run_g6_auto đã viết dòng mô hình chính THI HÀNH (bat_dong_thi_hanh) — còn dòng nào khớp mẫu
+        «chờ bật» ở đây nghĩa là bộ sinh sót: giả lập ghi lại (g6_thong_ke_vien) để phép đo «việc tay» thấy được."""
+        import run_g6_auto as RG6  # noqa: PLC0415 — CÙNG mẫu dòng thi hành của bộ sinh
+
         p = self.out / "scripts" / "03_analysis.R"
         if p.is_file():
             t = p.read_text(encoding="utf-8")
-            moi = self.DONG_MO_HINH_CHINH.sub(r"\1", t)
+            moi = RG6.bat_dong_thi_hanh(t)
             if moi != t:
                 p.write_text(moi, encoding="utf-8", newline="\n")
+                so = sum(1 for a_, b_ in zip(t.split("\n"), moi.split("\n")) if a_ != b_)
                 self.du_lieu.setdefault("g6_thong_ke_vien", []).append(
-                    f"bật {len(self.DONG_MO_HINH_CHINH.findall(t))} dòng mô hình chính trong 03_analysis.R")
+                    f"bật {so} dòng mô hình chính trong 03_analysis.R")
 
     # Tỷ lệ bị loại ở MỖI hộp loại trừ của sổ sàng lọc mô phỏng (so với hộp chính đứng trước) — theo tên hộp chuẩn.
     _TY_LE_LOAI_LUONG = (("sàng lọc tiêu đề", 0.9), ("trước sàng lọc", 0.3), ("báo cáo bị loại", 0.65),
@@ -1662,11 +1807,57 @@ class TronVong:
             ra[t] = (n_cuoi - n1) // len(con) + (1 if i < (n_cuoi - n1) % len(con) else 0)
         return ra
 
+    def _ghi_bang_chung_dinh_tinh(self) -> None:
+        """Vai nhóm nghiên cứu định tính (22/11/2026): ghi BẰNG CHỨNG THỦ TỤC của độ tin cậy theo khuôn
+        `bang_chung_dinh_tinh` — nhật ký kiểm lại với người tham gia (mỗi người đã phỏng vấn trong dữ liệu khoá), nhật
+        ký quyết định mã hoá (mỗi mã của bộ mã), bản mô tả dày bối cảnh. Đề tài thật: nhóm ghi trong lúc thu thập và
+        phân tích (khuôn trống: `bang_chung_dinh_tinh.py mau`). Tệp đã có thì không ghi đè."""
+        import bang_chung_dinh_tinh as BCD  # noqa: PLC0415
+
+        man = _doc_json(self.out / "DATA_LOCK_manifest.json")
+        p_khoa = self.out / str(man.get("locked_dataset_path") or "")
+        if not p_khoa.is_file():
+            return
+        with p_khoa.open(encoding="utf-8-sig", newline="") as f:
+            hang = list(csv.DictReader(f))
+        nguoi = [r.get("ma_nguoi_tham_gia") or r.get("transcript_id") for r in hang if r.get("chu_de")]
+        ma = sorted({r["chu_de"] for r in hang if r.get("chu_de")})
+        ngay = self.hom_nay.isoformat()
+        ghi = {
+            "credibility": [BCD.KHUON["credibility"]["cot"]] + [
+                [n, ngay, "gặp lại trực tiếp", "tóm tắt chủ đề của cuộc phỏng vấn",
+                 "đồng ý với tóm tắt" if i % 4 else "bổ sung ý về chi phí bút tiêm",
+                 "không đổi mã" if i % 4 else "thêm trích dẫn vào mã chi phí"] for i, n in enumerate(nguoi) if n],
+            "dependability": [BCD.KHUON["dependability"]["cot"]] + [
+                [ngay, "người mã hoá 1 và 2", m, "giữ mã trong bộ mã", "đồng thuận sau thảo luận; định nghĩa mã ghi "
+                 "trong bộ mã"] for m in ma],
+        }
+        for loai, dong in ghi.items():
+            p = BCD.tep_cua(self.out, self.study, loai)
+            if not p.exists():
+                with p.open("w", encoding="utf-8", newline="") as f:
+                    csv.writer(f, lineterminator="\n").writerows(dong)
+        p = BCD.tep_cua(self.out, self.study, "transferability")
+        if not p.exists():
+            p.write_text(
+                "# Mô tả dày bối cảnh và người tham gia\n\n## Bối cảnh nơi nghiên cứu\n\nPhòng khám ngoại trú nội tiết "
+                "của bệnh viện; người bệnh được chỉ định bắt đầu insulin tái khám định kỳ 1–3 tháng, có điều dưỡng "
+                "hướng dẫn kỹ thuật tiêm.\n\n## Đặc điểm người tham gia\n\n"
+                f"{len(nguoi)} người đái tháo đường típ 2 được chỉ định insulin, chọn có chủ đích theo đã/chưa bắt đầu "
+                "insulin, giới và thời gian mắc bệnh; đặc điểm từng người ở bảng đặc điểm của dữ liệu đã khoá.\n\n"
+                "## Cách thu thập dữ liệu\n\nPhỏng vấn sâu bán cấu trúc tại phòng riêng của phòng khám, ghi âm có "
+                "đồng ý, gỡ băng nguyên văn và khử định danh trước khi mã hoá.\n",
+                encoding="utf-8", newline="\n")
+
     def g6(self) -> None:
+        # 22/11/2026: công thức phái sinh (từ calc) duyệt TRƯỚC khi sinh script — 01_cleaning.R tính biến phái sinh bằng
+        # đúng công thức đã duyệt (bien_phai_sinh.ma_r), như đề tài thật có _bien-phai-sinh.csv trước G6
+        self._cong_thuc_phai_sinh()
         self.chay("G6 sinh script phân tích", "run_g6_auto.py", "--study", self.study)
         a7 = self.out / f"G6_A7_ANALYSIS_SCRIPTS_{self.study}.md"
         self.hoan_thien_tep("G6", a7, list(TRA_LOI_CHUNG), {})
-        self._cong_thuc_phai_sinh()
+        if self.thiet_ke == "qualitative":
+            self._ghi_bang_chung_dinh_tinh()
         dt = self._dac_ta_g6()
         if dt:
             self.chay("G6 kiểm đặc tả SAP", "chay_sap_g6.py", "kiem", "--study", self.study)
@@ -2207,6 +2398,7 @@ class TronVong:
         hs = self.kb.get("ho_so_tron_vong") or {}
         tg = hs.get("tac_gia_G7") or {}
         tap_chi = tg.get("target_journal") or "Tạp chí Y học Việt Nam"
+        self._cau_phan_dinh_tinh_hon_hop()  # đề tài hỗn hợp: cấu phần định tính sau khi khoá phân tích định lượng
         self._khai_truoc_ban_thao()
         self.chay("G7 sinh bản thảo", "run_g7_auto.py", "--study", self.study, "--target-journal", tap_chi)
         a8 = self.out / f"G7_A8_MANUSCRIPT_{self.study}.md"

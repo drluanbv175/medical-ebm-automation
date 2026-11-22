@@ -343,6 +343,9 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
         "sau 6 tháng, nhằm giải thích kết quả của thử nghiệm"]
     g1["aim"] = ("Đánh giá hiệu quả của chương trình tin nhắn nhắc uống thuốc lên kiểm soát huyết áp và tìm hiểu trải "
                  "nghiệm của người bệnh để giải thích kết quả, ở người tăng huyết áp điều trị ngoại trú")
+    # 22/11/2026 (SRQR 2014 mục S3): khoảng trống của đề tài hỗn hợp gồm cả phần cấu phần định tính trả lời
+    g1["knowledge_gap"] = ("Thiếu RCT tại Việt Nam với kết cục tỷ lệ kiểm soát huyết áp sau 6 tháng, và chưa có nghiên "
+                           "cứu tìm hiểu vì sao một số người vẫn không đạt kiểm soát dù nhận tin nhắn")
     g1["mixed_methods"] = {
         "thiet_ke": "giai_thich_tuan_tu",
         "ly_do": vi("Thử nghiệm trả lời chương trình tin nhắn có cải thiện kiểm soát huyết áp hay không, nhưng không "
@@ -357,9 +360,45 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             "chon_mau": vi("Chọn mẫu có chủ đích trong nhóm can thiệp theo kết quả tháng 6 (đạt và không đạt kiểm "
                            "soát huyết áp), đa dạng về giới và nhóm tuổi"),
             "co_mau_du_kien": "Khoảng 16–20 người (8–10 người mỗi nhóm kết quả), dừng khi đạt bão hoà",
+            # 22/11/2026 (SRQR 2014 mục S10 — tính lặp của quy trình thu thập): thu thập và phân tích xen kẽ tới bão hoà
             "data_collection_method": vi("Phỏng vấn sâu bán cấu trúc 30–45 phút tại phòng khám hoặc qua điện thoại, "
-                                         "ghi âm khi người tham gia đồng ý, gỡ băng nguyên văn"),
+                                         "ghi âm khi người tham gia đồng ý, gỡ băng nguyên văn; thu thập lặp lại song "
+                                         "song với phân tích cho tới khi đạt bão hoà"),
             "saturation_criterion": "Ba cuộc phỏng vấn liên tiếp không xuất hiện mã mới",
+            # 22/11/2026 (COREQ 2007, SRQR 2014): quy trình định tính PI chốt khi thiết kế — cùng khoá với đề tài định
+            # tính (hon_hop.KHOA_QUY_TRINH_DINH_TINH); khớp «hai nghiên cứu viên mã hoá độc lập» ở phan_tich
+            "research_paradigm": ("Hệ hình thực dụng của nghiên cứu hỗn hợp: cấu phần định tính nhằm giải thích "
+                                  "kết quả định lượng từ góc nhìn người bệnh, phù hợp với mô hình giải thích tuần"
+                                  " tự"),
+            "interviewer": ("Người phỏng vấn là cán bộ nghiên cứu định tính của nhóm (một người, nữ, thạc sĩ y tế"
+                            " công cộng), đã được tập huấn phỏng vấn sâu; nghiên cứu viên này trực tiếp phỏng "
+                            "vấn, không điều trị và không quen biết người tham gia trước nghiên cứu"),
+            "participant_information": ("Khi liên hệ và trước khi phỏng vấn, người phỏng vấn giới thiệu bản thân,"
+                                        " vai trò trong nhóm nghiên cứu và mục đích của cấu phần định tính"),
+            "researcher_reflexivity": ("Người phỏng vấn biết kết quả định lượng của thử nghiệm nên có thể thiên "
+                                       "về giải thích có lợi cho chương trình tin nhắn; nhóm ghi nhật ký phản tư "
+                                       "sau mỗi cuộc phỏng vấn và mời một thành viên không tham gia thiết kế "
+                                       "chương trình rà soát bộ mã"),
+            "participant_approach": ("Cán bộ nghiên cứu liên hệ qua điện thoại người được chọn trong nhóm can "
+                                     "thiệp, giới thiệu mục đích và hẹn lịch phỏng vấn"),
+            "non_participation": ("Số người từ chối tham gia hoặc rút lui và lý do được ghi vào sổ tuyển chọn của"
+                                  " cấu phần định tính"),
+            "interview_setting": ("Phỏng vấn tại phòng riêng của phòng khám hoặc qua điện thoại khi người tham "
+                                  "gia ở xa; chỉ có người phỏng vấn và người tham gia, không có người khác có mặt"),
+            "interview_guide_pilot": ("Hướng dẫn phỏng vấn bán cấu trúc (Phụ lục C) đã thử trước trên 2 người "
+                                      "bệnh ngoài mẫu và giữ nguyên trong suốt quá trình thu thập"),
+            "repeat_interviews": ("Mỗi người tham gia được phỏng vấn một lần, không phỏng vấn lại"),
+            "recording_field_notes": ("Mọi cuộc phỏng vấn được ghi âm bằng máy ghi âm kỹ thuật số khi người tham "
+                                      "gia đồng ý; người phỏng vấn ghi chép thực địa ngay sau mỗi cuộc phỏng vấn"),
+            "transcript_return": ("Không gửi lại bản gỡ băng cho người tham gia; bản tóm tắt chủ đề được kiểm tra"
+                                  " lại với người tham gia"),
+            "coding_process": ("Bộ mã do hai nghiên cứu viên mã hoá độc lập xây dựng từ 3 bản gỡ băng đầu, cây mã"
+                               " trình bày ở phụ lục; chủ đề rút ra từ dữ liệu theo hướng quy nạp, phân tích tiến"
+                               " hành song song với thu thập dữ liệu; mã được quản lý bằng bảng tính có kiểm soát"
+                               " phiên bản, không dùng phần mềm phân tích định tính chuyên dụng; nhật ký quyết "
+                               "định mã hoá được lưu; kết quả trình bày theo chủ đề kèm trích lời minh hoạ đã khử"
+                               " định danh có mã người tham gia, cùng mô tả dày bối cảnh để người đọc đánh giá "
+                               "khả năng chuyển giao"),
             "phan_tich": vi("Hai nghiên cứu viên mã hoá độc lập theo bộ mã xây dựng từ 3 bản gỡ băng đầu, thảo luận "
                             "đồng thuận; người thứ ba phân xử khi bất đồng"),
             "interview_guide": [
@@ -383,6 +422,14 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                        "bảng tích hợp, đối chiếu từng kết quả định lượng với chủ đề định tính tương ứng"),
             "nguoi": vi("Chủ nhiệm đề tài cùng nghiên cứu viên định tính; thống kê viên tham gia đối chiếu kết quả "
                         "định lượng"),
+            # 22/11/2026 (GRAMMS 2008 mục 5, 6): hạn chế phát sinh do kết hợp và hiểu biết dự kiến thu được nhờ kết hợp
+            "han_che": ("Hạn chế do kết hợp hai cấu phần: người được phỏng vấn đã biết mình ở nhóm can thiệp và "
+                        "kết quả huyết áp tháng 6 của mình, nên lời kể của cấu phần định tính có thể bị kết quả "
+                        "định lượng định hướng; ngược lại cấu phần định lượng không đo được lý do không đạt kiểm "
+                        "soát"),
+            "hieu_biet_du_kien": ("Kết hợp hai cấu phần giúp giải thích vì sao một số người nhận tin nhắn vẫn "
+                                  "không đạt kiểm soát huyết áp và gợi ý cách điều chỉnh nội dung, giờ gửi tin "
+                                  "nhắn trước khi triển khai rộng"),
             "chu_de": [
                 {"chu_de": "Hiệu quả của chương trình tin nhắn",
                  "dinh_luong": "Tỷ lệ kiểm soát huyết áp tháng 6 theo nhóm (kết cục chính)",
@@ -398,7 +445,10 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     dg["muc_4"] = dg["muc_4"] + (
         " Cấu phần định tính giải thích (phỏng vấn sâu người nhóm can thiệp đạt và không đạt kiểm soát) được thực "
         "hiện sau khi khoá phân tích định lượng theo SAP §17; kết quả tích hợp trình bày bằng bảng tích hợp và báo "
-        "cáo theo GRAMMS.")
+        "cáo theo GRAMMS. Khả năng chuyển giao của kết quả định tính giới hạn ở người tăng huyết áp điều trị ngoại "
+        "trú có bối cảnh tương tự, nhờ mô tả dày bối cảnh phòng khám và đặc điểm người được phỏng vấn.")
+    # GRAMMS 2008 mục 5, 6 ở bàn luận: bộ sinh G7 viết từ tich_hop.han_che (G1) và chủ đề định tính theo nhóm kết quả
+    # (khoi_dinh_tinh_g7) — không chép lại ở diễn giải để bản thảo khỏi nói hai lần
     hs["dien_giai"] = dg
     hs["phan_bien_G8"] = {**hs["phan_bien_G8"],
                           "checklist": "CONSORT 2025 + GRAMMS (PMID 18416914) + COREQ (PMID 17872937)"}
@@ -429,10 +479,9 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                  "mo_ta": "Phân tích ca đầy đủ (không impute) đối chiếu với phân tích chính", "ke_thua": True,
                  "tham_so": {"n_imputations": 0}},
                 _sd_khong_ap_dung("kết cục và nhóm so sánh đều nhị phân — định nghĩa thay thế chưa khai cụ thể"),
-                {"id": "DN_theo_de_cuong", "vai": "do_nhay", "sap_muc": "§9",
-                 "sap_neo": "Phân tích theo đề cương (per-protocol)", "mo_ta": "Phân tích theo đề cương",
-                 "chua_tu_dong": "cần biến tuân thủ đề cương (số lần tái khám đúng nhánh) — chưa có trong bộ biến; "
-                                 "với thử nghiệm không kém hơn, kết luận phải vững ở CẢ ITT lẫn per-protocol"}]
+                # 22/11/2026: biến tuân thủ đề cương có trong bộ biến RCT (vai trò tuan_thu_de_cuong) ⇒ dựng từ ma trận
+                {"id": "DN_theo_de_cuong", "vai": "do_nhay", "sap_muc": "§9", "tu_ma_tran": "theo_de_cuong",
+                 "mo_ta": "Phân tích theo đề cương"}]
     hs["dien_giai"] = {
         "bang": [_dong("Kiểm soát huyết áp tháng 6", "Hiệu số tỷ lệ (điện thoại − trực tiếp)", "hieu_so_nguy_co",
                        "G6", "So với biên −{bien_ni} điểm %: {ni_ket_luan}"),
@@ -449,9 +498,9 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                   "Can thiệp và thiết kế khác (vượt trội, nhắn tin) nên chỉ đối chiếu mức tỷ lệ nền; tác giả chưa đọc "
                   "toàn văn bài này."),
         "muc_4": ("Điểm mạnh: ngẫu nhiên hoá, biên định trước trong SAP, cỡ mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn "
-                  "chế: phân tích theo đề cương chưa làm được do thiếu biến tuân thủ — với thiết kế không kém hơn, "
-                  "phân tích ITT có thể thiên về kết luận không kém hơn; không làm mù người tham gia; một cơ sở, nên "
-                  "kết quả chỉ khái quát cho người tăng huyết áp ổn định khám tại cơ sở tương tự."),
+                  "chế: phân tích theo đề cương chỉ gồm người tuân thủ (≥ 80% số lần can thiệp theo nhánh) nên có "
+                  "thể lệch do chọn lọc sau ngẫu nhiên hoá và phải đọc cùng ITT; không làm mù người tham gia; một cơ "
+                  "sở, nên kết quả chỉ khái quát cho người tăng huyết áp ổn định khám tại cơ sở tương tự."),
         "muc_5": ("Hàm ý cho thực hành: nếu kết luận vững ở cả ITT và per-protocol, tái khám qua điện thoại có thể "
                   "thay một phần tái khám trực tiếp cho người tăng huyết áp ổn định. Hướng tiếp: đo tuân thủ đề cương, "
                   "đánh giá chi phí và sự hài lòng."),
@@ -477,7 +526,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
         "ten_bai": "Tái khám qua điện thoại so với trực tiếp trong kiểm soát huyết áp",
         "thiet_ke": "Thử nghiệm ngẫu nhiên không kém hơn",
         "ly_do": ("Biên không kém hơn định trước, hiệu số tỷ lệ {hieu_so_phan_tram} điểm % (KTC 95% "
-                  "{hieu_so_duoi_pt} đến {hieu_so_tren_pt}); cần bổ sung phân tích theo đề cương."),
+                  "{hieu_so_duoi_pt} đến {hieu_so_tren_pt}); cần đọc cùng phân tích theo đề cương."),
         "gop_y_nho": [("Từ khoá (trang đầu)", "Dòng từ khoá do máy tách từng chữ của tiêu đề — thay bằng MeSH"),
                       ("Phương pháp — biên", "Biện minh biên 10 điểm % bằng dữ liệu lâm sàng (CONSORT mở rộng NI)"),
                       ("Kết quả — per-protocol", "Báo cáo phân tích theo đề cương cạnh ITT")],

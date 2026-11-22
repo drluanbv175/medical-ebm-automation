@@ -16,12 +16,13 @@ CÁCH KIỂM (tất định, không gọi mạng):
   3. Mục «if applicable» chỉ xét khi đề cương có điều kiện tương ứng (vd 12d cắt ngang khi có chọn mẫu cụm/gom cụm).
   4. Chuẩn chưa có tiêu chí tự động ⇒ «chua_do» (⚪), KHÔNG BAO GIỜ tính là đạt.
   5. (21/11/2026, tối) 12 chuẩn còn lại — SPIRIT, PRISMA-P, STARD, TRIPOD+AI, COREQ, SRQR, GRAMMS, SQUIRE, CHEERS,
-     TREND, CARE, COSMIN — có tiêu chí ở `tieu_chi_chuan_de_cuong.py`. Chuẩn chưa đối chiếu được bảng gốc (TREND, COREQ,
-     SRQR) báo «canh_bao» (⚠), không làm K17 đỏ. ⚪ chỉ còn cho mã thiết kế ngoài bảng và ISPOR BIA GPP II 2014.
+     TREND, CARE, COSMIN — có tiêu chí ở `tieu_chi_chuan_de_cuong.py`. Chuẩn chưa đối chiếu được bảng gốc (TREND) báo
+     «canh_bao» (⚠), không làm K17 đỏ; COREQ, SRQR đối chiếu bản in lại toàn văn bảng gốc và chặn từ 22/11/2026.
+     ⚪ chỉ còn cho mã thiết kế ngoài bảng và ISPOR BIA GPP II 2014.
      Phân xử trên 8 đề cương giả lập + 2 đề cương thật: `docs/K17-PHAN-XU-12-CHUAN-20261121.md`.
   6. (22/11/2026) Bộ sinh đề cương nộp viết đủ mục SPIRIT 2025, PRISMA-P 2015, STARD 2015, TRIPOD+AI 2024, CHEERS
      2022 cho các kịch bản giả lập ⇒ gỡ tập miễn chặn «chờ bộ sinh phủ»: mục thiếu của mọi chuẩn đã đối chiếu là lỗi
-     chặn (GRAMMS chờ khối định tính của bộ sinh — `CHUAN_DA_DOI_CHIEU_CHUA_CHAN`). TREND 2004 đối chiếu từng mục với
+     chặn (COREQ, SRQR, GRAMMS cũng chặn — `CHUAN_DA_DOI_CHIEU_CHUA_CHAN` rỗng). TREND 2004 đối chiếu từng mục với
      Bảng 1 bản gốc. SQUIRE 2.0, CARE 2013, TREND 2004 chưa có văn bản nào trong hệ để kiểm chứng tiêu chí ⇒ ⚪ «chưa
      đo được» (`CHUAN_CHUA_CO_VAN_BAN`), chuẩn cơ sở chưa đo ⇒ không báo đạt. Thêm phần mở rộng CONSORT 2010 cho thử
      nghiệm cụm và không kém hơn (`CHUAN_DIEU_KIEN_RCT`) — điều kiện chỉ đọc phần đề tài tự nêu thiết kế
@@ -688,6 +689,10 @@ CHUAN_DIEU_KIEN: Tuple[Tuple[str, str, str], ...] = (
     ("SRQR 2014", DINH_TINH_CP, "có cấu phần định tính (phỏng vấn sâu/nhóm tiêu điểm)"),
     ("GRAMMS 2008", HON_HOP, "kết hợp phương pháp định lượng và định tính"),
     ("ISPOR BIA GPP II 2014", TAC_DONG_NGAN_SACH, "có phân tích tác động ngân sách"),
+    # 22/11/2026: chương tổng quan tài liệu của đề cương là tổng quan tường thuật ⇒ SANRA 2019 (tiêu chí ở
+    # `tieu_chi_chuan_de_cuong.py`, mục 3 đối chiếu PRISMA-S); tổng quan hệ thống đã thoát sớm ở `chuan_ap_dung`
+    ("SANRA 2019", r"^#{1,3}\s+(?:CHƯƠNG\s+\d+\.?\s+|\d+\.\s+)?TỔNG QUAN TÀI LIỆU\b",
+     "đề cương có chương tổng quan tài liệu (tổng quan tường thuật)"),
 )
 #: Chuẩn có điều kiện CHỈ cho thử nghiệm ngẫu nhiên (mã «rct»): phần mở rộng của CONSORT 2010 cho thiết kế đặc thù. Đề
 #: cương đo các mục phương pháp/kế hoạch của phần mở rộng trên phần tương ứng của đề cương SPIRIT (cỡ mẫu, ngẫu nhiên
@@ -1213,10 +1218,10 @@ def loi_k17(md: str, thiet_ke: str) -> List[str]:
 
     22/11/2026: gỡ tập miễn chặn «chờ bộ sinh phủ» (SPIRIT, PRISMA-P, STARD, TRIPOD+AI, CHEERS) — bộ sinh đề
     cương nộp đã viết đủ mục cho các kịch bản giả lập của các chuẩn này, nên mục thiếu là lỗi chặn như mọi chuẩn
-    (GRAMMS sang `tieu_chi_chuan_de_cuong.CHUAN_DA_DOI_CHIEU_CHUA_CHAN` cho tới khi khối định tính của bộ sinh đủ
-    mục). Chuẩn CƠ SỞ của thiết kế mà hệ CHƯA ĐO ĐƯỢC (không có tiêu chí, hoặc tiêu chí chưa kiểm chứng trên văn
-    bản nào — `tieu_chi_chuan_de_cuong.CHUAN_CHUA_CO_VAN_BAN`) cũng là một dòng lỗi: «không đo được» không bao giờ
-    là «đạt», nên đề cương không được báo đạt K17 khi chuẩn chính của chính thiết kế đó chưa đo."""
+    (COREQ, SRQR, GRAMMS cũng vậy — `tieu_chi_chuan_de_cuong.CHUAN_DA_DOI_CHIEU_CHUA_CHAN` rỗng). Chuẩn CƠ SỞ của
+    thiết kế mà hệ CHƯA ĐO ĐƯỢC (không có tiêu chí, hoặc tiêu chí chưa kiểm chứng trên văn bản nào —
+    `tieu_chi_chuan_de_cuong.CHUAN_CHUA_CO_VAN_BAN`) cũng là một dòng lỗi: «không đo được» không bao giờ là «đạt», nên
+    đề cương không được báo đạt K17 khi chuẩn chính của chính thiết kế đó chưa đo."""
     kq = doi_chieu(md, thiet_ke)
     ra = [_dong_k17(r) for r in kq["ket_qua"] if r.trang_thai == "thieu"]
     co_so = chuan_co_so_chua_do(kq)
@@ -1226,8 +1231,8 @@ def loi_k17(md: str, thiet_ke: str) -> List[str]:
 
 def canh_bao_k17(md: str, thiet_ke: str) -> List[str]:
     """Cảnh báo K17 (không chặn nộp): mục thiếu của chuẩn đã đối chiếu bảng gốc nhưng chưa bật chặn
-    (`tieu_chi_chuan_de_cuong.CHUAN_DA_DOI_CHIEU_CHUA_CHAN`) và chuẩn CÓ ĐIỀU KIỆN chưa đo được (vd ISPOR BIA). Vẫn phải
-    bổ sung trước khi trình Hội đồng."""
+    (`tieu_chi_chuan_de_cuong.CHUAN_DA_DOI_CHIEU_CHUA_CHAN` — hiện rỗng) và chuẩn CÓ ĐIỀU KIỆN chưa đo được (vd ISPOR
+    BIA) — không tính là đạt."""
     kq = doi_chieu(md, thiet_ke)
     ra = [_dong_k17(r) + " [chưa đối chiếu bảng gốc]" for r in kq["ket_qua"] if r.trang_thai == "canh_bao"]
     co_so = chuan_co_so_chua_do(kq)

@@ -221,8 +221,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # byte origin/master của repo gốc.
 # 22/11/2026 (K19 + khối ký bìa phụ): 3 agent — dieu-phoi-g10, viet-ban-thao, tham-dinh-dau-ra học chốt K19 và luật
 # khối ký thứ ba theo đơn vị ngay trên Khoa (mã ở PR #419; cặp gốc EBM-drluanbv175#490) — vẫn 64.
+# 22/11/2026 (sổ phân công công cụ C1–C6): 23 agent nhận dòng «Công cụ `tools/x.py` (chủ|kiểm|dùng phụ)» theo
+# config/phan_cong_cong_cu.json, chép từ nhánh gốc claude/phan-cong-goc-20261122 — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "9420a326f12addbefd2dd270e9498512e6895e7b98e1e639c1cad60f4117ad55"
+    "e513574b66b13834c1fbf0505d958762ad83e594f67de1e3168a12e26319ebc0"
 )
 
 MINIMUM_AGENT_COUNT = 64

@@ -39,9 +39,12 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       «≥ 180/110 mmHg»: tâm thu/tâm trương liền dấu «/», một khoảng trắng rồi «mmHg»; MỌI số đo: một khoảng trắng giữa
       số và đơn vị (trừ «%»), ký hiệu đơn vị đúng chữ (mL, mg/dL, mmol/L, kg/m²), dấu so sánh cách số («≥ 18 tuổi»).
   K12 mỗi tài liệu tham khảo đỡ một câu cụ thể (bác sĩ 20/11/2026, phản biện BTM O13): không ngoặc trích gộp từ 6 tài
-      liệu trở lên, không mục danh mục nào không được trích.
+      liệu trở lên, không mục danh mục nào không được trích; khớp hai chiều (22/11/2026): không số trích nào ngoài
+      danh mục, danh mục đánh số liên tục 1…N.
   K13 mục có PMID đúng Vancouver/NLM theo metadata biên nhận A12 (O14): hơn 6 tác giả ⇒ 6 tác giả rồi «et al.»,
-      «năm;tập(số):trang», tên tạp chí viết tắt NLM. Biên nhận cũ chưa có các khoá này ⇒ bỏ qua.
+      «năm;tập(số):trang», tên tạp chí viết tắt NLM, trang/mã bài khi PubMed có (22/11/2026). Biên nhận cũ chưa có các
+      khoá này ⇒ bỏ qua. Mục KHÔNG PMID (22/11/2026, `loi_k13_nlm`): yếu tố bắt buộc NLM Citing Medicine theo LOẠI tài
+      liệu — bài tạp chí, sách, chương sách, văn bản quy phạm, luận văn, trang web, bản tiền in.
   K14 (chỉ khi đề cương đã theo khuôn «Hướng dẫn viết đăng ký và báo cáo đề tài KH&CN cấp bệnh viện» — có
       «# CHƯƠNG 1.»; chuyển: `khuon_de_cuong_bvqy175.py`): đủ và đúng thứ tự cấu trúc mục II (danh sách cán bộ · mục lục
       · danh mục chữ viết tắt · danh mục bảng, biểu · đặt vấn đề · Chương 1–3 · tài liệu tham khảo · phụ lục); bìa có
@@ -61,6 +64,14 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       trỏ tới chương có trong văn bản, khung bảng kết quả trỏ đúng chương «Dự kiến kết quả»; đề cương theo khuôn có khối
       ký thứ ba của bìa phụ đúng đơn vị thật (Viện ⇒ Viện trưởng, Trung tâm ⇒ Giám đốc Trung tâm, trực thuộc bệnh viện ⇒
       không có). Sửa bằng bộ sinh: `khuon_de_cuong_bvqy175.py --study <mã> --ghi` (không sửa tay).
+  K20 (22/11/2026; bác sĩ: mỗi tiêu chuẩn trong mỗi phần đề cương đạt 8 nguyên tắc): ma trận phần × 8 nguyên tắc của
+      `tam_nguyen_tac_de_cuong.py`. Ô 🔴 do phép đo NGOÀI K1–K19 thì CHẶN (lỗi của chính K1–K19 đã báo tại chỗ, không
+      nhân đôi). Ô ⚪ «chưa đo được» chỉ BÁO kèm số lượng (cảnh báo), CHƯA chặn — chặn ⚪ khi phép đo chưa xây là làm đỏ
+      giả. Cảnh báo in trục tổng 5 tiêu chí (giá trị · phương pháp · khả thi · đạo đức · kiểm chứng được) đầu tiên.
+  K21 (22/11/2026; bác sĩ: «Đề cương phải được đọc từng câu từng chữ trước khi hoàn thành đưa cho tôi»): sổ đọc từng đơn
+      vị `so_doc_de_cuong.py`. Đề cương ở trạng thái TRÌNH (có G10_checkpoint.json và G10 chấm sống READY/PASS) mà sổ
+      phủ < 100% đơn vị của bản hiện hành (bản ghi mang băm cũ = chưa đọc) hoặc còn đơn vị «sua» chưa xử lý ⇒ CHẶN.
+      Chưa tới trạng thái trình ⇒ chỉ báo tỷ lệ phủ (cảnh báo), không chặn.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -647,6 +658,17 @@ def loi_k12(md: str) -> List[str]:
     if thua:
         loi.append(f"K12 {len(thua)} mục tài liệu tham khảo không được trích ở đâu: "
                    f"{', '.join(map(str, thua[:10]))} — gắn vào câu mà tài liệu đỡ hoặc bỏ khỏi danh mục")
+    # 22/11/2026 (bác sĩ: «tài liệu tham khảo, trích dẫn … hoàn thiện đúng chuẩn»): khớp HAI CHIỀU — số trích trong thân
+    # mà danh mục không có (trích ma), và danh mục đánh số không liên tục 1…N (mục bị xoá mà chưa đánh số lại)
+    if muc:
+        ma = sorted(da_trich - set(muc))
+        if ma:
+            loi.append(f"K12 {len(ma)} số trích dẫn trong thân không có trong danh mục tài liệu tham khảo: "
+                       f"{', '.join(map(str, ma[:10]))} — thêm tài liệu vào danh mục hoặc sửa số trích")
+        hut = sorted(set(range(1, max(muc) + 1)) - set(muc))
+        if hut:
+            loi.append("K12 danh mục tài liệu tham khảo đánh số không liên tục — thiếu số "
+                       f"{', '.join(map(str, hut[:10]))} (đánh số lại danh mục và số trích trong thân)")
     return loi
 
 
@@ -694,8 +716,58 @@ def loi_k13(out_dir: Path, md: str) -> List[str]:
             sai.append(f"thiếu «{nam};{m['volume']}…» (năm;tập(số):trang)")
         if m.get("journal_abbr") and str(m["journal_abbr"]) not in noi_dung:
             sai.append(f"tên tạp chí viết tắt NLM là «{m['journal_abbr']}»")
+        # 22/11/2026: biên nhận có trang/mã bài mà mục không ghi (vd «Medicina (Kaunas). 2025;61(5).» thiếu «:843»)
+        trang = str(m.get("pages") or "").strip()
+        if trang and f":{trang}" not in noi_dung.replace(": ", ":"):
+            sai.append(f"thiếu trang/mã bài «:{trang}» theo PubMed")
+        if m.get("pmcid") and str(m["pmcid"]).strip() not in noi_dung:  # NLM: ghi đủ PMID + PMCID khi có
+            sai.append(f"thiếu «PMCID: {str(m['pmcid']).strip()}» theo PubMed")
         if sai:
             loi.append(f"K13 TLTK [{so}] (PMID {pm.group(1)}): " + "; ".join(sai))
+    return loi
+
+
+THIEU_TRANG = "trang hoặc mã bài (năm;tập(số):trang)"
+
+
+def loi_k13_nlm(md: str, out_dir: Optional[Path] = None) -> List[str]:
+    """K13 (mục KHÔNG có PMID — 22/11/2026): yếu tố bắt buộc theo NLM Citing Medicine cho đúng LOẠI tài liệu
+    (`danh_muc_trich_dan.yeu_to_nlm`): bài tạp chí trong nước, văn bản quy phạm, sách, chương sách, luận văn, trang web,
+    bản tiền in. Mục có PMID do `loi_k13` đối chiếu với metadata PubMed của biên nhận A12 (nguồn có thẩm quyền).
+
+    Có sổ định danh (`toan_van_trich_dan.py dinh-danh` → `SO_DINH_DANH_TLTK_<mã>.json`) và mục sổ còn hiệu lực (băm
+    dòng trùng dòng hiện hành): siêu dữ liệu lệch Crossref ⇒ lỗi kèm giá trị nguồn; thiếu trang mà Crossref có trang ⇒
+    lỗi kèm trang nguồn; Crossref xác nhận nguồn KHÔNG ghi trang ⇒ không đòi trang (theo nguồn)."""
+    import danh_muc_trich_dan as DMT  # noqa: PLC0415
+
+    so_dd: Dict[int, Dict[str, Any]] = {}
+    if out_dir is not None:
+        import toan_van_trich_dan as TVT  # noqa: PLC0415
+
+        so_dd = TVT.doc_so_dinh_danh(Path(out_dir), Path(out_dir).name)
+    _, muc = _tach_tltk(md)
+    loi: List[str] = []
+    for so, noi_dung in sorted(muc.items()):
+        if re.search(r"PMID:\s*\d+", noi_dung):
+            continue
+        y = DMT.yeu_to_nlm(noi_dung)
+        thieu = list(y["thieu"])
+        e = so_dd.get(so)
+        if e is not None:
+            import toan_van_trich_dan as TVT  # noqa: PLC0415
+
+            e = e if e.get("bam_dong") == TVT.bam_dong(f"{so}. {noi_dung}") or \
+                e.get("bam_dong") == TVT.bam_dong(noi_dung) else None
+        if e is not None and THIEU_TRANG in thieu:
+            if e.get("trang_nguon"):
+                thieu[thieu.index(THIEU_TRANG)] = f"{THIEU_TRANG} — Crossref ghi «{e['trang_nguon']}»"
+            elif e.get("nguon_khong_co_trang") is True:
+                thieu.remove(THIEU_TRANG)
+        if e is not None:
+            thieu += [f"lệch nguồn: {x}" for x in e.get("lech") or []]
+        if thieu:
+            loi.append(f"K13 TLTK [{so}] ({DMT.TEN_LOAI_TLTK[y['loai']]}, NLM Citing Medicine) thiếu: "
+                       + "; ".join(thieu))
     return loi
 
 
@@ -887,11 +959,11 @@ def loi_k17(md: str, thiet_ke: str) -> List[str]:
     """K17 (21/11/2026, bác sĩ: «từng tiêu chuẩn trong từng cấu trúc đề cương phải đạt tiêu chuẩn», cho MỌI thiết kế) —
     đề cương nộp phải đủ yếu tố của từng mục phương pháp/kế hoạch của mọi chuẩn áp dụng: STROBE 2007 (quan sát), RECORD
     2015 (dữ liệu thường quy), CROSS 2021 (khảo sát bằng bộ câu hỏi), chuẩn Việt Nam (TT43/2024, Luật 91/2025),
-    COSMIN 2021 (kiểm định bộ câu hỏi), SPIRIT 2025, PRISMA-P 2015, STARD 2015, TRIPOD+AI 2024, CHEERS 2022, GRAMMS 2008
-    và phần mở rộng CONSORT cho thử nghiệm cụm/không kém hơn (22/11/2026 — gỡ tập miễn chặn «chờ bộ sinh phủ»). Bộ đo ở
-    `kiem_chuan_de_cuong_theo_muc.py`. Chuẩn cơ sở của thiết kế CHƯA ĐO ĐƯỢC (SQUIRE, CARE, TREND chưa có văn bản kiểm
-    chứng) là lỗi — không báo đạt; chuẩn đã đối chiếu nhưng chưa bật chặn
-    (`TC.CHUAN_DA_DOI_CHIEU_CHUA_CHAN`) chỉ CẢNH BÁO (`canh_bao_k17`, in ⚠ kèm).
+    COSMIN 2021 (kiểm định bộ câu hỏi), SPIRIT 2025, PRISMA-P 2015, STARD 2015, TRIPOD+AI 2024, CHEERS 2022, COREQ 2007,
+    SRQR 2014, GRAMMS 2008, SANRA 2019 và phần mở rộng CONSORT cho thử nghiệm cụm/không kém hơn (22/11/2026 — gỡ tập
+    miễn chặn «chờ bộ sinh phủ»). Bộ đo ở `kiem_chuan_de_cuong_theo_muc.py`. Chuẩn cơ sở của thiết kế CHƯA ĐO ĐƯỢC
+    (SQUIRE, CARE, TREND chưa có văn bản kiểm chứng) là lỗi — không báo đạt; chuẩn đã đối chiếu nhưng chưa bật chặn
+    (`TC.CHUAN_DA_DOI_CHIEU_CHUA_CHAN`, hiện rỗng) chỉ CẢNH BÁO (`canh_bao_k17`, in ⚠ kèm).
 
     Chặn MỌI đề cương nộp, cả bản nháp cấu trúc cũ 1–7 (21/11/2026): trước đó chỉ chặn bản theo khuôn «# CHƯƠNG 1.»
     (cùng điều kiện K14) vì bộ sinh còn tạo đề cương thiếu ~50 mục chuẩn trên 8 giả lập; nay bộ sinh dựng từng mục từ
@@ -924,6 +996,28 @@ def canh_bao_k17(out_dir: Path, study: str) -> List[str]:
     import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: PLC0415
 
     return KCM.canh_bao_k17(md, _thiet_ke(Path(out_dir)))
+
+
+def loi_k20(out_dir: Path, study: str, loi_truoc: List[str]) -> List[str]:
+    """K20 — ô 🔴 của ma trận 8 nguyên tắc do phép đo ngoài K1–K19 (chặn). ⚪ chỉ báo ở `canh_bao_k20`."""
+    import tam_nguyen_tac_de_cuong as TNT  # noqa: PLC0415
+
+    return TNT.loi_k20(out_dir, study, loi_truoc)
+
+
+def loi_k21(out_dir: Path, study: str) -> List[str]:
+    """K21 — đang trình mà sổ đọc từng đơn vị chưa phủ 100% bản hiện hành hoặc còn đơn vị «sua» (chặn)."""
+    import so_doc_de_cuong as SDD  # noqa: PLC0415
+
+    return SDD.loi_k21(out_dir, study)
+
+
+def canh_bao_k20_k21(out_dir: Path, study: str) -> List[str]:
+    """Cảnh báo không chặn: trục tổng 5 tiêu chí + số ô ⚪ (K20), tỷ lệ phủ sổ đọc khi chưa trình (K21)."""
+    import so_doc_de_cuong as SDD  # noqa: PLC0415
+    import tam_nguyen_tac_de_cuong as TNT  # noqa: PLC0415
+
+    return TNT.canh_bao_k20(out_dir, study) + SDD.canh_bao_k21(out_dir, study)
 
 
 def kiem(out_dir: Path, study: str) -> List[str]:
@@ -1025,6 +1119,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k11(md))
     loi.extend(loi_k12(md))
     loi.extend(loi_k13(out_dir, md))
+    loi.extend(loi_k13_nlm(md, out_dir))
     loi.extend(loi_k14(md))
     loi.extend(loi_k15(md))
     loi.extend(loi_k16(out_dir, md))
@@ -1038,6 +1133,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k19(md, dv))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
+    loi.extend(loi_k21(out_dir, study) + loi_k20(out_dir, study, loi))
     return loi
 
 
@@ -1048,7 +1144,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     a = ap.parse_args(argv)
     out_dir = BASE / "exports" / a.study
     loi = kiem(out_dir, a.study)
-    canh = canh_bao_k17(out_dir, a.study)
+    canh = canh_bao_k20_k21(out_dir, a.study) + canh_bao_k17(out_dir, a.study)
     ket: Dict[str, Any] = {"study": a.study, "dat": not loi, "loi": loi, "canh_bao": canh}
     if a.json:
         print(json.dumps(ket, ensure_ascii=False, indent=2))

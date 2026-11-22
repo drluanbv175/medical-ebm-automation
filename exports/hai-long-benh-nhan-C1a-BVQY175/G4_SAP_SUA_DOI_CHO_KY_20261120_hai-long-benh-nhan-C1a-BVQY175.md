@@ -18,6 +18,8 @@ ghi lý do, ngày, người phê duyệt, ký trước khi tiếp cận số li�
 Hệ quả đã kiểm: mô hình chính còn 19 tham số (trước đây đề cương ghi «khoảng 24»). Kết luận về hồi quy nhị phân thứ cấp
 không đổi: 150 trường hợp chưa hài lòng chỉ đủ khoảng 15 tham số ở mức 10 biến cố mỗi tham số.
 
+Cập nhật theo bản sửa đổi kế hoạch phân tích ngày 22/11/2026, ký cùng lần với bốn mục trên: mô hình chính có 20 tham số (`co_yeucau_bacsi` 1 tham số thay `duoc_dung_bacsi` 2 tham số; thêm `co_hen_gio` và `uu_tien_kham`, mỗi biến 1 tham số, bỏ khỏi mô hình nếu một nhóm có dưới 20 phiếu hợp lệ, khi đó còn 19 hoặc 18 tham số). Hồi quy nhị phân thứ cấp dùng cùng bộ biến của mô hình chính: hợp lý cực đại khi có từ 10 trường hợp chưa hài lòng mỗi tham số (200 với 20 tham số), hiệu chỉnh Firth khi dưới ngưỡng này; kết luận cũ ở đoạn trên được thay bằng quy tắc này.
+
 Đặc tả máy `G6_DAC_TA_SAP.json` chưa có người duyệt. Thống kê viên duyệt đặc tả sau khi ký SAP sửa đổi:
 `python3 tools/chay_sap_g6.py kiem --study hai-long-benh-nhan-C1a-BVQY175`, rồi `duyet`.
 

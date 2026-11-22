@@ -235,6 +235,9 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 > dựng bước agent cho nhóm này (`_run_step` tra registry AGENT — nhét tên lệnh vào sẽ thành tham
 > chiếu treo), nhưng đầu ra vẫn qua `tham-dinh-dau-ra` nếu có yếu tố y khoa.
 
+> **Công cụ của hệ nghiên cứu** (`tools/*.py` repo y khoa): chủ, người kiểm, chốt kiểm và nguyên tắc của TỪNG công
+> cụ ở `config/phan_cong_cong_cu.json` (repo y khoa); đo bằng `python3 tools/tieu_chuan_hoan_thien.py` (C1–C6).
+
 > Claude cũng **tự** định tuyến theo mô tả công việc; bảng trên để tra nhanh và thống nhất giữa các máy.
 
 ## Hai cổng an toàn (không bao giờ tự vượt)
