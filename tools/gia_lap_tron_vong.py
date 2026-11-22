@@ -2302,8 +2302,11 @@ Kết luận tổng thể: {ket_luan}
         d["data_availability"] = {**(d.get("data_availability") or {}), "decision": "NOT_SHARED_WITH_JUSTIFICATION",
                                   "statement_final": True, "clinical_trial": thu_nghiem,
                                   "registry_statement_consistent": True if thu_nghiem else None,
-                                  "access_criteria": "Dữ liệu cá thể không chia sẻ công khai theo cam kết bảo mật "
-                                                     "với người tham gia; kịch bản phân tích kèm gói phát hành"}
+                                  # 22/11/2026 (chiều): phiếu G9 chép ĐÚNG tuyên bố tác giả đã khai ở G7 (bản cũ
+                                  # là câu riêng «kịch bản phân tích kèm gói phát hành» — hai lời khai lệch nhau)
+                                  "access_criteria": tg.get("data_sharing_statement") or (
+                                      "Dữ liệu cá thể không chia sẻ công khai theo cam kết bảo mật với người tham "
+                                      "gia")}
         d["data_access_governance"] = {**(d.get("data_access_governance") or {}),
                                        "all_authors_can_review_supporting_data": True,
                                        "primary_data_access_author_ref": "AUTHOR-01",

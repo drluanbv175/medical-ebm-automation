@@ -100,7 +100,8 @@ def test_generate_checklist_cross_sectional_header_matches_actual_row_count():
     items = G7.CHECKLIST_ITEMS["cross_sectional"]
     out = G7.generate_checklist("cross_sectional", std_name, std_total, "IRB-TEST", "NCT-TEST", 100, 0.05, 0.8)
     assert f"({std_total} mục tổng" in out
-    assert f"/{len(items)} dòng checklist tự điền" in out
+    # 22/11/2026: dòng tổng kết đếm dòng ☑ do K18 chấm (không còn «tự điền» theo cờ tĩnh)
+    assert f"/{len(items)} dòng checklist đã báo cáo theo K18" in out
 
 
 def test_generate_checklist_does_not_falsely_auto_mark_outcome_or_key_results_items():
@@ -110,5 +111,6 @@ def test_generate_checklist_does_not_falsely_auto_mark_outcome_or_key_results_it
     std_name, std_total = G7.REPORTING_CHECKLISTS["cross_sectional"]
     out = G7.generate_checklist("cross_sectional", std_name, std_total, "IRB-TEST", "NCT-TEST", 100, 0.05, 0.8)
     lines = {ln.split("|")[1].strip(): ln for ln in out.splitlines() if ln.startswith("| ")}
-    assert "☐ [CẦN]" in lines.get("15", ""), "mục 15 (dữ liệu kết cục) không được tự tin là đã điền"
-    assert "☐ [CẦN]" in lines.get("18", ""), "mục 18 (kết quả chính) không được tự tin là đã điền"
+    # 22/11/2026: không truyền bản thảo ⇒ K18 không chấm ⇒ «chưa đo được», tuyệt đối không ☑
+    for ma in ("15", "18"):
+        assert "☐ chưa đo được" in lines.get(ma, "") and "☑" not in lines.get(ma, ""), ma

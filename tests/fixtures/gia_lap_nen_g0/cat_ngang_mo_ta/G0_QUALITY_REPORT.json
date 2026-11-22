@@ -16,7 +16,7 @@
       "id": "G0-AUTO-01",
       "label": "Đề tài có chủ đề thật (không rỗng/placeholder)",
       "status": "PASS",
-      "evidence": "topic='Tỷ lệ kiểm soát huyết áp và các yếu tố liên quan ở người tăng huyết áp điều trị '",
+      "evidence": "topic='Tỷ lệ kiểm soát huyết áp ở người tăng huyết áp điều trị '",
       "action": "Chạy lại với --topic mô tả đúng vấn đề nghiên cứu."
     },
     {

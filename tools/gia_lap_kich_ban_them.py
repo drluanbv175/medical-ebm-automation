@@ -1101,8 +1101,19 @@ _TAC_GIA_G7: Dict[str, Any] = {
                             "tích, phân tích số liệu, duyệt bản thảo (CRediT)",
     "coi_declared": "Các tác giả không có xung đột lợi ích liên quan đề tài",
     "funding_declared": "Không có tài trợ bên ngoài",
-    "data_sharing_statement": ("Dữ liệu cá thể không chia sẻ công khai theo cam kết bảo mật với người tham gia; kịch "
-                               "bản phân tích kèm gói phát hành"),
+    # 22/11/2026 (chiều, K18 CONSORT 4 / TRIPOD+AI 18e–18f): tuyên bố của tác giả nêu CÁCH truy cập mã và từ điển dữ
+    # liệu (bản cũ «kịch bản phân tích kèm gói phát hành» không nói người đọc lấy bằng cách nào); phiếu G9 chép đúng
+    # câu này.
+    "data_sharing_statement": ("Dữ liệu cá thể không chia sẻ công khai theo cam kết bảo mật với người tham gia; mã "
+                               "phân tích (kịch bản R) và từ điển dữ liệu được cung cấp theo yêu cầu gửi tác giả "
+                               "liên lạc"),
+    # 22/11/2026 (chiều, K18 CONSORT 3/10, STARD 29, TRIPOD+AI 18c, PRISMA 24b/24c): tác giả khai nơi truy cập đề cương
+    # và thay đổi so với đề cương — khớp phiếu G9 (`results_match_locked_analysis`, `analysis_deviations_disclosed`)
+    # và bảng «PHẦN 4 — THAY ĐỔI SAU KHI KHOÁ» trống của SAP các đề tài giả lập.
+    "protocol_access_statement": ("Đề cương nghiên cứu và kế hoạch phân tích thống kê đã khoá được cung cấp theo yêu "
+                                  "cầu gửi tác giả liên lạc"),
+    "protocol_changes_statement": ("Không có thay đổi nào so với đề cương và kế hoạch phân tích đã khoá sau khi bắt "
+                                   "đầu nghiên cứu"),
     "ai_use_declared": "Bản thảo được soạn với hỗ trợ của công cụ trí tuệ nhân tạo; tác giả đã đọc lại, đối chiếu số "
                        "liệu và chịu trách nhiệm toàn văn",
     "ai_manuscript_statement": ("Bản thảo được soạn với hỗ trợ của công cụ trí tuệ nhân tạo để dựng khung và chép số "
@@ -1246,6 +1257,15 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                                "PPI theo tháng; kết cục dựa hồ sơ có phim — có thể bỏ sót gãy không đi khám",
                 "vietnamese_references_not_applicable": "PubMed không có nghiên cứu trong nước cùng câu hỏi; chưa tra "
                                                         "tay tạp chí trong nước; bổ sung khi có",
+                # 22/11/2026 (chiều, RECORD 6.2 + 12.1): PI khai cách kiểm định mã chọn quần thể/kết cục và mức truy
+                # cập cơ sở dữ liệu — khớp định nghĩa kết cục đã chốt (mã ICD-10 + phim X-quang trong hồ sơ), phiếu thử
+                # trên 20 hồ sơ và đội 2 người trích hồ sơ ở trên
+                "routine_code_validation": ("Chưa có nghiên cứu kiểm định mã ICD-10 gãy xương tại cơ sở; nhóm tự "
+                                            "kiểm định bằng cách đối chiếu mã chẩn đoán với phim X-quang trong hồ sơ "
+                                            "cho mọi ca gãy xương và đối chiếu 20 hồ sơ của đợt thử phiếu trích"),
+                "routine_database_access": ("Nhóm nghiên cứu được đơn vị cấp quyền truy xuất hồ sơ bệnh án điện tử "
+                                            "ngoại trú của người đủ tiêu chuẩn giai đoạn 2020–2025; 2 người trích hồ "
+                                            "sơ truy xuất, người phân tích chỉ nhận bộ dữ liệu đã khử định danh"),
             },
             "tham_so_G8": {"primary_outcome": "Gãy xương mọi vị trí trong 3 năm (gay_xuong_3nam)",
                            "ai_use_declared": True, "ai_tools": "bộ giả lập trọn vòng của hệ",

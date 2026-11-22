@@ -348,7 +348,7 @@ class TestChecklistTableRendersRealWordTablePerStandard:
         )
         assert len(t.columns) == 4
         assert [c.text for c in t.rows[0].cells] == [
-            "Mục", "Nội dung yêu cầu", "Tự điền (A8)", "Ghi chú",
+            "Mục", "Nội dung yêu cầu", "Trạng thái (K18)", "Ghi chú",
         ]
         xml = _xml(path)
         assert "Courier New" not in xml, f"{design_code}: vẫn hiển thị dạng monospace text blob"

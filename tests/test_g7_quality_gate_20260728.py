@@ -474,7 +474,9 @@ def test_khong_khang_dinh_IRB_khi_chua_co_so_that():
 
 def test_khang_dinh_IRB_khi_da_co_so_that():
     text = _sinh_ban_thao_that(irb_number="1234/QĐ-HĐĐĐ-BVQY175-2026")
-    assert "đã được IRB phê duyệt" in text
+    # 22/11/2026: câu khẳng định nằm ở Phương pháp §7 (câu «tính có sẵn dữ liệu … đã được IRB phê duyệt» không ai khai
+    # nay là ô [CẦN] — luật liêm chính, không câu chung chung)
+    assert "Nghiên cứu được Hội đồng Đạo đức phê duyệt (số: 1234/QĐ-HĐĐĐ-BVQY175-2026" in text
     assert "CHƯA có phê duyệt đạo đức thật" not in text
 
 

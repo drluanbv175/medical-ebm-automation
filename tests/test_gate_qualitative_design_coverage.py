@@ -276,7 +276,7 @@ class TestG7QualitativeChecklist:
         )
         for line in md_qual.splitlines():
             if line.startswith("| 9 |"):
-                assert "☐ [CẦN]" in line and "☑ Auto" not in line
+                assert "☐" in line and "☑" not in line  # 22/11/2026: ☑ chỉ khi K18 chấm đạt
                 break
         else:
             raise AssertionError("Không tìm thấy dòng mục 9 trong bảng checklist")
@@ -286,7 +286,7 @@ class TestG7QualitativeChecklist:
         )
         for line in md_cohort.splitlines():
             if line.startswith("| 1a |"):
-                assert "☐ [CẦN]" in line and "☑ Auto" not in line
+                assert "☐" in line and "☑" not in line
                 break
         else:
             raise AssertionError("Không tìm thấy dòng mục 1a trong bảng checklist")
