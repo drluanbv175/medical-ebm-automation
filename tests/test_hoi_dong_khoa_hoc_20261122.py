@@ -540,3 +540,77 @@ def test_tham_tra_loai_loi_moi_co_pii():
                                        "van_de": "gọi 0912345678 để hỏi", "de_xuat": "y"}]}
     kq = H.xac_minh_tham_tra("pb1", dl, ds, DE_CUONG, [[7, 8]], vtq_ids=[])
     assert not kq["loi_moi"] and "PII" in kq["loai"][0]["ly_do_loai"]
+
+
+# ── QC-HDKH-2.1 (22/11/2026, đo thật dưới 2.0) ────────────────────────────────────────────────────────────────────────
+def _buoc(goc, kh):
+    return H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
+
+
+def _cac_st(goc):
+    return [H._doc_st(x) for x in (goc / "exports" / STUDY / H.THU_MUC).glob("trang_thai_*.json")]
+
+
+def test_phan_hoi_tham_tra_hong_thi_nop_lai_khong_tinh_la_phan_quyet(tmp_path):
+    goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
+    kh = KhachBatch({**TRA, "bt0": SUA, "tt_pb1": TT_DAT})
+    assert [_buoc(goc, kh) for _ in range(6)] == [4, 0, 4, 0, 4, 0]
+    kh.hong = {"tt_pb1"}
+    assert _buoc(goc, kh) == 4                      # nộp batch thẩm tra
+    assert _buoc(goc, kh) == 4                      # phản hồi hỏng ⇒ NỘP LẠI riêng pb1, không ra phán quyết
+    assert kh.lo[max(kh.lo, key=lambda b: int(b.split("_")[1]))] == [c for c in kh.yc if c.startswith("tt_pb1_")]
+    kh.hong = set()
+    assert _vong(goc, kh) == 0
+    dat = [s for s in _cac_st(goc) if s.get("buoc") == "dat"][0]
+    assert dat["ket_luan_cuoi"] == "thong_qua" and dat["so_lan_nop_lai_tt"] == 1 and len(dat["loi_tham_tra"]) == 1
+
+
+def test_phan_hoi_tham_tra_hong_qua_so_lan_thi_fail_safe(tmp_path):
+    goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
+    kh = KhachBatch({**TRA, "bt0": SUA, "tt_pb1": TT_DAT}, hong={"tt_pb1"})
+    assert [_buoc(goc, kh) for _ in range(6)] == [4, 0, 4, 0, 4, 0]
+    assert [_buoc(goc, kh) for _ in range(4)] == [4, 4, 4, 0]   # nộp · nộp lại 1 · nộp lại 2 · hết lượt ⇒ fail-safe
+    st = [s for s in _cac_st(goc) if s.get("che_do") == "tham_tra"][0]
+    chua = st["tham_tra"]["chua_giai_quyet"]
+    assert [f["id"] for f in chua] == ["F01"] and "thẩm tra hỏng" in chua[0]["ly_do_tham_tra"]
+
+
+def test_ly_do_rao_loai_va_ly_do_tham_tra_toi_bien_tap_vien(tmp_path):
+    goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
+    sua = {"sua": [{"id": "F01", "hanh_dong": "sua", "thay": [
+        SUA["sua"][0]["thay"][0],
+        {"dong": 5, "cu": "Người bệnh không đồng ý tham gia.", "moi": "Người bệnh không đồng ý tham gia (37%)."}]}]}
+    kh = KhachBatch({**TRA, "bt0": sua,
+                     "tt_pb1": {"tham_tra": [{"id": "F01", "ket_qua": "chua_giai_quyet",
+                                              "ly_do": "chưa nêu cách xử lý dữ liệu thiếu ở biến phụ"}],
+                                "loi_moi": []}})
+    assert [_buoc(goc, kh) for _ in range(6)] == [4, 0, 4, 0, 4, 0]
+    st = [s for s in _cac_st(goc) if s.get("che_do") == "tham_tra"][0]
+    f01 = [f for f in st["ds_yeu_cau"] if f["id"] == "F01"][0]
+    assert f01["rao_loai"] and "số mới" in f01["rao_loai"][0]
+    assert [_buoc(goc, kh) for _ in range(3)] == [4, 0, 4]       # thẩm tra · đọc · nộp biên tập lần 2
+    loi = json.dumps(kh.yc[[c for c in kh.yc if c.startswith("bt0_")][-1]], ensure_ascii=False)
+    assert "rao_loai" in loi and "số mới" in loi and "chưa nêu cách xử lý dữ liệu thiếu ở biến phụ" in loi
+
+
+def test_nop_lai_chi_thanh_vien_hong_giu_ket_qua_nguoi_da_doc_duoc(tmp_path):
+    goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
+    ct = {"phan_quyet": [], "gop": [], "nhan_xet_chung": "Cần bổ sung.", "yeu_cau_chinh_sua": ["dữ liệu thiếu"]}
+    sua = {"sua": [SUA["sua"][0], {"id": "F02", "hanh_dong": "sua", "thay": [
+        {"dong": 5, "cu": "Người bệnh không đồng ý tham gia.",
+         "moi": "Người bệnh không đồng ý tham gia; người thiếu dữ liệu kết cục được mô tả riêng."}]}]}
+    tt2 = {"tham_tra": [{"id": "F02", "ket_qua": "da_giai_quyet", "dong": 5,
+                         "trich": "người thiếu dữ liệu kết cục được mô tả riêng"}], "loi_moi": []}
+    kh = KhachBatch({**TRA, "ct": ct, "bt0": sua, "tt_pb1": TT_DAT, "tt_uv_tk": tt2})
+    assert [_buoc(goc, kh) for _ in range(6)] == [4, 0, 4, 0, 4, 0]
+    kh.hong = {"tt_uv_tk"}
+    assert [_buoc(goc, kh) for _ in range(2)] == [4, 4]          # nộp · uv_tk hỏng ⇒ nộp lại riêng uv_tk
+    kh.hong = set()
+    assert _vong(goc, kh) == 0
+    dat = [s for s in _cac_st(goc) if s.get("buoc") == "dat"][0]
+    assert dat["ket_luan_cuoi"] == "thong_qua"
+    assert sorted(f["id"] for f in dat["tham_tra"]["da_giai_quyet"]) == ["F01", "F02"]

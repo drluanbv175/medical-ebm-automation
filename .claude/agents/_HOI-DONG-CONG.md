@@ -316,7 +316,8 @@ Claude». Hội đồng cổng (mục 1–7) chấm từng NHIỆM VỤ. Hội �
   - Mỗi thành viên thẩm tra ĐÚNG các yêu cầu nghiêm trọng/cần sửa mình đã nêu: «đã giải quyết» phải trích nguyên văn đoạn đáp ứng trong bản đã sửa (máy kiểm ±3 dòng, không khớp ⇒ chưa giải quyết); thiếu phán quyết ⇒ chưa giải quyết.
   - «Cần dữ kiện» chỉ nhận khi biên tập viên đã khai vượt thẩm quyền (số liệu thật, kinh phí, họ tên, chữ ký, sửa SAP đã khoá); cộng dồn qua các vòng, không rơi khỏi kết luận cuối.
   - Lỗi mới chỉ nhận trong khoảng dòng vừa sửa ±3; ngoài phạm vi ⇒ loại, có liệt kê.
-  - Kết luận theo luật cố định: còn yêu cầu chưa giải quyết hoặc lỗi mới ⇒ sửa tiếp (tối đa 4 vòng); hết nhưng còn yêu cầu cần dữ kiện ⇒ «Thông qua phần thuộc thẩm quyền nhóm soạn thảo» kèm danh sách dữ kiện cho người có thẩm quyền; không còn gì ⇒ «Thông qua». Đổi quy chế ⇒ hiệu chuẩn lại từ đề cương gốc.
+  - Kết luận theo luật cố định: còn yêu cầu chưa giải quyết hoặc lỗi mới ⇒ sửa tiếp (tối đa 6 vòng — QC-2.1); hết nhưng còn yêu cầu cần dữ kiện ⇒ «Thông qua phần thuộc thẩm quyền nhóm soạn thảo» kèm danh sách dữ kiện cho người có thẩm quyền; không còn gì ⇒ «Thông qua». Đổi quy chế ⇒ hiệu chuẩn lại từ đề cương gốc.
+  - **QC-2.1** (đo thật dưới 2.0: hội tụ nhưng kẹt vì lỗi quy trình): phản hồi thẩm tra không đọc được là lỗi KỸ THUẬT, không phải phán quyết ⇒ nộp lại riêng thành viên đó tối đa 2 lần rồi mới tính chưa giải quyết; biên tập viên nhận kèm mỗi yêu cầu lý do người thẩm tra còn chê và lý do rào đã loại bản sửa trước, không lặp lại bản bị loại. K10 không coi «khoảng tin cậy 95%»/«mức ý nghĩa 5%» (không kèm cận số) là số liệu kết quả.
 - **Bất biến 1–4** áp nguyên: TƯ VẤN, không thay Hội đồng Khoa học/Đạo đức thật, biên bản gắn SHA-256 tài liệu.
   Nhận xét đã xác minh là căn cứ để agent sửa; đề cương đổi thì họp lại.
 

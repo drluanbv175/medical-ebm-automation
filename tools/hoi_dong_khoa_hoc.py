@@ -122,7 +122,7 @@ class LoiThamSo(ValueError):
 # chỉnh sửa theo hội đồng». ⇒ Mọi luật (thành phần, tiêu chí, mốc điểm, xác minh, kết luận, rào biên tập, hiệu chuẩn,
 # model, NGUYÊN VĂN mọi lời dặn) gom vào MỘT quy chế có phiên bản + SHA-256. Phiên mang SHA lúc khởi tạo; quy chế đổi
 # giữa phiên ⇒ phiên hết hiệu lực. Kết luận chỉ có HIỆU LỰC khi hội đồng đã hiệu chuẩn đạt ngưỡng DƯỚI ĐÚNG quy chế đó.
-PHIEN_BAN_QUY_CHE = "QC-HDKH-2.0"
+PHIEN_BAN_QUY_CHE = "QC-HDKH-2.1"
 NGAY_KHOA_QUY_CHE = "2026-11-22"
 TUC_SO = 3
 DO_NHAY_TOI_THIEU = 5 / 6        # mỗi bản cài lỗi phải bắt ≥ 5/6 lỗi
@@ -142,7 +142,13 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
                     "13→13, C1a 10→15→14), không hội tụ. Bác sĩ chọn quy trình THẨM TRA CHỈNH SỬA như hội đồng thật: "
                     "vòng 1 thẩm định toàn diện; các vòng sau mỗi thành viên chỉ thẩm tra yêu cầu mình đã nêu (đã giải "
                     "quyết — trích bằng chứng / chưa giải quyết / cần dữ kiện của người có thẩm quyền) và lỗi mới CHỈ "
-                    "trong đoạn vừa sửa. Bắt đầu lại từ đề cương gốc; hiệu chuẩn lại."],
+                    "trong đoạn vừa sửa. Bắt đầu lại từ đề cương gốc; hiệu chuẩn lại.",
+                    "2.1 (22/11/2026): đo thật dưới 2.0 — hội tụ (BTM 13→8→7→5, C1a 22→10→9→4) nhưng chưa thông qua "
+                    "sau 4 vòng vì ba lỗi QUY TRÌNH: phản hồi thẩm tra hỏng JSON bị tính là «chưa giải quyết» (4/5 "
+                    "yêu cầu còn lại của BTM); biên tập viên không được báo lý do rào đã loại bản sửa nên lặp lại bản "
+                    "bị loại; K10 bắt nhầm «khoảng tin cậy 95%» là số liệu. Sửa: phản hồi hỏng ⇒ nộp lại tối đa 2 lần "
+                    "rồi mới fail-safe; biên tập viên nhận lý do chưa đạt của người thẩm tra và lý do rào loại; tối "
+                    "đa 6 vòng. Bắt đầu lại từ đề cương gốc; hiệu chuẩn lại."],
         "muc_dich": "Chấm đề cương nộp Hội đồng theo thể thức Hội đồng Khoa học, tư vấn — không thay hội đồng thật.",
         "thanh_phan": [{"ma": t["ma"], "vai": t["vai"], "trong_tam": list(t["trong_tam"]), "nhiem_vu": t["nhiem_vu"]}
                        for t in THANH_VIEN],
@@ -169,6 +175,11 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
                                  "quyết)", "chua_giai_quyet — nêu còn thiếu gì",
                                  "can_du_kien — chỉ khi biên tập viên đã khai vượt thẩm quyền (máy kiểm)"],
                      "thieu_phan_quyet": "coi là chưa giải quyết",
+                     "phan_hoi_hong": "phản hồi của một thành viên không đọc được (JSON hỏng/cắt cụt) là lỗi KỸ THUẬT, "
+                                      "không phải phán quyết ⇒ nộp lại riêng thành viên đó tối đa 2 lần; vẫn hỏng ⇒ "
+                                      "mọi yêu cầu của thành viên đó chưa giải quyết (ghi rõ lý do)",
+                     "phan_hoi_bien_tap": "biên tập viên nhận kèm mỗi yêu cầu: lý do người thẩm tra coi là chưa giải "
+                                          "quyết và lý do rào liêm chính/chuẩn đã loại bản sửa trước",
                      "loi_moi": "chỉ trong khoảng dòng vừa sửa ±3 (máy kiểm); ngoài phạm vi ⇒ loại",
                      "ket_luan": "Thông qua khi không còn yêu cầu chưa giải quyết và không lỗi mới nghiêm trọng/cần "
                                  "sửa; còn yêu cầu cần dữ kiện ⇒ «Thông qua phần thuộc thẩm quyền… còn dữ kiện» kèm "
@@ -759,7 +770,7 @@ def ghi_bien_ban(st: Dict[str, Any], out_dir: Path) -> Path:
 # Bác sĩ 22/11/2026: «Hội đồng đã được xây dựng đủ tiêu chuẩn để phản biện nên đừng để xảy ra vấn đề phát hiện lỗi và để
 # tôi phải quyết; tôi chỉ nhận lại là những nội dung liêm chính và chuẩn mực nhất». Nhận xét đã xác minh ⇒ biên tập viên
 # (Claude) đề xuất THAY THẾ NGUYÊN VĂN; MÁY chỉ áp thay thế qua đủ rào; bản mới họp lại; tối đa `SO_VONG_TOI_DA` vòng.
-SO_VONG_TOI_DA = 4          # 1 vòng thẩm định toàn diện + tối đa 3 vòng thẩm tra chỉnh sửa (QC-HDKH-2.0)
+SO_VONG_TOI_DA = 6          # 1 vòng thẩm định toàn diện + tối đa 5 vòng thẩm tra chỉnh sửa (QC-HDKH-2.1)
 MAX_TOKENS_BT = 64000
 VAN_DE_MOI_YEU_CAU = 6
 SO_LAN_NOP_LAI_BIEN_TAP = 2
@@ -770,7 +781,8 @@ _DAU_VET_MAY = re.compile(r"\[CẦN|giả lập|máy sinh|Claude|trí tuệ nhâ
 
 
 def loi_nhan_bien_tap(van_de: Sequence[Dict[str, Any]]) -> str:
-    gon = [{k: f.get(k) for k in ("id", "muc_phieu", "muc_do", "dong", "trich", "van_de", "chuan", "de_xuat")}
+    gon = [{k: f.get(k) for k in ("id", "muc_phieu", "muc_do", "dong", "trich", "van_de", "chuan", "de_xuat",
+                                  "ly_do_tham_tra", "rao_loai") if f.get(k) not in (None, "", [])}
            for f in van_de]
     dong = [
         "VAI CỦA BẠN: BIÊN TẬP VIÊN thay mặt nhóm nghiên cứu, sửa đề cương theo các vấn đề hội đồng đã giữ (đã xác",
@@ -794,6 +806,8 @@ def loi_nhan_bien_tap(van_de: Sequence[Dict[str, Any]]) -> str:
         "   liệu kiểu kết quả phải tự mang trích dẫn [n] — K10; số thập phân dấu phẩy, ngày dd/mm/yyyy, ngoặc kép “…”,",
         "   không «vs», không chữ IN HOA nhấn mạnh — K11; từ mơ hồ («phần lớn», «đa số», «thường gặp»…) phải có trích",
         "   dẫn — K15.",
+        "7. Vấn đề có «ly_do_tham_tra» (lý do người thẩm tra coi là CHƯA giải quyết) hoặc «rao_loai» (lý do rào đã",
+        "   LOẠI bản sửa trước của bạn): sửa đúng chỗ còn thiếu, KHÔNG lặp lại bản đã bị loại.",
         f"VẤN ĐỀ:\n{json.dumps(gon, ensure_ascii=False, indent=1)}",
         "Trả về DUY NHẤT JSON: " + json.dumps({"sua": [{"id": "F01", "hanh_dong": "sua|khong_sua|vuot_tham_quyen",
                                                     "thay": [{"dong": 12, "cu": "…", "moi": "…"}], "ly_do": "…"}]},
@@ -1076,16 +1090,34 @@ def _chay_tham_tra(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> 
         print(f"⏳ Batch thẩm tra {bid} đang xử lý — chạy lại sau.")
         return 4
     ket = API.doc_ket_qua_batch(bid, client=client, nguon=CONG_CU)
-    gop: Dict[str, Any] = {"da_giai_quyet": [], "chua_giai_quyet": [], "can_du_kien": [], "loi_moi": [], "loai": []}
+    da_co: Dict[str, Any] = st.setdefault("tt_tung_tv", {})   # kết quả đã đọc được, giữ qua các lần nộp lại
+    hong_tv: Dict[str, str] = {}
     for ma, ds in theo_tv.items():
+        if ma in da_co:
+            continue
         try:
             tho = API.van_ban_ket_qua_batch(ket.get(cids[ma], {"loai": "thieu"}), MAX_TOKENS_TT)
             st.setdefault("tho", {})[cids[ma]] = tho
-            kq = xac_minh_tham_tra(ma, API.doc_json(tho), ds, van, st.get("khoang") or [], st.get("vtq_ids") or [])
-        except API.LoiApi as exc:  # thành viên hỏng ⇒ mọi yêu cầu của họ chưa giải quyết (fail-safe)
-            hong = f"thẩm tra hỏng: {exc}"[:200]
-            kq = {"ket": {str(f["id"]): {**f, "ket_qua": "chua_giai_quyet", "ly_do_tham_tra": hong,
-                                         "nguoi_tham_tra": ma} for f in ds}, "loi_moi": [], "loai": []}
+            da_co[ma] = xac_minh_tham_tra(ma, API.doc_json(tho), ds, van, st.get("khoang") or [],
+                                          st.get("vtq_ids") or [])
+        except API.LoiApi as exc:
+            hong_tv[ma] = f"thẩm tra hỏng: {exc}"[:200]
+    if hong_tv and int(st.get("so_lan_nop_lai_tt", 0)) < SO_LAN_NOP_LAI_BIEN_TAP:
+        # QC-HDKH-2.1: phản hồi không đọc được là lỗi KỸ THUẬT, không phải phán quyết ⇒ nộp lại riêng thành viên đó
+        st["so_lan_nop_lai_tt"] = int(st.get("so_lan_nop_lai_tt", 0)) + 1
+        st.setdefault("loi_tham_tra", []).extend(f"{ma}: {ly}" for ma, ly in hong_tv.items())
+        yc = [(cids[ma], tham_so_yeu_cau(chung, loi_nhan_tham_tra(ten[ma], theo_tv[ma], st.get("khoang") or []),
+                                         st["model"], MAX_TOKENS_TT)) for ma in hong_tv]
+        st["batch"]["tham_tra"] = API.nop_batch(yc, client=client, nguon=CONG_CU)
+        print(f"⚠️ Phản hồi thẩm tra của {', '.join(hong_tv)} không đọc được — đã nộp lại lần "
+              f"{st['so_lan_nop_lai_tt']}: {st['batch']['tham_tra']}")
+        return 4
+    for ma, hong in hong_tv.items():  # nộp lại đủ số lần vẫn hỏng ⇒ mọi yêu cầu của họ chưa giải quyết (fail-safe)
+        da_co[ma] = {"ket": {str(f["id"]): {**f, "ket_qua": "chua_giai_quyet", "ly_do_tham_tra": hong,
+                                            "nguoi_tham_tra": ma} for f in theo_tv[ma]}, "loi_moi": [], "loai": []}
+    gop: Dict[str, Any] = {"da_giai_quyet": [], "chua_giai_quyet": [], "can_du_kien": [], "loi_moi": [], "loai": []}
+    for ma in theo_tv:
+        kq = da_co[ma]
         for x in kq["ket"].values():
             gop[x["ket_qua"]].append(x)
         gop["loi_moi"] += kq["loi_moi"]
@@ -1222,11 +1254,18 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
     moi = khoi_tao(st["study"], out_dir, tep, st["model"])
     # QC-HDKH-2.0: vòng sau là THẨM TRA đúng các yêu cầu nghiêm trọng/cần sửa vừa giao, trên các đoạn vừa sửa.
     hd = {str(m.get("id")): m for m in gop["sua"] if isinstance(m, dict)}
+    # QC-HDKH-2.1: lý do rào đã loại bản sửa ⇒ đi kèm yêu cầu tới vòng sau (thẩm tra thấy, biên tập viên thấy)
+    rao_loai: Dict[str, List[str]] = {}
+    for x in list(nk.get("loai") or []) + list(nk.get("loai_chon_loc") or []):
+        ds_ly = rao_loai.setdefault(str(x.get("id")), [])
+        if len(ds_ly) < 3:
+            ds_ly.append(str(x.get("ly_do_loai") or "")[:200])
     tt_cu = st.get("tham_tra") or {}
     moi.update(vong=int(st.get("vong", 1)) + 1, ban_truoc=st["sha"], che_do="tham_tra", buoc="tham_tra",
                ds_yeu_cau=[{**f, "hanh_dong_bien_tap": str(hd.get(str(f.get("id")), {}).get("hanh_dong")
                                                           or "không có đề xuất"),
-                            "ly_do_bien_tap": str(hd.get(str(f.get("id")), {}).get("ly_do") or "")}
+                            "ly_do_bien_tap": str(hd.get(str(f.get("id")), {}).get("ly_do") or ""),
+                            "rao_loai": rao_loai.get(str(f.get("id")), [])}
                            for f in vd if f.get("muc_do") in ("nghiem_trong", "can_sua")],
                vtq_ids=[str(x.get("id")) for x in nk["vuot_tham_quyen"]], khoang=khoang_sua(van, van_moi),
                can_du_kien_truoc=list(st.get("can_du_kien_truoc") or []) + list(tt_cu.get("can_du_kien") or []),

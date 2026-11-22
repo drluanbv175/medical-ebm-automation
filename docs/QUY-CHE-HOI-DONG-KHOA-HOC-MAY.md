@@ -1,6 +1,6 @@
-# Quy chế Hội đồng Khoa học máy cấp đề tài — QC-HDKH-2.0
+# Quy chế Hội đồng Khoa học máy cấp đề tài — QC-HDKH-2.1
 
-- Khoá ngày: 2026-11-22 · SHA-256 quy chế: `3bdc3babd4f203dbc4181f997d6afead74ad4918c6b0fea4f1b00138c3d3cdab`
+- Khoá ngày: 2026-11-22 · SHA-256 quy chế: `319aa0da8110037007e4cc437ed65a3ca37d98450e81e3c18deb772098599260`
 - Mục đích: Chấm đề cương nộp Hội đồng theo thể thức Hội đồng Khoa học, tư vấn — không thay hội đồng thật.
 - Công cụ: `tools/hoi_dong_khoa_hoc.py` (văn bản này sinh bằng lệnh `ke-hoach --ghi`).
 
@@ -45,7 +45,7 @@
 
 ## 5. Vòng kín: chỉnh sửa theo hội đồng
 
-- Tối đa 4 vòng; mỗi đoạn thay ≤ 3000 ký tự.
+- Tối đa 6 vòng; mỗi đoạn thay ≤ 3000 ký tự.
 - Rào từng thay thế: đoạn cũ xuất hiện đúng 1 lần trong văn bản (số dòng chỉ để tham chiếu); không trích dẫn mới; không con số mới; không ô [CẦN]/dấu vết máy; không PII.
 - Rào toàn văn bản: K17 không thêm mục thiếu; K1–K17 không tăng lỗi theo mã; nhất quán xuyên cổng không tăng lệch; xấu đi ⇒ hoàn nguyên .md + Word; luôn sao lưu bản cũ.
 
@@ -66,6 +66,8 @@
 - pham_vi: mỗi thành viên thẩm tra ĐÚNG các yêu cầu nghiêm trọng/cần sửa mình đã nêu
 - ket_qua: da_giai_quyet — phải trích nguyên văn đoạn đáp ứng (máy kiểm, không có ⇒ chưa giải quyết); chua_giai_quyet — nêu còn thiếu gì; can_du_kien — chỉ khi biên tập viên đã khai vượt thẩm quyền (máy kiểm)
 - thieu_phan_quyet: coi là chưa giải quyết
+- phan_hoi_hong: phản hồi của một thành viên không đọc được (JSON hỏng/cắt cụt) là lỗi KỸ THUẬT, không phải phán quyết ⇒ nộp lại riêng thành viên đó tối đa 2 lần; vẫn hỏng ⇒ mọi yêu cầu của thành viên đó chưa giải quyết (ghi rõ lý do)
+- phan_hoi_bien_tap: biên tập viên nhận kèm mỗi yêu cầu: lý do người thẩm tra coi là chưa giải quyết và lý do rào liêm chính/chuẩn đã loại bản sửa trước
 - loi_moi: chỉ trong khoảng dòng vừa sửa ±3 (máy kiểm); ngoài phạm vi ⇒ loại
 - ket_luan: Thông qua khi không còn yêu cầu chưa giải quyết và không lỗi mới nghiêm trọng/cần sửa; còn yêu cầu cần dữ kiện ⇒ «Thông qua phần thuộc thẩm quyền… còn dữ kiện» kèm danh sách; còn chưa giải quyết ⇒ chỉnh sửa tiếp (tối đa SO_VONG_TOI_DA vòng)
 - cong_don: yêu cầu «cần dữ kiện» cộng dồn qua các vòng — không rơi khỏi kết luận cuối
@@ -91,6 +93,7 @@
 - 1.0 (22/11/2026): bản đầu — hiệu chuẩn 6/6 trên bản sao BTM và C1a.
 - 1.1 (22/11/2026): đo thật dưới 1.0 — 85% thay thế đúng bị loại oan vì luật «đúng dòng ±3» (dòng lệch sau các thay thế trước; nhiều vấn đề phải sửa ở chỗ khác chỗ nêu) ⇒ bỏ ràng buộc dòng của THAY THẾ (an toàn vẫn nhờ đoạn cũ duy nhất; nhận xét của hội đồng vẫn ±3 dòng); dạy biên tập viên K4/K10/K11/K15; trần đoạn thay 3.000 ký tự (khung bảng). Phải hiệu chuẩn lại dưới SHA mới.
 - 2.0 (22/11/2026): đo thật dưới 1.1 — mỗi vòng hội đồng đọc lại TOÀN VĂN và nêu vấn đề mới (BTM 10→13→13, C1a 10→15→14), không hội tụ. Bác sĩ chọn quy trình THẨM TRA CHỈNH SỬA như hội đồng thật: vòng 1 thẩm định toàn diện; các vòng sau mỗi thành viên chỉ thẩm tra yêu cầu mình đã nêu (đã giải quyết — trích bằng chứng / chưa giải quyết / cần dữ kiện của người có thẩm quyền) và lỗi mới CHỈ trong đoạn vừa sửa. Bắt đầu lại từ đề cương gốc; hiệu chuẩn lại.
+- 2.1 (22/11/2026): đo thật dưới 2.0 — hội tụ (BTM 13→8→7→5, C1a 22→10→9→4) nhưng chưa thông qua sau 4 vòng vì ba lỗi QUY TRÌNH: phản hồi thẩm tra hỏng JSON bị tính là «chưa giải quyết» (4/5 yêu cầu còn lại của BTM); biên tập viên không được báo lý do rào đã loại bản sửa nên lặp lại bản bị loại; K10 bắt nhầm «khoảng tin cậy 95%» là số liệu. Sửa: phản hồi hỏng ⇒ nộp lại tối đa 2 lần rồi mới fail-safe; biên tập viên nhận lý do chưa đạt của người thẩm tra và lý do rào loại; tối đa 6 vòng. Bắt đầu lại từ đề cương gốc; hiệu chuẩn lại.
 
 Nguyên văn mọi lời dặn gửi hội đồng nằm trong mã và được tính vào SHA ở trên — sửa một chữ là đổi quy chế.
 
