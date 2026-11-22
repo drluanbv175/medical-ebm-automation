@@ -258,6 +258,10 @@ SO_KQ = r"\d+[,.]\d+\s*%|\d+\s*%|\bKTC\b|\bCI\b|\b(OR|PR|RR|HR)\b\s*[=:(]?\s*\d|
 SO_SANH_Y_VAN = (r"(tương tự|tương đồng|phù hợp|khác biệt|khác với|cao hơn|thấp hơn|so với|tương đương)[^.]{0,220}"
                  r"\[\d+|\[\d+\][^.]{0,220}(tương tự|tương đồng|phù hợp|khác biệt|khác với|cao hơn|thấp hơn|"
                  r"tương đương)")
+#: (22/11/2026, phiên «G7 đọc sổ sàng lọc» báo) số NGƯỜI phải kèm đơn vị và không dính chữ: «G6 không có (sàng lọc…»
+#: (dòng chỉ dẫn máy) và «Bảng 1 … đã phân tích» từng làm STROBE 13a đạt giả, CONSORT 22a có bằng chứng giả
+SO_NGUOI = (r"(?<![\w/.,])\d[\d.,]*\s*(người bệnh|người tham gia|người|hồ sơ|đối tượng|bệnh nhân|trường hợp|lượt|"
+            r"participants?|patients?)\b")
 GIOI_HAN_NHAN_QUA = (r"nhân quả|trình tự thời gian|chiều (thời gian|của (mối )?(liên quan|tác động))|"
                      r"cùng (một )?thời điểm|causal|temporal")
 CAU_NHAN_QUA = (r"\b(gây ra|gây nên|là nguyên nhân (của|gây)|dẫn (đến|tới)|làm (tăng|giảm)\b|"
@@ -394,9 +398,9 @@ _GHI_DE: Dict[tuple, dict] = {
                                _y("cỡ mẫu cuối cùng", TC.CO_MAU_CUOI))),
     ("STROBE 2007", "13a"): _g(("ket_qua",), "Báo cáo số người ở từng giai đoạn (đủ tiêu chuẩn, tham gia, phân tích).",
                                (_y("số người từng giai đoạn",
-                                   r"\d[\d.,]*\s*(người|hồ sơ|đối tượng|bệnh nhân|trường hợp|lượt)?[^.;]{0,50}"
-                                   r"(đủ tiêu chuẩn|từ chối|bị loại|tham gia|được phân tích|phân tích|sàng lọc|"
-                                   r"được mở|được mời|đủ dữ liệu)"),)),
+                                   SO_NGUOI + r"[^.;]{0,50}(đủ tiêu chuẩn|từ chối|bị loại|tham gia|được phân tích|"
+                                              r"phân tích|sàng lọc|được mở|được mời|đủ dữ liệu)|"
+                                   r"(đủ tiêu chuẩn|sàng lọc|phân tích|được mời)[^.;\n]{0,30}:\s*[Nn]\s*=\s*\d"),)),
     ("STROBE 2007", "13b"): _g(("ket_qua",), "Báo cáo lý do không tham gia ở từng giai đoạn.",
                                (_y("lý do không tham gia/bị loại", r"(bị loại|loại trừ|từ chối|không tham gia|không đủ)"
                                                                    r"[^.]{0,120}(lý do|vì|do)|lý do (từ chối|không "
@@ -698,14 +702,22 @@ _CONSORT: Dict[str, tuple] = {
                                        r"pre-?specified"))),
     "22a": (("ket_qua",), "Theo từng nhóm: số được phân bổ ngẫu nhiên, nhận can thiệp dự định, được phân tích kết cục "
                           "chính.",
-            (_y("số được phân bổ ngẫu nhiên", r"\d[\d.,]*[^.;]{0,60}(phân bổ|chia|được) ngẫu nhiên|randomi[sz]ed"),
+            (_y("số được phân bổ ngẫu nhiên", SO_NGUOI + r"[^.;]{0,60}(phân bổ|chia|được) ngẫu nhiên|"
+                                              r"(phân bổ|chia) ngẫu nhiên[^.;]{0,40}" + SO_NGUOI + "|"
+                                              r"\d+ (participants|patients)[^.;]{0,40}randomi[sz]ed"),
              _y("số nhận can thiệp", r"nhận (can thiệp|đủ|đúng|nhánh)|được (can thiệp|điều trị)|received"),
-             _y("số được phân tích kết cục chính", r"\d[\d.,]*[^.;]{0,80}(được )?phân tích|analy[sz]ed"),
+             _y("số được phân tích kết cục chính", SO_NGUOI + r"[^.;]{0,80}(được )?phân tích|"
+                                                   r"phân tích[^.;\n]{0,30}:\s*[Nn]\s*=\s*\d|"
+                                                   r"\d+ (participants|patients)[^.;]{0,60}analy[sz]ed"),
              _y("theo từng nhóm", r"nhóm (can thiệp|chứng|đối chứng)|mỗi nhóm|từng nhóm|hai nhóm|each group"))),
-    "22b": (("ket_qua",), "Theo từng nhóm: số mất/loại sau phân bổ kèm lý do.",
-            (_y("mất/loại sau phân bổ", r"mất theo dõi|bỏ cuộc|rút khỏi|bị loại|ngừng|lost to follow|withdr|"
-                                        r"không (có|ghi nhận) (người )?(mất|bỏ)"),
-             _y("lý do", r"lý do|vì|do |reason")), None, "", True),
+    # một yếu tố: mất/loại KÈM lý do, HOẶC câu «không có người mất theo dõi» (không có ai thì không có lý do —
+    # phiên «G7 đọc sổ sàng lọc» báo thiếu giả 22/11/2026)
+    "22b": (("ket_qua",), "Theo từng nhóm: số mất/loại sau phân bổ kèm lý do (hoặc nêu không có ai).",
+            (_y("mất/loại sau phân bổ kèm lý do, hoặc nêu không có",
+                r"(mất theo dõi|bỏ cuộc|rút khỏi|bị loại|ngừng|lost to follow|withdr)[^.]{0,120}(lý do|vì|do |"
+                r"reason)|(lý do|vì|do )[^.]{0,120}(mất theo dõi|bỏ cuộc|rút khỏi|bị loại)|"
+                r"không (có|ghi nhận) (người |ai |trường hợp )?(nào )?(mất theo dõi|bỏ cuộc|rút khỏi|bị loại|mất|bỏ)|"
+                r"no (participants? )?(were )?(lost|withdr)"),)),
     "23a": (("ket_qua",), "Nêu các mốc ngày tuyển và theo dõi kết cục lợi ích và tác hại.",
             (_y("mốc ngày", K.NGAY), _y("tuyển/theo dõi", r"tuyển|theo dõi|recruit|follow"))),
     "23b": (("ket_qua", "ban_luan"), "Nêu lý do thử nghiệm kết thúc hoặc dừng.",
