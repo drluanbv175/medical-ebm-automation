@@ -44,6 +44,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import re
 import statistics
 import sys
@@ -2208,9 +2209,11 @@ def _do_bao_nham(goc: Path, out_dir: Path, study: str, loai: str, goi_api: bool,
               "batch": None, "so_lan_nop_lai": 0, "model_trong_tai": TRONG_TAI_MODEL}
     if trong_tai == "agent":   # 4.0: trọng tài là agent Claude Code của hệ — không tốn tín dụng API
         if not tt.get("viec_trong_tai"):
-            tl = hc_dir / f"tra_loi_trong_tai_{TRONG_TAI_AGENT}.json"
-            tt["viec_trong_tai"] = ghi_viec(hc_dir, "trong_tai", TRONG_TAI_AGENT, (
-                f"Bạn là agent `{TRONG_TAI_AGENT}` (ngữ cảnh mới, không tham gia hội đồng). Tài liệu: `{da['tep']}` "
+            tm_tt = hc_dir / "viec_agent"   # không đặt phiếu cạnh dap_an.json (làm mù, 22/11/2026)
+            tl = tm_tt / f"tra_loi_trong_tai_{TRONG_TAI_AGENT}.json"
+            tt["viec_trong_tai"] = ghi_viec(tm_tt, "trong_tai", TRONG_TAI_AGENT, (
+                f"Bạn là agent `{TRONG_TAI_AGENT}` (ngữ cảnh mới, không tham gia hội đồng). "
+                f"Tài liệu: `{tep_cho_agent(da['tep'], tm_tt)}` "
                 "(số dòng tính từ 1).\n" + loi_nhan_trong_tai(tt["muc"], loai).replace("ở trên", "nêu trên")
                 + f"\nGhi DUY NHẤT JSON trên vào `{tl}`; không ghi tệp khác."), {"muc": _mu(tt["muc"])})
             _ghi_json(p_tt, tt)
@@ -2319,6 +2322,26 @@ def thu_muc_viec(out_dir: Path, st: Dict[str, Any]) -> Path:
     return thu_muc_hd(out_dir) / "viec_agent" / f"{st['sha'][:12]}_v{st.get('vong', 1)}"
 
 
+def tep_cho_agent(tep: str, thu_muc: Path) -> str:
+    """Đường dẫn tài liệu ghi vào phiếu việc của agent.
+
+    Bản cài lỗi của lượt hiệu chuẩn (nằm trong thư mục ``hieu_chuan``) được chép sang thư mục phiếu việc dưới tên
+    TRUNG TÍNH ``TAI_LIEU_<sha8>.md`` — nội dung, số dòng y hệt. Đo thật 22/11/2026: tên «BAN_CAI_LOI_…» và tệp
+    ``dap_an.json`` nằm cạnh làm agent biết đang hiệu chuẩn và đối chiếu với đề cương gốc để tìm câu cài ⇒ lớp agent
+    được đo dễ hơn khi dùng thật. Tài liệu thật (ngoài ``hieu_chuan``) giữ nguyên đường dẫn."""
+    goc = Path(tep)
+    if "hieu_chuan" not in goc.resolve().parts:
+        return tep
+    van = goc.read_bytes()
+    dich = thu_muc / f"TAI_LIEU_{hashlib.sha256(van).hexdigest()[:8]}{goc.suffix}"
+    thu_muc.mkdir(parents=True, exist_ok=True)
+    if not dich.exists() or dich.read_bytes() != van:
+        tam = dich.with_suffix(dich.suffix + ".tam")
+        tam.write_bytes(van)
+        os.replace(tam, dich)
+    return str(dich)
+
+
 def lap_viec_tham_dinh(st: Dict[str, Any], van: str, ds: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
     """Nhóm nhận xét theo agent SỞ HỮU chuyên môn của ghế đã nêu; mỗi nhóm trộn mù ≥ 1 đối chứng âm (nhận xét sai do
     máy dựng). Mã mù A01…; ánh xạ về id hội đồng chỉ lưu trong trạng thái."""
@@ -2401,7 +2424,7 @@ def buoc_tham_dinh_agent(st: Dict[str, Any], van: str, out_dir: Path) -> int:
             return 0
         nhom = lap_viec_tham_dinh(st, van, ds)
         st["viec_tham_dinh"] = {ten: {"muc": muc, **ghi_viec(tm, "tham_dinh", ten, loi_nhan_agent_tham_dinh(
-            ten, muc, st["tep"], st.get("loai", "de_cuong"), st["study"],
+            ten, muc, tep_cho_agent(st["tep"], tm), st.get("loai", "de_cuong"), st["study"],
             str(tm / f"tra_loi_tham_dinh_{ten}.json")), {"muc": _mu(muc)})} for ten, muc in nhom.items()}
     thieu = [ten for ten, v in st["viec_tham_dinh"].items() if not Path(v["tra_loi"]).exists()]
     if thieu:

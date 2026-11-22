@@ -1096,6 +1096,10 @@ def test_do_bao_nham_bang_trong_tai_agent_khong_ton_api(tmp_path):
     assert H.main(["do-bao-nham", "--study", STUDY], client=kh, goc=goc) == H.CHO_AGENT
     viec = [v for v in H.viec_agent_dang_cho(goc, STUDY) if v["loai_viec"] == "trong_tai"]
     assert viec and viec[0]["agent"] == "trong-tai-tranh-bien"
+    phieu = Path(viec[0]["loi_nhan"])
+    # làm mù (22/11/2026): phiếu không nằm cạnh đáp án, không lộ tên bản cài lỗi
+    assert phieu.parent != hc and not (phieu.parent / "dap_an.json").exists()
+    assert "BAN_CAI_LOI" not in phieu.read_text(encoding="utf-8") and "dap_an" not in phieu.read_text(encoding="utf-8")
     tt = json.loads((hc / "bao_nham_trang_thai.json").read_text(encoding="utf-8"))
     assert "nhom" not in json.dumps(json.loads(Path(viec[0]["loi_nhan"]).with_suffix(".json").read_text("utf-8")))
     Path(viec[0]["tra_loi"]).write_text(json.dumps({"phan_dinh": [
@@ -1106,6 +1110,22 @@ def test_do_bao_nham_bang_trong_tai_agent_khong_ton_api(tmp_path):
     assert H.main(["do-bao-nham", "--study", STUDY], client=kh, goc=goc) == 0 and len(kh.lo) == n_lo
     bn = json.loads((hc / "bao_nham.json").read_text(encoding="utf-8"))
     assert bn["dat"] and bn["model_trong_tai"] == "agent:trong-tai-tranh-bien"
+
+
+def test_tep_cho_agent_ban_cai_loi_thanh_ban_sao_trung_tinh(tmp_path):
+    hc = tmp_path / "hoi_dong_khoa_hoc" / "hieu_chuan" / "de_cuong"
+    hc.mkdir(parents=True)
+    ban = hc / f"BAN_CAI_LOI_{STUDY}_de_cuong.md"
+    ban.write_text(DE_CUONG, encoding="utf-8", newline="\n")
+    (hc / "dap_an.json").write_text("{}", encoding="utf-8", newline="\n")
+    tm = tmp_path / "hoi_dong_khoa_hoc" / "viec_agent" / "x_v1"
+    p = Path(H.tep_cho_agent(str(ban), tm))
+    assert p.parent == tm and p.name.startswith("TAI_LIEU_") and "CAI_LOI" not in p.name
+    assert p.read_bytes() == ban.read_bytes() and not (p.parent / "dap_an.json").exists()
+    assert H.tep_cho_agent(str(ban), tm) == str(p)          # gọi lại không đổi
+    that = tmp_path / "DE_CUONG_NOP_HOI_DONG.md"
+    that.write_text(DE_CUONG, encoding="utf-8", newline="\n")
+    assert H.tep_cho_agent(str(that), tm) == str(that)      # tài liệu thật giữ nguyên đường dẫn
 
 
 def test_agent_sai_theo_cong_cu_phai_co_lenh_va_ket_qua():
