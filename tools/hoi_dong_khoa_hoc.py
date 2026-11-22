@@ -682,7 +682,9 @@ def ghi_bien_ban(st: Dict[str, Any], out_dir: Path) -> Path:
 # tôi phải quyết; tôi chỉ nhận lại là những nội dung liêm chính và chuẩn mực nhất». Nhận xét đã xác minh ⇒ biên tập viên
 # (Claude) đề xuất THAY THẾ NGUYÊN VĂN; MÁY chỉ áp thay thế qua đủ rào; bản mới họp lại; tối đa `SO_VONG_TOI_DA` vòng.
 SO_VONG_TOI_DA = 3
-MAX_TOKENS_BT = 32000
+MAX_TOKENS_BT = 64000
+VAN_DE_MOI_YEU_CAU = 6
+SO_LAN_NOP_LAI_BIEN_TAP = 2
 TRAN_KY_TU_THAY = 1500
 _SO_RE = re.compile(r"\d+(?:[.,]\d+)*")
 _TRICH_RE = re.compile(r"\[(\d+(?:\s*[,–-]\s*\d+)*)\]")
@@ -843,17 +845,23 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
     if st["buoc"] == "da_sua":
         print(f"↻ Đã sửa ở vòng {st.get('vong', 1)} — chạy lại để hội đồng họp bản mới.")
         return 0
-    # bien_tap
+    # bien_tap — chia nhóm ≤ VAN_DE_MOI_YEU_CAU vấn đề mỗi yêu cầu (22/11/2026: một yêu cầu gom 14–20 vấn đề bị cắt cụt
+    # ở 32.000 token ra trên cả hai đề cương thật). Tham số VẬN HÀNH, không phải luật/lời dặn của quy chế.
     chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"])
-    cid = f"bt_{st['sha'][:8]}"
+    nhom = API.chia_lo(th["van_de"], VAN_DE_MOI_YEU_CAU)
+    cids = [f"bt{i}_{st['sha'][:8]}" for i in range(len(nhom))]
     bid = st["batch"].get("bien_tap")
     if not bid:
+        if int(st.get("so_lan_hong_bien_tap", 0)) > SO_LAN_NOP_LAI_BIEN_TAP:
+            print(f"⛔ Biên tập hỏng {st['so_lan_hong_bien_tap']} lần (1 lần đầu + {SO_LAN_NOP_LAI_BIEN_TAP} lần nộp "
+                  f"lại) — dừng: {(st.get('loi_bien_tap') or ['?'])[-1]}")
+            return 1
         if not goi_api:
-            print(f"(chạy khô) biên tập {len(th['van_de'])} vấn đề — thêm --goi-api.")
+            print(f"(chạy khô) biên tập {len(th['van_de'])} vấn đề trong {len(nhom)} yêu cầu — thêm --goi-api.")
             return 0
-        yc = [(cid, tham_so_yeu_cau(chung, loi_nhan_bien_tap(th["van_de"]), st["model"], MAX_TOKENS_BT))]
+        yc = [(c, tham_so_yeu_cau(chung, loi_nhan_bien_tap(g), st["model"], MAX_TOKENS_BT)) for c, g in zip(cids, nhom)]
         st["batch"]["bien_tap"] = API.nop_batch(yc, client=client, nguon=CONG_CU)
-        print(f"📨 Đã nộp batch biên tập: {st['batch']['bien_tap']}.")
+        print(f"📨 Đã nộp batch biên tập: {st['batch']['bien_tap']} ({len(yc)} yêu cầu).")
         return 4
     if not goi_api:
         return 0
@@ -862,9 +870,25 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
         print(f"⏳ Batch biên tập {bid} đang xử lý — chạy lại sau.")
         return 4
     ket = API.doc_ket_qua_batch(bid, client=client, nguon=CONG_CU)
-    tho = API.van_ban_ket_qua_batch(ket.get(cid, {"loai": "thieu"}), MAX_TOKENS_BT)
-    st.setdefault("tho", {})["bien_tap"] = tho
-    van_moi, nk = ap_bien_tap(API.doc_json(tho), van)
+    gop: Dict[str, Any] = {"sua": []}
+    hong = []
+    for c in cids:
+        try:
+            tho = API.van_ban_ket_qua_batch(ket.get(c, {"loai": "thieu"}), MAX_TOKENS_BT)
+            st.setdefault("tho", {})[c] = tho
+            dl = API.doc_json(tho)
+            gop["sua"] += list((dl or {}).get("sua") or []) if isinstance(dl, dict) else []
+        except API.LoiApi as exc:
+            hong.append(f"{c}: {exc}"[:300])
+    if hong and len(hong) == len(cids):
+        # mọi yêu cầu hỏng ⇒ ghi lại, bỏ id batch để lượt sau NỘP LẠI (giới hạn SO_LAN_NOP_LAI_BIEN_TAP lần)
+        st.setdefault("loi_bien_tap", []).extend(hong)
+        st["so_lan_hong_bien_tap"] = int(st.get("so_lan_hong_bien_tap", 0)) + 1
+        st["batch"].pop("bien_tap", None)
+        print(f"⚠️ Biên tập hỏng cả {len(cids)} yêu cầu — sẽ nộp lại: {hong[0]}")
+        return 1
+    van_moi, nk = ap_bien_tap(gop, van)
+    nk["yeu_cau_hong"] = hong   # nhóm hỏng: vấn đề của nhóm đó sẽ được hội đồng vòng sau nêu lại (không bị bỏ qua)
     la_chinh = Path(st["tep"]).resolve() == tep_mac_dinh(st["study"], out_dir.parents[1]).resolve()
     truoc, sau = _do_chuan(van, st["study"], out_dir, False), _do_chuan(van_moi, st["study"], out_dir, False)
     xau = _xau_di(truoc, sau)

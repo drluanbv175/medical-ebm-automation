@@ -292,7 +292,7 @@ def _vong(goc, kh, n=12):
 def test_vong_kin_sua_roi_hop_lai_toi_khi_dat(tmp_path):
     goc = _goc(tmp_path)
     _hieu_chuan_dat(goc)
-    kh = KhachBatch({**TRA, "bt": SUA})
+    kh = KhachBatch({**TRA, "bt0": SUA})
     p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
     for _ in range(6):                                   # vòng 1: họp → còn «cần sửa» → biên tập → áp
         H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
@@ -311,7 +311,7 @@ def test_vong_kin_sua_roi_hop_lai_toi_khi_dat(tmp_path):
 def test_vong_kin_hoan_nguyen_khi_ban_sua_lam_chuan_xau_di(tmp_path, monkeypatch):
     goc = _goc(tmp_path)
     _hieu_chuan_dat(goc)
-    kh = KhachBatch({**TRA, "bt": SUA})
+    kh = KhachBatch({**TRA, "bt0": SUA})
     p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
     goc_van = p.read_text(encoding="utf-8")
     that = H._do_chuan
@@ -328,7 +328,7 @@ def test_vong_kin_hoan_nguyen_khi_ban_sua_lam_chuan_xau_di(tmp_path, monkeypatch
 
 
 def test_vong_kin_dung_sau_so_vong_toi_da(tmp_path, monkeypatch):
-    goc, kh = _goc(tmp_path), KhachBatch({**TRA, "bt": SUA})
+    goc, kh = _goc(tmp_path), KhachBatch({**TRA, "bt0": SUA})
     monkeypatch.setattr(H, "SO_VONG_TOI_DA", 1)
     _hieu_chuan_dat(goc)   # hiệu chuẩn tính dưới quy chế ĐÃ đổi số vòng — SHA phải tính sau khi vá
     # 4 lượt họp (nộp/lấy thành viên, nộp/lấy chủ tịch) + lượt 5 xét điều kiện dừng ở «xong»
@@ -363,7 +363,7 @@ def test_phien_khoi_tao_duoi_quy_che_khac_het_hieu_luc(tmp_path, monkeypatch):
 
 
 def test_vong_kin_tu_choi_khi_chua_hieu_chuan_dat(tmp_path, capsys):
-    goc, kh = _goc(tmp_path), KhachBatch({**TRA, "bt": SUA})
+    goc, kh = _goc(tmp_path), KhachBatch({**TRA, "bt0": SUA})
     assert H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) == 3 and kh.lo == {}
     _hieu_chuan_dat(goc, do_nhay=4 / 6)                            # dưới ngưỡng 5/6
     assert H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) == 3 and kh.lo == {}
@@ -394,3 +394,19 @@ def test_hieu_chuan_cham_tu_choi_khi_quy_che_doi(tmp_path, monkeypatch):
     monkeypatch.setattr(H, "CUA_SO_DONG", 4)
     assert H.main(["hieu-chuan", "--study", STUDY, "--cham"], goc=goc) == 1
     assert not (goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / "ket_qua.json").exists()  # không ghi kết quả
+
+
+def test_bien_tap_chia_nhom_va_nop_lai_khi_hong_het(tmp_path, monkeypatch):
+    """22/11: một yêu cầu gom 14–20 vấn đề bị cắt cụt ⇒ chia nhóm ≤ 6; hỏng hết ⇒ ghi lỗi, nộp lại, tối đa 2 lần."""
+    monkeypatch.setattr(H, "VAN_DE_MOI_YEU_CAU", 1)          # 2 vấn đề còn giữ ⇒ 2 yêu cầu
+    goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
+    kh = KhachBatch(TRA, hong={"bt0", "bt1"})
+    goi = lambda: H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)  # noqa: E731
+    ma = [goi() for _ in range(6)]
+    assert ma[-2:] == [4, 1]                                  # nộp biên tập → hỏng hết ⇒ mã 1, lần hỏng thứ 1
+    assert len(kh.lo[sorted(kh.lo)[-1]]) == 2
+    st = H._doc_st(next((goc / "exports" / STUDY / H.THU_MUC).glob("trang_thai_*.json")))
+    assert st["so_lan_hong_bien_tap"] == 1 and len(st["loi_bien_tap"]) == 2 and "bien_tap" not in st["batch"]
+    assert [goi(), goi(), goi(), goi()] == [4, 1, 4, 1]       # nộp lại lần 1, 2 — đều hỏng
+    assert goi() == 1 and len(kh.lo) == 5                     # 3 lần hỏng > 1 + 2 ⇒ dừng, không nộp thêm
