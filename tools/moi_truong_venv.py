@@ -41,9 +41,10 @@ BIEN_DA_CHUYEN = "EBM_DA_CHUYEN_VENV"
 
 # Thư viện NGOÀI (không thuộc thư viện chuẩn) mà chuỗi cổng nhập — bắc cầu qua tools/, app/, runtime/, kể cả import
 # muộn trong hàm. Test tests/test_moi_truong_venv_20261118.py đo lại cây import và ĐỎ khi thiếu tên ở đây.
+# 22/11/2026: pypdf vào cây qua K20 (tam_nguyen_tac_de_cuong → kiem_so_lieu_toan_van, đọc toàn văn PDF).
 THU_VIEN_CHUOI_CONG = (
     "cryptography", "defusedxml", "docx", "dotenv", "fontTools", "lifelines", "matplotlib", "numpy", "openpyxl",
-    "pandas", "PIL", "requests", "scipy", "statsmodels",
+    "pandas", "PIL", "pypdf", "requests", "scipy", "statsmodels",
 )
 
 # Tên gói pip khác tên import — chỉ để in lệnh cài cho dễ hiểu.

@@ -370,6 +370,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/dien_giai_ket_qua.py` (kiểm) — đầu ra của `dien-giai-ket-qua`: hợp đồng bản diễn giải kết quả (G6-T3); chốt kiểm `tools/hoi_dong_cong.py`; nguyên tắc: khách quan · trung thực–minh bạch.
 - Công cụ `tools/run_g9_auto.py` (kiểm) — đầu ra của `nop-bai-phan-hoi`: liêm chính tác giả: ICMJE/CRediT, COI, khai AI, chia sẻ dữ liệu; chốt kiểm `tools/g9_quality_gate.py`; nguyên tắc: trung thực–minh bạch · đạo đức.
 - Công cụ `tools/tieu_chi_ban_thao.py` (kiểm) — đầu ra của `viet-ban-thao`: K18 — đối chiếu bản thảo với từng mục chuẩn báo cáo theo thiết kế; chốt kiểm `K18`; nguyên tắc: khoa học · đạt chuẩn định trước · trung thực–minh bạch.
+- Công cụ `tools/tam_nguyen_tac_de_cuong.py` (kiểm) — đầu ra của `viet-ban-thao`: ma trận 8 nguyên tắc và 5 tiêu chí đề cương tốt (K20); chốt kiểm `tests/test_tam_nguyen_tac_de_cuong_20261122.py`; nguyên tắc: khoa học · khách quan.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 

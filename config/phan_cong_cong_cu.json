@@ -2057,6 +2057,21 @@
     "tong:dat_chuan": "chuẩn định trước, không sửa theo đề tài"
    }
   },
+  "so_doc_de_cuong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "tham-dinh-dau-ra",
+   "cong": ["G10"],
+   "nhiem_vu": [],
+   "viec": "K21 — sổ đọc từng câu, hàng bảng, hình, công thức, tài liệu của đề cương trước khi giao; bản ghi gắn mã băm",
+   "nguoi_dung_phu": ["viet-ban-thao"],
+   "nguoi_kiem": ["dieu-phoi-g10"],
+   "chot_kiem": ["K21", "tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_so_doc_de_cuong_20261122.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "mỗi đơn vị giao đi đã được đọc; sửa đơn vị thì mã băm đổi và phải đọc lại",
+    "nt:kiem_soat_cl": "đọc ở khâu cuối sau khi các khâu trước đã khoá, không để sửa sau làm mất hiệu lực",
+    "tong:dat_chuan": "thiếu bản ghi đọc của bất kỳ đơn vị nào thì đề cương chưa được gọi là hoàn thành"
+   }
+  },
   "spss_chay_nen.py": {
    "pham_vi": "nghien_cuu",
    "chu": "phan-tich-thong-ke",
@@ -2107,6 +2122,22 @@
    "chot_kiem": ["tools/check_citation_retraction.py", "tests/test_tai_retraction_watch_guong_gitlab_20260924.py"],
    "nguyen_tac": {
     "nt:trung_thuc": "nền rút bài ngoại tuyến, không bao giờ tự nói «ok»"
+   }
+  },
+  "tam_nguyen_tac_de_cuong.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G10"],
+   "nhiem_vu": ["G10-T4"],
+   "viec": "K20 — ma trận phần đề cương × chuẩn áp dụng × 8 nguyên tắc và trục tổng 5 tiêu chí đề cương tốt",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["binh-duyet", "tham-dinh-dau-ra"],
+   "chot_kiem": ["K20", "tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_tam_nguyen_tac_de_cuong_20261122.py"],
+   "nguyen_tac": {
+    "nt:khoa_hoc": "mỗi ô của ma trận gắn với phép đo máy hoặc phân xử có căn cứ của hội đồng",
+    "dct:gia_tri": "trục tổng hỏi đề cương có trả lời được một câu hỏi có giá trị hay không",
+    "dct:kiem_chung": "kết quả dự kiến phải kiểm chứng được bằng phép đo đã định trước",
+    "tong:dat_chuan": "ô chưa có phép đo là ⚪ «chưa đo được», không bao giờ xanh"
    }
   },
   "ten_de_tai.py": {

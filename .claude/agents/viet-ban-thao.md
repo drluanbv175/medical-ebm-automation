@@ -347,6 +347,8 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/tieu_chi_chuan_de_cuong.py` (chủ) — tiêu chí từng mục của 12 chuẩn ngoài STROBE/RECORD/CROSS cho K17; chốt kiểm `K17`; nguyên tắc: khoa học · trung thực–minh bạch.
 - Công cụ `tools/vn_prose_style.py` (chủ) — chuẩn hoá văn phong tiếng Việt của tài liệu hệ sinh; chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: kiểm soát chất lượng.
 - Công cụ `tools/xuat_docx_chuan.py` (chủ) — xuất .docx chuẩn từ artifact .md hiện có, không sinh lại nội dung; chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/tam_nguyen_tac_de_cuong.py` (chủ) — ma trận phần đề cương × chuẩn áp dụng × 8 nguyên tắc và trục tổng 5 tiêu chí (K20 của `kiem_de_cuong_nop_hoi_dong.py`); chốt kiểm `tests/test_tam_nguyen_tac_de_cuong_20261122.py`; nguyên tắc: ô chưa có phép đo là ⚪ «chưa đo được», không bao giờ xanh · kiểm soát chất lượng liên tục.
+- Công cụ `tools/so_doc_de_cuong.py` (dùng phụ) — sửa đơn vị nào của đề cương thì mã băm đổi, đơn vị đó phải được đọc lại trước khi giao; chốt kiểm `tests/test_so_doc_de_cuong_20261122.py`; nguyên tắc: trung thực–minh bạch.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
