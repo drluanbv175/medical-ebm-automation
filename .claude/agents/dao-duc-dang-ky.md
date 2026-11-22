@@ -292,7 +292,10 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp độ IRB (theo Luật 91/2025/QH1
    ☐ Không chia sẻ (lý do: ___)
    ☐ Chia sẻ theo yêu cầu hợp lý (DTA cần ký)
    ☐ Mở hoàn toàn (sau ẩn danh hóa, tại ___)
-6. XỬ LÝ VI PHẠM: quy trình báo cáo nếu rò rỉ trong vòng 72h (theo NĐ 356 Điều 23)
+6. XỬ LÝ VI PHẠM: phát hiện rò rỉ ⇒ thông báo cơ quan chuyên trách bảo vệ dữ liệu cá nhân chậm nhất 72 giờ kể từ
+   khi phát hiện (Luật 91/2025/QH15 Điều 23 khoản 1); nội dung thông báo theo NĐ 356/2025/NĐ-CP Điều 28. KHÔNG ghi
+   «NĐ 356 Điều 23» (điều đó là trách nhiệm tổ chức kinh doanh dịch vụ xử lý dữ liệu) và không tự thêm «24 giờ nội
+   bộ» hay «báo người tham gia ngay» — hai văn bản không quy định.
 7. KẾT THÚC NGHIÊN CỨU: hủy/lưu trữ dữ liệu theo quy định lưu trữ y tế
 ```
 
