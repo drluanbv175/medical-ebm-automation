@@ -327,6 +327,8 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
                                                *PTD.LOAI_TUY_CHON.get(ts["loai_dac_thu"], ()), "loai_dac_thu", "loc")]
             if thua:  # tham số của run_stats_analysis không có nghĩa với phân tích đặc thù — báo ngay khi kiểm
                 loi.append(f"{pid}: tham số không áp dụng cho phân tích {ts['loai_dac_thu']}: {', '.join(thua)}")
+        elif ts.get("bang_chung"):  # kiểm bằng chứng thủ tục định tính — không phải mô hình (kiểm ở trên)
+            pass
         elif not ts.get("outcome") and not ts.get("time") and not ts.get("ty_le"):
             loi.append(f"{pid}: cần outcome, hoặc time+event, hoặc ty_le")
         if ts.get("bien_thua") and isinstance(ts["bien_thua"], dict):
@@ -767,9 +769,10 @@ def ap_don_vi_1sd(study: str, pt: dict) -> tuple[dict, dict]:
     sd = float(x[o].std(ddof=1)) if int(o.sum()) > 1 else float("nan")
     if not sd > 0:
         raise TuChoi(f"không tính được độ lệch chuẩn của {ts['group']} (n = {int(o.sum())})")
-    ts["don_vi_phoi_nhiem"] = sd
-    return dict(pt, tham_so=ts), {"bien": ts["group"], "sd": sd, "n": int(o.sum()),
-                                  "cach_tinh": "độ lệch chuẩn mẫu (ddof = 1) trên tập ca đủ biến của mô hình"}
+    nk = {"bien": ts["group"], "sd": sd, "n": int(o.sum()),
+          "cach_tinh": "độ lệch chuẩn mẫu (ddof = 1) trên tập ca đủ biến của mô hình"}
+    ts["don_vi_phoi_nhiem"] = sd  # run_stats_analysis + cầu nối R/SPSS chia phơi nhiễm cho 1 SD ở mọi họ mô hình
+    return dict(pt, tham_so=ts), nk
 
 
 def lenh_chay(args) -> int:
@@ -890,8 +893,9 @@ def lenh_chay(args) -> int:
                          "sha256": sha256_tep(csv_khoa)},  # fmt: skip
         "kiem_cheo": bool(args.kiem_cheo),
         "phan_tich": ket,
-        "dem": {t: sum(1 for x in ket if x["trang_thai"] == t)
-                for t in ("DA_CHAY", "LOI", "CHUA_TU_DONG", "DA_KIEM", "THIEU_BANG_CHUNG")},
+        # trạng thái kiểm bằng chứng định tính (DA_KIEM · THIEU_BANG_CHUNG) chỉ ghi khi có — giữ khuôn đếm cũ
+        "dem": {t: n for t in ("DA_CHAY", "LOI", "CHUA_TU_DONG", "DA_KIEM", "THIEU_BANG_CHUNG")
+                if (n := sum(1 for x in ket if x["trang_thai"] == t)) or t in ("DA_CHAY", "LOI", "CHUA_TU_DONG")},
         "canh_bao": (["ĐỀ TÀI GIẢ LẬP — đặc tả chưa duyệt"] if k["duyet"] != "DA_DUYET" else []),
         "disclaimer": CAN_KIEM,
     }
@@ -916,7 +920,9 @@ def lenh_chay(args) -> int:
                                newline="\n")
     dm = chi_muc["dem"]
     print(f"\n══ SAP G6 — {args.study}: {dm['DA_CHAY']} đã chạy · {dm['LOI']} lỗi · "
-          f"{dm['CHUA_TU_DONG']} chờ làm tay ══")
+          f"{dm['CHUA_TU_DONG']} chờ làm tay"
+          + (f" · bằng chứng thủ tục: {dm.get('DA_KIEM', 0)} đủ, {dm.get('THIEU_BANG_CHUNG', 0)} thiếu"
+             if dm.get("DA_KIEM") or dm.get("THIEU_BANG_CHUNG") else "") + " ══")
     print(f"✓ {d / TEP_KQ_MD}\n{CAN_KIEM}")
     return ma
 

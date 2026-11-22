@@ -521,7 +521,7 @@ LOAI_KET_CUC <- @@LOAI@@  # binary | continuous | ordinal | poisson_pr | auto (a
 THOI_GIAN <- @@THOI_GIAN@@
 BIEN_CO <- @@BIEN_CO@@
 CUM <- @@CUM@@
-DON_VI_PHOI_NHIEM <- @@DON_VI@@  # --don-vi-phoi-nhiem của Python (chỉ nhánh thứ tự)
+DON_VI_PHOI_NHIEM <- @@DON_VI@@  # --don-vi-phoi-nhiem của Python (mọi họ mô hình)
 # Chuỗi pandas.read_csv coi là THIẾU (keep_default_na) — chép từ pandas @@PANDAS@@ lúc sinh script.
 NA_PANDAS <- @@NA_PANDAS@@
 GOI_CAN <- c("jsonlite", "sandwich", "lmtest", "survival", "ordinal")
@@ -589,6 +589,10 @@ khoi <- function(ten, bt) {
   )
 }
 """ + R_HAM_MO_HINH + r"""
+# 22/11/2026: đơn vị phơi nhiễm cho MỌI họ mô hình (như run_stats_analysis) — nhánh thứ tự chia riêng ở mục 5
+if (!is.na(DON_VI_PHOI_NHIEM) && co(NHOM) && !identical(LOAI_KET_CUC, "ordinal"))
+  D[[NHOM]] <- suppressWarnings(as.numeric(D[[NHOM]])) / DON_VI_PHOI_NHIEM
+
 LOAI <- LOAI_KET_CUC
 if (co(KET_CUC) && LOAI == "auto") {
   .y <- D[[KET_CUC]]
@@ -913,6 +917,8 @@ def lenh_cu_phap(args) -> int:
     tom = S._doc_json(d / f"{args.gate}_analysis_summary.json")
     loai = xac_dinh_loai(dt, tom)
     don_vi = args.don_vi_phoi_nhiem
+    if don_vi is None:  # 22/11/2026: đặc tả lượt Python ghi đơn vị cho MỌI họ mô hình (không riêng nhánh thứ tự)
+        don_vi = (tom.get("dac_ta_phan_tich") or {}).get("don_vi_phoi_nhiem")
     if don_vi is None:
         don_vi = ((tom.get("ordinal") or {}).get("don_vi_phoi_nhiem") or {}).get("don_vi")
     import bien_phai_sinh as BPS  # noqa: PLC0415

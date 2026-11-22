@@ -715,7 +715,8 @@ def _gia_tri_spss(loai: str, ts: Dict[str, Any]) -> List[tuple[str, str]]:
                 *([(ts["phan_nhom"], "A60")] if ts.get("phan_nhom") else [])]
     if loai == "kinh_te":
         return [(ts["nhom"], "F8.0"), (ts["chi_phi"], "F20.4"), (ts["hieu_qua"], "F20.10")]
-    return [(ts["chu_de"], "A400")]
+    # định tính: cột người mã hoá thứ hai (tuỳ chọn) cũng vào tệp dữ liệu — R tính kappa trên chính tệp này
+    return [(ts["chu_de"], "A400"), *([(ts["chu_de_nguoi_2"], "A400")] if ts.get("chu_de_nguoi_2") else [])]
 
 
 def kich_ban_spss(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:

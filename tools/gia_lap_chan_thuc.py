@@ -54,7 +54,7 @@ def _ap_loc(kb: Dict[str, Any], loc: str) -> None:
     đè lọc quần thể."""
     for pt in kb["ho_so_tron_vong"]["g6"]:
         ts = pt.get("tham_so")
-        if not isinstance(ts, dict):
+        if not isinstance(ts, dict) or ts.get("bang_chung"):  # kiểm bằng chứng thủ tục — không có quần thể dữ liệu
             continue
         if pt.get("vai") == "chinh" or not pt.get("ke_thua") or ts.get("loc"):
             ts["loc"] = f"{loc} and {ts['loc']}" if ts.get("loc") else loc

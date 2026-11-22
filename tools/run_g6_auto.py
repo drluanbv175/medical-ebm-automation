@@ -4745,7 +4745,7 @@ source(here::here("scripts", "00_setup.R"))
 # kiểm định nội" — KHÔNG được tuyên bố "đã kiểm định ngoại"/"sẵn sàng lâm sàng"
 # cho tới khi có bước này, theo mo-hinh-tien-luong.md M7]
 
-message("03_analysis.R (Prediction/TRIPOD+AI) — kết cục={outcome} | predictors={cov_fml} | dữ liệu ĐÃ KHOÁ (G5); kiểm định NGOẠI cần quần thể độc lập riêng (mục 6)")
+message("03_analysis.R (Prediction/TRIPOD+AI) — kết cục={outcome} | predictors={cov_fml} | dữ liệu ĐÃ KHOÁ (G5); C-statistic/R² kỳ vọng theo Riley 2020, PMID 32188600; kiểm định NGOẠI cần quần thể độc lập riêng (mục 6)")
 """
 
 

@@ -2203,10 +2203,8 @@ def cu_phap_phan_tich(
     ]
     g_mh = g  # tên phơi nhiễm dùng trong mô hình thứ tự
     dv = dt.get("don_vi_phoi_nhiem")
-    if dv and g:
-        if loai != "ordinal":
-            canh_bao.append("đơn vị phơi nhiễm chỉ áp cho hồi quy thứ tự (như run_stats_analysis.py) — bỏ qua")
-        elif not so.get(g):
+    if dv and g:  # 22/11/2026: mọi họ mô hình (như run_stats_analysis.py)
+        if not so.get(g):
             raise TuChoi(f"đơn vị phơi nhiễm cần biến số, {g} là chuỗi")
         else:
             g_mh = chuan_ten(f"{g}_dv")
@@ -2214,7 +2212,7 @@ def cu_phap_phan_tich(
                 g_mh = chuan_ten(g_mh + "_")
             dong += [
                 f"COMPUTE {g_mh} = {g} / {dv:g}.",
-                f"VARIABLE LABELS {g_mh} {chuoi_spss(f'{g} chia {dv:g} (OR cho mỗi {dv:g} đơn vị)')}.",
+                f"VARIABLE LABELS {g_mh} {chuoi_spss(f'{g} chia {dv:g} (hiệu ứng cho mỗi {dv:g} đơn vị)')}.",
             ]
             phu["ten_phoi_nhiem_mo_hinh"] = g_mh
             so[g_mh] = True
@@ -2260,7 +2258,7 @@ def cu_phap_phan_tich(
             else:
                 g0, g1 = (v if so.get(g) else "'" + v + "'" for v in muc_g or [])
                 khoi("ket_cuc_chinh", [f"T-TEST GROUPS={g}({g0} {g1}) /VARIABLES={y} /CRITERIA=CI(.95)."])
-        pred = [g_mh if loai == "ordinal" else g] + cov
+        pred = [g_mh] + cov
         ps, pc = tach(pred)
         by = f"\n    BY {goi_ds(pc)}" if pc else ""
         wi = f"\n    WITH {goi_ds(ps)}" if ps else ""
@@ -2290,8 +2288,9 @@ def cu_phap_phan_tich(
                 raise TuChoi(f"Poisson vững cần biến dự báo dạng số (biến chuỗi: {', '.join(pc)}) — khai hiệp biến "
                              "phân loại để thành biến giả")  # fmt: skip
             bg = dt.get("hiep_bien_phan_loai") or {}
-            nhom_bien = [[g]] + [[ten(x) for x in bg[c]["ten"]] if c in bg else [ten(c)]
-                                 for c in dt["covariates"]]  # fmt: skip
+            # 22/11/2026: phơi nhiễm đã chia đơn vị (g_mh) — như run_stats_analysis áp đơn vị cho mọi họ mô hình
+            nhom_bien = [[g_mh]] + [[ten(x) for x in bg[c]["ten"]] if c in bg else [ten(c)]
+                                    for c in dt["covariates"]]  # fmt: skip
             tat = [v for ds in nhom_bien for v in ds]
             dk = "\n    AND ".join(f"NOT MISSING({v})" for v in [y, *tat])
 
@@ -2341,11 +2340,11 @@ def cu_phap_phan_tich(
         # hơn, HR thô lệch.
         dk = [f"{'AND ' if k else ''}NOT MISSING({v})" for k, v in enumerate(cov)]
         loc = ["TEMPORARY.", f"SELECT IF ({goi_ds(dk)})."] if cov else []
-        khoi("song_con_tho", [*loc, f"COXREG {t} /STATUS={e}(1) /METHOD=ENTER {g} /PRINT=CI(95)."])
+        khoi("song_con_tho", [*loc, f"COXREG {t} /STATUS={e}(1) /METHOD=ENTER {g_mh} /PRINT=CI(95)."])
         if cov:
             khoi(
                 "song_con_hieu_chinh",
-                [f"COXREG {t} /STATUS={e}(1)\n  /METHOD=ENTER {goi_ds([g] + cov)}\n  /PRINT=CI(95)."],
+                [f"COXREG {t} /STATUS={e}(1)\n  /METHOD=ENTER {goi_ds([g_mh] + cov)}\n  /PRINT=CI(95)."],
             )
         khoi("kaplan_meier", [f"KM {t} BY {g} /STATUS={e}(1) /PRINT TABLE MEAN /TEST LOGRANK /COMPARE OVERALL POOLED."])
         canh_bao.append(

@@ -190,6 +190,17 @@ def test_bang_chung_mo_ta_day_doi_moi_muc_co_noi_dung(tmp_path):
     assert BCD.kiem(tmp_path, "X", "transferability")["trang_thai"] == BCD.DA_KIEM
 
 
+def test_dac_ta_bang_chung_hop_le_khong_doi_outcome(tmp_path):
+    """Mục kiểm bằng chứng thủ tục chỉ có tham số bang_chung — không bị đòi outcome/time/ty_le như mô hình."""
+    dt = {"phan_tich": [{"id": "TT_c", "vai": "do_nhay", "sap_muc": "§9", "mo_ta": "x",
+                         "tham_so": {"bang_chung": "credibility"}}]}
+    try:
+        loi = CS.kiem_dac_ta(tmp_path, dt)["loi"]
+    except Exception as e:  # noqa: BLE001
+        loi = [str(e)]
+    assert not any(x.startswith("TT_c:") for x in loi), loi
+
+
 def test_dac_ta_bang_chung_khong_kem_tham_so_khac(tmp_path):
     dt = {"phan_tich": [{"id": "TT_c", "vai": "do_nhay", "sap_muc": "§9", "mo_ta": "x",
                          "tham_so": {"bang_chung": "credibility", "outcome": "y"}}]}
@@ -296,3 +307,32 @@ def test_gia_lap_thang_goc_tuan_thu_va_nguoi_ma_hoa_thu_hai():
     kb = GL.KICH_BAN["benh_chung"]
     rows = TV.sinh_du_lieu("case_control", kb["bien_so"], {"p0": 0.2, "effect_size": 1.8}, 300)
     assert all((r["so_ngay_nsaid_30"] >= 1) == (r["nsaid_30ngay"] == 1) for r in rows)
+
+
+def test_gia_lap_chan_thuc_dinh_tinh_khong_gan_quan_the_vao_bang_chung():
+    import gia_lap_chan_thuc as GCT  # noqa: PLC0415
+
+    kb = GCT.kich_ban_chan_thuc()["qualitative_chan_thuc"]
+    tt = [p for p in kb["ho_so_tron_vong"]["g6"] if p["id"].startswith("TT_")]
+    assert len(tt) == 3 and all(p["tham_so"] == {"bang_chung": p["id"][3:]} for p in tt)
+
+
+def test_tep_du_lieu_kiem_cheo_dinh_tinh_co_cot_nguoi_ma_hoa_thu_hai():
+    """R tính kappa trên tệp dữ liệu kiểm chéo — tệp phải có cột người mã hoá thứ hai (lượt giả lập 22/11 bắt lỗi)."""
+    cot = [c for c, _ in PTD._gia_tri_spss("dinh_tinh", {"chu_de": "c1", "chu_de_nguoi_2": "c2"})]
+    assert cot == ["c1", "c2"]
+    assert [c for c, _ in PTD._gia_tri_spss("dinh_tinh", {"chu_de": "c1"})] == ["c1"]
+
+
+# ─────────────────────────── spline: nút khi phơi nhiễm dồn ở 0 (như Hmisc) ───────────────────────────
+def test_nut_spline_phoi_nhiem_don_o_0_nhu_hmisc():
+    """Thời lượng dùng thuốc dồn ở 0 (người không dùng) — trước đây nút trùng ⇒ hình G6 lỗi; nay đúng nhánh `fractied`
+    của Hmisc::rcspline.eval (số mong đợi đo bằng chính Hmisc 22/11/2026)."""
+    import bieu_do_hoi_quy as B  # noqa: PLC0415
+
+    x = [0] * 30 + list(range(1, 60))
+    assert B.nut_harrell(x, 4) == pytest.approx([1.0, 4.85, 30.5, 55.0])
+    assert B.nut_harrell(x, 5) == pytest.approx([1.0, 4.85, 21.95, 39.05, 55.0])
+    assert B.nut_harrell(list(range(50)), 4) == pytest.approx([4.0, 17.15, 31.85, 45.0])  # nhánh n < 100 không đổi
+    with pytest.raises(B.LoiBieuDo):
+        B.nut_harrell([0] * 50 + [1, 2], 4)
