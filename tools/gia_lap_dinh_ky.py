@@ -207,7 +207,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
         },
         "pi": {
             "G0": {
-                "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang dùng thuốc hạ áp, quản lý ngoại trú, "
+                "population": ("Người trưởng thành ≥ 18 tuổi tăng huyết áp đang dùng thuốc hạ áp, quản lý ngoại trú, "
                                   "có điện thoại di động nhận tin nhắn"),
                 "intervention": ("Tin nhắn SMS tự động nhắc uống thuốc hạ áp hằng ngày kèm chăm sóc thường quy trong "
                                  "6 tháng"),
@@ -244,9 +244,9 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                                     "timepoint": "Tháng thứ 6 sau ngẫu nhiên hoá", "type": "nhị phân"},
                 "secondary_outcomes": ["Thay đổi huyết áp tâm thu tại tháng 6",
                                        "Tuân thủ dùng thuốc tự báo cáo tại tháng 6"],
-                "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang dùng thuốc hạ áp, quản lý ngoại trú, "
+                "population": ("Người trưởng thành ≥ 18 tuổi tăng huyết áp đang dùng thuốc hạ áp, quản lý ngoại trú, "
                                   "có điện thoại di động"),
-                "inclusion_criteria": ["Tuổi ≥18", "Chẩn đoán tăng huyết áp, đang dùng ≥1 thuốc hạ áp",
+                "inclusion_criteria": ["Tuổi ≥ 18", "Chẩn đoán tăng huyết áp, đang dùng ≥ 1 thuốc hạ áp",
                                        "Có điện thoại di động nhận được tin nhắn"],
                 "exclusion_criteria": ["Không đọc được tin nhắn", "Đang mang thai",
                                        "Dự kiến chuyển nơi điều trị trong 6 tháng"],
@@ -278,7 +278,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                                                 "thành công"),
                 "stopping_rescue_rules": ("Ngừng tin nhắn khi người tham gia yêu cầu; huyết áp ≥ 180/110 mmHg chuyển "
                                           "xử trí theo phác đồ"),
-                "critical_to_quality": _vi("Đo huyết áp chuẩn hoá (máy đã hiệu chuẩn, 2 lần đo); mất theo dõi <20%"),
+                "critical_to_quality": _vi("Đo huyết áp chuẩn hoá (máy đã hiệu chuẩn, 2 lần đo); mất theo dõi < 20%"),
                 "monitoring_plan": _vi("Giám sát an toàn định kỳ 3 tháng"),
                 "randomisation": _vi("Danh sách ngẫu nhiên khối hoán vị cỡ 4–6 sinh bằng phần mềm, tỷ lệ 1:1"),
                 "allocation_concealment": ("Phân bổ trung tâm qua phong bì đánh số kín do người không tham gia "
@@ -339,7 +339,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
         },
         "pi": {
             "G0": {
-                "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
+                "population": ("Người trưởng thành ≥ 18 tuổi tăng huyết áp đang điều trị ngoại trú"),
                 "intervention": "Không áp dụng — nghiên cứu mô tả (yếu tố khảo sát: đặc điểm điều trị hiện tại)",
                 "comparison": "Không áp dụng — nghiên cứu mô tả một nhóm",
                 "outcomes": ["Tỷ lệ kiểm soát huyết áp (< 140/90 mmHg) tại thời điểm khảo sát",
@@ -373,8 +373,8 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                                     "measure": "Huyết áp phòng khám trung bình 2 lần đo < 140/90 mmHg",
                                     "timepoint": "Tại lần khám khảo sát", "type": "nhị phân"},
                 "secondary_outcomes": ["Đặc điểm điều trị hạ áp hiện tại"],
-                "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
-                "inclusion_criteria": ["Tuổi ≥18", "Chẩn đoán tăng huyết áp, đang điều trị ngoại trú ≥3 tháng"],
+                "population": ("Người trưởng thành ≥ 18 tuổi tăng huyết áp đang điều trị ngoại trú"),
+                "inclusion_criteria": ["Tuổi ≥ 18", "Chẩn đoán tăng huyết áp, đang điều trị ngoại trú ≥ 3 tháng"],
                 "exclusion_criteria": ["Đang mang thai", "Không đồng ý tham gia"],
                 "setting": "Phòng khám ngoại trú bệnh viện",
                 "study_period": "2027-03 đến 2027-09",

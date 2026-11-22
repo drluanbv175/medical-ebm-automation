@@ -163,7 +163,7 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     g1.update({"primary_outcome": dict(kc_sc),
                "objectives": ["So sánh thời gian đến gãy xương giữa người từ 60 tuổi dùng thuốc ức chế bơm proton kéo "
                               "dài và người không dùng"],
-               "research_question": ("Ở người từ 60 tuổi điều trị ngoại trú, dùng PPI ≥12 tháng có làm tăng nguy cơ "
+               "research_question": ("Ở người từ 60 tuổi điều trị ngoại trú, dùng PPI ≥ 12 tháng có làm tăng nguy cơ "
                                      "tức thời gãy xương (HR) so với không dùng không?"),
                "secondary_outcomes": ["Gãy cổ xương đùi trong thời gian theo dõi"]})
     g1["estimand"] = {**g1["estimand"], "variable": "Thời gian đến gãy xương đầu tiên",

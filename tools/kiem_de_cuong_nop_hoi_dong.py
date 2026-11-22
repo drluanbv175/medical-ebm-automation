@@ -35,8 +35,9 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       IN HOA nhấn mạnh ngoài phụ lục, loại biến không bỏ lửng «Định danh/thứ bậc», tên bảng/hình không hai ngoặc liền;
       bảng chữ viết tắt không hai mục cùng nghĩa, không mục thừa, xếp theo vần tiếng Việt. (Bảng «mỗi mức một dòng»
       ở K9.) Danh mục tài liệu tham khảo, mã, chuỗi tìm kiếm, DOI/URL/PMID được miễn. Số đo huyết áp (bác sĩ
-      22/11/2026: «180/110 mmHg là số đo huyết áp phải ghi đúng định dạng») ghi «≥ 180/110 mmHg»: tâm thu/tâm trương
-      liền dấu «/», một khoảng trắng rồi «mmHg», dấu so sánh cách số.
+      22/11/2026: «180/110 mmHg là số đo huyết áp phải ghi đúng định dạng» rồi «… tất cả phải đúng chuẩn») ghi
+      «≥ 180/110 mmHg»: tâm thu/tâm trương liền dấu «/», một khoảng trắng rồi «mmHg»; MỌI số đo: một khoảng trắng giữa
+      số và đơn vị (trừ «%»), ký hiệu đơn vị đúng chữ (mL, mg/dL, mmol/L, kg/m²), dấu so sánh cách số («≥ 18 tuổi»).
   K12 mỗi tài liệu tham khảo đỡ một câu cụ thể (bác sĩ 20/11/2026, phản biện BTM O13): không ngoặc trích gộp từ 6 tài
       liệu trở lên, không mục danh mục nào không được trích.
   K13 mục có PMID đúng Vancouver/NLM theo metadata biên nhận A12 (O14): hơn 6 tác giả ⇒ 6 tác giả rồi «et al.»,
@@ -416,6 +417,40 @@ def loi_huyet_ap(s: str) -> Optional[str]:
     return None
 
 
+# Trình bày số đo (bác sĩ 22/11/2026: «không chỉ ghi định dạng huyết áp đúng mà tất cả phải đúng chuẩn»):
+#  · giữa số và ký hiệu đơn vị có một khoảng trắng — «100 mg», «37,5 °C» (SI Brochure, BIPM 2019, §5.4.3); riêng «%»
+#    viết liền như văn bản y khoa tiếng Việt và toàn bộ đầu ra G6/G7 hiện có («48,3%»);
+#  · ký hiệu đơn vị đúng chữ hoa/thường — mmHg, mL, mg/dL, mmol/L, g/dL, kg/m² (không «ml», «mg/dl», «mm Hg», «kg/m2»);
+#  · dấu so sánh cách số — «≥ 18 tuổi», «p < 0,001» (cách các văn bản nộp thật đang viết: «HbA1c < 7%», «ρ > 0,50»).
+_DON_VI_SI = (r"mmHg|mg/dL|g/dL|g/L|mmol/L|µmol/L|μmol/L|mEq/L|mL|mg|kg|mmol|µmol|μmol|mcg|µg|μg|IU|cm|mm|°C|kPa|"
+              r"lần/phút|nhịp/phút")
+_SO_DINH_DON_VI_RE = re.compile(rf"(?<![\w.,/-])\d+(?:[.,]\d+)?(?:{_DON_VI_SI})(?!\w)")
+_DON_VI_SAI_CHU_RE = re.compile(r"(?<![\w])(?:mm ?hg|mm Hg|MMHG|mg/dl|mmol/l|g/dl|ml(?:/ph[uú]t)?|kg/m2)(?![\w²])")
+_DON_VI_DUNG = {"mmhg": "mmHg", "mm hg": "mmHg", "mg/dl": "mg/dL", "mmol/l": "mmol/L", "g/dl": "g/dL", "ml": "mL",
+                "ml/phút": "mL/phút", "ml/phut": "mL/phút", "kg/m2": "kg/m²"}
+_DAU_SO_SANH_DINH_RE = re.compile(r"[<>≤≥](?=\d)")
+
+
+def loi_so_do(s: str) -> Optional[str]:
+    """Lỗi trình bày số đo ĐẦU TIÊN trong một dòng (None = đúng chuẩn): số đo huyết áp (`loi_huyet_ap`), số dính
+    đơn vị, ký hiệu đơn vị sai chữ, dấu so sánh dính số. Dòng đã bỏ mã `…`, DOI/URL/PMID trước khi gọi."""
+    ha = loi_huyet_ap(s)
+    if ha:
+        return ha
+    m = _SO_DINH_DON_VI_RE.search(s)
+    if m:
+        return f"số dính đơn vị «{m.group(0)}» — để một khoảng trắng giữa số và đơn vị (vd «100 mg», «37,5 °C»)"
+    m = _DON_VI_SAI_CHU_RE.search(s)
+    if m:
+        dung = _DON_VI_DUNG.get(m.group(0).lower().replace("  ", " "), "ký hiệu SI")
+        return f"ký hiệu đơn vị «{m.group(0)}» — viết «{dung}»"
+    m = _DAU_SO_SANH_DINH_RE.search(s)
+    if m:
+        doan = s[m.start():m.start() + 12].split()[0]
+        return f"dấu so sánh dính số «{doan}» — để một khoảng trắng (vd «≥ 18 tuổi», «p < 0,001»)"
+    return None
+
+
 # Chiều ngược của bảng viết tắt (21/11/2026 — phản biện máy C1a, bác sĩ chọn sửa trước khi PI ký G10): danh mục có
 # STROBE, COSMIN, CROSS, RECORD mà vắng AGReMA dùng ở §4.8. Chỉ xét tên CHUẨN BÁO CÁO/THẨM ĐỊNH viết tắt (cùng loại, đã
 # quen liệt kê trong danh mục) — không xét mọi cụm in hoa (mã biến G1/C6, tên phần mềm REDCap/eHospital là tên riêng).
@@ -485,9 +520,9 @@ def loi_k11(md: str) -> List[str]:
             if hit:
                 loi.append(f"K11 dòng {so}: {nhan} («{hit.group(0)[:30]}»)")
                 break
-        ha = loi_huyet_ap(s)
-        if ha:
-            loi.append(f"K11 dòng {so}: {ha}")
+        so_do = loi_so_do(s)
+        if so_do:
+            loi.append(f"K11 dòng {so}: {so_do}")
         if "Định danh/thứ bậc" in s or "định danh/thứ bậc" in s:
             loi.append(f"K11 dòng {so}: loại biến bỏ lửng «Định danh/thứ bậc» — ghi rõ Định danh, Thứ bậc hoặc "
                        "Định danh (chọn nhiều)")

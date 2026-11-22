@@ -125,7 +125,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
             "G0": {
                 "population": ("Người từ 60 tuổi điều trị ngoại trú, có ít nhất 2 lần khám trong năm trước ngày "
                                  "bắt đầu theo dõi"),
-                "intervention": "Dùng thuốc ức chế bơm proton liên tục ≥12 tháng (phơi nhiễm)",
+                "intervention": "Dùng thuốc ức chế bơm proton liên tục ≥ 12 tháng (phơi nhiễm)",
                 "comparison": "Không dùng thuốc ức chế bơm proton trong cùng giai đoạn",
                 "outcomes": ["Gãy xương mọi vị trí trong 3 năm", "Gãy cổ xương đùi trong 3 năm"],
                 "primary_outcome": kc_tt["name"],
@@ -136,7 +136,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "expected_direction": "Nhóm dùng PPI kéo dài có nguy cơ gãy xương cao hơn",
                 "test_type": "superiority",
                 "question_type": "harm",
-                **_finer(vi, "Đạt — hồ sơ ngoại trú điện tử lưu ≥5 năm, đủ người từ 60 tuổi dùng PPI",
+                **_finer(vi, "Đạt — hồ sơ ngoại trú điện tử lưu ≥ 5 năm, đủ người từ 60 tuổi dùng PPI",
                          "Đạt — PPI kê rất phổ biến ở người cao tuổi ngoại trú",
                          "Đạt — chưa có số liệu thuần tập tại Việt Nam (theo nền bằng chứng G0)",
                          "Đạt — dữ liệu hồi cứu đã khử định danh, không can thiệp",
@@ -155,19 +155,19 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                                        "do đạo đức — thuần tập hồi cứu từ hồ sơ có sẵn"),
                 "objectives": ["So sánh nguy cơ gãy xương mọi vị trí trong 3 năm giữa người từ 60 tuổi dùng thuốc "
                                "ức chế bơm proton kéo dài và người không dùng"],
-                "research_question": ("Ở người từ 60 tuổi điều trị ngoại trú, dùng thuốc ức chế bơm proton ≥12 tháng "
+                "research_question": ("Ở người từ 60 tuổi điều trị ngoại trú, dùng thuốc ức chế bơm proton ≥ 12 tháng "
                                       "có làm tăng nguy cơ gãy xương trong 3 năm so với không dùng không?"),
                 "primary_outcome": dict(kc_tt),
                 "secondary_outcomes": ["Gãy cổ xương đùi trong 3 năm", "Thời gian đến gãy xương đầu tiên"],
                 "population": ("Người từ 60 tuổi điều trị ngoại trú, có ít nhất 2 lần khám trong năm trước ngày bắt "
                                  "đầu theo dõi"),
-                "inclusion_criteria": ["Tuổi ≥60 tại ngày bắt đầu theo dõi",
-                                       "Có ≥2 lần khám ngoại trú trong 12 tháng trước ngày bắt đầu theo dõi"],
+                "inclusion_criteria": ["Tuổi ≥ 60 tại ngày bắt đầu theo dõi",
+                                       "Có ≥ 2 lần khám ngoại trú trong 12 tháng trước ngày bắt đầu theo dõi"],
                 "exclusion_criteria": ["Gãy xương trong 12 tháng trước ngày bắt đầu theo dõi",
-                                       "Ung thư di căn xương hoặc đa u tuỷy", "Theo dõi <6 tháng"],
+                                       "Ung thư di căn xương hoặc đa u tuỷy", "Theo dõi < 6 tháng"],
                 "setting": "Phòng khám ngoại trú bệnh viện",
                 "study_period": "Dữ liệu 2020-01 đến 2025-12; phân tích 2027-03 đến 2027-09",
-                "intervention_or_exposure": ("Dùng thuốc ức chế bơm proton liên tục ≥12 tháng (≥80% số ngày có thuốc "
+                "intervention_or_exposure": ("Dùng thuốc ức chế bơm proton liên tục ≥ 12 tháng (≥ 80% số ngày có thuốc "
                                              "theo đơn cấp)"),
                 "comparator": "Không có đơn thuốc ức chế bơm proton trong giai đoạn xác định phơi nhiễm",
                 "recruitment_strategy": "Trích toàn bộ hồ sơ đủ tiêu chuẩn từ cơ sở dữ liệu ngoại trú",
@@ -188,7 +188,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "study_schema_timeline": ("Xác định nhóm phơi nhiễm 12 tháng → ngày bắt đầu theo dõi → theo dõi 3 "
                                           "năm qua hồ sơ"),
                 "intervention_dose_adherence": ("Không can thiệp; phơi nhiễm đo bằng tỷ lệ số ngày có thuốc theo đơn "
-                                                "cấp (≥80%)"),
+                                                "cấp (≥ 80%)"),
                 "stopping_rescue_rules": "Không áp dụng — nghiên cứu hồi cứu, không can thiệp",
                 "critical_to_quality": vi("Định nghĩa phơi nhiễm và biến cố thống nhất; kiểm 10% hồ sơ biến cố "
                                           "bằng phim X-quang"),
@@ -269,7 +269,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                                        "đông"],
                 "population": ("Người từ 60 tuổi: ca xuất huyết tiêu hoá trên nhập viện; chứng khám ngoại trú cùng "
                                  "cơ sở"),
-                "inclusion_criteria": ["Tuổi ≥60", "Ca: xuất huyết tiêu hoá trên xác nhận qua nội soi",
+                "inclusion_criteria": ["Tuổi ≥ 60", "Ca: xuất huyết tiêu hoá trên xác nhận qua nội soi",
                                        "Chứng: khám ngoại trú trong cùng tuần, không xuất huyết tiêu hoá"],
                 "exclusion_criteria": ["Xơ gan có giãn tĩnh mạch thực quản", "Ung thư đường tiêu hoá trên",
                                        "Không nhớ được thuốc đã dùng và không có hồ sơ đơn thuốc"],
@@ -324,7 +324,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
 
     # ── 3. CHẨN ĐOÁN — độ chính xác của một chỉ số so với tiêu chuẩn tham chiếu
     kc_cd = {"name": "Độ chính xác chẩn đoán của FIB-4 đối với xơ hoá gan tiến triển",
-             "measure": "Diện tích dưới đường cong ROC của FIB-4 so với đo độ đàn hồi gan ≥10 kPa",
+             "measure": "Diện tích dưới đường cong ROC của FIB-4 so với đo độ đàn hồi gan ≥ 10 kPa",
              "timepoint": "Tại lần khám tuyển (FIB-4 và đo đàn hồi trong cùng 30 ngày)",
              "type": "nhị phân (có/không xơ hoá tiến triển theo tiêu chuẩn tham chiếu)"}
     kb["chan_doan"] = {
@@ -375,7 +375,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "primary_outcome": dict(kc_cd),
                 "secondary_outcomes": ["Độ nhạy, độ đặc hiệu, giá trị dự báo tại ngưỡng 1,3 và 2,67"],
                 "population": ("Người trưởng thành có gan nhiễm mỡ liên quan chuyển hoá điều trị ngoại trú"),
-                "inclusion_criteria": ["Tuổi ≥18", "Gan nhiễm mỡ trên siêu âm kèm ≥1 yếu tố chuyển hoá"],
+                "inclusion_criteria": ["Tuổi ≥ 18", "Gan nhiễm mỡ trên siêu âm kèm ≥ 1 yếu tố chuyển hoá"],
                 "exclusion_criteria": ["Uống rượu nguy hại", "Viêm gan virus B hoặc C đang hoạt động",
                                        "Không đo được độ đàn hồi gan hợp lệ"],
                 "setting": "Phòng khám gan mật ngoại trú bệnh viện",
@@ -383,8 +383,8 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "intervention_or_exposure": "Chỉ số FIB-4 tính từ tuổi, AST, ALT, tiểu cầu",
                 "comparator": "Đo độ đàn hồi gan thoáng qua",
                 "target_condition": "Xơ hoá gan tiến triển (tương đương F3–F4)",
-                "reference_standard": ("Đo độ đàn hồi gan thoáng qua ≥10 kPa (≥10 lần đo hợp lệ, IQR/trung vị ≤30%), "
-                                       "người đọc không biết kết quả FIB-4"),
+                "reference_standard": ("Đo độ đàn hồi gan thoáng qua ≥ 10 kPa (≥ 10 lần đo hợp lệ, IQR/trung vị "
+                                       "≤ 30%), người đọc không biết kết quả FIB-4"),
                 "recruitment_strategy": "Tuyển liên tiếp người bệnh đủ tiêu chuẩn đến khám",
                 "follow_up_schedule": "Không theo dõi — xét nghiệm và đo đàn hồi trong cùng 30 ngày",
                 "estimand": {"population": "Người bệnh gan nhiễm mỡ ngoại trú đủ tiêu chuẩn",
@@ -420,7 +420,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
 
     # ── 4. MÔ HÌNH DỰ BÁO — phát triển mô hình nguy cơ
     kc_db = {"name": "Nhập viện vì mọi nguyên nhân trong 12 tháng",
-             "measure": "Có ≥1 lần nhập viện ≥24 giờ ghi trong hồ sơ hoặc người bệnh báo, đối chiếu giấy ra viện",
+             "measure": "Có ≥ 1 lần nhập viện ≥ 24 giờ ghi trong hồ sơ hoặc người bệnh báo, đối chiếu giấy ra viện",
              "timepoint": "Trong 12 tháng kể từ lần khám tuyển", "type": "nhị phân"}
     kb["mo_hinh_du_bao"] = {
         "study": f"{tien_to}DU-BAO",
@@ -472,10 +472,10 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "primary_outcome": dict(kc_db),
                 "secondary_outcomes": ["Nhập viện vì suy tim trong 12 tháng"],
                 "population": ("Người trưởng thành suy tim điều trị ngoại trú ổn định"),
-                "inclusion_criteria": ["Tuổi ≥18", "Chẩn đoán suy tim theo tiêu chuẩn ESC, điều trị ngoại trú ≥3 "
+                "inclusion_criteria": ["Tuổi ≥ 18", "Chẩn đoán suy tim theo tiêu chuẩn ESC, điều trị ngoại trú ≥ 3 "
                                                    "tháng"],
                 "exclusion_criteria": ["Đang chờ ghép tim hoặc dùng thiết bị hỗ trợ thất",
-                                       "Kỳ vọng sống <12 tháng vì bệnh khác"],
+                                       "Kỳ vọng sống < 12 tháng vì bệnh khác"],
                 "setting": "Phòng khám suy tim ngoại trú bệnh viện",
                 "study_period": "2027-03 đến 2029-03",
                 "intervention_or_exposure": "Không can thiệp — yếu tố dự báo đo tại lần khám tuyển",
@@ -576,7 +576,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "inclusion_criteria": ["Thử nghiệm ngẫu nhiên có đối chứng", "Người trưởng thành ĐTĐ típ 2",
                                        "So sánh thuốc ức chế SGLT2 với giả dược hoặc điều trị chuẩn",
                                        "Báo cáo nhập viện vì suy tim"],
-                "exclusion_criteria": ["Thử nghiệm chỉ tuyển người suy tim lúc đầu", "Theo dõi <24 tuần",
+                "exclusion_criteria": ["Thử nghiệm chỉ tuyển người suy tim lúc đầu", "Theo dõi < 24 tuần",
                                        "Không tách được số liệu nhóm không suy tim"],
                 "setting": "Tổng quan dữ liệu đã công bố (không có cơ sở tuyển)",
                 "study_period": "2027-03 đến 2027-12",
@@ -703,7 +703,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                                     "timepoint": "Trong 3 tháng sau khi được chỉ định insulin", "type": "định tính"},
                 "secondary_outcomes": [],
                 "population": ("Người trưởng thành ĐTĐ típ 2 điều trị ngoại trú được chỉ định bắt đầu insulin"),
-                "inclusion_criteria": ["Tuổi ≥18", "Được chỉ định bắt đầu insulin trong 3 tháng qua",
+                "inclusion_criteria": ["Tuổi ≥ 18", "Được chỉ định bắt đầu insulin trong 3 tháng qua",
                                        "Đồng ý phỏng vấn và ghi âm"],
                 "exclusion_criteria": ["Suy giảm nhận thức hoặc không giao tiếp được bằng tiếng Việt"],
                 "setting": "Phòng khám nội tiết ngoại trú bệnh viện",
@@ -762,8 +762,8 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                 ("record_id", "text", "Mã nghiên cứu", "", "", "Trích hồ sơ"),
                 ("tuoi", "text", "Tuổi tại ngày bắt đầu theo dõi (năm)", "", so, "Trích hồ sơ"),
                 ("gioi", "radio", "Giới", _GIOI, "", "Trích hồ sơ"),
-                ("ppi_dai_han", "radio", "Dùng PPI liên tục ≥12 tháng (PHƠI NHIỄM)", _CO_KHONG, "", "Phơi nhiễm"),
-                ("corticoid", "yesno", "Dùng corticoid toàn thân ≥3 tháng", "", "", "Hiệp biến"),
+                ("ppi_dai_han", "radio", "Dùng PPI liên tục ≥ 12 tháng (PHƠI NHIỄM)", _CO_KHONG, "", "Phơi nhiễm"),
+                ("corticoid", "yesno", "Dùng corticoid toàn thân ≥ 3 tháng", "", "", "Hiệp biến"),
                 ("loang_xuong", "yesno", "Chẩn đoán loãng xương trước ngày bắt đầu", "", "", "Hiệp biến"),
                 ("gay_xuong_3nam", "radio", "Gãy xương mới trong 3 năm (KẾT CỤC CHÍNH)", _CO_KHONG, "", "Kết cục"),
                 ("thoi_gian_theo_doi", "text", "Thời gian theo dõi (tháng)", "", so, "Kết cục"),
@@ -810,7 +810,7 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                 ("fib4", "calc", "FIB-4 (XÉT NGHIỆM CẦN ĐÁNH GIÁ)",
                  "round(([tuoi]*[ast])/([tieu_cau]*sqrt([alt])),2)", "", "Xét nghiệm"),
                 ("lsm_kpa", "text", "Độ đàn hồi gan (kPa)", "", "number", "Tiêu chuẩn tham chiếu"),
-                ("xo_hoa_tien_trien", "radio", "Xơ hoá tiến triển theo đo đàn hồi ≥10 kPa (KẾT CỤC CHÍNH)",
+                ("xo_hoa_tien_trien", "radio", "Xơ hoá tiến triển theo đo đàn hồi ≥ 10 kPa (KẾT CỤC CHÍNH)",
                  _CO_KHONG, "", "Tiêu chuẩn tham chiếu"),
             ],
             "ma_tran": [
@@ -1217,7 +1217,7 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
             "phan_bien_G8": _PHAN_BIEN_THUAN_TAP,
             "dac_ta_G10": {
                 "bias_risks": "Nhiễu do chỉ định PPI; sai lệch phân loại phơi nhiễm từ đơn cấp phát; mất theo dõi",
-                "bias_controls": "Hiệu chỉnh đa biến theo DAG; định nghĩa phơi nhiễm ≥12 tháng liên tục; độ nhạy loại "
+                "bias_controls": "Hiệu chỉnh đa biến theo DAG; định nghĩa phơi nhiễm ≥ 12 tháng liên tục; độ nhạy loại "
                                  "người theo dõi dưới 12 tháng",
                 "timeline": "18 tháng: chuẩn bị và đạo đức 3 tháng; trích hồ sơ 6 tháng; phân tích 3 tháng; viết và "
                             "công bố 6 tháng",

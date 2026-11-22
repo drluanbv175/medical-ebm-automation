@@ -59,3 +59,43 @@ def test_ho_so_gia_lap_khong_con_so_do_huyet_ap_sai():
             if loi:
                 sai.append(f"{ten}:{so}: {loi}")
     assert sai == []
+
+
+@pytest.mark.parametrize("dong, loi", [
+    ("Tuổi ≥18", "dấu so sánh dính số"),
+    ("p<0,001", "dấu so sánh dính số"),
+    ("liều 100mg/ngày", "số dính đơn vị"),
+    ("nhiệt độ 37,5°C", "số dính đơn vị"),
+    ("lấy 5 ml máu tĩnh mạch", "viết «mL»"),
+    ("glucose 126 mg/dl", "viết «mg/dL»"),
+    ("BMI 25 kg/m2", "viết «kg/m²»"),
+])
+def test_so_do_chung_bat_sai(dong, loi):
+    assert loi in (K.loi_so_do(dong) or "")
+
+
+@pytest.mark.parametrize("dong", [
+    "Tuổi ≥ 18, liều 100 mg/ngày, 37,5 °C, 5 mL, glucose 126 mg/dL, BMI 25 kg/m², tỷ lệ 48,3%",
+    "eGFR ≥ 60 mL/phút/1,73 m², HbA1c < 7%, p < 0,001",
+    "Mã G6_TH_bien_co, mục A12, HbA1c, Bảng 1",
+])
+def test_so_do_chung_khong_bat_nham(dong):
+    assert K.loi_so_do(dong) is None
+
+
+def test_ho_so_gia_lap_moi_so_do_dung_chuan():
+    """Mọi chuỗi văn bản của hồ sơ giả lập (đi thẳng vào đề cương/bản thảo) đạt luật số đo chung."""
+    import re as _re
+
+    chuoi = _re.compile(r"\"(?:[^\"\\\n]|\\.)*\"")
+    sai = []
+    for ten in ("gia_lap_dinh_ky.py", "gia_lap_chan_thuc.py", "gia_lap_bien_the_kho.py", "gia_lap_tron_vong.py",
+                "gia_lap_ho_so_sau_g6.py", "gia_lap_kich_ban_them.py"):
+        for so, d in enumerate((ROOT / "tools" / ten).read_text(encoding="utf-8").splitlines(), 1):
+            if d.lstrip().startswith("#") or _re.search(r"re\.(?:compile|search|match|sub)|\br\"", d):
+                continue  # biểu thức regex không phải văn bản
+            for m in chuoi.finditer(d):
+                loi = K.loi_so_do(m.group(0))
+                if loi:
+                    sai.append(f"{ten}:{so}: {loi}")
+    assert sai == []
