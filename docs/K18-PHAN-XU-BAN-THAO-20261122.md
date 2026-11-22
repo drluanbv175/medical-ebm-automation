@@ -82,6 +82,8 @@ K17 thuần cho 45 mục thiếu vì không nhận đề mục kiểu bài báo 
 | chẩn đoán | STARD 6, 7, 13a, 14, 23, 26, 30 | «Tiêu chí nhận/loại», «Gan nhiễm mỡ trên siêu âm», «Đọc index test mù…», «95%CI», hình «Phân bố fib4 theo tình trạng bệnh» (STARD cho phép «hoặc phân bố»), «phổ bệnh có thể khác cộng đồng», «Tài trợ: Không có tài trợ…» |
 | dự báo | TRIPOD+AI 8a | «định nghĩa: … ghi trong hồ sơ …, đối chiếu giấy ra viện» là cách xác định |
 | (test) | STROBE 1a | Tên bài mở bằng «KẾT QUẢ…» bị loại khỏi khối tiêu đề |
+| mọi bản thảo (phiên «G7 đọc sổ sàng lọc» báo) | STROBE 13a, CONSORT 22a | ĐẠT GIẢ: dòng chỉ dẫn máy «> Phần G6 không có (sàng lọc…» và câu «Bảng 1 … đã phân tích» bị coi là số người. Sửa: số người phải kèm đơn vị và không dính chữ (`SO_NGUOI`) |
+| RCT (phiên «G7 đọc sổ sàng lọc» báo) | CONSORT 22b | THIẾU GIẢ: «Không có người mất theo dõi» bị đòi thêm lý do. Sửa: một yếu tố «mất/loại kèm lý do, hoặc nêu không có ai» |
 
 ### 3.2. Thiếu thật — đã sửa ở bộ sinh G7 (`run_g7_auto.py`)
 
@@ -124,8 +126,8 @@ Chép nguyên chữ quyết định đã chốt; trường vắng, còn [CẦN] 
 
 ## 4. Kiểm
 
-- `tests/test_k18_ban_thao_theo_muc_20261122.py`: 30 test. Mỗi ca báo nhầm ở §2–§3 có test giữ không quay lại.
-- Kiểm đột biến 17 phép (chạy `python -B`, xoá `__pycache__` trước mỗi phép): 17/17 làm test đỏ; phục hồi xanh.
+- `tests/test_k18_ban_thao_theo_muc_20261122.py`: 32 test. Mỗi ca báo nhầm ở §2–§3 có test giữ không quay lại.
+- Kiểm đột biến 19 phép (chạy `python -B`, xoá `__pycache__` trước mỗi phép): 19/19 làm test đỏ; phục hồi xanh.
   Phép «bỏ xoá trắng TLTK/bảng kiểm» lần đầu KHÔNG bị bắt — test cũ đo STROBE 1a, vốn chỉ tìm ở Tiêu đề/Tóm tắt. Đã
   sửa phép thử sang CROSS 5d (mục có phần phụ lục).
 - 337 test K17/G7/sinh đề cương và 1108 test G8/G9/G10/giả lập ngắn xanh. Giả lập trọn vòng 24 kịch bản chỉ chạy đủ trên

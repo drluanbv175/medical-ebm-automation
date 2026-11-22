@@ -329,3 +329,29 @@ def test_mau_de_cuong_thay_mau_ban_thao_cho_moi_chuan():
     kq = _kq(md, "diagnostic", co_so_lieu=True)
     assert _muc(kq, "STARD 2015", "6").trang_thai == "dat"
     assert _muc(kq, "STARD 2015", "30").trang_thai == "dat"
+
+
+# ───────────────────────────── phiên «G7 đọc sổ sàng lọc» báo (22/11/2026) ─────────────────────────────
+_KQ_CHI_DAN = ("## 3. KẾT QUẢ\n\n> Phần G6 không có (sàng lọc, kết cục phụ…) — điền khi có sổ.\n\n"
+               "*Bảng 1 gồm đúng các biến nền G6 đã phân tích (theo SAP).*\n")
+
+
+def test_dong_chi_dan_g6_va_bang_1_khong_phai_so_nguoi():
+    r13 = _muc(_kq(_bt(ket_qua=_KQ_CHI_DAN), co_so_lieu=True), "STROBE 2007", "13a")
+    assert r13.trang_thai == "thieu", r13.bang_chung
+    r22 = _muc(_kq(_bt(ket_qua=_KQ_CHI_DAN), "rct", co_so_lieu=True), "CONSORT 2025", "22a")
+    assert not any("phân tích kết cục" in b for b in r22.bang_chung), r22.bang_chung
+    that = ("## 3. KẾT QUẢ\n\n218 người được phân bổ ngẫu nhiên (109 người mỗi nhóm), mọi người nhận đúng can thiệp; "
+            "218 người được phân tích ở cả hai nhóm.\n")
+    assert _muc(_kq(_bt(ket_qua=that), "rct", co_so_lieu=True), "CONSORT 2025", "22a").trang_thai == "dat"
+    assert _muc(_kq(_bt(ket_qua="## 3. KẾT QUẢ\n\nSàng lọc: N = 450; Phân tích (G6): N = 400.\n"), co_so_lieu=True),
+                "STROBE 2007", "13a").trang_thai == "dat"
+
+
+def test_khong_co_nguoi_mat_theo_doi_khong_can_ly_do():
+    md = _bt(ket_qua="## 3. KẾT QUẢ\n\nKhông có người mất theo dõi sau phân bổ ngẫu nhiên ở cả hai nhóm.\n")
+    assert _muc(_kq(md, "rct", co_so_lieu=True), "CONSORT 2025", "22b").trang_thai == "dat"
+    md2 = _bt(ket_qua="## 3. KẾT QUẢ\n\nNhóm can thiệp có 5 người mất theo dõi.\n")
+    assert _muc(_kq(md2, "rct", co_so_lieu=True), "CONSORT 2025", "22b").trang_thai == "thieu"
+    md3 = _bt(ket_qua="## 3. KẾT QUẢ\n\nNhóm can thiệp có 5 người mất theo dõi vì chuyển nơi điều trị.\n")
+    assert _muc(_kq(md3, "rct", co_so_lieu=True), "CONSORT 2025", "22b").trang_thai == "dat"

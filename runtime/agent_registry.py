@@ -214,7 +214,8 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 21/11/2026 (h): 7 agent — K17 mở rộng 12 chuẩn (viet-ban-thao, thiet-ke-nghien-cuu, tong-quan-y-van,
 # mo-hinh-tien-luong, tham-dinh-do-chinh-xac-chan-doan, nghien-cuu-dinh-tinh, kinh-te-y-te) — vẫn 64.
 # 22/11/2026: 2 agent — kiểm toàn hệ 11 khâu, luật khâu 9–10 (dien-giai-ket-qua, viet-ban-thao) — vẫn 64.
-# 22/11/2026 (b): gộp K18 (#405: binh-duyet, dieu-phoi-g7, nop-bai-phan-hoi, viet-ban-thao) với #403 — vẫn 64.
+# 22/11/2026 (K18): 4 agent — bản thảo đạt từng mục chuẩn báo cáo (viet-ban-thao, binh-duyet, nop-bai-phan-hoi,
+# dieu-phoi-g7; PR cặp gốc #481) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
     "4297732fb11a2d5ea0ea0b139460ddc509f7ae11a328de9b1fdff091d14eb3bf"
 )
