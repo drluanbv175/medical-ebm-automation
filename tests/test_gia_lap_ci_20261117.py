@@ -74,6 +74,11 @@ def _bao_cao(thu_muc, ten, **kw):
          "du_lieu": {"de_cuong_nop": {"ma": 0},
                      "g6": {"bieu_do": {"dem": {"DA_VE": 8, "LOI": 0}, "loi": [], "thieu_bat_buoc": [],
                                         "co_tep": True}}}}
+    # 22/11/2026: báo cáo ĐẠT phải có số đo chuẩn báo cáo theo mục (K18) khớp sổ nợ bánh cóc của kịch bản
+    no = (json.loads(KG.SO_NO_K18.read_text(encoding="utf-8")).get("kich_ban") or {}).get(ten)
+    if no is not None:
+        j["chuan_bao_cao"] = {"ban_thao_thieu": no["ban_thao"], "bao_cao_thieu": no["bao_cao"],
+                              "bao_cao_cau_truc": []}
     for k, v in kw.items():
         j[k] = v
     (thu_muc / f"{ten}.json").write_text(json.dumps(j), encoding="utf-8", newline="\n")

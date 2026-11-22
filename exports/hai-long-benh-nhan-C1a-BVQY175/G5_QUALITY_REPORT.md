@@ -2,7 +2,7 @@
 
 - Hợp đồng: `G5-2026.2`
 - Trạng thái: **DRAFT_READY_NEEDS_REAL_DATA**
-- Sinh lúc: 2026-11-20T13:22:23.371299+00:00
+- Sinh lúc: 2026-11-22T09:14:11.924225+00:00
 - Vai đã ký G5: chưa có
 
 ## Tiêu chí tự động

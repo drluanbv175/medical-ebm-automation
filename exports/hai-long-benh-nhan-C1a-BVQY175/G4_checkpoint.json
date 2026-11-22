@@ -1,7 +1,7 @@
 {
   "gate": "G4",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "run_date": "2026-11-17",
+  "run_date": "2026-11-22",
   "g4_status": "PENDING — CHỜ BÁC SĨ KÝ SAP",
   "g4_sap_version": "1.0",
   "g4_lock_date": "2026-11-18T21:08:25.754434+00:00",
@@ -239,7 +239,7 @@
       },
       {
         "standard": "Ogundimu EO et al. J Clin Epidemiol 2016;76:175-82 (PMID 26964707)",
-        "scope": "Nguồn thật của ngưỡng EPV≥10 cho hồi quy logistic/Cox đa biến",
+        "scope": "Nguồn thật của ngưỡng EPV ≥ 10 cho hồi quy logistic/Cox đa biến",
         "pmid": "26964707"
       },
       {
