@@ -311,7 +311,12 @@ Claude». Hội đồng cổng (mục 1–7) chấm từng NHIỆM VỤ. Hội �
   - Mọi luật VÀ nguyên văn mọi lời dặn gom vào quy chế `QC-HDKH-x.y` có SHA-256. Văn bản quy chế ở `medical-ebm-automation/docs/QUY-CHE-HOI-DONG-KHOA-HOC-MAY.md` (test buộc khớp SHA của mã).
   - Phiên mang SHA lúc khởi tạo; quy chế đổi ⇒ phiên hết hiệu lực, họp lại.
   - Kết luận chỉ có HIỆU LỰC, và vòng kín chỉ chạy, khi hội đồng đã hiệu chuẩn đạt ≥ 5/6 lỗi cài DƯỚI CÙNG SHA. Đổi quy chế ⇒ hiệu chuẩn lại.
-- **Vòng kín** (bác sĩ 22/11: hội đồng không thông qua thì phải chỉnh sửa theo hội đồng): `vong-kin --goi-api --ap-dung`. Biên tập viên đề xuất thay thế nguyên văn; máy chỉ áp thay thế qua rào (không số/trích dẫn mới, K1–K17 không tăng lỗi theo mã, nhất quán không tăng lệch; xấu đi ⇒ hoàn nguyên). Họp lại tới khi thông qua, tối đa 3 vòng; chỉ trình bác sĩ bản đã thông qua kèm nhật ký thay đổi.
+- **Vòng kín** (bác sĩ 22/11: hội đồng không thông qua thì phải chỉnh sửa theo hội đồng): `vong-kin --goi-api --ap-dung`. Biên tập viên đề xuất thay thế nguyên văn; máy chỉ áp thay thế qua rào (không số/trích dẫn mới, K1–K17 không tăng lỗi theo mã, nhất quán không tăng lệch; xấu đi ⇒ hoàn nguyên). Chỉ trình bác sĩ bản đã thông qua kèm nhật ký thay đổi.
+- **Thẩm tra chỉnh sửa — QC-HDKH-2.0** (bác sĩ chọn 22/11, như hội đồng thật): vòng 1 thẩm định trọn đề cương; từ vòng 2 KHÔNG thẩm định lại từ đầu (thẩm định lại mỗi vòng từng không hội tụ: mỗi lượt sinh lỗi mới ở chỗ chưa sửa).
+  - Mỗi thành viên thẩm tra ĐÚNG các yêu cầu nghiêm trọng/cần sửa mình đã nêu: «đã giải quyết» phải trích nguyên văn đoạn đáp ứng trong bản đã sửa (máy kiểm ±3 dòng, không khớp ⇒ chưa giải quyết); thiếu phán quyết ⇒ chưa giải quyết.
+  - «Cần dữ kiện» chỉ nhận khi biên tập viên đã khai vượt thẩm quyền (số liệu thật, kinh phí, họ tên, chữ ký, sửa SAP đã khoá); cộng dồn qua các vòng, không rơi khỏi kết luận cuối.
+  - Lỗi mới chỉ nhận trong khoảng dòng vừa sửa ±3; ngoài phạm vi ⇒ loại, có liệt kê.
+  - Kết luận theo luật cố định: còn yêu cầu chưa giải quyết hoặc lỗi mới ⇒ sửa tiếp (tối đa 4 vòng); hết nhưng còn yêu cầu cần dữ kiện ⇒ «Thông qua phần thuộc thẩm quyền nhóm soạn thảo» kèm danh sách dữ kiện cho người có thẩm quyền; không còn gì ⇒ «Thông qua». Đổi quy chế ⇒ hiệu chuẩn lại từ đề cương gốc.
 - **Bất biến 1–4** áp nguyên: TƯ VẤN, không thay Hội đồng Khoa học/Đạo đức thật, biên bản gắn SHA-256 tài liệu.
   Nhận xét đã xác minh là căn cứ để agent sửa; đề cương đổi thì họp lại.
 
