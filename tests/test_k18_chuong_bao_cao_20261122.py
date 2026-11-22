@@ -32,3 +32,24 @@ def test_bao_cao_co_chuong_duoc_tach():
         "# KẾT LUẬN", "", "Một nửa đạt.", "", "# TÀI LIỆU THAM KHẢO", "", "1. A. B. 2020.", ""])
     bt = T.tach_ban_thao(md)
     assert {"gioi_thieu", "phuong_phap", "ket_qua", "ban_luan", "ket_luan"} <= set(bt.chuong)
+
+
+def test_tong_quan_tai_lieu_la_boi_canh():
+    assert T.khoa_imrad("CHƯƠNG 1. TỔNG QUAN TÀI LIỆU") == "gioi_thieu"
+    assert T.khoa_imrad("TỔNG QUAN HỆ THỐNG VÀ PHÂN TÍCH GỘP") is None   # không nhầm tên thiết kế
+
+
+def test_ten_bai_co_dau_hai_cham_va_nhan_khong_phai_ten():
+    md = "\n".join(["**HIỆU QUẢ CỦA TIN NHẮN NHẮC UỐNG THUỐC: THỬ NGHIỆM LÂM SÀNG NGẪU NHIÊN CÓ ĐỐI CHỨNG**", "",
+                    "**KẾT QUẢ CHÍNH CỦA NGHIÊN CỨU:**", "", "# ĐẶT VẤN ĐỀ", "", "Nội dung [1].", "",
+                    "# CHƯƠNG 3. KẾT QUẢ NGHIÊN CỨU", "", "Số liệu.", ""])
+    ten = [p.van for p in T.tach_ban_thao(md).tieu_de]
+    assert any("THỬ NGHIỆM LÂM SÀNG NGẪU NHIÊN" in t for t in ten)
+    assert not any(t.startswith("KẾT QUẢ CHÍNH") for t in ten)
+
+
+def test_cau_khoang_trong_thieu_rct():
+    import re
+    # K18 so mẫu không phân biệt hoa thường (cham_muc)
+    assert re.search(T._THIEU_KT, "Thiếu RCT tại Việt Nam với kết cục tỷ lệ kiểm soát huyết áp.", re.IGNORECASE)
+    assert re.search(T._THIEU_KT, "thiếu nghiên cứu trên người cao tuổi", re.IGNORECASE)

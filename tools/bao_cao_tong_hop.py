@@ -163,6 +163,41 @@ def _tim_tep(out_dir: Path, mau: str) -> Optional[Path]:
     return ds[0] if ds else None
 
 
+def _khoi_cuoi_ban_thao(bt: str, bd: Dict[str, int], canh_bao: List[str]) -> str:
+    """Các mục cuối bài của bản thảo (lời cảm ơn, khai báo tài trợ, xung đột lợi ích, chia sẻ dữ liệu, đạo đức, sự tham
+    gia của người bệnh…) — đo thật 22/11/2026: báo cáo bỏ các mục này nên K18 báo thiếu CONSORT 5/8, STROBE 22, RECORD
+    22.1, PRISMA 25–27 và khai báo bảo vệ dữ liệu cá nhân dù bản thảo đã có. Lấy NGUYÊN mọi đề mục cấp ≤ 2 của bản thảo
+    mà bộ nhận chương K18 xếp loại «cuoi», theo thứ tự xuất hiện."""
+    import tieu_chi_ban_thao as K18  # noqa: PLC0415  (nạp trễ: chỉ cần khi dựng báo cáo)
+
+    khoi: List[str] = []
+    for m in re.finditer(r"(?m)^(#{1,2})\s+(.*\S)\s*$", bt):
+        if K18.khoa_imrad(m.group(2)) != "cuoi":
+            continue
+        noi_dung = tach_muc(bt[m.start():], re.escape(_chuan(m.group(2))) or ".", len(m.group(1)))
+        if noi_dung and noi_dung.strip():
+            van, thieu = doi_so_trich_dan(ha_de_muc(noi_dung), bd)
+            if thieu:
+                canh_bao.append(f"«{m.group(2)}»: trích dẫn không có trong danh mục: {', '.join(thieu)}")
+            khoi.append(f"#### {re.sub(r'[*_`]', '', m.group(2)).strip()}\n\n{van.strip()}")
+    if not khoi:
+        canh_bao.append("bản thảo không có mục lời cảm ơn/khai báo — chương «Lời cảm ơn và khai báo» trống")
+    return "\n\n".join(khoi)
+
+
+def _muc_tieu_thanh_cau(khoi: str) -> str:
+    """Trong khối mục tiêu, dòng liệt kê «1. So sánh …» ngay dưới đề mục «Mục tiêu» thành «Mục tiêu 1: So sánh …» —
+    câu mục tiêu đứng độc lập, đúng cách trình bày báo cáo (bộ kiểm chuẩn K18 tìm «mục tiêu … <động từ>» trong câu)."""
+    ra, trong = [], False
+    for d in khoi.splitlines():
+        m_de = _DE_MUC.match(d)
+        if m_de:
+            trong = bool(re.search(r"muc tieu$", _chuan(m_de.group(2))))
+        m = re.match(r"^(\s*)(\d+)\.\s+(\S.*)$", d) if trong else None
+        ra.append(f"{m.group(1)}Mục tiêu {m.group(2)}: {m.group(3)}" if m else d)
+    return "\n".join(ra)
+
+
 def sinh(study: str, out_dir: Path) -> Dict[str, object]:
     """Dựng văn bản báo cáo. Trả {"van", "canh_bao", "nguon"} hoặc {"loi"} khi thiếu nguồn bắt buộc."""
     p_dc = _tim_tep(out_dir, f"DE_CUONG_NOP_HOI_DONG_{study}.md")
@@ -203,10 +238,14 @@ def sinh(study: str, out_dir: Path) -> Dict[str, object]:
     khuyen_nghi = lay(dg, r"ham y|khuyen nghi|kien nghi", "khuyến nghị (diễn giải G6)") if dg else ""
     if not dg:
         canh_bao.append("không có diễn giải G6 — mục khuyến nghị trống")
+    tom_tat = lay(bt, r"^tom tat|^abstract", "tóm tắt (bản thảo)", cap=2, bd=bd_bt)
+    khai_bao = _khoi_cuoi_ban_thao(bt, bd_bt, canh_bao)
+    muc_tieu = _muc_tieu_thanh_cau(muc_tieu)
     phieu = lay(dc, r"phieu thu thap", "phụ lục phiếu thu thập", cap=1)
     bien = lay(dc, r"bang bien|bien so va ma hoa", "phụ lục bảng biến", cap=1)
 
     than = "\n\n".join([
+        "# TÓM TẮT", tom_tat,
         "# ĐẶT VẤN ĐỀ", dat_van_de, "**Mục tiêu nghiên cứu**", muc_tieu,
         "# CHƯƠNG 1. TỔNG QUAN TÀI LIỆU", tong_quan,
         "# CHƯƠNG 2. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU", phuong_phap,
@@ -214,16 +253,17 @@ def sinh(study: str, out_dir: Path) -> Dict[str, object]:
         "# CHƯƠNG 4. BÀN LUẬN", ban_luan,
         "# KẾT LUẬN", ket_luan,
         "# KHUYẾN NGHỊ", khuyen_nghi,
+        "# LỜI CẢM ƠN VÀ KHAI BÁO", khai_bao,
         "# TÀI LIỆU THAM KHẢO", "\n".join(f"{i}. {x['chu']}" for i, x in enumerate(chung, 1)),
         "# PHỤ LỤC", "#### Phụ lục 1. Phiếu thu thập số liệu", phieu, "#### Phụ lục 2. Bảng biến số và mã hoá", bien,
     ])
     bang = _bang_bieu(than)
     muc_luc = ["Danh sách cán bộ tham gia thực hiện đề tài", "Danh mục chữ viết tắt", "Danh mục bảng biểu",
-               "Đặt vấn đề", "Chương 1. Tổng quan tài liệu", "Chương 2. Đối tượng và phương pháp nghiên cứu",
+               "Tóm tắt", "Đặt vấn đề", "Chương 1. Tổng quan tài liệu", "Chương 2. Đối tượng và phương pháp nghiên cứu",
                "Chương 3. Kết quả nghiên cứu", "Chương 4. Bàn luận", "Kết luận", "Khuyến nghị",
-               "Tài liệu tham khảo", "Phụ lục"]
+               "Lời cảm ơn và khai báo", "Tài liệu tham khảo", "Phụ lục"]
     dau = "\n\n".join([
-        "**BÁO CÁO TỔNG HỢP ĐỀ TÀI NGHIÊN CỨU KHOA HỌC CẤP CƠ SỞ**", f"**{ten_de_tai}**",
+        "**BÁO CÁO TỔNG HỢP ĐỀ TÀI NGHIÊN CỨU KHOA HỌC CẤP CƠ SỞ**", f"**{ten_de_tai.upper()}**",  # bìa: tên in hoa
         "# DANH SÁCH CÁN BỘ THAM GIA THỰC HIỆN ĐỀ TÀI", nhan_luc,
         "# MỤC LỤC", "\n".join(f"- {x}" for x in muc_luc),
         "# DANH MỤC CHỮ VIẾT TẮT", viet_tat,
