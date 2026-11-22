@@ -312,8 +312,9 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
         "study": f"{TIEN_TO_DE_TAI}CAT-NGANG-MO-TA",
         "thiet_ke": "cross_sectional",
         "mo_ta": "Cắt ngang mô tả, ước lượng một tỷ lệ theo độ chính xác",
-        "topic": ("Tỷ lệ kiểm soát huyết áp và các yếu tố liên quan ở người tăng huyết áp điều trị ngoại trú: "
-                  "nghiên cứu cắt ngang mô tả"),
+        # 22/11/2026 (chiều): tên đề tài khớp thiết kế mô tả đã chốt (một mục tiêu «xác định tỷ lệ», SAP không phân
+        # tích yếu tố liên quan) — bản cũ «… và các yếu tố liên quan …» hứa nội dung mà mục tiêu và SAP không có
+        "topic": ("Tỷ lệ kiểm soát huyết áp ở người tăng huyết áp điều trị ngoại trú: nghiên cứu cắt ngang mô tả"),
         "query_en": ('(hypertension[MeSH] OR hypertension[tiab]) AND ("blood pressure control"[tiab] OR "controlled '
                      'hypertension"[tiab] OR "hypertension control"[tiab]) AND (outpatient*[tiab] OR "primary '
                      'care"[tiab]) AND (prevalence[tiab] OR "cross-sectional"[tiab])'),

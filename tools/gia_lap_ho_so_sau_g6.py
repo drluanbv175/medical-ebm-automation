@@ -184,6 +184,11 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                                   "nhánh, do PI quyết định và ghi biên bản (SPIRIT 24c)"),
             ppi_plan=("Hai người bệnh tăng huyết áp góp ý nội dung và tần suất tin nhắn trước khi tuyển; kết quả gửi "
                       "người tham gia bằng tờ tóm tắt (SPIRIT 11)"),
+            # 22/11/2026 (chiều, CONSORT 2025 mục 20b): cách làm mù — khớp G1 «người đo huyết áp và thống kê viên được
+            # làm mù; người tham gia không làm mù được» và thủ tục mở mù ở trên
+            blinding_how=("Tách riêng người gửi tin nhắn và người đo huyết áp; phiếu đo không ghi nhánh; thống kê viên "
+                          "nhận dữ liệu với mã nhánh che (A/B) đến khi khoá phân tích; tin nhắn và chăm sóc thường quy "
+                          "không thể làm giống nhau nên người tham gia biết nhánh (SPIRIT 24b)"),
         ),
     )
 
@@ -223,8 +228,10 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                      "áp: tỷ lệ {ty_le}% (KTC 95% {ty_le_duoi}–{ty_le_tren}%)."),
             ket_luan=("Khoảng một nửa người tăng huyết áp điều trị ngoại trú đạt kiểm soát huyết áp; cần rà soát điều "
                       "trị cho nhóm chưa đạt đích."),
-            ket_cuc_phu=("Kết cục phụ (yếu tố liên quan kiểm soát huyết áp) chưa phân tích ở đợt này — báo cáo riêng "
-                         "theo SAP §2"),
+            # 22/11/2026 (chiều): kết cục phụ ĐÃ CHỐT ở G1 là «Đặc điểm điều trị hạ áp hiện tại» (biến số thuốc hạ áp,
+            # có ở Bảng 1) — bản cũ ghi «yếu tố liên quan … chưa phân tích», mâu thuẫn mục tiêu mô tả duy nhất
+            ket_cuc_phu=("Đặc điểm điều trị hạ áp hiện tại (số thuốc hạ áp đang dùng) được mô tả ở Bảng 1 theo SAP "
+                         "§3"),
             du_lieu_thieu="Không có dữ liệu thiếu ở biến kết cục nên không gán đa trị (khớp SAP §6)",
             giai_thich="Không áp dụng — nghiên cứu mô tả, không đánh giá cơ chế",
             diem_manh="Kết quả được kiểm chéo độc lập bằng SPSS và R, khớp với engine phân tích chính",
@@ -235,7 +242,6 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                "chéo SPSS/R khớp. Còn vài điểm trình bày theo STROBE."),
         gop_y=[
             ("Từ khoá (trang đầu)", "Dòng từ khoá do máy tách từng chữ của tiêu đề — thay bằng thuật ngữ MeSH"),
-            ("Tiêu đề", "Tiêu đề nhắc «các yếu tố liên quan» nhưng SAP chỉ có mục tiêu mô tả — sửa tiêu đề cho khớp"),
             ("Phương pháp — đo huyết áp", "Ghi rõ số lần đo, tư thế và thiết bị (STROBE mục 8)"),
         ],
         cau_hoi=["Người tham gia được chọn liên tiếp hay ngẫu nhiên trong danh sách khám?",
@@ -423,6 +429,19 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             pilot="Thử quy trình lấy mẫu và đo chuẩn tham chiếu trên 5 người ngoài mẫu",
             safety_plan="Chỉ lấy máu xét nghiệm thường quy; không có can thiệp do nghiên cứu",
             limitations="Cỡ mẫu nhỏ; một cơ sở; chưa đánh giá ngưỡng 1,3",
+            # 22/11/2026 (chiều, STARD 2015 mục 3, 11, 12a, 12b, 21a): PI khai vai trò dự kiến của FIB-4, lý do chọn
+            # chuẩn tham chiếu và ngưỡng, biến đo mức độ bệnh — khớp G1 (bệnh đích F3–F4, đo đàn hồi ≥ 10 kPa) và SAP
+            # (ngưỡng 1,3 và 2,67 định trước); nguồn ngưỡng 2,67 là bài gốc Shah 2009 đã tra ở hồ sơ G6.5
+            index_test_role=("Xét nghiệm phân loại ban đầu tại phòng khám ngoại trú, trước khi chỉ định đo độ đàn hồi "
+                             "gan cho người có nguy cơ xơ hoá tiến triển"),
+            reference_standard_rationale=("Đo độ đàn hồi gan thoáng qua được chọn làm chuẩn tham chiếu vì làm được "
+                                          "cho mọi người tham gia ngoại trú trong cùng lần khám, người đọc độc lập "
+                                          "với kết quả FIB-4"),
+            index_threshold_rationale=("Ngưỡng 2,67 (ngưỡng chính) và 1,3 (ngưỡng phụ) định trước trong SAP, dựa trên "
+                                       "y văn gốc của Shah 2009 (PMID 19523535); không chọn ngưỡng theo dữ liệu"),
+            reference_threshold_rationale=("Ngưỡng 10 kPa của đo đàn hồi gan được dùng vì tương ứng xơ hoá tiến triển "
+                                           "F3–F4, bệnh đích đã chốt ở đề cương"),
+            disease_severity_variable="lsm_kpa",
         ),
     )
 
@@ -494,6 +513,26 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             pilot="Thử phiếu thu thập trên 10 hồ sơ ngoài mẫu",
             safety_plan="Không có can thiệp; sự cố bảo mật dữ liệu báo cáo theo quy trình đơn vị",
             limitations="Chưa kiểm định ngoài; một cơ sở; C-statistic trong mẫu",
+            # 22/11/2026 (chiều, TRIPOD+AI 3b, 3c, 6c, 8c, 15, 19, 27a, 27b): PI khai mục đích sử dụng, bất bình đẳng,
+            # cách xử lý điều trị, che giấu khi xác định kết cục, đầu ra/ngưỡng, sự tham gia của người bệnh và cách áp
+            # dụng — khớp G1 (yếu tố đo thường quy, khung 12 tháng) và hàm ý «chưa dùng cho quyết định cá nhân»
+            model_intended_use=("Hỗ trợ bác sĩ phòng khám suy tim phân tầng nguy cơ nhập viện 12 tháng tại lần khám "
+                                "định kỳ để sắp lịch tái khám; người dùng dự kiến là bác sĩ và điều dưỡng phòng khám"),
+            health_inequalities=("Chưa có dữ liệu trong nước về khác biệt nguy cơ nhập viện vì suy tim giữa các nhóm "
+                                 "dân số; khác biệt theo giới được đánh giá bằng phân tích nhóm nhỏ tiền định"),
+            model_treatment_handling=("Người tham gia điều trị suy tim theo hướng dẫn tại phòng khám; điều trị không "
+                                      "đưa vào mô hình làm yếu tố dự báo vì mô hình dự báo nguy cơ dưới chăm sóc "
+                                      "thường quy"),
+            outcome_assessment_blinding=("Người xác định nhập viện đối chiếu giấy ra viện mà không biết giá trị yếu tố "
+                                         "dự báo của người tham gia"),
+            model_output_threshold=("Mô hình cho xác suất nhập viện trong 12 tháng của từng người; không đặt ngưỡng "
+                                    "phân loại vì mục đích là phân tầng theo dõi, chưa dùng cho quyết định cá nhân"),
+            ppi_plan=("Không có sự tham gia của người bệnh hoặc công chúng trong thiết kế và thực hiện nghiên cứu; kết "
+                      "quả được phổ biến tới người bệnh qua phòng khám"),
+            model_input_handling=("Chưa áp dụng mô hình khi thiếu một trong bốn giá trị tuổi, LVEF, NT-proBNP, eGFR "
+                                  "của lần khám gần nhất; không gán giá trị thay thế khi sử dụng mô hình"),
+            model_user_interaction=("Người dùng nhập bốn giá trị có sẵn trong hồ sơ khám; không cần kỹ năng thống kê, "
+                                    "chỉ cần đọc đúng đơn vị của NT-proBNP và eGFR"),
         ),
     )
 
@@ -574,6 +613,17 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             pilot="Thử chiến lược tìm và phiếu trích trên 3 thử nghiệm đã biết",
             safety_plan="Không có người tham gia — tổng quan dữ liệu đã công bố",
             limitations="Ít thử nghiệm lớn chi phối; chưa đánh giá sai lệch công bố; chưa phân nhóm theo thuốc",
+            # 22/11/2026 (chiều, PRISMA 2020 mục 7, 11 và tóm tắt A5): PI khai câu lệnh tìm đầy đủ và cách đánh giá
+            # nguy cơ sai lệch — khớp G1 (MeSH + từ khoá, bộ lọc RCT Cochrane; hai người sàng lọc độc lập) và biến
+            # «RoB 2 — đánh giá chung» của bảng trích xuất
+            search_strings_full=('PubMed: ("Sodium-Glucose Transporter 2 Inhibitors"[MeSH] OR gliflozin*[tiab] OR '
+                                 'empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab] OR '
+                                 'ertugliflozin[tiab]) AND ("Diabetes Mellitus, Type 2"[MeSH] OR "type 2 '
+                                 'diabetes"[tiab]) AND (randomized controlled trial[pt] OR randomi*[tiab]); bộ lọc RCT '
+                                 'Cochrane, không giới hạn ngôn ngữ; câu lệnh tương ứng cho Embase, Cochrane CENTRAL, '
+                                 'ClinicalTrials.gov và WHO ICTRP'),
+            rob_assessment_process=("RoB 2 cho từng thử nghiệm; hai người đánh giá độc lập, bất đồng do người thứ ba "
+                                    "quyết định"),
         ),
     )
 
@@ -658,4 +708,10 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                                    "nhân viên y tế lên câu trả lời"),
         ),
     )
+    # 22/11/2026 (chiều, PRISMA 2020 for Abstracts A9): tóm tắt tổng quan có ô «Limitations» — tác giả viết hạn chế
+    # chính của BẰNG CHỨNG (ít thử nghiệm lớn chi phối — như bản diễn giải; định nghĩa kết cục theo từng thử nghiệm —
+    # như G1; chưa phân nhóm theo thuốc — như hạn chế đã khai ở đặc tả)
+    hs["tong_quan_gop"]["tra_loi_G7"] = [*hs["tong_quan_gop"]["tra_loi_G7"], (
+        r"^limitations$", "Ít thử nghiệm lớn chi phối kết quả gộp; định nghĩa nhập viện vì suy tim theo từng thử "
+                          "nghiệm, không thống nhất; chưa phân nhóm theo thuốc.")]
     return hs

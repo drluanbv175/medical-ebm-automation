@@ -623,8 +623,12 @@ def _sec_thietke_rct_subsections(meta) -> str:
         f"{_text(ds.get('allocation_concealment'), TAG_BS)}\n",
         f"**Ai được tiếp cận trình tự phân bổ (SPIRIT 23):** "
         f"{_text(ds.get('allocation_access'), TAG_BS)}\n",
+        # 22/11/2026: PI khai riêng CÁCH làm mù (`blinding_how`, CONSORT 2025 mục 20b của bản thảo G7) mà chưa tách
+        # «ai» ⇒ «ai» lấy câu làm mù đã chốt ở G1 (ai + cách) — bản cũ in «[CẦN BỔ SUNG] — <cách>», hỏi lại quyết
+        # định G1 (giả lập trọn vòng RCT đếm là ô lỗi máy)
         "**Ai bị làm mù và cách làm mù (SPIRIT 24a/24b):** "
-        + (f"{_text(ds.get('blinding_who'), TAG_BS)} — {_text(ds.get('blinding_how'), TAG_BS)}"
+        + (f"{_text(ds.get('blinding_who') if RS.is_present(ds.get('blinding_who')) else ds.get('blinding'), TAG_BS)}"
+           f" — {_text(ds.get('blinding_how'), TAG_BS)}"
            if RS.is_present(ds.get("blinding_who")) or RS.is_present(ds.get("blinding_how")) or
            not RS.is_present(ds.get("blinding"))
            # 06/10/2026: quyết định làm mù PI đã chốt ở G1 (một câu gồm ai + cách) — không bắt tách lại.

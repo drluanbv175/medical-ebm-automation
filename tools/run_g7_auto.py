@@ -1584,7 +1584,11 @@ def khoi_tuyen_chon_g7(k: Optional[dict], design_code: str) -> list:
                       + ", ".join(f"{cuoi[t]['n']}{dv} ở nhóm {_ha_chu_dau(t)}" for t in ten_nhanh) + ").  ")
     elif _cuoi(chung):
         b = _cuoi(chung)
-        ra.append(f"{b['n']} nghiên cứu được đưa vào tổng quan.  " if tong_quan
+        # 22/11/2026 chiều (PRISMA 2020 mục 16a): hộp đầu của sổ là số bản ghi tìm được — nêu thành câu «xác định được
+        # N bản ghi» (nhãn hộp «Bản ghi xác định…: N» không cho người đọc/K18 thấy N là số bản ghi tìm được)
+        dau = chung[0] if chung and chung[0]["loai"] == "chinh" and chung[0] is not b else None
+        ra.append((f"Xác định được {dau['n']} bản ghi qua tìm kiếm; " if tong_quan and dau else "")
+                  + f"{b['n']} nghiên cứu được đưa vào tổng quan.  " if tong_quan
                   else f"{b['n']}{dv} được đưa vào phân tích.  " if b["buoc"].casefold().startswith("đưa vào")
                   else f"{b['n']}{dv} ở bước cuối ({_ha_chu_dau(b['buoc'])}).  ")
     return ra
@@ -2501,7 +2505,8 @@ def _khoi_tong_quan_g7(out_dir: Path, study: str, redcap_vars: Optional[list]) -
 
 def _tom_tat_tong_quan_g7(out_dir: Path, study: str) -> list[str]:
     """Dòng tóm tắt riêng của tổng quan (PRISMA 2020 for Abstracts A4, A6, A11) từ dữ kiện đã chốt; trường vắng ⇒ bỏ
-    dòng. Đánh giá nguy cơ sai lệch (A5), số nghiên cứu/người tham gia (A7), hạn chế (A9) là việc tác giả viết."""
+    dòng. Đánh giá nguy cơ sai lệch (A5 — đặc tả PI), số nghiên cứu/người tham gia (A7 — tóm tắt G6), ô hạn chế (A9 —
+    tác giả viết): `khoi_chuan_bao_cao_g7` (22/11/2026, chiều)."""
     dk = _du_kien_tong_quan_g7(out_dir, study)
     mo_hinh = next((v for n, v in dk["tong_hop"] if re.match(r"Mô hình", n, re.IGNORECASE)), "")
     thuoc_do = next((v for n, v in dk["tong_hop"] if re.match(r"Thước đo", n, re.IGNORECASE)), "")
@@ -2623,15 +2628,41 @@ def _ha_dau(x: str) -> str:
 # cương/SAP, chia sẻ dữ liệu cá nhân và mã thống kê, sự tham gia của người bệnh/công chúng, thay đổi so với đề cương,
 # phương pháp cho kết cục chính và tác hại, mốc ngày tuyển–theo dõi, chăm sóc đồng thời. Mỗi dòng dưới đây chép NGUYÊN
 # chữ một dữ kiện đã chốt (G1, G2, SAP, phiếu G9, khai báo tác giả G7, đặc tả PI khai ở study_meta); trường vắng, còn
-# [CẦN] hoặc «Không áp dụng» ⇒ không in (K18 báo thiếu đúng mục). Không câu mẫu, không ô [CẦN] mới (bước «PI điền ô»
-# của giả lập điền theo mẫu cố định — ô lạ làm vỡ CI).
+# [CẦN] hoặc «Không áp dụng» ⇒ không in (K18 báo thiếu đúng mục).
+# 22/11/2026 (chiều — K18 theo 5 thiết kế, luật liêm chính của điều phối): mục mà CHUẨN CỦA THIẾT KẾ đòi (CONSORT 3/8/10,
+# STARD 29, TRIPOD+AI 18c/19, PRISMA 24b/24c…) nhưng hồ sơ chưa có lời khai ⇒ ô «[CẦN — …]» nói rõ thiếu gì, thay vì im
+# lặng; ô đó nằm cùng mệnh đề với nhãn nên K18 vẫn báo thiếu (trung thực). Nhãn ô không trùng nhãn quyết định đã chốt
+# (`gia_lap_tron_vong.gia_tri_da_chot`) và không lặp lại giữa các ô — giả lập không đếm «hỏi lại»/«hỏi lặp».
 
 #: Khoá study_meta mà bộ sinh đọc qua `_khai_pi_g7` (đặc tả PI khai: cách làm mù 20b, sự tham gia của người
 #: bệnh/công chúng 8, chăm sóc đồng thời 24b) và khoá `gate_params.G7` đọc từ khai báo tác giả (chia sẻ dữ liệu 4, tài
 #: trợ của tổng quan). 22/11/2026: bộ giả lập trọn vòng cho vai khai các khoá này TRƯỚC lượt sinh G7
 #: (`gia_lap_tron_vong._khai_truoc_ban_thao`) — thêm chỗ đọc mới thì thêm khoá vào đây (test giữ đồng bộ).
-KHOA_DAC_TA_BAN_THAO = ("blinding_how", "ppi_plan", "concomitant_care_policy", "concomitant_care")
-KHOA_TAC_GIA_BAN_THAO = ("data_sharing_statement", "funding_declared")
+#: 22/11/2026 (chiều, `khoi_chuan_bao_cao_g7`): đặc tả PI cho dữ liệu thường quy (RECORD 6.2, 12.1), chẩn đoán (STARD 3,
+#: 11, 12a, 12b, 21a), mô hình dự báo (TRIPOD+AI 3b, 3c, 6c, 8c, 15, 27a, 27b), tổng quan (PRISMA 7, 11); tác giả khai nơi
+#: truy cập đề cương (CONSORT 3, STARD 29, TRIPOD+AI 18c, PRISMA 24b) và thay đổi so với đề cương (CONSORT 10, PRISMA
+#: 24c). Tên khoá riêng của bản thảo — không trùng khoá `research_study_spec` dựng đề cương G10.
+KHOA_DAC_TA_BAN_THAO = ("blinding_how", "ppi_plan", "concomitant_care_policy", "concomitant_care",
+                        "routine_code_validation", "routine_database_access",
+                        "index_test_role", "reference_standard_rationale", "index_threshold_rationale",
+                        "reference_threshold_rationale", "disease_severity_variable",
+                        "model_intended_use", "health_inequalities", "model_treatment_handling",
+                        "outcome_assessment_blinding", "model_output_threshold", "model_input_handling",
+                        "model_user_interaction", "search_strings_full", "rob_assessment_process")
+KHOA_TAC_GIA_BAN_THAO = ("data_sharing_statement", "funding_declared", "protocol_access_statement",
+                         "protocol_changes_statement")
+
+#: thiết kế mà chuẩn báo cáo đòi nêu nơi truy cập đề cương (CONSORT 2025 mục 3, STARD 2015 mục 29, TRIPOD+AI mục 18c,
+#: PRISMA 2020 mục 24b), thay đổi so với đề cương (CONSORT 10, PRISMA 24c), sự tham gia của người bệnh (CONSORT 8,
+#: TRIPOD+AI 19) — vắng lời khai ⇒ ô [CẦN]; thiết kế khác chỉ in khi đã khai
+_CAN_TRUY_CAP_DE_CUONG = frozenset({"rct", "diagnostic", "prediction", "sr_ma"})
+_CAN_THAY_DOI_DE_CUONG = frozenset({"rct", "sr_ma"})
+_CAN_PPI = frozenset({"rct", "prediction"})
+
+
+def _o_can(viec: str) -> str:
+    """Ô chờ điền nói rõ THIẾU GÌ (luật liêm chính: không bịa câu thay dữ kiện vắng)."""
+    return f"[CẦN — {viec}]"
 
 
 def _doc_meta_g7(out_dir: Path) -> dict:
@@ -2752,10 +2783,18 @@ def khoi_consort_bo_sung_g7(out_dir: Path, study: str, design_code: str) -> dict
     - `phuong_phap`: §6 — phân tích tác hại (SAP §15, RCT) và thay đổi sau khi khoá SAP (mục 10, 21a);
     - `khai_bao`: mục KHAI BÁO — nơi truy cập đề cương/SAP, sự tham gia của người bệnh/công chúng (mục 3, 8);
     - `chia_se`: câu «Tính có sẵn dữ liệu» từ lời khai (mục 4) — rỗng ⇒ giữ câu cũ;
-    - `ket_qua`: cuối chương Kết quả, RCT — mốc ngày tuyển–theo dõi theo đề cương, chăm sóc đồng thời (mục 23a, 24b)."""
+    - `ket_qua`: cuối chương Kết quả, RCT — mốc ngày tuyển–theo dõi theo đề cương, chăm sóc đồng thời (mục 23a, 24b).
+
+    22/11/2026 (chiều): dùng cho MỌI thiết kế — nơi truy cập đề cương (CONSORT 3, STARD 29, TRIPOD+AI 18c, PRISMA 24b)
+    gồm thêm lời khai tác giả `gate_params.G7.protocol_access_statement` và bản đăng ký tổng quan (PROSPERO); thay đổi
+    so với đề cương (CONSORT 10, PRISMA 24c) từ `gate_params.G7.protocol_changes_statement` — lời khai «không có thay đổi»
+    mà SAP lại ghi thay đổi sau khi khoá ⇒ ô [CẦN] (không in lời mâu thuẫn). Thiết kế mà chuẩn đòi mục đó
+    (`_CAN_TRUY_CAP_DE_CUONG`, `_CAN_THAY_DOI_DE_CUONG`, `_CAN_PPI`) mà chưa có lời khai ⇒ ô [CẦN] nói rõ thiếu gì."""
     meta = _doc_meta_g7(out_dir)
     g1 = ((meta.get("gate_params") or {}).get("G1") or {})
     g2 = ((meta.get("gate_params") or {}).get("G2") or {})
+    g7 = ((meta.get("gate_params") or {}).get("G7") or {})
+    g7 = g7 if isinstance(g7, dict) else {}
     sap = _sap_tom_tat(out_dir, study)
     rct = design_code == "rct"
     pp: list[str] = []
@@ -2764,13 +2803,43 @@ def khoi_consort_bo_sung_g7(out_dir: Path, study: str, design_code: str) -> dict
     thay = _thay_doi_sau_khoa_g7(out_dir, study)
     if thay:
         pp.append(f"*Thay đổi so với kế hoạch phân tích sau khi khoá:* {'; '.join(thay)}.  ")
+    khai_td = _gia_tri_chot(g7.get("protocol_changes_statement"))
+    nhan_td = "*Thay đổi so với đề cương sau khi bắt đầu nghiên cứu:* "
+    if khai_td and not (thay and re.match(r"không\b", khai_td, re.IGNORECASE)):
+        pp.append(f"{nhan_td}{khai_td}.  ")
+    elif khai_td:
+        pp.append(nhan_td + _o_can("lời khai «không có thay đổi» mâu thuẫn với bảng thay đổi sau khi khoá của kế hoạch "
+                                   "phân tích; khai lại thay đổi so với đề cương kèm lý do") + "  ")
+    elif design_code in _CAN_THAY_DOI_DE_CUONG:
+        pp.append(nhan_td + _o_can("thay đổi quan trọng so với đề cương sau khi bắt đầu (kết cục, phân tích, tiêu "
+                                   "chí chọn) kèm lý do, hoặc nêu không có thay đổi") + "  ")
     kb: list[str] = []
-    de_cuong = _truy_cap_de_cuong_g7(out_dir, study)
+    phan_dc = []
+    # mã đăng ký đã ký ở G2 (`G2_checkpoint.g2_registration`, như dòng «Registration» của tóm tắt) hoặc PI khai ở
+    # gate_params.G2 — tổng quan: bản ghi PROSPERO là nơi công bố đề cương (PRISMA 2020 mục 24b)
+    ma_dk = _gia_tri_chot(_doc_json_g7(Path(out_dir) / "G2_checkpoint.json").get("g2_registration")) \
+        or _gia_tri_chot(g2.get("registration_id"))
+    if design_code == "sr_ma" and g2.get("registration_required") is not False and ma_dk \
+            and not ma_dk.lower().startswith("không"):
+        phan_dc.append(f"Đề cương tổng quan đã đăng ký tại {_dang_ky_g7(out_dir, ma_dk)}")
+    de_cuong = _truy_cap_de_cuong_g7(out_dir, study).rstrip(".")
     if de_cuong:
-        kb += ["**Đề cương và kế hoạch phân tích thống kê:**  ", f"{de_cuong}  ", ""]
+        phan_dc.append(de_cuong)
+    if _gia_tri_chot(g7.get("protocol_access_statement")):
+        phan_dc.append(_gia_tri_chot(g7.get("protocol_access_statement")))
+    if phan_dc:
+        kb += ["**Đề cương và kế hoạch phân tích thống kê:**  ", f"{_noi_cau(phan_dc)}  ", ""]
+    elif design_code in _CAN_TRUY_CAP_DE_CUONG:
+        kb += ["**Đề cương và kế hoạch phân tích thống kê:**  ",
+               _o_can("nơi và cách truy cập đề cương, kế hoạch phân tích thống kê (đường dẫn, phụ lục hoặc cung cấp "
+                      "theo yêu cầu)") + "  ", ""]
     ppi = _khai_pi_g7(meta, "ppi_plan")
     if ppi:
         kb += ["**Sự tham gia của người bệnh và công chúng:**  ", f"{ppi}.  ", ""]
+    elif design_code in _CAN_PPI:
+        kb += ["**Sự tham gia của người bệnh và công chúng:**  ",
+               _o_can("người bệnh hoặc công chúng có tham gia thiết kế, thực hiện, phổ biến nghiên cứu không và tham "
+                      "gia thế nào, hoặc nêu không có") + "  ", ""]
     kq: list[str] = []
     if rct:
         thoi_gian = "; ".join(x for x in (
@@ -2794,6 +2863,257 @@ def khoi_consort_bo_sung_g7(out_dir: Path, study: str, design_code: str) -> dict
         if kq:
             kq = ["", f"**{ten[:1].upper() + ten[1:]}:**  ", *kq, ""]
     return {"phuong_phap": pp, "khai_bao": kb, "chia_se": _chia_se_du_lieu_g7(out_dir), "ket_qua": kq}
+
+
+# ── 22/11/2026 (chiều) — K18 bản thảo theo 5 thiết kế ─────────────────────────────────────────────────────────────────
+# Đo trên gói giả lập trọn vòng (8 kịch bản, mã trước bản vá): thuần tập dữ liệu thường quy thiếu RECORD 1.1, 6.2, 7.1,
+# 12.1, 12.2, 19.1; chẩn đoán thiếu STARD 3, 11, 12a, 12b, 21a, 21b; mô hình dự báo thiếu TRIPOD+AI 3b, 3c, 6c, 7, 8c, 15,
+# 22, 27a, 27b; tổng quan thiếu PRISMA 2 (A5, A7, A9), 7, 11, 16a, 16b, 17. Mỗi dòng dưới đây chép dữ kiện CÓ THẬT của hồ
+# sơ (G1, G2, đặc tả PI ở study_meta, báo cáo làm sạch G5, quy trình dữ liệu đã chốt, tóm tắt G6 hợp lệ, bảng trích xuất);
+# vắng ⇒ ô [CẦN — …] nói rõ thiếu gì. Số kết quả chỉ lấy từ tóm tắt G6 đã kiểm hợp lệ (`doc_tom_tat_g6_hop_le`), kèm nhãn
+# đối chiếu như mọi dòng số khác của chương Kết quả.
+
+#: thao tác/luật của kế hoạch làm sạch G5 (`DATA_CLEANING_plan.json`) ⇒ lời
+_LAM_SACH_AN_TOAN = {"standardize_missing_token": "chuẩn hoá mã giá trị thiếu",
+                     "trim_or_collapse_whitespace": "chuẩn hoá khoảng trắng"}
+_LAM_SACH_CAM = {"no_row_drop_without_protocol": "không xoá dòng khi đề cương chưa quy định",
+                 "no_imputation": "không gán giá trị ở bước làm sạch",
+                 "no_range_fix_without_source_verification": "không sửa giá trị ngoài khoảng khi chưa đối chiếu nguồn",
+                 "no_category_recode_without_query_resolution": "không mã hoá lại nhóm khi truy vấn chưa giải quyết"}
+#: cột định danh bài báo trong bảng trích xuất cấp nghiên cứu của tổng quan (PRISMA 2020 mục 17)
+_COT_TRICH_DAN_TQ = re.compile(r"^(pmid|doi|ref|reference|citation|trich_dan|tai_lieu)$", re.IGNORECASE)
+_TEP_TRICH_XUAT_TQ = "06_phan_tich_R/study_level_extraction.csv"
+
+
+def _doc_json_g7(p: Path) -> dict:
+    try:
+        d = json.loads(Path(p).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return d if isinstance(d, dict) else {}
+
+
+def _quy_trinh_du_lieu_g7(out_dir: Path) -> dict:
+    """Quy trình dữ liệu đã chốt (`_quy-trinh-du-lieu.csv`, mỗi dòng một quyết định: muc → gia_tri)."""
+    p = Path(out_dir) / "_quy-trinh-du-lieu.csv"
+    try:
+        with p.open(encoding="utf-8-sig", newline="") as f:
+            return {str(r.get("muc") or "").strip(): _gia_tri_chot(r.get("gia_tri")) for r in csv.DictReader(f)}
+    except (OSError, csv.Error):
+        return {}
+
+
+def _lam_sach_g7(out_dir: Path) -> str:
+    """Câu làm sạch dữ liệu (RECORD 12.2, TRIPOD+AI 7) chép từ báo cáo làm sạch G5 (`DATA_CLEANING_report.json`, chỉ
+    khi đã sẵn sàng khoá), kế hoạch làm sạch nó trỏ tới và mục kiểm chứng chất lượng thu thập của quy trình đã chốt.
+    Không có nguồn nào ⇒ chuỗi rỗng."""
+    out_dir = Path(out_dir)
+    r = _doc_json_g7(out_dir / "DATA_CLEANING_report.json")
+    phan: list[str] = []
+    if r.get("ready_for_lock") is True:
+        ke_hoach = _doc_json_g7(out_dir / str(r["plan"])) if r.get("plan") else {}
+        if isinstance(r.get("row_count"), int) and isinstance(r.get("column_count"), int):
+            phan.append(f"bộ dữ liệu {r['row_count']} dòng × {r['column_count']} biến được làm sạch theo kế hoạch làm "
+                        "sạch đã lưu" + (", đối chiếu từ điển dữ liệu" if r.get("dictionary_loaded") is True else ""))
+        if isinstance(ke_hoach.get("required_columns"), list) and ke_hoach["required_columns"]:
+            phan.append(f"kiểm tra đủ {len(ke_hoach['required_columns'])} biến bắt buộc")
+        phan += [_LAM_SACH_AN_TOAN[x] for x in ke_hoach.get("safe_actions") or [] if x in _LAM_SACH_AN_TOAN]
+        phan += [_LAM_SACH_CAM[x] for x in ke_hoach.get("forbidden_actions") or [] if x in _LAM_SACH_CAM]
+        if isinstance(r.get("open_query_count"), int):
+            phan.append(f"truy vấn dữ liệu còn mở khi khoá: {r['open_query_count']}")
+        if (r.get("pii_scan") or {}).get("passed") is True:
+            phan.append("quét thông tin định danh đạt")
+    kc = _quy_trinh_du_lieu_g7(out_dir).get("kiem_chung")
+    if kc:
+        phan.append(f"kiểm chứng chất lượng thu thập: {_ha_dau(kc)}")
+    if not phan:
+        return ""
+    return _noi_cau([phan[0][:1].upper() + phan[0][1:], *phan[1:]])
+
+
+def _dong_khai(nhan: str, gia_tri: str, viec: str) -> str:
+    """«*Nhãn:* giá trị.» khi có lời khai; vắng ⇒ «*Nhãn:* [CẦN — việc]» (ô cùng mệnh đề với nhãn — K18 báo thiếu)."""
+    return f"*{nhan}:* {gia_tri}.  " if gia_tri else f"*{nhan}:* {_o_can(viec)}  "
+
+
+def _khoi_record_g7(out_dir: Path, meta: dict, g1: dict, g2: dict) -> dict:
+    """RECORD 2015 (dữ liệu thường quy) — 1.1 nguồn dữ liệu ở tóm tắt, 7.1 định nghĩa vận hành (G1), 6.2 kiểm định
+    mã/thuật toán và 12.1 quyền truy cập cơ sở dữ liệu (đặc tả PI), 12.2 làm sạch (G5), 19.1 dữ liệu không thu thập cho
+    câu hỏi nghiên cứu (suy từ thiết kế hồi cứu trên dữ liệu thứ cấp đã chốt ở G2)."""
+    nguon = _gia_tri_chot(g1.get("data_collection_method"))
+    tom_tat = [("**Data source:** " + (f"{nguon}." if nguon else _o_can("loại dữ liệu thường quy và tên cơ sở dữ liệu "
+                                                                       "nguồn"))) + "  ", ""]
+    po = g1.get("primary_outcome") if isinstance(g1.get("primary_outcome"), dict) else {}
+    phoi = _gia_tri_chot(g1.get("intervention_or_exposure"))
+    dn = ([f"phơi nhiễm được xác định theo: {_ha_dau(phoi)}"] if phoi and not phoi.lower().startswith("không") else []) \
+        + ([f"kết cục chính được xác định theo: {_ha_dau(_gia_tri_chot(po.get('measure')))}"]
+           if _gia_tri_chot(po.get("measure")) else [])
+    dong = [f"*Định nghĩa vận hành từ dữ liệu thường quy:* {'; '.join(dn)}.  " if dn else
+            "*Định nghĩa vận hành từ dữ liệu thường quy:* " + _o_can("mã và quy tắc phân loại phơi nhiễm, kết cục, "
+                                                                    "biến nhiễu lấy từ dữ liệu thường quy") + "  ",
+            _dong_khai("Kiểm định mã và thuật toán chọn quần thể", _khai_pi_g7(meta, "routine_code_validation"),
+                       "nghiên cứu kiểm định mã/thuật toán đã dùng, hoặc cách nhóm tự kiểm định (vd đối chiếu mẫu hồ "
+                       "sơ)"),
+            _dong_khai("Quyền truy cập cơ sở dữ liệu của nhóm nghiên cứu", _khai_pi_g7(meta, "routine_database_access"),
+                       "mức độ nhóm nghiên cứu được truy cập cơ sở dữ liệu nguồn dùng để tạo quần thể"),
+            _dong_khai("Làm sạch dữ liệu", _lam_sach_g7(out_dir).rstrip("."),
+                       "phương pháp làm sạch dữ liệu (báo cáo làm sạch chưa có hoặc chưa sẵn sàng khoá)")]
+    bl = ["*Dữ liệu thường quy:* dữ liệu trích từ nguồn có sẵn, vốn được ghi nhận cho mục đích chăm sóc người bệnh, "
+          "không thu thập cho câu hỏi nghiên cứu này.  "
+          if str(g2.get("recruitment_mode") or "").strip() == "RETROSPECTIVE_SECONDARY_DATA" else
+          "*Dữ liệu thường quy:* " + _o_can("hệ quả của việc dùng dữ liệu không thu thập cho câu hỏi nghiên cứu (phân "
+                                            "loại sai, nhiễu không đo, dữ liệu thiếu)") + "  "]
+    return {"tom_tat": tom_tat, "phuong_phap": ["**§6a Dữ liệu thường quy (RECORD 2015):**  ",
+                                                *[x for d in dong for x in (d, "")]],
+            "ban_luan_han_che": bl}
+
+
+def _nhan_bien_g7(redcap_vars: Optional[list], bien: str) -> str:
+    return next((str(v.get("label") or "").strip() for v in redcap_vars or []
+                 if str(v.get("variable") or "") == bien and str(v.get("label") or "").strip()), "")
+
+
+def _phan_bo_muc_do_benh_g7(out_dir: Path, meta: dict, redcap_vars: Optional[list]) -> str:
+    """STARD 2015 mục 21a: phân bố mức độ bệnh ở người CÓ bệnh đích — giá trị G6 đã tính (Bảng 1 theo nhóm chuẩn tham
+    chiếu) của biến đo mức độ bệnh PI đã khai (`disease_severity_variable`); nhóm có bệnh = nhóm có số người trùng
+    `n_co_benh` của phân tích AUC. Thiếu khai báo, G6 chưa hợp lệ hay không tìm được dòng/nhóm ⇒ ô [CẦN]."""
+    nhan = "*Phân bố mức độ bệnh ở người có bệnh đích"
+    bien = _khai_pi_g7(meta, "disease_severity_variable")
+    g6 = doc_tom_tat_g6_hop_le(out_dir)
+    tt = g6.get("tom_tat") if g6.get("hop_le") else None
+    if bien and re.fullmatch(r"\w+", bien) and isinstance(tt, dict):
+        t1 = tt.get("table1") if isinstance(tt.get("table1"), dict) else {}
+        dac_thu = tt.get("dac_thu") if isinstance(tt.get("dac_thu"), dict) else {}
+        auc = dac_thu.get("auc") if isinstance(dac_thu.get("auc"), dict) else {}
+        n_benh = auc.get("n_co_benh")
+        nhom = [g for g, n in (t1.get("n_per_group") or {}).items() if isinstance(n_benh, int) and n == n_benh]
+        dong = next((r for r in t1.get("rows") or [] if isinstance(r, dict) and r.get("variable") == bien), None)
+        gt = (dong.get("gia_tri") or {}).get(nhom[0]) if dong and len(nhom) == 1 else None
+        if gt not in (None, ""):
+            ten = _nhan_bien_g7(redcap_vars, bien)
+            return (f"{nhan} ({ten + ', ' if ten else ''}`{bien}`):* {_mot_dong(gt)} (n = {n_benh}) "
+                    f"{NHAN_DOI_CHIEU_G6}  ")
+    return f"{nhan}:* " + _o_can("phân bố mức độ bệnh ở người có bệnh đích: khai biến đo mức độ bệnh và chạy phân tích "
+                                 "trên dữ liệu đã khoá") + "  "
+
+
+def _he_so_mo_hinh_g7(out_dir: Path) -> str:
+    """TRIPOD+AI mục 22: công bố đầy đủ mô hình — hệ số β của MỌI số hạng (kể cả hằng số) G6 đã ước lượng trên dữ liệu
+    đã khoá (`dac_thu.he_so` của tóm tắt G6 hợp lệ, loại «du_bao»); không có ⇒ ô [CẦN]."""
+    nhan = "*Hệ số hồi quy đầy đủ của mô hình (β):* "
+    g6 = doc_tom_tat_g6_hop_le(out_dir)
+    tt = g6.get("tom_tat") if g6.get("hop_le") else {}
+    he_so = ((tt.get("dac_thu") or {}).get("he_so") if isinstance(tt, dict) and isinstance(tt.get("dac_thu"), dict)
+             else None)
+    if isinstance(he_so, list) and he_so and all(isinstance(h, dict) and isinstance(h.get("beta"), (int, float))
+                                                  for h in he_so):
+        phan = [f"{'hằng số' if str(h.get('bien')).strip('() ') == 'hằng số' else '`' + str(h.get('bien')) + '`'} "
+                f"= {_so_g6(h['beta'])}" for h in he_so]
+        return nhan + "; ".join(phan) + f" {NHAN_DOI_CHIEU_G6}  "
+    return nhan + _o_can("hệ số của mọi số hạng trong mô hình cuối (kể cả hằng số) từ phân tích trên dữ liệu đã "
+                         "khoá") + "  "
+
+
+def _trich_dan_nc_tong_quan_g7(out_dir: Path) -> str:
+    """PRISMA 2020 mục 17: trích dẫn từng nghiên cứu được đưa vào — chỉ khi bảng trích xuất cấp nghiên cứu có cột định
+    danh bài báo (PMID/DOI/tài liệu) điền đủ mọi dòng; không có ⇒ ô [CẦN] (mã nghiên cứu nội bộ không phải trích dẫn)."""
+    nhan = "*Trích dẫn từng nghiên cứu được đưa vào:* "
+    p = Path(out_dir) / _TEP_TRICH_XUAT_TQ
+    try:
+        with p.open(encoding="utf-8-sig", newline="") as f:
+            dong = list(csv.DictReader(f))
+    except (OSError, csv.Error):
+        dong = []
+    cot = next((c for c in (dong[0].keys() if dong else []) if c and _COT_TRICH_DAN_TQ.match(c.strip())), None)
+    ma = next((c for c in (dong[0].keys() if dong else []) if c and c.strip().lower() in ("study", "study_id")), None)
+    if cot and all(str(r.get(cot) or "").strip() for r in dong):
+        return nhan + "; ".join((f"{str(r.get(ma)).strip()} " if ma else "") + f"({str(r[cot]).strip()})"
+                                for r in dong) + ".  "
+    return nhan + _o_can("trích dẫn (PMID/DOI) của từng nghiên cứu đưa vào; bảng trích xuất cấp nghiên cứu chưa có cột "
+                         "định danh bài báo") + "  "
+
+
+def khoi_chuan_bao_cao_g7(out_dir: Path, study: str, design_code: str, redcap_vars: Optional[list] = None,
+                          reporting_extensions: Optional[list] = None) -> dict:
+    """Dòng bản thảo cho các mục chuẩn báo cáo theo thiết kế mà K18 còn báo thiếu (22/11/2026, chiều), theo chỗ đặt:
+    `tom_tat` (sau dòng tóm tắt), `gioi_thieu` (cuối §3 Mục tiêu), `phuong_phap_3` (sau khối §3 riêng thiết kế),
+    `phuong_phap` (sau §6), `ket_qua` (cuối chương Kết quả), `ban_luan_han_che` (cuối §5 Hạn chế), `ban_luan_ap_dung`
+    (cuối §6 Ý nghĩa). Thiết kế/chuẩn không liên quan ⇒ mọi khoá rỗng."""
+    out_dir = Path(out_dir)
+    meta = _doc_meta_g7(out_dir)
+    gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), dict) else {}
+    g1, g2 = (gp.get(g) if isinstance(gp.get(g), dict) else {} for g in ("G1", "G2"))
+    ra: dict = {k: [] for k in ("tom_tat", "gioi_thieu", "phuong_phap_3", "phuong_phap", "ket_qua",
+                                "ban_luan_han_che", "ban_luan_ap_dung")}
+    if any(str(x).strip().upper() == "RECORD" for x in reporting_extensions or []):
+        for k, v in _khoi_record_g7(out_dir, meta, g1, g2).items():
+            ra[k] += v
+    pi = lambda k: _khai_pi_g7(meta, k)  # noqa: E731 — gọn cho bảng khai báo dưới
+    if design_code == "diagnostic":
+        ra["gioi_thieu"].append(_dong_khai("Vai trò dự kiến của xét nghiệm đánh giá trong lộ trình chẩn đoán",
+                                           pi("index_test_role"), "vai trò dự kiến của xét nghiệm (sàng lọc, phân "
+                                           "loại ban đầu, thay thế hay bổ sung) và mục đích sử dụng").replace("*", ""))
+        ra["phuong_phap_3"] += [x for d in (
+            _dong_khai("Lý do chọn chuẩn tham chiếu", pi("reference_standard_rationale"),
+                       "vì sao chọn chuẩn tham chiếu này khi có lựa chọn khác"),
+            _dong_khai("Ngưỡng dương tính của xét nghiệm đánh giá và lý do chọn", pi("index_threshold_rationale"),
+                       "ngưỡng dương tính, định trước hay thăm dò, và lý do chọn ngưỡng"),
+            _dong_khai("Ngưỡng của chuẩn tham chiếu và lý do chọn", pi("reference_threshold_rationale"),
+                       "ngưỡng hoặc cách phân loại của chuẩn tham chiếu và lý do chọn")) for x in (d, "")]
+        # tiêu đề KHÔNG mang từ khoá của mục (K18 đọc dòng đậm như đoạn văn — «… chẩn đoán khác …» ở tiêu đề từng làm
+        # 21b «đạt» khi dòng nội dung còn là ô chờ điền)
+        ra["ket_qua"] += ["**Đặc điểm bệnh theo chuẩn tham chiếu (STARD 2015 mục 21):**  ",
+                          _phan_bo_muc_do_benh_g7(out_dir, meta, redcap_vars),
+                          "*Chẩn đoán khác ở người không có bệnh đích:* "
+                          + _o_can("phân bố chẩn đoán thay thế ở người không có bệnh đích (chưa có phân tích trên dữ "
+                                   "liệu đã khoá)") + "  ", ""]
+    elif design_code == "prediction":
+        ra["gioi_thieu"].append(_dong_khai("Bất bình đẳng sức khoẻ đã biết giữa các nhóm dân số",
+                                           pi("health_inequalities"), "khác biệt sức khoẻ đã biết giữa các nhóm dân "
+                                           "số liên quan kết cục dự báo, hoặc nêu chưa có dữ liệu").replace("*", ""))
+        ls = _lam_sach_g7(out_dir).rstrip(".")
+        ra["phuong_phap_3"] += [x for d in (
+            _dong_khai("Mục đích sử dụng mô hình và người dùng dự kiến", pi("model_intended_use"),
+                       "mục đích sử dụng mô hình trong lộ trình chăm sóc, thời điểm áp dụng và người dùng dự kiến"),
+            _dong_khai("Điều trị của người tham gia và cách xử lý khi xây dựng mô hình", pi("model_treatment_handling"),
+                       "điều trị người tham gia nhận và cách xử lý điều trị khi xây dựng, đánh giá mô hình"),
+            _dong_khai("Người xác định kết cục và giá trị yếu tố dự báo", pi("outcome_assessment_blinding"),
+                       "người xác định kết cục có biết giá trị yếu tố dự báo không, hoặc nêu không áp dụng che giấu"),
+            _dong_khai("Đầu ra của mô hình và ngưỡng phân loại", pi("model_output_threshold"),
+                       "đầu ra của mô hình (xác suất hay phân loại) và lý do chọn ngưỡng, hoặc nêu không đặt ngưỡng"),
+            _dong_khai("Tiền xử lý và kiểm tra chất lượng dữ liệu", ls,
+                       "tiền xử lý và kiểm tra chất lượng dữ liệu (báo cáo làm sạch chưa có hoặc chưa sẵn sàng "
+                       "khoá)")) for x in (d, "")]
+        ra["ket_qua"] += ["**Mô hình cuối (TRIPOD+AI mục 22):**  ", _he_so_mo_hinh_g7(out_dir), ""]
+        ra["ban_luan_ap_dung"] += [
+            _dong_khai("Dữ liệu đầu vào khi áp dụng mô hình", pi("model_input_handling"),
+                       "cách xử lý giá trị đầu vào thiếu hoặc kém chất lượng khi dùng mô hình trong thực hành"),
+            _dong_khai("Thao tác của người dùng với dữ liệu đầu vào", pi("model_user_interaction"),
+                       "người dùng có phải nhập hay xử lý dữ liệu đầu vào không và cần kỹ năng gì")]
+    elif design_code == "sr_ma":
+        rob = pi("rob_assessment_process")
+        g6 = doc_tom_tat_g6_hop_le(out_dir)
+        dt = ((g6.get("tom_tat") or {}).get("dac_thu") if g6.get("hop_le") else None) or {}
+        k, nguoi = dt.get("k") if isinstance(dt, dict) else None, ((dt.get("tong") or {}).get("nguoi")
+                                                                    if isinstance(dt, dict) else None)
+        ra["tom_tat"] += [("**Risk of bias:** " + (f"{rob}." if rob else _o_can("công cụ và cách đánh giá nguy cơ "
+                                                                                 "sai lệch của từng nghiên cứu"))) + "  ",
+                          ""]
+        if isinstance(k, int) and isinstance(nguoi, int):
+            ra["tom_tat"] += [f"**Included studies:** {k} nghiên cứu, {nguoi} người tham gia. {NHAN_DOI_CHIEU_G6}  ",
+                              ""]
+        ra["tom_tat"] += ["**Limitations:** " + _o_can("hạn chế chính của bằng chứng được đưa vào") + "  ", ""]
+        ra["phuong_phap_3"] += [x for d in (
+            _dong_khai("Câu lệnh tìm đầy đủ", pi("search_strings_full"),
+                       "câu lệnh tìm đầy đủ cho từng cơ sở dữ liệu và sổ đăng ký, kể cả bộ lọc và giới hạn"),
+            _dong_khai("Đánh giá nguy cơ sai lệch của từng nghiên cứu", rob,
+                       "công cụ, số người đánh giá và có đánh giá độc lập không")) for x in (d, "")]
+        ra["ket_qua"] += ["**Nghiên cứu đưa vào tổng hợp và báo cáo không đạt tiêu chí (PRISMA 2020 mục 16b, 17):**  ",
+                          _trich_dan_nc_tong_quan_g7(out_dir),
+                          "*Trích dẫn các báo cáo bị loại ở bước đánh giá toàn văn:* "
+                          + _o_can("trích dẫn (PMID/DOI) từng báo cáo bị loại kèm lý do; sổ sàng lọc chỉ ghi số "
+                                   "đếm") + "  ", ""]
+    return ra
 
 
 def generate_manuscript(
@@ -2842,6 +3162,7 @@ def generate_manuscript(
     khoi_tuyen_chon: Optional[list] = None,  # 22/11/2026: §1 Tuyển chọn từ sổ sàng lọc đã kiểm (`khoi_tuyen_chon_g7`)
     boi_canh_vn: Optional[str] = None,
     hon_hop_cau: Optional[str] = None,
+    khoi_chuan: Optional[dict] = None,  # 22/11/2026 chiều: RECORD/STARD/TRIPOD+AI/PRISMA theo thiết kế (`khoi_chuan_bao_cao_g7`)
 ) -> str:
     """
     Sinh toàn bộ bản thảo IMRAD skeleton A8.
@@ -3016,6 +3337,7 @@ def generate_manuscript(
         if outcome_ordinal else
         f"Phương pháp phân tích kết cục chính: [CẦN — từ SAP §4; theo effect_type={effect_type} gợi ý: {_method_hint}]. ")
     _kc = khoi_consort or {}
+    _kt = khoi_chuan or {}
 
     # ── Chuẩn bị snippet cho Discussion §2 (đối chiếu y văn) ──
     lit_compare_lines = []
@@ -3123,6 +3445,7 @@ def generate_manuscript(
             "**§5 Phân tích nhạy cảm:**  ",
             *(kq6["s5"] or ["[CẦN KẾT QUẢ THẬT — từ SAP sensitivity analysis (G4)]  ", ""]),
             *(kq6.get("hinh") or []),
+            *(_kt.get("ket_qua") or []),
             *(_kc.get("ket_qua") or []),
             "---",
             "",
@@ -3161,6 +3484,7 @@ def generate_manuscript(
             "[CẦN KẾT QUẢ THẬT — từ SAP sensitivity analysis (G4)]  ",
             "*(Ví dụ: complete case vs MI; subgroup theo giới tính/tuổi...)*",
             "",
+            *(_kt.get("ket_qua") or []),
             *(_kc.get("ket_qua") or []),
             "---",
             "",
@@ -3236,6 +3560,7 @@ def generate_manuscript(
         f"Kết cục phụ: {outcome_secondary_compact}  ",
         "",
         *(tom_tat_tong_quan or []),
+        *(_kt.get("tom_tat") or []),
         "**Results:** [CẦN KẾT QUẢ THẬT — không điền trước khi phân tích xong]  ",
         "",
         "**Conclusions:** [CẦN KẾT QUẢ THẬT]  ",
@@ -3275,6 +3600,7 @@ def generate_manuscript(
         # mục tiêu, không lặp định nghĩa.
         *(["Nghiên cứu đồng thời mô tả tác hại (biến cố bất lợi) ở từng nhóm theo định nghĩa định trước trong kế hoạch "
            "phân tích.  "] if design_code == "rct" and (sap_tom_tat or {}).get("ton_hai") else []),
+        *(_kt.get("gioi_thieu") or []),
         "",
         "---",
         "",
@@ -3304,6 +3630,7 @@ def generate_manuscript(
         *(khoi_rct or []),
         *(khoi_chan_doan_du_bao or []),
         *(khoi_tong_quan or []),
+        *(_kt.get("phuong_phap_3") or []),
         "**§4 Kết cục nghiên cứu:**  ",
         f"*Kết cục chính {outcome_label}:*  ",
         outcome_primary_block,
@@ -3343,6 +3670,7 @@ def generate_manuscript(
         "mọi ước lượng kèm 95%CI.  ",
         *(_kc.get("phuong_phap") or []),
         "",
+        *(_kt.get("phuong_phap") or []),
         # VÁ 04/10/2026 (G7-10): «STROBE mục 9» chỉ đúng cho thiết kế quan sát theo STROBE — bản cũ in cho MỌI thiết kế.
         "**§6b Kiểm soát sai lệch (Bias)"
         + (" — STROBE mục 9" if design_code in ("cohort", "case_control", "cross_sectional") else "") + ":**  ",
@@ -3427,9 +3755,11 @@ def generate_manuscript(
         + ("thiếu ngẫu nhiên hóa có thể có confounding chưa đo được; " if "cohort" in design_code else "")
         + ("cỡ mẫu có thể không đủ cho subgroup nhỏ; " if n_adjusted < 500 else "")
         + "LTFU có thể không ngẫu nhiên; dữ liệu tự báo cáo có recall bias...]  ",
+        *(_kt.get("ban_luan_han_che") or []),
         "",
         "**§6 Ý nghĩa lâm sàng và chính sách (Implications):**  ",
         "[CẦN — tác động với thực hành lâm sàng + khuyến cáo + hướng nghiên cứu tiếp theo]  ",
+        *(_kt.get("ban_luan_ap_dung") or []),
         "",
         "---",
         "",
@@ -3484,12 +3814,13 @@ def generate_manuscript(
         # liêm chính bị rút bài nếu bác sĩ không đọc lại kỹ trước khi nộp.
         # 22/11/2026 (K18, CONSORT 2025 mục 4): tác giả đã khai (phiếu G9 đã chốt / tuyên bố G7) ⇒ in đúng lời khai, kể
         # cả khi quyết định là KHÔNG chia sẻ — câu cũ bên dưới khẳng định «có thể cung cấp theo yêu cầu» bất kể lời khai.
+        # 22/11/2026 (chiều — luật liêm chính: không câu khẳng định chung chung): chưa có lời khai ⇒ ô [CẦN] nói rõ thiếu
+        # gì, thay câu «có thể cung cấp theo yêu cầu hợp lý…» mà không ai khai (CONSORT 4, TRIPOD+AI 18e/18f).
         (
             f"{_kc['chia_se']}  "
             if _kc.get("chia_se")
-            else "Dữ liệu nghiên cứu (đã khử định danh) có thể cung cấp theo yêu cầu "
-            "hợp lý từ tác giả liên lạc, theo điều kiện đã được IRB phê duyệt và "
-            "Luật BVDLCN 91/2025/QH15.  "
+            else _o_can("tuyên bố chia sẻ dữ liệu: dữ liệu cá nhân đã khử định danh, mã phân tích, nơi và cách truy "
+                        "cập, hoặc lý do không chia sẻ") + "  "
             if not str(irb_number).startswith("[CẦN")
             else "[CẦN — CHƯA có phê duyệt đạo đức thật; KHÔNG viết \"đã được IRB "
                  "phê duyệt\" cho tới khi có G2 thật. Sau khi có quyết định phê "
@@ -3521,34 +3852,90 @@ def generate_manuscript(
 # 5. SINH CHECKLIST BÁO CÁO
 # ════════════════════════════════════════════════════════════════════════════
 
-def _render_checklist_block(items: list, reporting_std: str, std_total_items: int) -> tuple[str, int, int]:
+#: 22/11/2026 (chiều — điều phối: «bảng kiểm tự đánh ☑ mà không kiểm»): chuẩn chính của phụ lục bảng kiểm G7 ⇔ tên chuẩn
+#: của K18 (`tieu_chi_ban_thao`). Dấu ☑ CHỈ đặt khi K18 chấm mục đó «dat» trên CHÍNH bản thảo; mục khác ghi đúng trạng
+#: thái (chưa báo cáo · không áp dụng · chưa đo được) và KHÔNG mang ô [CẦN] — bước «tác giả điền ô» của giả lập từng điền
+#: «☑ đã báo cáo trong bản thảo» vào mọi ô ☐ [CẦN] của bảng kiểm (vd STROBE 16a của cắt ngang mô tả dù bản thảo ghi
+#: «chưa phân tích ở đợt này»).
+CHUAN_K18_BANG_KIEM = {"rct": "CONSORT 2025", "cross_sectional": "STROBE 2007", "cohort": "STROBE 2007",
+                       "case_control": "STROBE 2007", "diagnostic": "STARD 2015", "prediction": "TRIPOD+AI 2024",
+                       "sr_ma": "PRISMA 2020", "qualitative": "SRQR 2014"}
+DAU_DAT_K18 = "☑ đã báo cáo"
+_DAU_THIEU_K18 = "☐ chưa báo cáo"
+_DAU_KAD_K18 = "— không áp dụng"
+_DAU_CHUA_DO_K18 = "☐ chưa đo được"
+
+
+def ket_qua_k18_g7(md: str, design_code: str) -> dict:
+    """{chuẩn: {mã: KetQua}} của K18 trên bản thảo (`doi_chieu_ban_thao`, chế độ tự nhận: còn ô [CẦN…] ⇒ nháp — mục
+    Kết quả/Bàn luận «chưa đo»). Chỉ chấm THÂN bài: cắt từ phụ lục bảng kiểm trở đi (ô/ghi chú của chính phụ lục không
+    được làm bản nộp thành «bản nháp»). K18 lỗi ⇒ {} (mọi dòng ghi «chưa đo được», không bao giờ ☑)."""
+    than = re.split(r"\n## PHỤ LỤC — CHECKLIST", "\n" + (md or ""), maxsplit=1)[0][1:]
+    try:
+        import tieu_chi_ban_thao as TCB  # noqa: PLC0415
+
+        kq = TCB.doi_chieu_ban_thao(than, design_code)
+    except Exception:  # noqa: BLE001 — bảng kiểm không được chặn việc sinh bản thảo; vắng K18 ⇒ không đánh dấu đạt
+        return {}
+    ra: dict = {}
+    for r in kq.get("ket_qua") or []:
+        ra.setdefault(r.chuan, {})[r.ma] = r
+    return ra
+
+
+def _k18_cua_muc(ds: Optional[dict], ma: str, chuan: str = "") -> list:
+    """Mục K18 ứng với mã bảng kiểm G7: trùng mã; SRQR «n» ⇔ «Sn»; mã gộp «6» ⇔ mọi mục con «6a», «6b»…"""
+    ds = ds or {}
+    if ma in ds:
+        return [ds[ma]]
+    if chuan.startswith("SRQR") and f"S{ma}" in ds:
+        return [ds[f"S{ma}"]]
+    return [v for k, v in ds.items() if re.fullmatch(re.escape(ma) + r"[a-z]", k)]
+
+
+def _ghi_chu_bang_kiem(t: str) -> str:
+    """Ghi chú một ô bảng kiểm: một dòng, không «|» và không ngoặc vuông (ghi chú K18 chứa «[CẦN…]» từng làm bộ quét ô
+    và chế độ nộp của K18 coi chính phụ lục là ô chờ điền), tối đa 160 ký tự."""
+    t = re.sub(r"\s+", " ", str(t or "")).replace("|", "/").replace("[", "(").replace("]", ")").strip()
+    return t if len(t) <= 160 else t[:159] + "…"
+
+
+def o_trang_thai_k18(ds_kq: list) -> tuple[str, str]:
+    """(dấu, ghi chú) cho một dòng bảng kiểm từ các KetQua K18 của mục đó."""
+    if not ds_kq:
+        return _DAU_CHUA_DO_K18, "K18 chưa có tiêu chí tự động cho mục này — đối chiếu tay"
+    tt = {r.trang_thai for r in ds_kq}
+    if tt <= {"khong_ap_dung"}:
+        return _DAU_KAD_K18, _ghi_chu_bang_kiem(ds_kq[0].ly_do or "K18: không áp dụng")
+    if tt <= {"dat", "khong_ap_dung"}:
+        return DAU_DAT_K18, "K18: đạt trên bản thảo này"
+    if tt & {"thieu", "canh_bao"}:
+        thieu = "; ".join(x for r in ds_kq for x in r.thieu) or "chưa đủ yếu tố"
+        return _DAU_THIEU_K18, _ghi_chu_bang_kiem("K18 thiếu: " + thieu)
+    return _DAU_CHUA_DO_K18, _ghi_chu_bang_kiem(next((r.ly_do for r in ds_kq if r.ly_do), "") or "K18 chưa đo được")
+
+
+def _render_checklist_block(items: list, reporting_std: str, std_total_items: int,
+                            k18: Optional[dict] = None, chuan_k18: str = "") -> tuple[str, int, int]:
     """Sinh 1 khối bảng checklist (header+rows+footer) cho MỘT chuẩn báo cáo.
-    Trả về (markdown, auto_count, row_total) — tách từ generate_checklist()
+    Trả về (markdown, số dòng ☑, row_total) — tách từ generate_checklist()
     2026-07-23 (vòng 11) để dùng lại cho checklist phụ trợ specialist_modules
-    (vd CHEERS 2022 đi kèm CONSORT/STROBE khi có cấu phần kinh tế y tế)."""
+    (vd CHEERS 2022 đi kèm CONSORT/STROBE khi có cấu phần kinh tế y tế).
+
+    22/11/2026 (chiều): trạng thái từng dòng lấy từ K18 trên chính bản thảo (`k18` = {mã: KetQua} của `chuan_k18`);
+    không có K18 cho chuẩn này ⇒ mọi dòng «chưa đo được». Cờ `auto` của CHECKLIST_ITEMS KHÔNG còn quyết định dấu ☑
+    (cờ tĩnh không biết bản thảo đã viết gì)."""
     header = (
         f"\n## PHỤ LỤC — CHECKLIST {reporting_std} "
-        f"({std_total_items} mục tổng | tự điền vs [CẦN])\n\n"
-        "| Mục | Nội dung yêu cầu | Tự điền (A8) | Ghi chú |\n"
+        f"({std_total_items} mục tổng | trạng thái do K18 chấm trên bản thảo)\n\n"
+        "| Mục | Nội dung yêu cầu | Trạng thái (K18) | Ghi chú |\n"
         "|-----|------------------|:------------:|--------|\n"
     )
-    auto_count = 0
+    dem = {DAU_DAT_K18: 0, _DAU_THIEU_K18: 0, _DAU_KAD_K18: 0, _DAU_CHUA_DO_K18: 0}
     rows = []
-    for item_id, desc, auto in items:
-        # SỬA 2026-07-30 (audit toàn diện G0-G10, G7-F3): trước đây còn ép
-        # is_auto=True nếu MÔ TẢ TĨNH của mục checklist tình cờ chứa từ khóa
-        # chung chung ("thiết kế", "irb"...) — khiến các mục auto_flag=False
-        # do người viết chuẩn hóa cố ý (vd mục IRB approval ở nhóm qualitative)
-        # bị đánh dấu "☑ Auto" sai, dù mô tả không hề liên quan tới việc IRB đã
-        # duyệt hay chưa. Chỉ còn dùng đúng flag đã tuyển chọn tay cho từng mục.
-        is_auto = auto
-        if is_auto:
-            status = "☑ Auto"
-            note = "§ tương ứng trong A8"
-            auto_count += 1
-        else:
-            status = "☐ [CẦN]"
-            note = "Bác sĩ điền khi có kết quả thật"
+    for item_id, desc, _auto in items:
+        status, note = o_trang_thai_k18(_k18_cua_muc(k18, str(item_id), chuan_k18))
+        dem[status] += 1
         rows.append(f"| {item_id} | {desc} | {status} | {note} |")
 
     # SỬA (vòng 5, 2026-07-17): std_total_items là TỔNG MỤC CHÍNH THỨC của chuẩn
@@ -3559,11 +3946,13 @@ def _render_checklist_block(items: list, reporting_std: str, std_total_items: in
     # 30 mục nhưng bảng có 42 dòng). Đổi mẫu số về len(items) — đúng số dòng bảng.
     row_total = len(items)
     footer = (
-        f"\n**Tổng kết:** {auto_count}/{row_total} dòng checklist tự điền từ checkpoints G0-G4.  \n"
-        f"**Còn {row_total - auto_count} dòng cần bác sĩ điền** khi có kết quả thật.  \n"
-        "\n*Kiểm tra checklist này với tác giả chính trước khi nộp bản thảo.*\n"
+        f"\n**Tổng kết:** {dem[DAU_DAT_K18]}/{row_total} dòng checklist đã báo cáo theo K18; "
+        f"{dem[_DAU_THIEU_K18]} chưa báo cáo; {dem[_DAU_KAD_K18]} không áp dụng; "
+        f"{dem[_DAU_CHUA_DO_K18]} chưa đo được.  \n"
+        "\n*Bảng kiểm chấm lại tự động khi gỡ khung bản nộp (`go_khung_ban_thao_g7.py`); đối chiếu với tác giả chính "
+        "trước khi nộp.*\n"
     )
-    return header + "\n".join(rows) + "\n" + footer, auto_count, row_total
+    return header + "\n".join(rows) + "\n" + footer, dem[DAU_DAT_K18], row_total
 
 
 # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 17, phát hiện HIGH):
@@ -3608,9 +3997,14 @@ def generate_checklist(
     hypothesis_type: str = "superiority",
     margin: Optional[float] = None,
     reporting_extensions: Optional[list] = None,
+    md: Optional[str] = None,
+    k18: Optional[dict] = None,
 ) -> str:
     """
     Sinh bảng checklist đầy đủ theo chuẩn báo cáo chính của design_code.
+
+    22/11/2026 (chiều): `md` = thân bản thảo ⇒ trạng thái từng dòng (kể cả khối chuẩn mở rộng RECORD/CROSS…) do K18
+    chấm trên chính văn bản đó (`ket_qua_k18_g7`); vắng `md` ⇒ mọi dòng «chưa đo được» — không bao giờ ☑ suông.
 
     THÊM 15/11/2026 (giai đoạn 9 «Báo cáo & công bố»): chuẩn báo cáo CỦA ĐỀ TÀI (G1 `reporting_extensions`, vd STROBE +
     CROSS cho khảo sát, STROBE + RECORD cho dữ liệu thường quy) từng bị bỏ — bảng kiểm chỉ có «STROBE 2007, 22 mục».
@@ -3636,7 +4030,10 @@ def generate_checklist(
     EXTENSION_ITEMS) — checklist CONSORT chuẩn KHÔNG tự đủ cho thiết kế này.
     """
     items = _checklist_cho_thiet_ke(design_code)[2]
-    block, _auto, _total = _render_checklist_block(items, reporting_std, std_total_items)
+    k18 = k18 if k18 is not None else (ket_qua_k18_g7(md, design_code) if md else {})
+    chuan_chinh = CHUAN_K18_BANG_KIEM.get(design_code, "")
+    block, _auto, _total = _render_checklist_block(items, reporting_std, std_total_items, k18.get(chuan_chinh),
+                                                   chuan_chinh)
 
     specialist_modules = specialist_modules or []
     if "economic" in specialist_modules and design_code != "economic":
@@ -3666,26 +4063,115 @@ def generate_checklist(
         )
         block += ni_block
 
-    block += khoi_bang_kiem_mo_rong(reporting_extensions or [])
+    block += khoi_bang_kiem_mo_rong(reporting_extensions or [], k18)
     return block
 
 
-def khoi_bang_kiem_mo_rong(reporting_extensions: list) -> str:
-    """Khối «Bảng kiểm mở rộng bắt buộc» cho từng chuẩn mở rộng của đề tài (giai đoạn 9, 15/11/2026)."""
+def _k18_chuan_mo_rong(chuan: str, k18: Optional[dict]) -> Optional[dict]:
+    """{mã: KetQua} của chuẩn mở rộng trong kết quả K18 (tên K18 mang năm: «RECORD» ⇔ «RECORD 2015»)."""
+    return next((v for ten, v in (k18 or {}).items()
+                 if re.fullmatch(re.escape(chuan.strip()) + r"(\s+\d{4})?", ten, re.IGNORECASE)), None)
+
+
+def _dong_bang_kiem_mo_rong(chuan: str, ds: Optional[dict]) -> list:
+    """Các dòng bảng của khối chuẩn mở rộng: mỗi mục K18 một dòng «| mã — tiêu chí | ghi chú | trạng thái |»."""
+    if not ds:
+        return [f"| {chuan}: K18 chưa có tiêu chí tự động | đối chiếu tay theo bảng kiểm gốc | {_DAU_CHUA_DO_K18} |"]
+    ra = []
+    for ma, r in sorted(ds.items(), key=lambda kv: [int(x) if x.isdigit() else x for x in re.split(r"(\d+)", kv[0])]):
+        dau, ghi = o_trang_thai_k18([r])
+        ra.append(f"| {ma} — {_ghi_chu_bang_kiem(r.tieu_chi)} | {ghi} | {dau} |")
+    return ra
+
+
+_DONG_BANG_KIEM_RE = re.compile(r"^\|\s*(?P<ma>[^|]+?)\s*\|(?P<mo_ta>.*)\|\s*(?P<dau>(?:☑|☐|—)[^|]*?)\s*\|"
+                                r"\s*(?P<ghi>[^|]*?)\s*\|\s*$")
+_TONG_KET_BANG_KIEM_RE = re.compile(r"^\*\*Tổng kết:\*\*\s*\d+/\d+ dòng checklist")
+
+
+def cap_nhat_bang_kiem_k18(md: str, design_code: str) -> tuple[str, int]:
+    """Chấm LẠI phụ lục bảng kiểm của một bản thảo đã có theo K18 trên chính văn bản đó (22/11/2026, chiều) — chạy khi
+    tác giả đã điền ô và gỡ khung (`go_khung_ban_thao_g7.py`), vì trạng thái lúc sinh khung chỉ là của bản nháp. Viết
+    lại cột trạng thái/ghi chú từng dòng của khối chính (cả dòng cũ «☑ Auto», «☐ [CẦN]», «☑ đã báo cáo trong bản thảo»),
+    dòng tổng kết, và thân bảng các khối chuẩn mở rộng. K18 tự xoá trắng phụ lục bảng kiểm khi chấm nên trạng thái cũ
+    không ảnh hưởng kết quả. Trả (văn bản mới, số dòng đã đổi)."""
+    k18 = ket_qua_k18_g7(md, design_code)
+    chuan_chinh = CHUAN_K18_BANG_KIEM.get(design_code, "")
+    ra: list = []
+    doi = 0
+    khoi: Optional[tuple] = None
+    da_gap_chinh = False
+    dem: dict = {}
+    dong = md.split("\n")
+    i = 0
+    while i < len(dong):
+        d = dong[i]
+        if d.startswith("## "):
+            khoi = None
+            if d.startswith("## PHỤ LỤC — CHECKLIST"):
+                ten = chuan_chinh if not da_gap_chinh else next((t for t in k18 if t in d), "")
+                khoi, da_gap_chinh, dem = ("chinh", ten), True, {}
+        elif d.startswith("### 📋 Bảng kiểm mở rộng bắt buộc:"):
+            khoi = ("mo_rong", d.split(":", 1)[1].strip())
+        if khoi and khoi[0] == "chinh":
+            m = _DONG_BANG_KIEM_RE.match(d)
+            if m:
+                dau, ghi = o_trang_thai_k18(_k18_cua_muc(k18.get(khoi[1]), m.group("ma"), khoi[1]))
+                dem[dau] = dem.get(dau, 0) + 1
+                moi = f"| {m.group('ma')} |{m.group('mo_ta')}| {dau} | {ghi} |"
+                doi += moi != d
+                ra.append(moi)
+                i += 1
+                continue
+            if _TONG_KET_BANG_KIEM_RE.match(d) and dem:
+                moi = (f"**Tổng kết:** {dem.get(DAU_DAT_K18, 0)}/{sum(dem.values())} dòng checklist đã báo cáo theo "
+                       f"K18; {dem.get(_DAU_THIEU_K18, 0)} chưa báo cáo; {dem.get(_DAU_KAD_K18, 0)} không áp dụng; "
+                       f"{dem.get(_DAU_CHUA_DO_K18, 0)} chưa đo được.  ")
+                doi += moi != d
+                ra.append(moi)
+                i += 1
+                continue
+            if d.startswith("**Còn ") and "cần bác sĩ điền" in d:  # dòng tổng kết của khuôn cũ
+                doi += 1
+                i += 1
+                continue
+        if khoi and khoi[0] == "mo_rong" and re.match(r"^\|-+\|-+\|-+\|\s*$", d):
+            ra.append(d)
+            j = i + 1
+            while j < len(dong) and dong[j].lstrip().startswith("|"):
+                j += 1
+            moi_dong = _dong_bang_kiem_mo_rong(khoi[1], _k18_chuan_mo_rong(khoi[1], k18))
+            doi += moi_dong != dong[i + 1:j]
+            ra += moi_dong
+            i = j
+            continue
+        ra.append(d)
+        i += 1
+    return "\n".join(ra), doi
+
+
+def khoi_bang_kiem_mo_rong(reporting_extensions: list, k18: Optional[dict] = None) -> str:
+    """Khối «Bảng kiểm mở rộng bắt buộc» cho từng chuẩn mở rộng của đề tài (giai đoạn 9, 15/11/2026).
+
+    22/11/2026 (chiều): chuẩn có tiêu chí K18 (vd RECORD 2015) ⇒ mỗi mục một dòng, trạng thái K18 chấm trên bản thảo
+    (`k18` = {chuẩn: {mã: KetQua}}; tên chuẩn K18 mang năm, «RECORD» ⇔ «RECORD 2015»). Chuẩn chưa có tiêu chí ⇒ một dòng
+    «chưa đo được», không ô [CẦN] (giả lập từng điền «chưa có thông tin» vào ô đó)."""
     import skill_standards as _S  # noqa: PLC0415
 
     ra = ""
     for chuan in reporting_extensions:
         nguon = _S.NGUON_CHUAN_MO_RONG.get(str(chuan).upper())
+        ds = _k18_chuan_mo_rong(str(chuan), k18)
+        than = "\n".join(_dong_bang_kiem_mo_rong(str(chuan), ds)) + "\n"
         ra += (
             "\n---\n"
             f"\n### 📋 Bảng kiểm mở rộng bắt buộc: {chuan}\n"
-            "\n> Chuẩn báo cáo CỦA ĐỀ TÀI (G1 `reporting_extensions`) — điền BẢNG KIỂM GỐC của "
-            f"{chuan} kèm vị trí (mục/trang bản thảo) cho từng mục; KHÔNG thay checklist chính ở trên.\n"
+            "\n> Chuẩn báo cáo CỦA ĐỀ TÀI (G1 `reporting_extensions`) — trạng thái từng mục do K18 chấm trên bản thảo; "
+            f"đối chiếu thêm BẢNG KIỂM GỐC của {chuan}; KHÔNG thay checklist chính ở trên.\n"
             f"> Nguồn: {nguon or '[CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — chưa có trích dẫn đã kiểm cho chuẩn này]'}\n"
-            f"\n| Mục bảng kiểm {chuan} (theo bảng kiểm gốc) | Vị trí trong bản thảo | Trạng thái |\n"
+            f"\n| Mục bảng kiểm {chuan} (theo bảng kiểm gốc) | Ghi chú K18 | Trạng thái |\n"
             "|---|---|---|\n"
-            "| [CẦN điền theo bảng kiểm gốc] | [CẦN] | ☐ |\n"
+            + than
         )
     return ra
 
@@ -4171,12 +4657,10 @@ def main() -> None:
     # ── Bước 3: Chuẩn bị reporting checklist ──
     print(f"\n📋 Bước 3/8: Chuẩn bị checklist {reporting_std}...")
     std_name, std_total, items_list = _checklist_cho_thiet_ke(design_code)
-    # Đếm mục tự điền
-    # VÁ 04/10/2026 (G7-11): đếm từ CHÍNH khối phụ lục (_render_checklist_block) — bản cũ đếm heuristic từ khoá mà
-    # G7-F3 đã bỏ khỏi phụ lục ⇒ số trên màn hình/checkpoint lệch phụ lục.
-    _khoi, auto_count, so_dong_checklist = _render_checklist_block(items_list, reporting_std, std_total)
-    print(f"  → {auto_count}/{so_dong_checklist} dòng checklist tự điền từ G0-G4 "
-          f"(chuẩn {std_name} có {std_total} mục chính thức)")
+    # VÁ 04/10/2026 (G7-11): đếm từ CHÍNH khối phụ lục (_render_checklist_block). 22/11/2026 (chiều): số dòng ☑ chỉ
+    # biết SAU khi có bản thảo (K18 chấm ở Bước 5) — ở đây chỉ in số dòng.
+    print(f"  → {len(items_list)} dòng checklist (chuẩn {std_name} có {std_total} mục chính thức); trạng thái do K18 "
+          "chấm sau khi sinh bản thảo")
 
     # ── Bước 4: Sinh manuscript ──
     print(f"\n✍️  Bước 4/8: Sinh bản thảo IMRAD ({design_code} / {reporting_std})...")
@@ -4229,6 +4713,8 @@ def main() -> None:
         mien_dong_thuan=g2_da_duyet and g2.get("g2_icf_waiver_approved") is True,
         ket_qua_g6=ket_qua_g6,
         khoi_consort=khoi_consort_bo_sung_g7(out_dir, study, design_code),
+        khoi_chuan=khoi_chuan_bao_cao_g7(out_dir, study, design_code, redcap_vars,
+                                         (g1.get("design") or {}).get("reporting_extensions") or []),
     )
 
     # SỬA 16/11/2026: ô hỏi lại điều ĐÃ CHỐT (mục tiêu, cơ sở, tiêu chí, phơi nhiễm, kết cục, phần mềm SAP §10…) lấy
@@ -4238,8 +4724,14 @@ def main() -> None:
         print(f"  → Lấy từ quyết định đã chốt (không hỏi lại): {', '.join(da_lap_g7)}")
 
     # ── Bước 5: Bảng số từ + checklist ──
-    print("  → Sinh bảng số từ và checklist...")
+    # 22/11/2026 (chiều): trạng thái bảng kiểm do K18 chấm trên CHÍNH bản thảo vừa sinh (không còn ☑ theo cờ tĩnh);
+    # số «tự điền» trên checkpoint = số dòng ☑ của khối chính phụ lục.
+    print("  → Sinh bảng số từ và checklist (K18 chấm trạng thái từng mục)...")
     word_table   = word_count_table(args.word_limit)
+    k18_ban_thao = ket_qua_k18_g7(manuscript, design_code)
+    _chuan_k18 = CHUAN_K18_BANG_KIEM.get(design_code, "")
+    _khoi, auto_count, so_dong_checklist = _render_checklist_block(items_list, reporting_std, std_total,
+                                                                   k18_ban_thao.get(_chuan_k18), _chuan_k18)
     checklist_md = generate_checklist(
         design_code=design_code,
         reporting_std=reporting_std,
@@ -4253,6 +4745,8 @@ def main() -> None:
         hypothesis_type=hypothesis_type,
         margin=margin,
         reporting_extensions=(g1.get("design") or {}).get("reporting_extensions") or [],
+        md=manuscript,
+        k18=k18_ban_thao,
     )
 
     # Ghép toàn bộ artifact

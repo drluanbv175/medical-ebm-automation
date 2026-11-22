@@ -8,7 +8,8 @@ Vì sao (giả lập trọn vòng đề tài thuần tập, bác sĩ 16/11/2026 
 quét `g8_quality_gate.manuscript_residues`) coi chúng là «chưa soạn» nên tác giả phải xoá tay từng dòng, dễ xoá nhầm
 nội dung. Công cụ này gỡ ĐÚNG các dòng khung ấy.
 
-Không gỡ: ô «[CẦN…]» (chỗ còn thiếu nội dung — phải điền), số liệu, trích dẫn, bảng checklist chuẩn báo cáo.
+Không gỡ: ô «[CẦN…]» (chỗ còn thiếu nội dung — phải điền), số liệu, trích dẫn, bảng checklist chuẩn báo cáo. 22/11/2026:
+chấm LẠI trạng thái bảng kiểm theo K18 trên bản nộp (☑ chỉ khi K18 chấm đạt — `run_g7_auto.cap_nhat_bang_kiem_k18`).
 Chạy khô mặc định; `--ap-dung` mới ghi (sao lưu `*.bak-<giờ>` trước). Sau khi gỡ: chạy lại
 `g7_quality_gate.py --study <mã>`; bản thảo đổi ⇒ dấu xác nhận G7 (`dau_van_tay_chot`) phải chốt lại.
 
@@ -66,6 +67,23 @@ def go_khung(van: str, tieu_de: Optional[str] = None) -> Tuple[str, int]:
     return re.sub(r"\n{3,}", "\n\n", "\n".join(ra)).rstrip() + "\n", bo
 
 
+def cham_lai_bang_kiem(van: str, out_dir: Path) -> Tuple[str, int]:
+    """Chấm lại phụ lục bảng kiểm chuẩn báo cáo theo K18 trên bản nộp (22/11/2026, chiều — điều phối: «bảng kiểm tự
+    đánh ☑ đã báo cáo mà không kiểm»). Trạng thái lúc sinh khung là của bản nháp (còn ô [CẦN]); sau khi tác giả điền ô,
+    chỉ mục K18 chấm «dat» mới mang ☑. Không xác định được thiết kế hoặc thiếu mô-đun ⇒ giữ nguyên (0 dòng đổi)."""
+    try:
+        import gate_contract as GC  # noqa: PLC0415
+        import run_g7_auto as G7  # noqa: PLC0415
+
+        thiet_ke, _canh_bao = GC.resolve_design_code(out_dir)
+        if not thiet_ke:
+            return van, 0
+        moi, doi = G7.cap_nhat_bang_kiem_k18(van, thiet_ke)
+    except Exception:  # noqa: BLE001 — công cụ gỡ khung không được hỏng vì bước chấm phụ
+        return van, 0
+    return (moi if moi.endswith("\n") else moi + "\n"), doi
+
+
 def con_chua_soan(van: str) -> List[str]:
     """Dòng mà bộ quét G7/G8 vẫn coi là chưa soạn sau khi gỡ khung (ô [CẦN…], vệt công cụ nội bộ)."""
     try:
@@ -92,9 +110,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         meta = {}
     van = p.read_text(encoding="utf-8")
     moi, bo = go_khung(van, meta.get("title") if isinstance(meta.get("title"), str) else None)
+    moi, doi_bk = cham_lai_bang_kiem(moi, out_dir)
     con = con_chua_soan(moi)
     print(f"{'Đã gỡ' if a.ap_dung else 'Sẽ gỡ'} {bo} dòng khung bản nháp khỏi {p.name}.")
-    if a.ap_dung and bo:
+    print(f"{'Đã chấm lại' if a.ap_dung else 'Sẽ chấm lại'} {doi_bk} dòng bảng kiểm chuẩn báo cáo theo K18 "
+          "(☑ chỉ khi K18 chấm đạt trên bản nộp).")
+    if a.ap_dung and (bo or doi_bk):
         bak = p.with_name(f"{p.name}.bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
         shutil.copy2(p, bak)
         p.write_text(moi, encoding="utf-8", newline="\n")

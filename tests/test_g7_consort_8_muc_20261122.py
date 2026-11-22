@@ -5,7 +5,9 @@
 đề cương/SAP), 4 (chia sẻ dữ liệu cá nhân, từ điển dữ liệu, mã thống kê), 8 (người bệnh/công chúng tham gia), 10 (thay
 đổi so với đề cương), 20b (cách làm mù), 21a (phương pháp cho kết cục chính và tác hại), 23a (mốc ngày tuyển–theo dõi ở
 Kết quả), 24b (chăm sóc đồng thời). Bộ sinh chép NGUYÊN chữ dữ kiện đã chốt (G1, G2, SAP, phiếu G9, tuyên bố tác giả G7,
-đặc tả PI khai ở study_meta); trường vắng ⇒ không in, để K18 báo đúng mục — không câu mẫu, không ô [CẦN] mới.
+đặc tả PI khai ở study_meta); trường vắng ⇒ không câu mẫu. 22/11/2026 (chiều — luật liêm chính của điều phối): mục
+mà CONSORT đòi (3, 8, 10) mà hồ sơ chưa có lời khai ⇒ ô [CẦN — …] nói rõ thiếu gì; ô nằm cùng mệnh đề với nhãn nên K18
+vẫn báo thiếu đúng mục.
 """
 from __future__ import annotations
 
@@ -88,6 +90,10 @@ def test_khoi_consort_chep_nguyen_chu_moi_nguon(tmp_path):
     assert ("**Sự tham gia của người bệnh và công chúng:**  \nHai người bệnh tăng huyết áp góp ý nội dung và tần suất "
             "tin nhắn trước khi tuyển.") in kb
     assert "SPIRIT" not in kb + kq  # chú thích máy của đặc tả G10 không vào văn bản
+    # mục 10: hồ sơ chưa có lời khai thay đổi so với ĐỀ CƯƠNG (bảng SAP «(chưa có)» không phải lời khai) ⇒ đúng một ô
+    assert [x for x in k["phuong_phap"] if "[CẦN" in x] == [
+        "*Thay đổi so với đề cương sau khi bắt đầu nghiên cứu:* [CẦN — thay đổi quan trọng so với đề cương sau khi bắt "
+        "đầu (kết cục, phân tích, tiêu chí chọn) kèm lý do, hoặc nêu không có thay đổi]  "]
     assert k["chia_se"].startswith("Dữ liệu cá nhân được chia sẻ có kiểm soát; dữ liệu cá nhân đã khử định danh kèm "
                                    "từ điển dữ liệu và mã phân tích R; tài liệu kèm: ")
     for x in ("thời điểm: sau khi bài báo được công bố", "thời hạn: 5 năm", "cách truy cập: gửi yêu cầu tới tác giả"):
@@ -96,22 +102,37 @@ def test_khoi_consort_chep_nguyen_chu_moi_nguon(tmp_path):
             "15/03/2027; lịch đánh giá: ban đầu, tháng 3 và tháng 6.") in kq
     assert ("*Chăm sóc đồng thời theo quy định của đề cương:* Mọi điều chỉnh thuốc hạ áp theo bác sĩ điều trị ở cả "
             "hai nhánh; ghi nhận ứng dụng nhắc thuốc khác khi tái khám.") in kq
-    assert "[CẦN" not in pp + kb + kq + k["chia_se"]
+    assert "[CẦN" not in kb + kq + k["chia_se"]
 
 
-def test_truong_vang_khong_in_gi_khong_cau_mau_khong_o_can(tmp_path):
+def test_truong_vang_khong_cau_mau_chi_o_can_noi_ro_thieu_gi(tmp_path):
+    """Vắng mọi dữ kiện: RCT ⇒ ô [CẦN] cho đúng ba mục CONSORT đòi lời khai (3 nơi truy cập đề cương, 8 người bệnh tham
+    gia, 10 thay đổi so với đề cương) — không câu mẫu nào; thuần tập (STROBE không đòi) ⇒ không in gì."""
     k = G7.khoi_consort_bo_sung_g7(tmp_path, STUDY, "rct")  # không study_meta, không SAP, không G9
-    assert k == {"phuong_phap": [], "khai_bao": [], "chia_se": "", "ket_qua": []}
+    assert k["chia_se"] == "" and k["ket_qua"] == []
+    o = [x for x in k["phuong_phap"] + k["khai_bao"] if x.strip()]
+    assert o == ["*Thay đổi so với đề cương sau khi bắt đầu nghiên cứu:* " + G7._o_can(
+                     "thay đổi quan trọng so với đề cương sau khi bắt đầu (kết cục, phân tích, tiêu chí chọn) kèm lý "
+                     "do, hoặc nêu không có thay đổi") + "  ",
+                 "**Đề cương và kế hoạch phân tích thống kê:**  ",
+                 G7._o_can("nơi và cách truy cập đề cương, kế hoạch phân tích thống kê (đường dẫn, phụ lục hoặc cung "
+                           "cấp theo yêu cầu)") + "  ",
+                 "**Sự tham gia của người bệnh và công chúng:**  ",
+                 G7._o_can("người bệnh hoặc công chúng có tham gia thiết kế, thực hiện, phổ biến nghiên cứu không và "
+                           "tham gia thế nào, hoặc nêu không có") + "  "], o
+    assert G7.khoi_consort_bo_sung_g7(tmp_path, STUDY, "cohort") == {"phuong_phap": [], "khai_bao": [],
+                                                                      "chia_se": "", "ket_qua": []}
     _ghi(tmp_path / "study_meta.json", json.dumps({"gate_params": {"G1": {"study_period": "[CẦN — từ tháng/năm]"}},
                                                    "ppi_plan": "Không áp dụng"}, ensure_ascii=False))
-    assert G7.khoi_consort_bo_sung_g7(tmp_path, STUDY, "rct")["khai_bao"] == []
+    assert not any("Không áp dụng" in x for x in G7.khoi_consort_bo_sung_g7(tmp_path, STUDY, "rct")["khai_bao"])
     assert G7.khoi_consort_bo_sung_g7(tmp_path, STUDY, "rct")["ket_qua"] == []
 
 
 def test_phieu_g9_chua_chot_khong_dung_tuyen_bo_g7_van_dung(tmp_path):
     d = _de_tai(tmp_path, g9={**G9, "statement_final": False})
     k = G7.khoi_consort_bo_sung_g7(d, STUDY, "rct")
-    assert k["chia_se"] == "" and k["khai_bao"] == []
+    # phiếu G9 chưa chốt ⇒ không dùng tài liệu/cách truy cập của phiếu: chỉ còn ô [CẦN] nơi truy cập đề cương
+    assert k["chia_se"] == "" and k["khai_bao"][1].startswith("[CẦN") and "gửi yêu cầu tới" not in k["khai_bao"][1]
     _them_g7(d, "Kịch bản phân tích kèm gói phát hành (SPIRIT 29)")
     assert G7.khoi_consort_bo_sung_g7(d, STUDY, "rct")["chia_se"] == "Kịch bản phân tích kèm gói phát hành."
 
@@ -127,7 +148,8 @@ def test_khong_chia_se_va_tuyen_bo_trung_nhau_chi_in_mot_lan(tmp_path):
 def test_dong_khuon_chua_co_cua_sap_khong_phai_loi_khai_khong_thay_doi(tmp_path):
     d = _de_tai(tmp_path)
     assert G7._thay_doi_sau_khoa_g7(d, STUDY) == []
-    assert not any("Thay đổi" in x for x in G7.khoi_consort_bo_sung_g7(d, STUDY, "rct")["phuong_phap"])
+    assert not any("kế hoạch phân tích sau khi khoá" in x
+                   for x in G7.khoi_consort_bo_sung_g7(d, STUDY, "rct")["phuong_phap"])
     _de_tai(tmp_path, sap=SAP.replace("| (chưa có) | | | |\n", "| (chưa có) | — | | |\n"))  # khuôn có gạch
     assert G7._thay_doi_sau_khoa_g7(d, STUDY) == []
     _de_tai(tmp_path, sap=SAP.replace("| (chưa có) | | | |\n", DONG_THAY_DOI))

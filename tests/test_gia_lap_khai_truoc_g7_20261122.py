@@ -75,9 +75,12 @@ def test_khai_truoc_ban_thao_ghi_dung_vai_dung_khoa(tmp_path):
     assert "manuscript_reviewed_confirmed" not in g7 and "dau_van_tay_chot" not in g7
     # chỉ khoá bộ sinh đọc: đặc tả khác của G10 (tiến độ, sai lệch…) vẫn do PI khai ở G10
     assert "timeline" not in meta and "bias_risks" not in meta
+    # 22/11/2026 (chiều): thêm nơi truy cập đề cương, thay đổi so với đề cương (tác giả), cách làm mù (PI, CONSORT 20b)
     assert set(tv.du_lieu["khai_truoc_ban_thao"]) == {"gate_params.G7.data_sharing_statement",
-                                                      "gate_params.G7.funding_declared", "ppi_plan",
-                                                      "concomitant_care_policy"}
+                                                      "gate_params.G7.funding_declared",
+                                                      "gate_params.G7.protocol_access_statement",
+                                                      "gate_params.G7.protocol_changes_statement", "ppi_plan",
+                                                      "concomitant_care_policy", "blinding_how"}
 
 
 def test_khai_truoc_ban_thao_khong_de_loi_khai_da_co(tmp_path):
