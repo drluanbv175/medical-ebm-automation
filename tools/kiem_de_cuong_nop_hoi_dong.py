@@ -728,6 +728,9 @@ def loi_k13(out_dir: Path, md: str) -> List[str]:
 
 
 THIEU_TRANG = "trang hoặc mã bài (năm;tập(số):trang)"
+#: Crossref không ghi trường page ⇒ vẫn đòi trang, chỉ nơi lấy (không phải căn cứ miễn — 22/11/2026)
+KHONG_TRANG_CROSSREF = (" — Crossref không ghi trang: lấy trang in trên bản PDF hoặc trang bài của tạp chí; "
+                        "bài điện tử không phân trang và không có mã bài ghi «[about N p.]» theo NLM")
 
 
 def loi_k13_nlm(md: str, out_dir: Optional[Path] = None) -> List[str]:
@@ -737,7 +740,9 @@ def loi_k13_nlm(md: str, out_dir: Optional[Path] = None) -> List[str]:
 
     Có sổ định danh (`toan_van_trich_dan.py dinh-danh` → `SO_DINH_DANH_TLTK_<mã>.json`) và mục sổ còn hiệu lực (băm
     dòng trùng dòng hiện hành): siêu dữ liệu lệch Crossref ⇒ lỗi kèm giá trị nguồn; thiếu trang mà Crossref có trang ⇒
-    lỗi kèm trang nguồn; Crossref xác nhận nguồn KHÔNG ghi trang ⇒ không đòi trang (theo nguồn)."""
+    lỗi kèm trang nguồn. Crossref KHÔNG ghi trang ⇒ VẪN đòi trang (22/11/2026: bản cũ miễn yêu cầu này — xanh giả, vì
+    cả 8 bài C1a Crossref không ghi trang đều in số trang trên bản PDF của tạp chí); thông điệp chỉ nơi lấy trang (bản
+    PDF/trang bài của tạp chí) và cách ghi NLM cho bài điện tử thật sự không phân trang («[about N p.]»)."""
     import danh_muc_trich_dan as DMT  # noqa: PLC0415
 
     so_dd: Dict[int, Dict[str, Any]] = {}
@@ -762,7 +767,7 @@ def loi_k13_nlm(md: str, out_dir: Optional[Path] = None) -> List[str]:
             if e.get("trang_nguon"):
                 thieu[thieu.index(THIEU_TRANG)] = f"{THIEU_TRANG} — Crossref ghi «{e['trang_nguon']}»"
             elif e.get("nguon_khong_co_trang") is True:
-                thieu.remove(THIEU_TRANG)
+                thieu[thieu.index(THIEU_TRANG)] = THIEU_TRANG + KHONG_TRANG_CROSSREF
         if e is not None:
             thieu += [f"lệch nguồn: {x}" for x in e.get("lech") or []]
         if thieu:

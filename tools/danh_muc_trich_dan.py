@@ -248,7 +248,12 @@ def yeu_to_nlm(dong: str) -> Dict[str, Any]:
         nam_tap = _NAM_TAP.search(s)
         if not nam_tap and not re.search(r"(?<!\d)(?:19|20)\d{2}\s*:\s*\d", s):
             thieu.append("tập hoặc số (năm;tập(số))")
-        if not re.search(r"(?:(?:19|20)\d{2}\s*;\s*[\w-]+(?:\s*\([^)]*\))?|(?:19|20)\d{2})\s*:\s*[eSA-Za-z]{0,2}\d", s):
+        # vị trí trong số: trang in, mã bài (e-location) hoặc — chỉ khi bài điện tử thật sự KHÔNG phân trang và không
+        # có mã bài — độ dài ước tính trong ngoặc vuông theo NLM Citing Medicine («[about 3 p.]», «[5 p.]»). Không có
+        # ngoại lệ «nguồn không ghi trang»: Crossref thiếu trường page KHÔNG chứng minh bài không có trang (22/11/2026:
+        # cả 8 bài C1a mà Crossref không ghi trang đều in số trang trên bản PDF của tạp chí).
+        if not re.search(r"(?:(?:19|20)\d{2}\s*;\s*[\w-]+(?:\s*\([^)]*\))?|(?:19|20)\d{2})\s*:\s*"
+                         r"(?:[eSA-Za-z]{0,2}\d|\[(?:about\s+|khoảng\s+)?\d+\s*(?:p|tr|screens?)\.?\])", s):
             thieu.append("trang hoặc mã bài (năm;tập(số):trang)")
         if len(phan) < 4 and not re.search(r"\.\s+[A-ZĐ][\w .&()-]*\.\s+(?:19|20)\d{2}", s):
             thieu.append("tên tạp chí")

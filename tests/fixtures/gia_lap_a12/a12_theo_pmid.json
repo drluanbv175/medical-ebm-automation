@@ -1327,7 +1327,20 @@
    "authors": "Moher D, Hopewell S, Schulz KF, Montori V, Gøtzsche PC",
    "journal": "BMJ (Clinical research ed.)",
    "year": "2010",
-   "doi": "10.1136/bmj.c869"
+   "doi": "10.1136/bmj.c869",
+   "n_authors": 9,
+   "authors_6": [
+    "Moher D",
+    "Hopewell S",
+    "Schulz KF",
+    "Montori V",
+    "Gøtzsche PC",
+    "Devereaux PJ"
+   ],
+   "journal_abbr": "BMJ",
+   "volume": "340",
+   "pages": "c869",
+   "pmcid": "PMC2844943"
   },
   "20592050": {
    "status": "resolved",
@@ -1474,7 +1487,22 @@
    "authors": "Piaggio G, Elbourne DR, Pocock SJ, Evans SJ, Altman DG",
    "journal": "JAMA",
    "year": "2012",
-   "doi": "10.1001/jama.2012.87802"
+   "doi": "10.1001/jama.2012.87802",
+   "n_authors": 5,
+   "authors_6": [
+    "Piaggio G",
+    "Elbourne DR",
+    "Pocock SJ",
+    "Evans SJ",
+    "Altman DG"
+   ],
+   "nhom_tac_gia": [
+    "CONSORT Group"
+   ],
+   "journal_abbr": "JAMA",
+   "volume": "308",
+   "issue": "24",
+   "pages": "2594-604"
   },
   "23279139": {
    "status": "resolved",
@@ -1653,7 +1681,20 @@
    "authors": "Thakkar J, Kurup R, Laba TL, Santo K, Thiagalingam A",
    "journal": "JAMA internal medicine",
    "year": "2016",
-   "doi": "10.1001/jamainternmed.2015.7667"
+   "doi": "10.1001/jamainternmed.2015.7667",
+   "n_authors": 9,
+   "authors_6": [
+    "Thakkar J",
+    "Kurup R",
+    "Laba TL",
+    "Santo K",
+    "Thiagalingam A",
+    "Rodgers A"
+   ],
+   "journal_abbr": "JAMA Intern Med",
+   "volume": "176",
+   "issue": "3",
+   "pages": "340-9"
   },
   "26964707": {
    "status": "resolved",
@@ -1991,7 +2032,19 @@
    "authors": "Tam HL, Leung LYL, Wong EML, Cheung K, Chan ASW",
    "journal": "Worldviews on evidence-based nursing",
    "year": "2022",
-   "doi": "10.1111/wvn.12549"
+   "doi": "10.1111/wvn.12549",
+   "n_authors": 5,
+   "authors_6": [
+    "Tam HL",
+    "Leung LYL",
+    "Wong EML",
+    "Cheung K",
+    "Chan ASW"
+   ],
+   "journal_abbr": "Worldviews Evid Based Nurs",
+   "volume": "19",
+   "issue": "1",
+   "pages": "16-27"
   },
   "35017145": {
    "status": "resolved",
@@ -2028,7 +2081,20 @@
    "authors": "Bhandari B, Narasimhan P, Jayasuriya R, Vaidya A, Schutte AE",
    "journal": "Global heart",
    "year": "2022",
-   "doi": "10.5334/gh.1103"
+   "doi": "10.5334/gh.1103",
+   "n_authors": 5,
+   "authors_6": [
+    "Bhandari B",
+    "Narasimhan P",
+    "Jayasuriya R",
+    "Vaidya A",
+    "Schutte AE"
+   ],
+   "journal_abbr": "Glob Heart",
+   "volume": "17",
+   "issue": "1",
+   "pages": "13",
+   "pmcid": "PMC8877709"
   },
   "35427812": {
    "status": "resolved",
@@ -2147,7 +2213,23 @@
    "authors": "Siopis G, Moschonis G, Eweka E, Jung J, Kwasnicka D",
    "journal": "The Lancet. Digital health",
    "year": "2023",
-   "doi": "10.1016/S2589-7500(23)00002-X"
+   "doi": "10.1016/S2589-7500(23)00002-X",
+   "n_authors": 13,
+   "authors_6": [
+    "Siopis G",
+    "Moschonis G",
+    "Eweka E",
+    "Jung J",
+    "Kwasnicka D",
+    "Asare BY"
+   ],
+   "nhom_tac_gia": [
+    "DigiCare4You Consortium"
+   ],
+   "journal_abbr": "Lancet Digit Health",
+   "volume": "5",
+   "issue": "3",
+   "pages": "e144-e159"
   },
   "36924031": {
    "status": "resolved",
@@ -2239,7 +2321,20 @@
    "authors": "Kengne AP, Brière JB, Gudiña IA, Jiang X, Kodjamanova P",
    "journal": "Expert review of pharmacoeconomics & outcomes research",
    "year": "2024",
-   "doi": "10.1080/14737167.2024.2319598"
+   "doi": "10.1080/14737167.2024.2319598",
+   "n_authors": 7,
+   "authors_6": [
+    "Kengne AP",
+    "Brière JB",
+    "Gudiña IA",
+    "Jiang X",
+    "Kodjamanova P",
+    "Bennetts L"
+   ],
+   "journal_abbr": "Expert Rev Pharmacoecon Outcomes Res",
+   "volume": "24",
+   "issue": "7",
+   "pages": "807-816"
   },
   "38573034": {
    "status": "resolved",
@@ -2255,7 +2350,19 @@
    "authors": "Sarraf DP, Rauniar GP, Gupta PP, Maskey R, Kattel V",
    "journal": "Kathmandu University medical journal (KUMJ)",
    "year": "2023",
-   "doi": null
+   "doi": null,
+   "n_authors": 5,
+   "authors_6": [
+    "Sarraf DP",
+    "Rauniar GP",
+    "Gupta PP",
+    "Maskey R",
+    "Kattel V"
+   ],
+   "journal_abbr": "Kathmandu Univ Med J (KUMJ)",
+   "volume": "21",
+   "issue": "82",
+   "pages": "185-189"
   },
   "38739123": {
    "status": "resolved",
@@ -2327,7 +2434,19 @@
    "authors": "Zewdu EM, Demessie A, Nigatu AM, Baykemagn ND",
    "journal": "BMC health services research",
    "year": "2024",
-   "doi": "10.1186/s12913-024-11794-3"
+   "doi": "10.1186/s12913-024-11794-3",
+   "n_authors": 4,
+   "authors_6": [
+    "Zewdu EM",
+    "Demessie A",
+    "Nigatu AM",
+    "Baykemagn ND"
+   ],
+   "journal_abbr": "BMC Health Serv Res",
+   "volume": "24",
+   "issue": "1",
+   "pages": "1451",
+   "pmcid": "PMC11583659"
   },
   "39611763": {
    "status": "resolved",
@@ -2383,7 +2502,21 @@
    "authors": "Canguçu E, Castro PR, Moreira PM, Bandeira P, Almeida K",
    "journal": "Cadernos de saude publica",
    "year": "2024",
-   "doi": "10.1590/0102-311XEN050023"
+   "doi": "10.1590/0102-311XEN050023",
+   "n_authors": 7,
+   "authors_6": [
+    "Canguçu E",
+    "Castro PR",
+    "Moreira PM",
+    "Bandeira P",
+    "Almeida K",
+    "Santos PM"
+   ],
+   "journal_abbr": "Cad Saude Publica",
+   "volume": "40",
+   "issue": "11",
+   "pages": "e00050023",
+   "pmcid": "PMC11654099"
   },
   "39843675": {
    "status": "resolved",
@@ -2465,7 +2598,21 @@
    "authors": "Aigbonoga D, Adewale B, Igwilo J, Adeyeye V, Olajide T",
    "journal": "BMC public health",
    "year": "2025",
-   "doi": "10.1186/s12889-025-22204-6"
+   "doi": "10.1186/s12889-025-22204-6",
+   "n_authors": 11,
+   "authors_6": [
+    "Aigbonoga D",
+    "Adewale B",
+    "Igwilo J",
+    "Adeyeye V",
+    "Olajide T",
+    "Olaniran O"
+   ],
+   "journal_abbr": "BMC Public Health",
+   "volume": "25",
+   "issue": "1",
+   "pages": "1070",
+   "pmcid": "PMC11924615"
   },
   "40123081": {
    "status": "resolved",
@@ -2481,7 +2628,20 @@
    "authors": "Chan AW, Boutron I, Hopewell S, Moher D, Schulz KF",
    "journal": "JAMA",
    "year": "2025",
-   "doi": "10.1001/jama.2025.4486"
+   "doi": "10.1001/jama.2025.4486",
+   "n_authors": 39,
+   "authors_6": [
+    "Chan AW",
+    "Boutron I",
+    "Hopewell S",
+    "Moher D",
+    "Schulz KF",
+    "Collins GS"
+   ],
+   "journal_abbr": "JAMA",
+   "volume": "334",
+   "issue": "5",
+   "pages": "435-443"
   },
   "40294956": {
    "status": "resolved",
@@ -2489,7 +2649,20 @@
    "authors": "Hróbjartsson A, Boutron I, Hopewell S, Moher D, Schulz KF",
    "journal": "BMJ (Clinical research ed.)",
    "year": "2025",
-   "doi": "10.1136/bmj-2024-081660"
+   "doi": "10.1136/bmj-2024-081660",
+   "n_authors": 39,
+   "authors_6": [
+    "Hróbjartsson A",
+    "Boutron I",
+    "Hopewell S",
+    "Moher D",
+    "Schulz KF",
+    "Collins GS"
+   ],
+   "journal_abbr": "BMJ",
+   "volume": "389",
+   "pages": "e081660",
+   "pmcid": "PMC12128891"
   },
   "40440692": {
    "status": "resolved",
@@ -2644,7 +2817,21 @@
    "authors": "Cutrona SL, McDannold SE, DeLaughter KL, Fix GM, Shimada SL",
    "journal": "JAMA network open",
    "year": "2025",
-   "doi": "10.1001/jamanetworkopen.2025.41342"
+   "doi": "10.1001/jamanetworkopen.2025.41342",
+   "n_authors": 14,
+   "authors_6": [
+    "Cutrona SL",
+    "McDannold SE",
+    "DeLaughter KL",
+    "Fix GM",
+    "Shimada SL",
+    "Bokhour BG"
+   ],
+   "journal_abbr": "JAMA Netw Open",
+   "volume": "8",
+   "issue": "11",
+   "pages": "e2541342",
+   "pmcid": "PMC12590299"
   },
   "41358893": {
    "status": "resolved",
@@ -2676,7 +2863,21 @@
    "authors": "Dodson JA, Adhikari S, Schoenthaler AM, Shimbo D, Berman AN",
    "journal": "Journal of the American College of Cardiology",
    "year": "2026",
-   "doi": "10.1016/j.jacc.2025.10.062"
+   "doi": "10.1016/j.jacc.2025.10.062",
+   "n_authors": 17,
+   "authors_6": [
+    "Dodson JA",
+    "Adhikari S",
+    "Schoenthaler AM",
+    "Shimbo D",
+    "Berman AN",
+    "Levy N"
+   ],
+   "journal_abbr": "J Am Coll Cardiol",
+   "volume": "87",
+   "issue": "18",
+   "pages": "2415-2426",
+   "pmcid": "PMC13561152"
   },
   "41528277": {
    "status": "resolved",
@@ -2746,7 +2947,19 @@
    "authors": "Longkumer I, Bhatia R, Subramanian SV, Sharma G, Singh MB",
    "journal": "Contemporary clinical trials",
    "year": "2026",
-   "doi": "10.1016/j.cct.2026.108314"
+   "doi": "10.1016/j.cct.2026.108314",
+   "n_authors": 13,
+   "authors_6": [
+    "Longkumer I",
+    "Bhatia R",
+    "Subramanian SV",
+    "Sharma G",
+    "Singh MB",
+    "Haldar P"
+   ],
+   "journal_abbr": "Contemp Clin Trials",
+   "volume": "165",
+   "pages": "108314"
   },
   "42046405": {
    "status": "resolved",
