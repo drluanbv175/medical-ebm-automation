@@ -2477,7 +2477,37 @@ Kết luận tổng thể: {ket_luan}
                 "dung": self.dung,
                 "so_o_loi_may": len(loi_may), "o_loi_may": sorted(set(loi_may))[:200],
                 "crash": [b["buoc"] for b in self.buoc if b.get("crash")], "buoc": self.buoc,
-                "chinh_xac": self._chinh_xac_an_toan(), "so_do_sai": self._soat_so_do()}
+                "chinh_xac": self._chinh_xac_an_toan(), "so_do_sai": self._soat_so_do(),
+                "chuan_bao_cao": self._chuan_bao_cao()}
+
+    def _chuan_bao_cao(self) -> Dict[str, Any]:
+        """Đối chiếu chuẩn báo cáo THEO MỤC (K18) cho bản thảo G7 và báo cáo tổng hợp nghiệm thu dựng từ gói đề tài
+        (22/11/2026 — bác sĩ giao hoàn thiện SAP/bản thảo/báo cáo cho 8 thiết kế; trước đó không cổng nào đo khâu này
+        trong CI). Trả {"ban_thao_thieu", "bao_cao_thieu", "bao_cao_cau_truc"} — mã «CHUẨN mã»; lỗi ⇒ {"loi"}."""
+        try:
+            import bao_cao_tong_hop as BC  # noqa: PLC0415
+            import hoi_dong_khoa_hoc as HD  # noqa: PLC0415
+            import tieu_chi_ban_thao as K18  # noqa: PLC0415
+
+            out = Path(getattr(self, "out", "") or "")
+            p_bt = out / f"G7_A8_MANUSCRIPT_{self.study}.md"
+            if not p_bt.is_file():
+                return {"loi": "chưa có bản thảo G7"}
+
+            def thieu(md: str) -> List[str]:
+                kq = K18.doi_chieu_ban_thao(md, self.thiet_ke)
+                return sorted(f"{r.chuan} {r.ma}" for r in kq["ket_qua"] if r.trang_thai == "thieu")
+
+            ra: Dict[str, Any] = {"ban_thao_thieu": thieu(p_bt.read_text(encoding="utf-8"))}
+            bc = BC.sinh(self.study, out)
+            if "van" not in bc:
+                ra["loi"] = f"không dựng được báo cáo tổng hợp: {bc.get('loi')}"
+                return ra
+            ra["bao_cao_thieu"] = thieu(str(bc["van"]))
+            ra["bao_cao_cau_truc"] = list(HD.kiem_cau_truc_bao_cao(str(bc["van"])).get("canh_bao") or [])
+            return ra
+        except Exception as exc:  # noqa: BLE001 — báo cáo không được sập vì phép kiểm phụ; CI phán «chưa đo»
+            return {"loi": f"{type(exc).__name__}: {exc}"[:200]}
 
     def _chinh_xac_an_toan(self) -> Dict[str, Any]:
         try:

@@ -55,7 +55,8 @@ from kiem_chuan_de_cuong_theo_muc import KetQua, MucKiem, Phan, _y
 #: phải `tac_gia`; «ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP» là `phuong_phap`.
 IMRAD: Tuple[Tuple[str, str], ...] = (
     ("tom_tat", r"TÓM TẮT|ABSTRACT|SUMMARY"),
-    ("gioi_thieu", r"ĐẶT VẤN ĐỀ|GIỚI THIỆU|MỞ ĐẦU|INTRODUCTION|BACKGROUND"),
+    # «TỔNG QUAN TÀI LIỆU»: chương bối cảnh của báo cáo tổng hợp/luận văn (22/11/2026) — nơi trích dẫn và khoảng trống
+    ("gioi_thieu", r"ĐẶT VẤN ĐỀ|GIỚI THIỆU|MỞ ĐẦU|TỔNG QUAN TÀI LIỆU|INTRODUCTION|BACKGROUND"),
     ("phuong_phap", r"(ĐỐI TƯỢNG(,| VÀ)? )?(VẬT LIỆU VÀ |CHẤT LIỆU VÀ )?PHƯƠNG PHÁP|(MATERIALS? AND )?METHODS?\b"),
     ("ca_lam_sang", r"(CA|BỆNH ÁN) LÂM SÀNG|TRÌNH BÀY CA|BÁO CÁO CA|CASE (PRESENTATION|REPORT|DESCRIPTION)"),
     ("ket_qua", r"KẾT QUẢ|RESULTS?\b"),
@@ -96,9 +97,18 @@ _O_TRONG_SINH = (
 )
 
 
+#: Tiền tố chương của báo cáo tổng hợp/luận văn («CHƯƠNG 3. KẾT QUẢ…», «CHAPTER 2 METHODS») — đo thật 22/11/2026: K18
+#: áp lên báo cáo nghiệm thu không nhận chương nào vì tên chương bắt đầu bằng «CHƯƠNG n.» ⇒ mọi mục báo «thiếu» giả.
+_CHUONG_RE = re.compile(r"^\s*(?:CHƯƠNG|CHAPTER)\s+(?:[IVXLC]+|\d+)\s*[.:)\-–—]?\s*", re.IGNORECASE)
+
+
+#: Câu khoảng trống «thiếu …» — gồm «Thiếu RCT/thử nghiệm/nghiên cứu … tại Việt Nam» (đo thật 22/11/2026).
+_THIEU_KT = r"thiếu (số liệu|dữ liệu|bằng chứng|nghiên cứu|thử nghiệm|RCT)"
+
+
 def _ten(td: str) -> str:
-    """Tên đề mục để so: bỏ nhấn mạnh Markdown và số thứ tự đầu («2.», «II.», «4.1.»)."""
-    return _SO_TT_RE.sub("", re.sub(r"[*_`]", "", td)).strip()
+    """Tên đề mục để so: bỏ nhấn mạnh Markdown, tiền tố chương («CHƯƠNG 3.») và số thứ tự đầu («2.», «II.», «4.1.»)."""
+    return _SO_TT_RE.sub("", _CHUONG_RE.sub("", re.sub(r"[*_`]", "", td))).strip()
 
 
 def khoa_imrad(td: str) -> Optional[str]:
@@ -184,7 +194,9 @@ def tach_ban_thao(md: str, nghiem: bool = True) -> BanThao:
             bt.tieu_de.append(Phan("(tiêu đề)", i + 1, re.sub(r"[*_`]", "", td)))
     for n, d in enumerate(dong[:dau_chuong]):
         t = d.strip()
-        m = re.fullmatch(r"\*\*([^*:]{12,})\*\*", t)
+        # tên bài có phụ đề sau dấu hai chấm («…: thử nghiệm ngẫu nhiên có đối chứng») vẫn là tên; nhãn kết thúc
+        # bằng dấu hai chấm («**KẾT QUẢ:**») thì không (22/11/2026: tên báo cáo tổng hợp RCT/tổng quan gộp bị sót)
+        m = re.fullmatch(r"\*\*([^*]{11,}[^*:\s])\*\*", t)
         if m and sum(c.isupper() for c in m.group(1)) >= 0.7 * sum(c.isalpha() for c in m.group(1)):
             bt.tieu_de.append(Phan("(tiêu đề tiếng Anh)", n + 1, m.group(1)))
     bt.tieu_de += bt.chuong.get("tieu_de_muc", [])
@@ -318,7 +330,7 @@ _GHI_DE: Dict[tuple, dict] = {
                              (_y("trích dẫn nguồn", TC.TRICH_DAN),
                               _y("lý do/khoảng trống", r"khoảng trống|chưa (có|thấy|được|tìm thấy|rõ|biết)|"
                                                        r"còn (ít|hạn chế|thiếu)|ít (nghiên cứu|dữ liệu|số liệu)|"
-                                                       r"thiếu (số liệu|dữ liệu|bằng chứng)|cần (thiết|có)|gap"))),
+                                                       + _THIEU_KT + r"|cần (thiết|có)|gap"))),
     # Phạm vi gồm Phương pháp: bản thảo BTM nêu «phân tích thăm dò» ở Xử lý số liệu, không ở Đặt vấn đề (22/11/2026) —
     # STROBE 3 đòi giả thuyết NẾU CÓ («any prespecified hypotheses»); phân tích thăm dò nêu rõ là đủ.
     ("STROBE 2007", "3"): _g(("gioi_thieu", "tom_tat", "phuong_phap"),
@@ -623,7 +635,7 @@ _CONSORT: Dict[str, tuple] = {
     "6": (("gioi_thieu",), "Nêu cơ sở khoa học và lý do thực hiện thử nghiệm.",
           (_y("trích dẫn nguồn", TC.TRICH_DAN),
            _y("lý do/khoảng trống", r"khoảng trống|chưa (có|thấy|được|tìm thấy|rõ|biết)|còn (ít|hạn chế|thiếu)|"
-                                    r"thiếu (số liệu|dữ liệu|bằng chứng)|cần (thiết|có)|uncertain"))),
+                                    + _THIEU_KT + r"|cần (thiết|có)|uncertain"))),
     "7": (("gioi_thieu", "tom_tat"), "Nêu mục tiêu cụ thể về cả lợi ích và tác hại.",
           (_y("mục tiêu cụ thể", r"(nhằm|mục tiêu)[^.]{0,60}(đánh giá|so sánh|xác định|ước lượng|kiểm định)|"
                                  r"\bObjectives?\b"),
@@ -842,7 +854,7 @@ _PRISMA_2020: Dict[str, tuple] = {
     "3": (("gioi_thieu",), "Nêu lý do thực hiện tổng quan trong bối cảnh hiểu biết hiện có.",
           (_y("trích dẫn nguồn", TC.TRICH_DAN),
            _y("lý do/khoảng trống", r"khoảng trống|chưa (có|thấy|được|tìm thấy|rõ|biết)|còn (ít|hạn chế|thiếu)|"
-                                    r"thiếu (số liệu|dữ liệu|bằng chứng)|cần (thiết|có)|cập nhật|uncertain|gap"))),
+                                    + _THIEU_KT + r"|cần (thiết|có)|cập nhật|uncertain|gap"))),
     "4": (("gioi_thieu", "tom_tat"), "Nêu rõ mục tiêu hoặc câu hỏi của tổng quan (quần thể, can thiệp/phơi nhiễm, kết "
                                      "cục).",
           (_y("mục tiêu/câu hỏi", r"(nhằm|mục tiêu)[^.\n]{0,60}(ước lượng|đánh giá|so sánh|xác định|tổng hợp|tìm hiểu|"

@@ -153,3 +153,54 @@ def test_cli_chay_kho_khong_ghi_tep(tmp_path, capsys):
     assert not (d / f"BAO_CAO_TONG_HOP_{S}.md").exists()
     assert B.main(["--study", S, "--goc", str(tmp_path), "--ghi"]) == 0
     assert (d / f"BAO_CAO_TONG_HOP_{S}.md").read_text(encoding="utf-8").startswith("**BÁO CÁO TỔNG HỢP")
+
+
+# ── 22/11/2026: báo cáo mang đủ phần tóm tắt và các mục cuối bài của bản thảo (đo K18 trên 8 thiết kế giả lập) ──
+BAN_THAO_DU = BAN_THAO.replace("## II. PHƯƠNG PHÁP", "## TÓM TẮT CÓ CẤU TRÚC\n\nNghiên cứu cắt ngang trên 428 người "
+                               "bệnh [1].\n\n## II. PHƯƠNG PHÁP").replace(
+    "## TÀI LIỆU THAM KHẢO", "## LỜI CẢM ƠN\n\nCảm ơn người bệnh.\n\n## KHAI BÁO\n\nKinh phí: Bệnh viện; nhà tài trợ "
+    "không tham gia. Xung đột lợi ích: không có. Dữ liệu chia sẻ khi có yêu cầu hợp lý [3].\n\n## TÀI LIỆU THAM KHẢO")
+
+
+def _dung_du(tmp_path: Path) -> Path:
+    d = _dung(tmp_path)
+    (d / f"G7_A8_MANUSCRIPT_{S}.md").write_text(BAN_THAO_DU, encoding="utf-8", newline="\n")
+    return d
+
+
+def test_bao_cao_co_tom_tat_va_khai_bao_cua_ban_thao(tmp_path):
+    kq = B.sinh(S, _dung_du(tmp_path))
+    van = kq["van"]
+    tt = van.split("# TÓM TẮT")[1].split("# ĐẶT VẤN ĐỀ")[0]
+    assert "Nghiên cứu cắt ngang trên 428 người bệnh [1]." in tt
+    kb = van.split("# LỜI CẢM ƠN VÀ KHAI BÁO")[1].split("# TÀI LIỆU THAM KHẢO")[0]
+    assert "#### LỜI CẢM ƠN" in kb and "#### KHAI BÁO" in kb and "Xung đột lợi ích: không có" in kb
+    assert "yêu cầu hợp lý [3]" in kb                                  # trích dẫn đánh số theo danh mục chung
+    assert not H.kiem_cau_truc_bao_cao(van).get("canh_bao")
+    assert "Lời cảm ơn và khai báo" in van.split("# MỤC LỤC")[1].split("# DANH MỤC")[0]
+
+
+def test_thieu_muc_cuoi_thi_canh_bao_khong_bia(tmp_path):
+    kq = B.sinh(S, _dung(tmp_path))                                    # bản thảo không có lời cảm ơn/khai báo
+    assert any("lời cảm ơn/khai báo" in c for c in kq["canh_bao"])
+    kb = kq["van"].split("# LỜI CẢM ƠN VÀ KHAI BÁO")[1].split("# TÀI LIỆU THAM KHẢO")[0]
+    assert not kb.strip()
+
+
+def test_muc_tieu_danh_so_thanh_cau_chi_duoi_de_muc_muc_tieu():
+    khoi = "#### 2.1. Mục tiêu\n\n1. Xác định tỷ lệ.\n2. Mô tả yếu tố.\n\n#### 2.2. Giả thuyết\n\n1. Không đổi."
+    ra = B._muc_tieu_thanh_cau(khoi)
+    assert "Mục tiêu 1: Xác định tỷ lệ." in ra and "Mục tiêu 2: Mô tả yếu tố." in ra
+    assert "\n1. Không đổi." in ra                                     # mục khác giữ nguyên
+
+
+def test_ten_de_tai_in_hoa_va_muc_tieu_thanh_cau_trong_bao_cao(tmp_path):
+    d = _dung(tmp_path)
+    (d / f"DE_CUONG_NOP_HOI_DONG_{S}.md").write_text(
+        DE_CUONG.replace("## TỶ LỆ KIỂM SOÁT HUYẾT ÁP Ở NGƯỜI BỆNH NGOẠI TRÚ",
+                         "## Tỷ lệ kiểm soát huyết áp ở người bệnh")
+        .replace("Xác định tỷ lệ kiểm soát huyết áp.", "1. Xác định tỷ lệ kiểm soát huyết áp."),
+        encoding="utf-8", newline="\n")
+    van = B.sinh(S, d)["van"]
+    assert "**TỶ LỆ KIỂM SOÁT HUYẾT ÁP Ở NGƯỜI BỆNH**" in van              # bìa: tên in hoa
+    assert "Mục tiêu 1: Xác định tỷ lệ kiểm soát huyết áp." in van
