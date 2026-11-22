@@ -374,7 +374,17 @@
       "registration_date": null,
       "first_enrolment_date": null,
       "icf_waiver_requested": true,
-      "safety_plan_required": null
+      "safety_plan_required": null,
+      "external_funding": false,
+      "sponsor_role": "Không áp dụng — đề tài tự túc kinh phí, không có nhà tài trợ nên không có vai trò nhà tài trợ trong thiết kế, thu thập, phân tích, báo cáo hay quyết định công bố.",
+      "coi": {
+        "summary": "Có xung đột lợi ích không tài chính — chủ nhiệm là bác sĩ của khoa được đánh giá và trực tiếp trích dữ liệu; kế hoạch quản lý ở đề cương mục 2.7",
+        "structural": "Chủ nhiệm là bác sĩ của khoa được đánh giá và trực tiếp trích dữ liệu (lợi ích nghề nghiệp, uy tín của khoa).",
+        "management": "định nghĩa và quy tắc trích viết trước, được hội đồng chuyên gia thẩm định; người thứ hai độc lập trích lại 10% hồ sơ, đồng thuận tính trước hoà giải; người quản lý dữ liệu và nhà thống kê khác chủ nhiệm; khai trong bản thảo (đề cương mục 2.7)."
+      },
+      "checklist_extra": [
+        "Bản khai xung đột lợi ích theo mẫu ICMJE, có chữ ký của từng thành viên, và kế hoạch quản lý xung đột lợi ích (đề cương mục 2.7)"
+      ]
     },
     "G7": {
       "title": null,
@@ -429,5 +439,16 @@
     }
   },
   "design_code_tu_g1": "cross_sectional",
-  "pilot": "Trước khi nộp Hội đồng, hội đồng 5 chuyên gia chấm độ giá trị nội dung của phiếu trích (I-CVI, ngưỡng 0,78, tối đa 2 vòng); sau khi Hội đồng duyệt, chủ nhiệm và người trích lại trích thử độc lập 10 hồ sơ tập ở 10 vị trí cuối danh sách đã xếp ngẫu nhiên (không thuộc mẫu; tối đa 20 hồ sơ nếu cần vòng hai), ghi nhật ký vấn đề theo từng trường và thời gian trích; khoá phiên bản phiếu và quy trình trích hồ sơ trước hồ sơ chính thức đầu tiên"
+  "pilot": "Trước khi nộp Hội đồng, hội đồng 5 chuyên gia chấm độ giá trị nội dung của phiếu trích (I-CVI, ngưỡng 0,78, tối đa 2 vòng); sau khi Hội đồng duyệt, chủ nhiệm và người trích lại trích thử độc lập 10 hồ sơ tập ở 10 vị trí cuối danh sách đã xếp ngẫu nhiên (không thuộc mẫu; tối đa 20 hồ sơ nếu cần vòng hai), ghi nhật ký vấn đề theo từng trường và thời gian trích; khoá phiên bản phiếu và quy trình trích hồ sơ trước hồ sơ chính thức đầu tiên",
+  "administrative": {
+    "principal_investigator": "Nguyễn Hà Luân",
+    "sponsor": "Không có tài trợ bên ngoài — chủ nhiệm tự túc kinh phí",
+    "pi_title": "Bác sĩ Chuyên khoa I (BS.CKI)",
+    "pi_phone": "[PII — điền ở bản nộp ngoài hệ thống]",
+    "pi_email": "[PII — điền ở bản nộp ngoài hệ thống]"
+  },
+  "data_governance": {
+    "custodian": "người quản lý dữ liệu của nhóm nghiên cứu, khác chủ nhiệm: chọn hồ sơ trích lại và lưu bản chụp trước khi báo chủ nhiệm, khoá và giữ cơ sở dữ liệu (đề cương mục 2.7, Phụ lục F)",
+    "access": "Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép; người quản lý dữ liệu (khác chủ nhiệm) giữ cơ sở dữ liệu nhập liệu, cơ sở dữ liệu trích lại và cơ sở dữ liệu đã khoá; chủ nhiệm không xem bản trích lại trước khi tính xong đồng thuận và không sửa dữ liệu sau khi khoá (đề cương mục 2.7); Phê duyệt quyền: Chủ nhiệm đề tài (DMP mục 2)"
+  }
 }

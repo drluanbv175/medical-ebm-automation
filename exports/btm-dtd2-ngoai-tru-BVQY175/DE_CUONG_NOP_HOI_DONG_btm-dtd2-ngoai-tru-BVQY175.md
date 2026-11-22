@@ -42,7 +42,7 @@
 
 | STT | Chức danh, họ và tên | Đơn vị công tác | Nhiệm vụ trong đề tài |
 |---|---|---|---|
-| 1 | ……… | Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh | Chủ nhiệm đề tài |
+| 1 | ……… | Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh | Chủ nhiệm đề tài |
 | 2 | ……… | ……… | Nhà phương pháp/thống kê |
 | 3 | ……… | ……… | Quản lý dữ liệu |
 | 4 | ……… | ……… | Người trích lại |

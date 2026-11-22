@@ -205,7 +205,8 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  Bảo mật: AES-256 · mật khẩu cấp người dùng · VPN (nếu từ xa)
  Sao lưu: hằng tuần, 2 bản độc lập
  Thời gian lưu: 2 năm sau kết thúc nghiên cứu
- (theo TT38/2018/TT-BYT về lưu trữ hồ sơ y tế)
+ (thời hạn đã chốt của đề tài; chỉ lưu trong thời gian phù hợp với mục đích xử lý — Luật 91/2025/QH15,
+ Điều 3 khoản 3)
 
 5. CHIA SẺ / MỞ DỮ LIỆU:
  ☐ Không chia sẻ
@@ -218,10 +219,9 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  cơ chế miễn đồng thuận.
 
 6. XỬ LÝ VI PHẠM DỮ LIỆU:
- Theo NĐ 356/2025/NĐ-CP Điều 23:
- ∎ Phát hiện vi phạm → báo cáo nội bộ trong 24 giờ
- ∎ Thông báo cơ quan bảo vệ dữ liệu trong 72 giờ
- ∎ Thông báo người tham gia bị ảnh hưởng ngay khi xác nhận
+ ∎ Phát hiện vi phạm → người phát hiện báo ngay cho chủ nhiệm đề tài (bên kiểm soát dữ liệu)
+ ∎ Thông báo cơ quan chuyên trách bảo vệ dữ liệu cá nhân chậm nhất 72 giờ kể từ khi phát hiện
+ (Luật 91/2025/QH15, Điều 23 khoản 1); nội dung thông báo theo Nghị định 356/2025/NĐ-CP, Điều 28
  ∎ Khắc phục và điều tra nguyên nhân, lưu hồ sơ xử lý
  Quy trình: theo qui định của đơn vị
 
@@ -342,12 +342,12 @@ Chữ ký chủ nhiệm: _______________ Ngày: ___/___/2026
 ```
 YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request), DRAFT Phiên bản 1.0
 ---
-Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki (WMA, bản sửa 2024) §29
+Căn cứ: Helsinki (WMA, bản sửa đổi 10/2024) §32 + §24 · CIOMS 2016 Hướng dẫn 10 (ba điều kiện) + Hướng dẫn 12 · TT43/2024/TT-BYT Điều 7 khoản 1 điểm b
 Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 Chủ nhiệm: Nguyễn Hà Luân
 Ngày: 2026-11-18
 
-CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
+ĐẶC ĐIỂM DỮ LIỆU VÀ CAN THIỆP (điều kiện miễn theo CIOMS 2016 Hướng dẫn 10: đủ cả ba điều kiện, Hội đồng quyết):
 ☑ Dùng hồ sơ có sẵn, GIẢ DANH HOÁ (chưa ẩn danh hoàn toàn cho tới khi huỷ bảng nối): Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu
 ☑ Không có can thiệp/thủ thuật bổ sung lên người tham gia
 ☑ Rủi ro không vượt nguy cơ tối thiểu nhờ giả danh hoá và các biện pháp bảo mật nêu trên
@@ -359,9 +359,9 @@ Mã hóa: Phiếu chỉ mang mã nghiên cứu, không ghi trường định dan
 Quyền truy cập: Chỉ nhóm nghiên cứu
 Kế hoạch hủy: Số liệu điện tử (và phiếu giấy nếu có) lưu 2 năm sau khi kết thúc nghiên cứu; Hết thời hạn lưu trữ: tệp điện tử xoá an toàn, phiếu giấy (nếu có) huỷ bằng máy huỷ tài liệu, có biên bản
 
-CỜ ĐỎ (bất kỳ → PHẢI lấy ICF đầy đủ):
-☐ Có dữ liệu cá nhân nhận dạng được → ICF bắt buộc
-☐ Có tiếp xúc người tham gia → ICF bắt buộc
+LƯU Ý (CIOMS 2016 Hướng dẫn 10; Helsinki 2024 đoạn 32):
+• Dữ liệu xác định được/giả danh hoá (còn bảng nối mã) không tự động buộc lấy chấp thuận;
+ Hội đồng xét theo ba điều kiện của CIOMS 2016 Hướng dẫn 10, kèm biện pháp bảo mật.
 
 Chữ ký chủ nhiệm: [CẦN KÝ] | Ngày: ___/___/2026
 "DRAFT, Cần Hội đồng Đạo đức phê duyệt."
