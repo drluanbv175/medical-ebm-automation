@@ -503,8 +503,20 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
                 ra[nhan] = {k: r.get(k) for k in ("variable", "OR_adj", "beta", "PR_adj", "OR", "CI_95", "p") if k in r}
                 break
     if tom.get("ty_le"):
-        ra["ty_le"] = [{k: x.get(k) for k in ("cot", "ty_le", "ci_95", "n", "ci_wilson_hieu_dung") if k in x}
-                       for x in tom["ty_le"]][:6]  # fmt: skip
+        # 22/11/2026: tóm tắt ghi tỷ lệ 0–1 + «CI_95» (cụm) / «CI_95_wilson_doc_lap»; chỉ mục (và
+        # dinh_dang_uoc_luong) dùng PHẦN TRĂM + «ci_95». Bản cũ chép thẳng ⇒ «Tỷ lệ 0,4%» và mất KTC.
+        ds_tl = []
+        for x in tom["ty_le"][:6]:
+            ci = x.get("CI_95") or x.get("CI_95_wilson_doc_lap")
+            mot = {"cot": x.get("cot"), "n": x.get("n")}
+            if x.get("ty_le") is not None:
+                mot["ty_le"] = round(100 * float(x["ty_le"]), 2)
+            if isinstance(ci, (list, tuple)) and len(ci) == 2 and None not in ci:
+                mot["ci_95"] = [round(100 * float(v), 2) for v in ci]
+            if x.get("error"):
+                mot["loi"] = x["error"]
+            ds_tl.append(mot)
+        ra["ty_le"] = ds_tl
     if tom.get("dac_thu"):  # 16/11/2026: phân tích đặc thù — vài ước lượng chính theo loại
         dt_, loai = tom["dac_thu"], tom.get("loai_dac_thu")
         if loai == "chan_doan":

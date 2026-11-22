@@ -306,19 +306,37 @@ def _md(study: str, ket: dict) -> str:
     return "\n".join(dong)
 
 
+def _chi_mo_ta(d: Path, gate: str) -> str | None:
+    """None = có kết cục/thời gian (kiểm chéo đầy đủ) · "ty_le" = chỉ mô tả, có tỷ lệ Wilson Bảng 1b (22/11/2026:
+    cầu nối R có bản đối chiếu) · "khong_co_ban_kiem_cheo" = chỉ mô tả, không có phép nào hai cầu nối tái lập được."""
+    tom = _doc_json(d / f"{gate}_analysis_summary.json")
+    dt = tom.get("dac_ta_phan_tich") or {}
+    if dt.get("outcome") or dt.get("time"):
+        return None
+    return "ty_le" if (dt.get("ty_le") or tom.get("ty_le")) else "khong_co_ban_kiem_cheo"
+
+
+def _spss_khong_co_ty_le() -> dict:
+    """Bảng 1b: cầu nối SPSS chưa sinh cú pháp tỷ lệ Wilson theo cụm (DE tuyến tính hoá + hiệu chỉnh bậc tự do) ⇒ phần
+    SPSS «không đo được» kèm lý do kỹ thuật; phép đối chiếu do R làm (tong_hop: R khớp ⇒ cả lượt KHỚP)."""
+    ly_do = "cầu nối SPSS chưa sinh cú pháp tỷ lệ Wilson theo cụm (Bảng 1b) — phép này do R đối chiếu"
+    print(f"  ⚪ {ly_do}")
+    return {"trang_thai": KHONG_DO_DUOC, "ly_do": ly_do}
+
+
 def lenh_chay(args) -> int:
     d = thu_muc_de_tai(args.study)
     vt = van_tay(d, args.gate)
     if vt is None:
         print(f"⚪ chưa có {args.gate}_analysis_summary.json — chạy run_stats_analysis.py (phân tích chính) trước")
         return 2
-    dt = (_doc_json(d / f"{args.gate}_analysis_summary.json").get("dac_ta_phan_tich") or {})
-    if not dt.get("outcome") and not dt.get("time"):
-        # F3 (14/11/2026): lượt chỉ mô tả (vd tỷ lệ Wilson) — hai cầu nối CHƯA có bản kiểm chéo cho dạng này; ghi rõ
+    mo_ta = _chi_mo_ta(d, args.gate)
+    if mo_ta == "khong_co_ban_kiem_cheo":
+        # F3 (14/11/2026): lượt chỉ mô tả KHÔNG có tỷ lệ Wilson — hai cầu nối chưa có bản kiểm chéo cho dạng này; ghi rõ
         # «không áp dụng» kèm lý do (trước đây báo «từ chối/lỗi» như thể phân tích hỏng).
         ket = {"study": args.study, "gate": args.gate, "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
                "van_tay": vt, "phan_mem": {}, "trang_thai": KHONG_AP_DUNG,
-               "ly_do": "phân tích chỉ mô tả (không có kết cục/thời gian) — chưa có bản kiểm chéo SPSS/R",
+               "ly_do": "phân tích chỉ mô tả (không có kết cục/thời gian/tỷ lệ Wilson) — chưa có bản kiểm chéo SPSS/R",
                "disclaimer": CAN_KIEM}  # fmt: skip
         tj, tm = tep_kiem_cheo(args.gate)
         (d / tj).write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
@@ -329,7 +347,8 @@ def lenh_chay(args) -> int:
     phan_mem: dict[str, dict] = {}
     if args.chi in (None, "spss"):
         print("\n══════ IBM SPSS Statistics" + (" (mở giao diện)" if che_do == "mo" else " (nền)") + " ══════")
-        phan_mem["spss"] = _chay_spss(args.study, args.gate, d, vt, args, che_do)
+        phan_mem["spss"] = (_spss_khong_co_ty_le() if mo_ta == "ty_le"
+                            else _chay_spss(args.study, args.gate, d, vt, args, che_do))
     if args.chi in (None, "r"):
         nhan_r = "RStudio (mở script)" if che_do == "mo" else "R — Rscript nền, cùng R với RStudio"
         print(f"\n══════ {nhan_r} ══════")
@@ -361,7 +380,8 @@ def lenh_nhan_ket_qua(args) -> int:
     phan_mem: dict[str, dict] = {}
     if args.chi in (None, "spss"):
         print("\n══════ IBM SPSS Statistics (kết quả lượt giao diện) ══════")
-        phan_mem["spss"] = _chay_spss(args.study, args.gate, d, vt, args, "nhan")
+        phan_mem["spss"] = (_spss_khong_co_ty_le() if _chi_mo_ta(d, args.gate) == "ty_le"
+                            else _chay_spss(args.study, args.gate, d, vt, args, "nhan"))
     if args.chi in (None, "r"):
         print("\n══════ RStudio (kết quả lượt Source) ══════")
         phan_mem["r"] = _chay_r(args.study, args.gate, d, args, "nhan")

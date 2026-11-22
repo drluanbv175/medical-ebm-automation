@@ -450,6 +450,8 @@ THOI_GIAN <- @@THOI_GIAN@@
 BIEN_CO <- @@BIEN_CO@@
 CUM <- @@CUM@@
 DON_VI_PHOI_NHIEM <- @@DON_VI@@  # --don-vi-phoi-nhiem của Python (chỉ nhánh thứ tự)
+TY_LE <- @@TY_LE@@  # Bảng 1b: cột tính tỷ lệ + KTC Wilson (--ty-le)
+NGUONG_TY_LE <- @@NGUONG_TY_LE@@  # --nguong-ty-le (sự kiện = giá trị ≥ ngưỡng); NA ⇒ cột 0/1
 # Chuỗi pandas.read_csv coi là THIẾU (keep_default_na) — chép từ pandas @@PANDAS@@ lúc sinh script.
 NA_PANDAS <- @@NA_PANDAS@@
 @@KHOI_MI@@
@@ -859,6 +861,49 @@ if (MI_CO && co(KET_CUC) && co(NHOM)) {
   })
 }
 
+# ── 5c. Tỷ lệ + KTC 95% Wilson (Bảng 1b) — ty_le_wilson_cum() (22/11/2026) ─────────────────────────────
+# Wilson = KTC của stats::prop.test(correct = FALSE) — cài đặt RIÊNG của R (nhận cả x, n không nguyên), không chép
+# công thức Python. Có cụm: DE từ phương sai tuyến tính hoá K/(K−1)·Σ(t_c − p·m_c)²/n² chia p(1−p)/n, chặn dưới 1;
+# Wilson trên n/DE × (z/t_{K−1})² (Dean & Pagano 2015, doi:10.1093/jssam/smv024) — đúng phép SAP khoá cho Python.
+ktc_wilson <- function(e, n) {
+  if (n <= 0) return(c(NA_real_, NA_real_))
+  as.numeric(suppressWarnings(stats::prop.test(e, n, correct = FALSE))$conf.int)
+}
+if (length(TY_LE)) {
+  KET$ty_le <- khoi("ty_le", {
+    ra <- list()
+    for (cot in TY_LE) {
+      dd <- ca_du(D, c(cot, if (co(CUM)) CUM))
+      x <- suppressWarnings(as.numeric(dd[[cot]]))
+      if (anyNA(x)) stop("«", cot, "» phải là số")
+      if (is.na(NGUONG_TY_LE) && !all(x %in% c(0, 1))) stop("«", cot, "» không phải 0/1 — cần --nguong-ty-le")
+      y <- if (is.na(NGUONG_TY_LE)) x else as.numeric(x >= NGUONG_TY_LE)
+      n <- length(y)
+      if (n == 0) stop("không còn quan sát sau khi bỏ dữ liệu thiếu")
+      e <- sum(y)
+      p <- e / n
+      mot <- list(n = n, so_su_kien = e, ty_le = p,
+                  ci_doc_lap = ktc_wilson(e, n))
+      if (co(CUM)) {
+        t_c <- tapply(y, dd[[CUM]], sum)
+        m_c <- tapply(y, dd[[CUM]], length)
+        K <- length(m_c)
+        if (K < 2) stop("cần ≥ 2 cụm để hiệu chỉnh (đang có ", K, ")")
+        var_lin <- K / (K - 1) * sum((t_c - p * m_c)^2) / n^2
+        var_srs <- p * (1 - p) / n
+        de <- if (var_srs > 0) max(1, var_lin / var_srs) else 1
+        hs <- (stats::qnorm(0.975) / stats::qt(0.975, K - 1))^2
+        mot$so_cum <- K
+        mot$de <- de
+        n_hd <- n / de * hs
+        mot$ci <- ktc_wilson(p * n_hd, n_hd)
+      }
+      ra[[cot]] <- mot
+    }
+    ra
+  })
+}
+
 # ── 6. Sống còn — survival_model() + kaplan_meier_summary() ──────────────────────────────────────────
 if (co(THOI_GIAN) && co(BIEN_CO) && co(NHOM)) {
   hb <- HIEP_BIEN[HIEP_BIEN %in% names(D)]
@@ -1028,6 +1073,8 @@ def sinh_script_r(
         "@@BIEN_CO@@": gia_tri_r(dt.get("event")),
         "@@CUM@@": gia_tri_r(dt.get("cot_cum")),
         "@@DON_VI@@": gia_tri_r(don_vi, so=True),
+        "@@TY_LE@@": vec_r(dt.get("ty_le") or []),
+        "@@NGUONG_TY_LE@@": gia_tri_r(dt.get("nguong_ty_le"), so=True),
         "@@PANDAS@@": ver_pd,
         "@@NA_PANDAS@@": vec_r(na),
         "@@KHOI_MI@@": khoi_mi if khoi_mi is not None else khoi_mi_r({}, Path("."), csv_p),
@@ -1076,13 +1123,28 @@ def ascii_hoa_chuoi_r(vb: str) -> str:
 def _dac_ta_hop_le(dt: dict) -> None:
     if bool(dt.get("time")) != bool(dt.get("event")):
         raise TuChoi("--time và --event phải đi cùng nhau (như run_stats_analysis.py)")
-    if not dt.get("outcome") and not dt.get("time"):
+    if not dt.get("outcome") and not dt.get("time") and not dt.get("ty_le"):
         raise TuChoi(
             "thiếu đặc tả: chưa có G6_analysis_summary.json với khoá dac_ta_phan_tich — truyền --outcome/--group/"
-            "--covariates (hoặc --time/--event) như run_stats_analysis.py"
+            "--covariates (hoặc --time/--event, hoặc tỷ lệ --ty-le) như run_stats_analysis.py"
         )
-    if not dt.get("group"):
+    if (dt.get("outcome") or dt.get("time")) and not dt.get("group"):
         raise TuChoi("thiếu --group (phơi nhiễm chính) — Python cũng không chạy mô hình chính khi thiếu nhóm")
+
+
+def ty_le_tu_tom_tat(tom: dict) -> tuple[list[str], float | None]:
+    """(cột tỷ lệ, ngưỡng) của lượt Python: đặc tả mới ghi thẳng; tóm tắt cũ ⇒ suy từ khoá ty_le (định nghĩa
+    «cột ≥ x»)."""
+    dt = (tom or {}).get("dac_ta_phan_tich") or {}
+    if dt.get("ty_le"):
+        return list(dt["ty_le"]), dt.get("nguong_ty_le")
+    ds = [x for x in (tom or {}).get("ty_le") or [] if isinstance(x, dict) and x.get("cot")]
+    nguong = None
+    for x in ds:
+        m = re.search(r"≥\s*(-?[\d.]+)\s*$", str(x.get("dinh_nghia") or ""))
+        if m:
+            nguong = float(m.group(1))
+    return [x["cot"] for x in ds], nguong
 
 
 def lenh_cu_phap(args) -> int:
@@ -1094,8 +1156,9 @@ def lenh_cu_phap(args) -> int:
         raise TuChoi("manifest khoá không ghi SHA-256 — không kiểm được bộ dữ liệu khoá")
     td_p = kiem_pii(args.study, csv_p, args.dictionary)
     dt = S.dac_ta(args)
-    _dac_ta_hop_le(dt)
     tom = S._doc_json(d / f"{args.gate}_analysis_summary.json")
+    dt["ty_le"], dt["nguong_ty_le"] = ty_le_tu_tom_tat(tom)  # 22/11/2026: Bảng 1b có bản R
+    _dac_ta_hop_le(dt)
     loai = xac_dinh_loai(dt, tom)
     don_vi = args.don_vi_phoi_nhiem
     if don_vi is None:
@@ -1114,6 +1177,7 @@ def lenh_cu_phap(args) -> int:
         raise TuChoi(f"lọc quần thể: {e}") from e
     khoi_ps += ma_r_bien_gia(dt)  # biến giả SAU biến phái sinh (biến phái sinh cũng có thể là biến phân loại)
     thieu = [dt[k] for k in ("outcome", "group", "time", "event", "cot_cum") if dt.get(k) and dt[k] not in tieu_de]
+    thieu += [c for c in dt.get("ty_le") or [] if c not in tieu_de]
     if thieu:
         raise TuChoi(f"bộ dữ liệu khoá không có cột: {', '.join(thieu)}")
     canh_bao = []
@@ -2047,16 +2111,20 @@ def _co_ci(ci) -> bool:
     return bool(ci) and len(ci) == 2 and None not in ci
 
 
-def _dong(ten: str, py: dict, r: dict, *, ghi_chu: str | None = None, n_py=None, n_r=None) -> dict:
+def _dong(ten: str, py: dict, r: dict, *, ghi_chu: str | None = None, n_py=None, n_r=None,
+          tran: float | None = None) -> dict:
     """Một dòng đối chiếu: py/r = {uoc_luong, ci, p}. Trạng thái khop · lech · khong_so_duoc (không còn «lệch nhỏ»).
 
     Thêm hai luật so với `so_mot` của SPSS: (1) SỐ CA khác nhau ⇒ LỆCH dù số trùng tình cờ; (2) KTC hoặc p chỉ có ở MỘT
-    phía ⇒ phần đó không so được và cả dòng là «không so được» (không chấm khớp chỉ bằng ước lượng điểm)."""
+    phía ⇒ phần đó không so được và cả dòng là «không so được» (không chấm khớp chỉ bằng ước lượng điểm).
+    `tran` (22/11/2026): dung sai TUYỆT ĐỐI cho phép tất định (Bảng 1b) — thay dung sai tương đối chung."""
     py, r = py or {}, r or {}
-    kt = {"uoc_luong": S._gan(r.get("uoc_luong"), py.get("uoc_luong"), S.TOL_UOC)}
+    kt = {"uoc_luong": (S._gan(r.get("uoc_luong"), py.get("uoc_luong"), S.TOL_UOC) if tran is None
+                        else S._gan(r.get("uoc_luong"), py.get("uoc_luong"), tran=tran))}
     mot_phia = []
     if _co_ci(py.get("ci")) and _co_ci(r.get("ci")):
-        kt["ci"] = all(S._gan(a, b, S.TOL_CI) for a, b in zip(r["ci"], py["ci"]))
+        kt["ci"] = all((S._gan(a, b, S.TOL_CI) if tran is None else S._gan(a, b, tran=tran))
+                       for a, b in zip(r["ci"], py["ci"]))
     else:
         kt["ci"] = None
         if _co_ci(py.get("ci")) != _co_ci(r.get("ci")):
@@ -2506,6 +2574,44 @@ def _mi(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
     return ra
 
 
+#: Bảng 1b là phép TẤT ĐỊNH (không lấy mẫu, không lặp): R và Python phải trùng tới đơn vị làm tròn của tóm tắt
+#: Python — tỷ lệ/KTC làm tròn 4 chữ số lẻ (nửa đơn vị 0,00005), DE 3 chữ số (0,0005). Dung sai chung TOL_UOC/TOL_CI
+#: (0,5 %/1,5 %) quá lỏng cho phép này: bỏ K/(K−1) chỉ dời cận KTC ≈ 0,001 — vẫn lọt dung sai chung.
+DUNG_SAI_TY_LE, DUNG_SAI_DE = 0.00005, 0.0005
+
+
+def _ty_le(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
+    """Bảng 1b: tỷ lệ + KTC Wilson độc lập (R: prop.test) và theo cụm (n/DE × (z/t)²) — mỗi cột một/hai dòng + DE."""
+    ds, rr = [x for x in tom.get("ty_le") or [] if isinstance(x, dict)], kq.get("ty_le")
+    if not ds:
+        return [] if rr is None else [_khong_so("Tỷ lệ Wilson (Bảng 1b)", "R tính tỷ lệ mà Python không có")]
+    if rr is None:
+        return [_khong_so("Tỷ lệ Wilson (Bảng 1b) — toàn bộ",
+                          f"R KHÔNG ra tỷ lệ: {loi_r.get('ty_le') or 'vắng (script R cũ — sinh lại)'}")]
+    ra = []
+    for x in ds:
+        cot = x.get("cot")
+        r = rr.get(cot) if isinstance(rr, dict) else None
+        if x.get("error"):
+            ra.append(_khong_so(f"Tỷ lệ — {cot}", f"Python lỗi: {x['error']}", r=r and {"uoc_luong": r.get("ty_le")}))
+            continue
+        if r is None:
+            ra.append(_khong_so(f"Tỷ lệ — {cot}", "R không có cột này", py={"uoc_luong": x.get("ty_le")}))
+            continue
+        ra.append(_dong(f"Tỷ lệ + KTC Wilson độc lập — {cot}",
+                        {"uoc_luong": x.get("ty_le"), "ci": x.get("CI_95_wilson_doc_lap")},
+                        {"uoc_luong": r.get("ty_le"), "ci": r.get("ci_doc_lap")}, n_py=x.get("n"), n_r=r.get("n"),
+                        tran=DUNG_SAI_TY_LE))
+        if x.get("CI_95") is not None or r.get("ci") is not None:
+            ra.append(_dong(f"Tỷ lệ + KTC Wilson theo cụm (n/DE·(z/t)²) — {cot}",
+                            {"uoc_luong": x.get("ty_le"), "ci": x.get("CI_95")},
+                            {"uoc_luong": r.get("ty_le"), "ci": r.get("ci")}, n_py=x.get("n"), n_r=r.get("n"),
+                            tran=DUNG_SAI_TY_LE))
+            ra.append(_dong(f"Hiệu ứng thiết kế (DE) — {cot}", {"uoc_luong": x.get("hieu_ung_thiet_ke")},
+                            {"uoc_luong": r.get("de")}, n_py=x.get("n"), n_r=r.get("n"), tran=DUNG_SAI_DE))
+    return ra
+
+
 def doi_chieu(tom: dict, r: dict) -> list[dict]:
     """Đối chiếu tóm tắt G6 (Python) với KẾT QUẢ R ĐẦY ĐỦ (`G6_r_ket_qua.json`: ket_qua · loi · so_ca_doc)."""
     kq = r.get("ket_qua") or {}
@@ -2552,6 +2658,7 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
         dong += _he_so_hai_phia("Poisson HC0 — PR hiệu chỉnh", pr, kq.get("poisson_hieu_chinh"), loi_r.get("poisson"),
                                 ("PR_adj",))  # fmt: skip
     dong += _mi(tom, kq, loi_r)
+    dong += _ty_le(tom, kq, loi_r)
     dong += _song_con(tom, kq, loi_r)
     dong += _kaplan_meier(tom, kq, loi_r)
     return dong
@@ -2559,9 +2666,11 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
 
 def _dac_ta_lech(dt_py: dict, dt_r: dict) -> list[str]:
     lech = []
-    for k in ("outcome", "group", "time", "event", "cot_cum", "loc"):
+    for k in ("outcome", "group", "time", "event", "cot_cum", "loc", "nguong_ty_le"):
         if (dt_py.get(k) or None) != (dt_r.get(k) or None):
             lech.append(f"{k}: Python={dt_py.get(k)!r} · R={dt_r.get(k)!r}")
+    if dt_py.get("ty_le") is not None and list(dt_py.get("ty_le") or []) != list(dt_r.get("ty_le") or []):
+        lech.append(f"ty_le: Python={dt_py.get('ty_le')} · R={dt_r.get('ty_le')}")
     if list(dt_py.get("covariates") or []) != list(dt_r.get("covariates") or []):
         lech.append(f"covariates: Python={dt_py.get('covariates')} · R={dt_r.get('covariates')}")
     return lech

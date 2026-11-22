@@ -3179,6 +3179,8 @@ def main():
         "loc": args.loc.strip() or None,
         "loc_cot_ngay": loc_cot_ngay,
         "hiep_bien_hang_sau_loc": hang_sau_loc,  # 16/11/2026: đã loại khỏi mô hình nhóm con (hằng sau lọc)
+        # 22/11/2026 (việc G): tỷ lệ Wilson của Bảng 1b — cầu nối R tái lập đúng cột + ngưỡng SAP
+        "ty_le": list(args.ty_le or []), "nguong_ty_le": args.nguong_ty_le,
     }
     if args.loc.strip():
         summary["loc"] = {"bieu_thuc": args.loc.strip(), "n_truoc": n_truoc_loc, "n_sau": len(df)}
