@@ -497,7 +497,7 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 **Hình 3.1. Sơ đồ chọn hồ sơ nghiên cứu (theo STROBE/RECORD)**
 
-*Ghi chú:* Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu.
+*Ghi chú:* Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu. Các lý do loại và ra khỏi nghiên cứu được ghi nhận: chỉ có mã E14 (không xác định típ), không vào mẫu; không mở hồ sơ vì đã đủ cỡ mẫu; dưới 18 tuổi tại lượt khám đầu tiên trong cửa sổ; chỉ có 1 lượt khám ngoại trú tại Khoa Khám bệnh trong cửa sổ; đang lọc máu hoặc đã ghép thận; có thai trong cửa sổ; có mã ĐTĐ típ 1 (E10) hoặc thể khác (E12, E13). Ô có nhiều lý do: mỗi trường hợp được tính một lần, theo lý do đầu tiên mà trường hợp đó gặp.
 
 **Bảng 3.1. Đặc điểm chung của đối tượng nghiên cứu**
 
