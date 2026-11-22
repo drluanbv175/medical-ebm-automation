@@ -224,7 +224,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 22/11/2026 (sổ phân công công cụ C1–C6): 23 agent nhận dòng «Công cụ `tools/x.py` (chủ|kiểm|dùng phụ)» theo
 # config/phan_cong_cong_cu.json, chép từ nhánh gốc claude/phan-cong-goc-20261122 — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "3b00f47a0dea7cd0e63cdde37d7d8c68cfc57f3e7e2cb7f7e03074f69c4a5416"
+    "3c2d17c44238d4a88b013991844173bd0a46f7ecbeecc6486771160c0eb757aa"
 )
 
 MINIMUM_AGENT_COUNT = 64

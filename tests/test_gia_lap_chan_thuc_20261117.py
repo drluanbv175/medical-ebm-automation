@@ -248,6 +248,11 @@ def test_moi_phan_tich_g6_loc_quan_the():
     for ma, kb in KB.items():
         for pt in kb["ho_so_tron_vong"]["g6"]:
             ts = pt.get("tham_so")
+            if isinstance(ts, dict) and "bang_chung" in ts:
+                # Kiểm bằng chứng thủ tục định tính (tools/bang_chung_dinh_tinh.py) đọc tệp nhật ký, không chạy
+                # trên dòng người tham gia ⇒ lọc quần thể không áp dụng; gắn «loc» vào đây là sai đặc tả.
+                assert "loc" not in ts, (ma, pt["id"], ts.get("loc"))
+                continue
             if isinstance(ts, dict) and (pt.get("vai") == "chinh" or not pt.get("ke_thua") or "loc" in ts):
                 assert "du_tieu_chuan == 1" in ts["loc"], (ma, pt["id"], ts.get("loc"))
     nam = next(p for p in KB["rct_chan_thuc"]["ho_so_tron_vong"]["g6"] if p["id"] == "NC_nam")

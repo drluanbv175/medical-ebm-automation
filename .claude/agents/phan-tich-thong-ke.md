@@ -552,7 +552,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/kiem_cheo_g6.py` (chủ) — kiểm chéo G6 bằng phần mềm thứ hai (SPSS và R); chốt kiểm `tests/test_kiem_cheo_g6_20261114.py`; nguyên tắc: kiểm chứng khách quan · tái lập.
 - Công cụ `tools/normal_dist.py` (chủ) — CDF chuẩn và nghịch đảo dùng chung cho mọi máy tính thống kê; chốt kiểm `tests/test_normal_dist.py`; nguyên tắc: tái lập.
 - Công cụ `tools/phan_tich_sap_bo_sung.py` (chủ) — chạy bằng máy các phân tích SAP trước đây ghi «chờ làm tay»; chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: khách quan · tái lập.
-- Công cụ `tools/phan_tich_sap_bo_sung_r.py` (chủ) — mã R của các phân tích SAP bổ sung (thứ tự, spline…); chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: tái lập · kiểm chứng khách quan.
+- Công cụ `tools/dinh_nghia_thay_the.py` (dùng phụ) — G6 dựng mục đặc tả định nghĩa thay thế đã định trước ở SAP §9 (phơi nhiễm liên tục ước lượng theo mỗi 1 SD, SD tính trên đúng tập ca của mô hình); kịch bản R của phân tích SAP bổ sung nay ở `tools/cau_noi_r.py` (`kich_ban_bo_sung`); chốt kiểm `tests/test_g6_tu_dong_khong_viec_tay_20261122.py`; nguyên tắc: tái lập · kiểm chứng khách quan.
 - Công cụ `tools/spss_chay_nen.py` (chủ) — trình chạy nền SPSS do Python đi kèm SPSS thực thi; chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: tái lập · kiểm chứng khách quan.
 - Công cụ `tools/ve_bieu_do.py` (chủ) — cửa vào duy nhất cho biểu đồ kết quả: danh mục hình theo thiết kế + kiểm thư mục hình; chốt kiểm `tests/test_ve_bieu_do_20261121.py`; nguyên tắc: tái lập · kiểm soát chất lượng.
 - Công cụ `tools/bieu_do_gop.py` (kiểm) — đầu ra của `meta-phan-tich`: biểu đồ phân tích gộp (forest, funnel, SROC); chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: trung thực–minh bạch · tái lập.

@@ -194,18 +194,52 @@ PHAN_VI_NUT = {3: (0.10, 0.50, 0.90), 4: (0.05, 0.35, 0.65, 0.95), 5: (0.05, 0.2
                6: (0.05, 0.23, 0.41, 0.59, 0.77, 0.95), 7: (0.025, 0.1833, 0.3417, 0.50, 0.6583, 0.8167, 0.975)}
 
 
-def nut_harrell(x: Sequence[float], k: int) -> List[float]:
-    """Nút như rcspline.eval: phân vị (kiểu 7) theo bảng Harrell; n < 100 ⇒ nút ngoài cùng = giá trị thứ 5 từ hai
-    đầu. Nút trùng ⇒ lỗi (phơi nhiễm quá ít giá trị khác nhau)."""
+def nut_harrell(x: Sequence[float], k: int, fractied: float = 0.05) -> List[float]:
+    """Nút ĐÚNG như Hmisc::rcspline.eval (kể cả nhánh giá trị trùng `fractied`, 22/11/2026): phân vị kiểu 7 cách đều
+    trong [outer, 1 − outer]; giá trị nhỏ nhất (lớn nhất) chiếm ≥ 5% số quan sát mà không giá trị bên trong nào ≥ 5%
+    ⇒ nút đầu (cuối) = giá trị kề nó, phần còn lại lấy phân vị trên các giá trị bên trong (phơi nhiễm dồn ở 0 — như
+    thời lượng dùng thuốc — không còn làm nút trùng); n < 100 ⇒ nút ngoài = giá trị thứ 5 từ hai đầu; nút trùng sau
+    cùng bị gộp; < 3 nút phân biệt ⇒ lỗi."""
     import numpy as np  # noqa: PLC0415
 
     if k not in PHAN_VI_NUT:
         raise LoiBieuDo("số nút phải từ 3 đến 7")
-    xs = np.sort(np.asarray(x, float))
-    nut = [float(np.quantile(xs, q)) for q in PHAN_VI_NUT[k]]
-    if len(xs) < 100:
-        nut[0], nut[-1] = float(xs[4]), float(xs[-5])
-    if len(set(nut)) < k:
+    xx = np.sort(np.asarray(x, float))
+    xu = np.unique(xx)
+    if len(xu) - 2 <= k:
+        nut = list(xu[1:-1])
+    else:
+        outer = 0.025 if k > 6 else (0.05 if k > 3 else 0.1)
+        nke, dau, cuoi = k, [], []
+        if 0 < fractied < 1:
+            gt, dem = np.unique(xx, return_counts=True)
+            f = dem / len(xx)
+            if f[1:-1].max() < fractied:
+                if f[0] >= fractied:
+                    dau = [float(gt[1])]
+                    xx = xx[xx > dau[0]]
+                    nke -= 1
+                if f[-1] >= fractied:
+                    cuoi = [float(gt[-2])]
+                    xx = xx[xx < cuoi[0]]
+                    nke -= 1
+        if nke == 1:
+            giua = [float(np.median(xx))]
+        elif len(xu) <= nke:
+            giua = list(xu)
+        else:
+            p = np.linspace(0.5, 1 - outer, nke) if nke == 2 else np.linspace(outer, 1 - outer, nke)
+            giua = [float(np.quantile(xx, q)) for q in p]
+            if len(set(giua)) < min(nke, 3):
+                giua = [float(np.quantile(xx, q)) for q in np.linspace(outer, 1 - outer, 2 * nke)]
+            if len(xx) < 100:
+                if not dau:
+                    giua[0] = float(xx[4])
+                if not cuoi:
+                    giua[-1] = float(xx[-5])
+        nut = [*dau, *giua, *cuoi]
+    nut = sorted(set(float(t) for t in nut))
+    if len(nut) < 3:
         raise LoiBieuDo("nút spline trùng nhau — phơi nhiễm có quá ít giá trị khác nhau")
     return nut
 

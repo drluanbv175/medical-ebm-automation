@@ -127,6 +127,20 @@
     "nt:trung_thuc": "bảng PI duyệt là nguồn của bộ biến"
    }
   },
+  "bang_chung_dinh_tinh.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "nghien-cuu-dinh-tinh",
+   "cong": ["G5", "G6"],
+   "nhiem_vu": [],
+   "viec": "kiểm bằng chứng thủ tục cho độ tin cậy định tính (credibility, dependability, transferability) và khuôn ba tệp bằng chứng",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["dieu-phoi-g6"],
+   "chot_kiem": ["tests/test_g6_tu_dong_khong_viec_tay_20261122.py"],
+   "nguyen_tac": {
+    "nt:hop_le_tin_cay": "độ tin cậy định tính đo bằng bằng chứng thủ tục có tệp, không bằng lời tự khai",
+    "nt:trung_thuc": "thiếu tệp bằng chứng thì ghi THIEU_BANG_CHUNG, không bao giờ ghi đạt"
+   }
+  },
   "bao_cao_giam_sat_chi_doc.py": {
    "pham_vi": "ngoai_pham_vi",
    "ly_do": "giám sát chứng cứ + an toàn thuốc (owner weekly_safety/monthly_update)"
@@ -497,6 +511,21 @@
    "chot_kiem": ["tools/g5_quality_gate.py", "tests/test_deidentify_research_dataset.py"],
    "nguyen_tac": {
     "nt:ton_trong": "xoá/thay thông tin định danh trước mọi xử lý"
+   }
+  },
+  "dinh_nghia_thay_the.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thiet-ke-nghien-cuu",
+   "cong": ["G4", "G6"],
+   "nhiem_vu": [],
+   "viec": "định nghĩa thay thế định trước: chép cụ thể vào SAP §9 và dựng mục đặc tả G6 (phơi nhiễm liên tục theo mỗi 1 SD)",
+   "nguoi_dung_phu": ["phan-tich-thong-ke"],
+   "nguoi_kiem": ["dieu-phoi-g4"],
+   "chot_kiem": ["tests/test_g6_tu_dong_khong_viec_tay_20261122.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "định nghĩa thay thế chốt ở SAP trước khi thấy số liệu",
+    "nt:tai_lap": "SD tính trên đúng tập ca của mô hình nên chạy lại cho cùng kết quả",
+    "nt:khoa_hoc": "mỗi định nghĩa kèm căn cứ PMID đã kiểm rút bài"
    }
   },
   "dien_giai_ket_qua.py": {
@@ -1569,20 +1598,6 @@
    "nguyen_tac": {
     "nt:khach_quan": "không bỏ sót phân tích đã định trước",
     "nt:tai_lap": "chạy trên dữ liệu đã khoá, tất định"
-   }
-  },
-  "phan_tich_sap_bo_sung_r.py": {
-   "pham_vi": "nghien_cuu",
-   "chu": "phan-tich-thong-ke",
-   "cong": ["G6"],
-   "nhiem_vu": ["G6-T1"],
-   "viec": "mã R của các phân tích SAP bổ sung (thứ tự, spline…)",
-   "nguoi_dung_phu": [],
-   "nguoi_kiem": ["thiet-ke-nghien-cuu"],
-   "chot_kiem": ["tools/kiem_cheo_g6.py", "tests/test_phan_tich_sap_bo_sung_20261122.py"],
-   "nguyen_tac": {
-    "nt:tai_lap": "mã R tất định khớp đường Python",
-    "tong:kiem_chung": "phần mềm thứ hai kiểm chéo"
    }
   },
   "phan_tich_thiet_ke_dac_thu.py": {

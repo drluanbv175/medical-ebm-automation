@@ -456,10 +456,9 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                  "mo_ta": "Phân tích ca đầy đủ (không impute) đối chiếu với phân tích chính", "ke_thua": True,
                  "tham_so": {"n_imputations": 0}},
                 _sd_khong_ap_dung("kết cục và nhóm so sánh đều nhị phân — định nghĩa thay thế chưa khai cụ thể"),
-                {"id": "DN_theo_de_cuong", "vai": "do_nhay", "sap_muc": "§9",
-                 "sap_neo": "Phân tích theo đề cương (per-protocol)", "mo_ta": "Phân tích theo đề cương",
-                 "chua_tu_dong": "cần biến tuân thủ đề cương (số lần tái khám đúng nhánh) — chưa có trong bộ biến; "
-                                 "với thử nghiệm không kém hơn, kết luận phải vững ở CẢ ITT lẫn per-protocol"}]
+                # 22/11/2026: biến tuân thủ đề cương có trong bộ biến RCT (vai trò tuan_thu_de_cuong) ⇒ dựng từ ma trận
+                {"id": "DN_theo_de_cuong", "vai": "do_nhay", "sap_muc": "§9", "tu_ma_tran": "theo_de_cuong",
+                 "mo_ta": "Phân tích theo đề cương"}]
     hs["dien_giai"] = {
         "bang": [_dong("Kiểm soát huyết áp tháng 6", "Hiệu số tỷ lệ (điện thoại − trực tiếp)", "hieu_so_nguy_co",
                        "G6", "So với biên −{bien_ni} điểm %: {ni_ket_luan}"),
@@ -476,9 +475,9 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                   "Can thiệp và thiết kế khác (vượt trội, nhắn tin) nên chỉ đối chiếu mức tỷ lệ nền; tác giả chưa đọc "
                   "toàn văn bài này."),
         "muc_4": ("Điểm mạnh: ngẫu nhiên hoá, biên định trước trong SAP, cỡ mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn "
-                  "chế: phân tích theo đề cương chưa làm được do thiếu biến tuân thủ — với thiết kế không kém hơn, "
-                  "phân tích ITT có thể thiên về kết luận không kém hơn; không làm mù người tham gia; một cơ sở, nên "
-                  "kết quả chỉ khái quát cho người tăng huyết áp ổn định khám tại cơ sở tương tự."),
+                  "chế: phân tích theo đề cương chỉ gồm người tuân thủ (≥ 80% số lần can thiệp theo nhánh) nên có "
+                  "thể lệch do chọn lọc sau ngẫu nhiên hoá và phải đọc cùng ITT; không làm mù người tham gia; một cơ "
+                  "sở, nên kết quả chỉ khái quát cho người tăng huyết áp ổn định khám tại cơ sở tương tự."),
         "muc_5": ("Hàm ý cho thực hành: nếu kết luận vững ở cả ITT và per-protocol, tái khám qua điện thoại có thể "
                   "thay một phần tái khám trực tiếp cho người tăng huyết áp ổn định. Hướng tiếp: đo tuân thủ đề cương, "
                   "đánh giá chi phí và sự hài lòng."),
@@ -504,13 +503,13 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
         "ten_bai": "Tái khám qua điện thoại so với trực tiếp trong kiểm soát huyết áp",
         "thiet_ke": "Thử nghiệm ngẫu nhiên không kém hơn",
         "ly_do": ("Biên không kém hơn định trước, hiệu số tỷ lệ {hieu_so_phan_tram} điểm % (KTC 95% "
-                  "{hieu_so_duoi_pt} đến {hieu_so_tren_pt}); cần bổ sung phân tích theo đề cương."),
+                  "{hieu_so_duoi_pt} đến {hieu_so_tren_pt}); cần đọc cùng phân tích theo đề cương."),
         "gop_y_nho": [("Từ khoá (trang đầu)", "Dòng từ khoá do máy tách từng chữ của tiêu đề — thay bằng MeSH"),
                       ("Phương pháp — biên", "Biện minh biên 10 điểm % bằng dữ liệu lâm sàng (CONSORT mở rộng NI)"),
                       ("Kết quả — per-protocol", "Báo cáo phân tích theo đề cương cạnh ITT")],
         "cau_hoi": ["Biên 10 điểm % được chọn dựa trên nghiên cứu nào?",
                     "Bao nhiêu người ở nhóm điện thoại phải chuyển sang khám trực tiếp?"],
-        "checklist": "CONSORT 2010 mở rộng không kém hơn (PMID 23268269)"})
+        "checklist": "CONSORT 2010 mở rộng không kém hơn (PMID 23268518)"})
     hs["dac_ta_G10"].update({
         "summary": ("Bối cảnh: tái khám từ xa có thể giảm gánh nặng đi lại. Mục tiêu: đánh giá tái khám qua điện thoại "
                     "có không kém hơn tái khám trực tiếp về kiểm soát huyết áp 6 tháng. Phương pháp: RCT không kém "

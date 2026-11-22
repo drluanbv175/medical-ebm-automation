@@ -38,6 +38,7 @@ Chạy đúng SAP đã khoá trên dữ liệu đã khoá, mô hình đúng họ
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
 
 ## 4. Công cụ thật của cổng
+- Công cụ `tools/bang_chung_dinh_tinh.py` (kiểm) — đầu ra của `nghien-cuu-dinh-tinh`: độ tin cậy định tính là phép kiểm bằng chứng, thiếu tệp thì `THIEU_BANG_CHUNG`, không bao giờ ghi đạt; chốt kiểm `tests/test_g6_tu_dong_khong_viec_tay_20261122.py`; nguyên tắc: hợp lệ–tin cậy.
 - `python3 tools/run_g6_auto.py --study <mã>` (sinh script R/Python theo SAP; đường R có chốt `tools/kiem_khoa_phan_tich.py` trong `00_setup.R`).
   SAP §4 gọi `postStratify(` ⇒ sinh thêm `04_trong_so_va_gioi_han.R` + `04a_ham_trong_so.R`; **G6-AUTO-11** (giao `G6-T1`)
   CHẶN khi không script R nạp `00_setup.R` nào chạy tới `svydesign(` + `postStratify(` — trả lại `phan-tich-thong-ke`

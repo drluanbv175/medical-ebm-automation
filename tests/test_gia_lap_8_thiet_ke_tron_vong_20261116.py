@@ -238,14 +238,13 @@ def test_g4_generate_chung_chi_khoa_dong_bo_voi_par_2():
     ("sr_ma", {}), ("cross_sectional", {"mo_ta_ty_le": True}),
 ])
 def test_g6_moi_khuon_danh_dau_dung_mot_dong_mo_hinh_chinh(thiet_ke, v_them):
-    import gia_lap_tron_vong as TV
     import run_g6_auto as G6
 
     v = {"exposure": "phoi", "outcome": "kc", "covariates": ["tuoi"], "time_col": "t", **v_them}
     r03 = G6.R_ANALYSIS_MAP_FUNC(thiet_ke, v, 400, 0.05, 0.8, 1.5, "OR")
     dong = [d for d in r03.splitlines() if "◆ MÔ HÌNH CHÍNH (SAP §4)" in d]
     assert len(dong) == 1 and dong[0].startswith("# "), dong
-    bat = TV.TronVong.DONG_MO_HINH_CHINH.sub(r"\1", r03)  # vai thống kê viên bật đúng dòng có dấu
+    bat = G6.bat_dong_thi_hanh(r03)  # 22/11/2026: bộ sinh tự viết dòng thi hành (không còn thống kê viên bật tay)
     assert any("◆ MÔ HÌNH CHÍNH" in d and not d.startswith("#") for d in bat.splitlines())
 
 
