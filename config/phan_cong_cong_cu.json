@@ -1310,6 +1310,20 @@
     "dct:kiem_chung": "cỡ mẫu khớp G3, PMID trong biên nhận A12"
    }
   },
+  "kiem_dot_bien_dinh_ky.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "nhiem_vu": [],
+   "viec": "kiểm đột biến định kỳ theo sổ config/dot_bien_dinh_ky.json: chốt bị làm yếu mà test vẫn xanh ⇒ đỏ",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tests/test_kiem_dot_bien_dinh_ky_20261123.py", ".github/workflows/dot-bien-dinh-ky.yml"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "chốt được đo lại định kỳ, không chỉ lúc viết",
+    "tong:kiem_chung": "đột biến sống sót, sổ lệch mã hay nền đỏ đều là đỏ, không bao giờ bỏ qua"
+   }
+  },
   "kiem_do_tuoi_thang_diem.py": {
    "pham_vi": "ngoai_pham_vi",
    "ly_do": "thang điểm lâm sàng — rút bài và độ tươi"

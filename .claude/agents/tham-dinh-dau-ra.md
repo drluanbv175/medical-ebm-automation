@@ -254,6 +254,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/ho_so_sau_chap_thuan.py` (kiểm) — đầu ra của `dao-duc-dang-ky`: báo cáo sau chấp thuận đủ nội dung Thông tư 43, không mang nhãn trạng thái máy; chốt kiểm `tests/test_ho_so_sau_chap_thuan_pdx_20261122.py`; nguyên tắc: đạo đức.
 - Công cụ `tools/ho_so_hdd_bvqy175.py` (kiểm) — đầu ra của `dao-duc-dang-ky`: hồ sơ Hội đồng Đạo đức cấp bệnh viện; chốt kiểm `tests/test_ho_so_hdd_bvqy175_20261119.py`; nguyên tắc: đạo đức · trung thực–minh bạch.
 - Công cụ `tools/ho_so_dtcs_bvqy175.py` (kiểm) — đầu ra của `ke-hoach-trien-khai`: hồ sơ đề tài cấp cơ sở và phiếu đề xuất nhiệm vụ (Mẫu DTCS-XDNV.01-PDX); chốt kiểm `tests/test_ho_so_dtcs_bvqy175_20261121.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/kiem_dot_bien_dinh_ky.py` (kiểm) — đầu ra của `dieu-phoi-nghien-cuu`: báo cáo đột biến định kỳ không có đột biến sống sót; chốt kiểm `tests/test_kiem_dot_bien_dinh_ky_20261123.py`; nguyên tắc: kiểm soát chất lượng liên tục.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 

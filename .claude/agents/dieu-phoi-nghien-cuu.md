@@ -476,6 +476,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/tieu_chuan_hoan_thien.py` (chủ) — tiêu chuẩn hoàn thiện agent, điều phối và sổ phân công công cụ (C1–C6); chốt kiểm `tests/test_tieu_chuan_hoan_thien_20261010.py`; nguyên tắc: đạt chuẩn định trước · kiểm soát chất lượng.
 - Công cụ `tools/trinh_ky_cong.py` (chủ) — trợ lý trình ký G2 (Hội đồng Đạo đức) và G8 (phản biện độc lập); chốt kiểm `tools/gate_contract.py`; nguyên tắc: đạo đức · khách quan.
 - Công cụ `tools/verify_exports_integrity.py` (chủ) — kiểm liêm chính nội dung tài liệu trong exports/ (pre-commit); chốt kiểm `tests/test_verify_exports_integrity_20260927_pmid_nhan_dem.py`; nguyên tắc: trung thực–minh bạch · kiểm soát chất lượng.
+- Công cụ `tools/kiem_dot_bien_dinh_ky.py` (chủ) — kiểm đột biến định kỳ theo sổ `config/dot_bien_dinh_ky.json` (CI hằng tuần): mỗi chốt quan trọng bị làm yếu thì test khai báo phải đỏ; đột biến sống sót, sổ lệch mã hay nền đỏ ⇒ đỏ. Viết chốt mới quan trọng thì thêm đột biến vào sổ; sửa chốt thì sửa sổ cùng lúc, không xoá đột biến để CI xanh; chốt kiểm `tests/test_kiem_dot_bien_dinh_ky_20261123.py`; nguyên tắc: kiểm soát chất lượng liên tục · kiểm chứng khách quan.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 

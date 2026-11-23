@@ -1,0 +1,44 @@
+name: dot-bien-dinh-ky
+
+# 23/11/2026 — bác sĩ duyệt đề xuất «kiểm đột biến chạy định kỳ để chốt không mục dần». Mỗi tuần áp từng đột biến trong
+# config/dot_bien_dinh_ky.json (làm yếu MỘT chốt quan trọng) và đòi test khai báo ĐỎ; đột biến sống sót / sổ lệch mã / nền
+# đỏ ⇒ job ĐỎ (tools/kiem_dot_bien_dinh_ky.py). Test trong sổ là test thuần Python — không cần R/SPSS/mạng.
+
+on:
+  schedule:
+    - cron: "0 20 * * 0"   # 03:00 sáng thứ Hai giờ Việt Nam
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "config/dot_bien_dinh_ky.json"
+      - "tools/kiem_dot_bien_dinh_ky.py"
+      - ".github/workflows/dot-bien-dinh-ky.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  dot-bien:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+      USE_MOCK_SOURCES: "true"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.lock.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.lock.txt
+
+      - name: Kiểm đột biến theo sổ
+        run: python tools/kiem_dot_bien_dinh_ky.py
