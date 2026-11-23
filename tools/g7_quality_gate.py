@@ -592,6 +592,8 @@ def o_cho_co_du_kien(out_dir: Path, study: str, text: str, design_code: Optional
         ("Phương pháp §6 — phần mềm SAP §10", "Phần mềm: [CẦN", bool(sap.get("phan_mem"))),
         ("Phương pháp §6 — phân tích độ nhạy SAP §9", "Phân tích độ nhạy: [CẦN", bool(sap.get("do_nhay"))),
         ("Phương pháp §6 — dữ liệu thiếu SAP §6", "Dữ liệu thiếu: [CẦN", bool(sap.get("du_lieu_thieu"))),
+        ("Giới thiệu §1 — bối cảnh/gánh nặng vấn đề đã chốt ở G1", "[CẦN bổ sung: dịch tễ học/tỷ lệ mắc",
+         bool(str(G7._g1_g2_g7(out_dir)[0].get("background_problem") or "").strip())),
     )
     if design_code is None:
         try:

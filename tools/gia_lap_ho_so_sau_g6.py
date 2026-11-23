@@ -35,10 +35,20 @@ def _dong(ket_cuc: str, thuoc_do: str, lay: str, gate: str, y_nghia: str) -> Dic
     return {"ket_cuc": ket_cuc, "thuoc_do": thuoc_do, "lay": lay, "gate": gate, "y_nghia": y_nghia}
 
 
+#: Ô «ai thực hiện can thiệp» của RCT tin nhắn gốc — người gửi tin tách khỏi người đo huyết áp (khớp «cách làm mù»
+#: đã chốt ở G10: «tách riêng người gửi tin nhắn và người đo huyết áp»); tuân thủ theo G1 intervention_dose_adherence
+AI_THUC_HIEN_SMS = ("Điều dưỡng phụ trách chương trình tin nhắn (không tham gia đo huyết áp) cài lịch gửi tự động mỗi "
+                    "ngày, kiểm nhật ký gửi tin hằng tuần và gửi lại tin bị lỗi; tuân thủ đo bằng tỷ lệ tin nhắn gửi "
+                    "thành công, tổng hợp hằng tháng")
+
+
 def _tra_loi_g7(*, ket_qua: str, ket_luan: str, ket_cuc_phu: str, du_lieu_thieu: str, giai_thich: str,
-                diem_manh: str, so_sanh: str, mesh: str) -> List[Tuple[str, str]]:
-    """Ô bản thảo G7 tác giả trả lời — CÙNG bộ mẫu ô như hồ sơ thuần tập; {muc_N} là lời văn bản diễn giải G6.5."""
-    return [
+                diem_manh: str, so_sanh: str, mesh: str, ai_thuc_hien: str = "") -> List[Tuple[str, str]]:
+    """Ô bản thảo G7 tác giả trả lời — CÙNG bộ mẫu ô như hồ sơ thuần tập; {muc_N} là lời văn bản diễn giải G6.5.
+
+    `ai_thuc_hien` (23/11/2026): ô §3 «ai thực hiện can thiệp, kiểm soát chất lượng/tuân thủ» — chỉ thiết kế có can
+    thiệp (RCT) có ô này; trước đây ô rơi vào quy tắc chung khớp đuôi nhãn bị cắt và bị điền «6»."""
+    return [*([(r"ai thuc hien can thiep", ai_thuc_hien)] if ai_thuc_hien else []),
         (r"khong dien truoc khi phan tich", ket_qua),
         (r"^conclusions?$|2.3 cau tom tat", ket_luan),
         (r"khong chua ket cuc phu", ket_cuc_phu),
@@ -134,6 +144,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             giai_thich=("Cơ chế giả định là tin nhắn giảm quên liều, tăng tuân thủ dùng thuốc hạ áp; nghiên cứu này "
                         "không đo tuân thủ khách quan"),
             diem_manh="Ngẫu nhiên hoá và kiểm chéo độc lập bằng SPSS và R, khớp với engine phân tích chính",
+            ai_thuc_hien=AI_THUC_HIEN_SMS,
             so_sanh=("Đối chiếu chi tiết ở đoạn so sánh với phân tích gộp Thakkar 2016 (PMID 26831740); tác giả "
                      + _KC_TRUNG),
             mesh="Hypertension; Text Messaging; Medication Adherence; Randomized Controlled Trial",
