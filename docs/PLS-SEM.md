@@ -131,7 +131,7 @@ là họ khác ⇒ CHẶN; SAP không khai mà lượt chạy là PLS-SEM ⇒ CH
 - **PLSpredict**: chia phần ngẫu nhiên ⇒ J lượt độc lập mỗi gói (mặc định 5), so trung bình RMSE/MAE của PLS theo t họ
   Bonferroni. Khi lặp r > 1 hai gói KHÁC định nghĩa: seminr lấy trung bình DỰ BÁO qua các lần lặp rồi tính RMSE/MAE
   (`mean_over_reps` trong `seminr::predict_pls`), cSEM tính chỉ số TỪNG lần lặp rồi lấy trung bình (`cSEM::predict`)
-  ⇒ phép kiểm chéo dùng J lượt r = 1 ở cả hai gói (`luot_doi_chieu`); số báo cáo vẫn là lượt đúng r của SAP. Đo
+  ⇒ phép kiểm chéo dùng ít nhất 20 lượt r = 1 ở cả hai gói (`luot_doi_chieu`; 5 lượt cho SD Monte Carlo quá dao động — từng báo LỆCH giả); số báo cáo vẫn là lượt đúng r của SAP. Đo
   23/11/2026: so lượt r = 10 từng báo LỆCH chập chờn (MAE tt_2 0,6829 so với 0,6850). seminr chạy `cores = 1` vì chia phần
   song song không tái lập theo `set.seed`. Mô hình tuyến tính chuẩn (LM) KHÁC định nghĩa (seminr: chỉ báo tiền tố trực tiếp; cSEM «lm»: mọi chỉ báo
   ngoại sinh) ⇒ «không so». Q²predict chỉ cSEM tính (định nghĩa Shmueli 2019) ⇒ «không so», báo cáo kèm nhãn nguồn.
@@ -162,9 +162,10 @@ Kiểm chéo seminr ↔ cSEM trên dữ liệu đủ (đo lại 23/11/2026 sau k
 PLSpredict 1 lần lặp): mô hình đơn giản 141 khớp, 0 lệch, 5 không so; mô hình mở rộng 397 khớp, 0 lệch, 15 không so (LM,
 Q²predict, tải bootstrap của cấu trúc một chỉ báo…). Mốc chuẩn sách không đổi: 53 khớp, 3 khác phiên bản.
 
-Giả lập `cross_sectional_pls_sem` (dữ liệu mô phỏng, bootstrap 5.000, hạt giống SAP): phân tích chính 203 ca, nhóm nam
-144 ca, nhóm nữ 59 ca — mỗi lượt 144 khớp, 0 lệch, 7 không so sau hai lần sửa ở trên (trước khi sửa: chính 1 lệch HTMT, nam
-4 lệch SD tải TT, nữ 4 lệch HTMT).
+Giả lập `cross_sectional_pls_sem` (dữ liệu mô phỏng, bootstrap 5.000, hạt giống SAP; lượt cuối 24/11/2026): phân tích
+chính 203 ca, nhóm nam 144 ca, nhóm nữ 59 ca, độ nhạy thay trung bình 219 ca — mỗi lượt 149 khớp, 0 lệch, 7 không so;
+khoá gói G10, 0 ô lỗi máy, đề cương nộp đạt (`kiem_gia_lap_16.py`: 1/1). Trước các lần sửa ở trên: chính 1 lệch HTMT, nam 4
+lệch SD tải TT, nữ 4 lệch HTMT, rồi 1 lệch MAE PLSpredict khi chỉ có 5 lượt r = 1.
 
 ## 8. G7
 

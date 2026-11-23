@@ -3597,9 +3597,13 @@ kq$seminr <- tryCatch(withCallingHandlers({
            rmse_lm = lay(sp$LM_out_of_sample, "RMSE"), mae_lm = lay(sp$LM_out_of_sample, "MAE"))
     }
     J <- seq_len(as.integer(pp$luot_mc))
+    # lượt r = 1 rẻ (k lần ước lượng) ⇒ ít nhất 20 lượt: SD Monte Carlo ước lượng từ 5 lượt quá dao động (đo 23/11/2026:
+    # SD thật giữa các lượt ≈ 0,003, 5 lượt từng cho 0,0014 ⇒ báo LỆCH giả; 30 lượt mỗi gói: |t| ≤ 1,95, không chênh hệ
+    # thống)
+    J1 <- seq_len(max(as.integer(pp$luot_mc), 20L))
     ra$plspredict <- list(k = as.integer(pp$k), lap = as.integer(pp$lap), cach = "predict_DA", dich = dich,
                           muc = muc_dich, luot = lapply(J, du_doan, lap = as.integer(pp$lap)),
-                          luot_doi_chieu = lapply(J, du_doan, lap = 1L))
+                          luot_doi_chieu = lapply(J1, du_doan, lap = 1L))
   }
   ra
 }, warning = canh("seminr")), error = function(e) { kq$loi$seminr <<- conditionMessage(e); NULL })
@@ -3743,7 +3747,7 @@ if (isTRUE(CH$kiem_cheo)) kq$csem <- tryCatch(withCallingHandlers({
     # một lượt đúng số lần lặp SAP để báo Q²predict; J lượt r = 1 để so với seminr cùng định nghĩa
     ra$plspredict <- list(k = as.integer(pp$k), lap = as.integer(pp$lap), cach = "direct", dich = dich,
                           muc = muc_dich, luot = list(du_doan(1L, as.integer(pp$lap))),
-                          luot_doi_chieu = lapply(seq_len(as.integer(pp$luot_mc)), du_doan, lap = 1L))
+                          luot_doi_chieu = lapply(seq_len(max(as.integer(pp$luot_mc), 20L)), du_doan, lap = 1L))
   }
   ra
 }, warning = canh("csem")), error = function(e) { kq$loi$csem <<- conditionMessage(e); NULL })
