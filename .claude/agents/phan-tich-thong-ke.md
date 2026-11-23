@@ -566,6 +566,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/run_g4_auto.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: SAP final + chứng chỉ khoá SAP; chốt kiểm `tools/g4_quality_gate.py`; nguyên tắc: khách quan · đạt chuẩn định trước · kết quả kiểm chứng được.
 - Công cụ `tools/run_g5_auto.py` (kiểm) — đầu ra của `quan-ly-du-lieu`: hạ tầng quản trị dữ liệu: DMP, từ điển REDCap, script QC; chốt kiểm `tools/g5_quality_gate.py`; nguyên tắc: kiểm soát chất lượng · tôn trọng đối tượng · tái lập.
 - Công cụ `tools/run_g8_auto.py` (kiểm) — đầu ra của `binh-duyet`: bảng rà trước nộp A9 (bình duyệt đối kháng); chốt kiểm `tools/g8_quality_gate.py`; nguyên tắc: khách quan · kiểm chứng khách quan.
+- Công cụ `tools/run_stats_analysis.py` (chủ, 23/11/2026) — chạy ĐÚNG phương pháp SAP khai: `--kc-hieu-so newcombe|wald` cho hiệu số nguy cơ (ghi `risk_diff_ci_method` vào tóm tắt; phương pháp lạ ⇒ lỗi); `n_imputations = 0` ⇒ phân tích ca đầy đủ; rào EPV chặn hồi quy ⇒ chạy phương pháp biến cố hiếm SAP §5 khai (khối `bien_co_hiem`, Bảng 4b: số biến cố từng nhóm, KTC Clopper–Pearson, p Fisher), đối chiếu chéo R/SPSS cùng phương pháp; logistic có điều kiện (ghép cặp cá thể) và Firth chưa có đường chạy ⇒ chặn fail-closed, không tự lùi về phương pháp khác; chốt kiểm `tests/test_g6_sap_ho_mo_hinh_20261123.py`, `tests/test_g6_mi0_bien_co_hiem_20261123.py`; nguyên tắc: khách quan · tái lập · đạt chuẩn định trước.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
