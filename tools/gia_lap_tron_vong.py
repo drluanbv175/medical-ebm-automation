@@ -387,7 +387,9 @@ def _ap_bien_the(rows: List[Dict[str, Any]], bien_the: Mapping[str, Any], kc: Op
     khong_kem: p_test = effect_size, p_control = p0 (không kém hơn). cum: mã cụm theo khối co_cum người, phân bổ THEO
     CỤM, hiệu ứng ngẫu nhiên cụm trên thang logit. song_con: thời gian mũ (nguy cơ nền từ p_event trong toi_da tháng,
     HR = effect_size), kiểm duyệt hành chính đều 6–toi_da. thieu: hiệp biến thiếu MAR — xác suất thiếu tăng theo biến
-    phu_thuoc (tuổi)."""
+    phu_thuoc (tuổi). ghep_cap (23/11/2026): bệnh–chứng ghép cặp cá thể 1 ca : so_chung chứng — dòng ca (sinh_du_lieu
+    đặt ở mỗi (so_chung + 1) dòng) cùng so_chung dòng sau là MỘT bộ ghép (mã ở cột `cot`); chứng chép đúng biến `dung`
+    của ca và lệch không quá `lech[biến]` đơn vị ở biến liên tục."""
     p0 = float(g3.get("p0") or 0.3)
     eff = float(g3.get("effect_size") or 1.0)
     if bien_the.get("khong_kem") and kc and pn:
@@ -424,6 +426,19 @@ def _ap_bien_the(rows: List[Dict[str, Any]], bien_the: Mapping[str, Any], kc: Op
             cp = rng.gauss(float(kt["nen"]), float(kt["sd"])) + float(kt["chuong_trinh"]) * (1 if r[pn] else 0) \
                 - float(kt["tiet_kiem"]) * (1 if r[kc] else 0)
             r[kt["cot"]] = int(round(max(0.0, cp), -3))
+    gc = bien_the.get("ghep_cap")
+    if gc and kc:
+        k = int(gc.get("so_chung") or 2) + 1
+        for i, r in enumerate(rows):
+            r[gc["cot"]] = i // k + 1
+            ca = rows[i - i % k]
+            if i % k == 0:
+                continue
+            for b in gc.get("dung") or []:
+                r[b] = ca.get(b)
+            for b, lech in (gc.get("lech") or {}).items():
+                if isinstance(ca.get(b), (int, float)):
+                    r[b] = ca[b] + rng.randint(-int(lech), int(lech))
     th = bien_the.get("thieu")
     if th:
         pt = th.get("phu_thuoc")
@@ -1633,6 +1648,15 @@ class TronVong:
         bch_sap = G4Q.phuong_phap_bien_co_hiem_sap(G4Q._section_body(text, "§5"))["phuong_phap"]
         if bch_sap and G4Q.BIEN_CO_HIEM[bch_sap][1] and ts_chinh.get("outcome") and not ts_chinh.get("loai_dac_thu"):
             ts_chinh.setdefault("bien_co_hiem", bch_sap)
+        # 23/11/2026: SAP §4 khoá hồi quy logistic CÓ ĐIỀU KIỆN (bệnh–chứng ghép cặp cá thể) ⇒ thống kê viên khai cột mã
+        # bộ ghép theo vai trò bo_ghep của ma trận G3 (cùng hàm chay_sap_g6 `kiem` dùng); phân tích kế thừa nhận theo
+        if (ts_chinh.get("outcome") and not ts_chinh.get("loai_dac_thu")
+                and "logistic_dk" in G6Q._ho_mo_hinh_sap(G6Q._sec(text, 4))):
+            import ma_tran_muc_tieu_bien as MT0  # noqa: PLC0415
+
+            bo_ghep = MT0.vai_tro_tu_dong(MT0.doc_ma_tran(self.out)[0] or []).get("bo_ghep")
+            if bo_ghep:
+                ts_chinh.setdefault("bo_ghep", bo_ghep)
         ds: List[Dict[str, Any]] = []
         for x in mau:
             if x.get("tu_ma_tran"):  # 22/11/2026: dựng từ ma trận G3 + SAP §9 ở dưới, không từ hồ sơ
@@ -1929,7 +1953,7 @@ class TronVong:
     # engine ghi và dẫn ĐÚNG tệp kết quả chứa số đó (bản diễn giải đối chiếu số với tệp nguồn).
     THUOC_DO = ("pr_hieu_chinh", "pr_tho", "hieu_so_nguy_co", "or_hieu_chinh", "or_tho", "ty_le", "auc", "do_nhay",
                 "do_dac_hieu", "ppv", "npv", "c_statistic", "rr_gop", "rr_gop_co_dinh", "chu_de_1", "hr_hieu_chinh",
-                "hr_tho", "pr_mi")
+                "hr_tho", "pr_mi", "or_tho_dk")
 
     def _uoc_luong(self, lay: str, gate: str) -> Optional[Dict[str, Any]]:
         tom = _doc_json(self.out / f"{gate}_analysis_summary.json")
@@ -1965,6 +1989,9 @@ class TronVong:
                       f"{gate}_table2_main_outcome.txt", 3)
         if lay == "or_hieu_chinh":
             r = theo_bien((tom.get("multivariate") or {}).get("results"), "OR_adj")
+            return r and kq(r["OR_adj"], r.get("CI_95"), r.get("p"), f"{gate}_table4_multivariate.txt", 2)
+        if lay == "or_tho_dk":  # 23/11/2026: OR thô CÓ ĐIỀU KIỆN theo bộ ghép (hồi quy logistic có điều kiện)
+            r = theo_bien((tom.get("multivariate") or {}).get("crude"), "OR_adj")
             return r and kq(r["OR_adj"], r.get("CI_95"), r.get("p"), f"{gate}_table4_multivariate.txt", 2)
         if lay == "or_tho":
             pc = tom.get("primary_outcome") or {}

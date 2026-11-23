@@ -150,7 +150,12 @@ def test_chay_sap_g6_doi_moi_phan_tich_mang_phuong_phap_sap():
     ds[1]["tham_so"]["bien_co_hiem"] = "mo_ta_chinh_xac"
     assert CS6.kiem_bien_co_hiem_sap(ds, SAP_BCH) == []
     firth = SAP_BCH.replace(G4Q.BIEN_CO_HIEM["mo_ta_chinh_xac"][0], "hồi quy logistic Firth (logistf)")
-    assert CS6.kiem_bien_co_hiem_sap(ds[:2], firth) and CS6.kiem_bien_co_hiem_sap(ds, firth) == []
+    # 23/11/2026 (chiều): engine tự chạy Firth ⇒ SAP khai Firth thì MỌI phân tích có kết cục phải khai «firth» (phân
+    # tích bổ sung R logistf không còn thay được) — tests/test_clogit_firth_20261123.py kiểm phần Firth đầy đủ
+    assert len(CS6.kiem_bien_co_hiem_sap(ds, firth)) == 2
+    for pt in ds[:2]:
+        pt["tham_so"]["bien_co_hiem"] = "firth"
+    assert CS6.kiem_bien_co_hiem_sap(ds, firth) == []
     assert CS6.kiem_bien_co_hiem_sap(ds[:2], "### §5\n- VIF\n") == []  # SAP cũ không có dòng ⇒ không đòi
 
 
@@ -163,7 +168,8 @@ def test_kiem_dac_ta_goi_kiem_bien_co_hiem(tmp_path):
                          "tham_so": {"outcome": "y", "group": "g"}}]}
     loi = CS6.kiem_dac_ta(tmp_path, dt)["loi"]
     assert any("MT1" in x and "biến cố hiếm" in x for x in loi), loi
-    assert CS6._kiem_gia_tri("bien_co_hiem", "bien_co_hiem", "firth")  # engine không tự chạy Firth
+    assert CS6._kiem_gia_tri("bien_co_hiem", "bien_co_hiem", "firth") == []  # engine tự chạy Firth (23/11 chiều)
+    assert CS6._kiem_gia_tri("bien_co_hiem", "bien_co_hiem", "khac")  # mã engine không chạy ⇒ lỗi
     assert CS6.doi_so_run_stats({"tham_so": {"outcome": "y", "group": "g", "bien_co_hiem": "mo_ta_chinh_xac"}})[
         -2:] == ["--bien-co-hiem", "mo_ta_chinh_xac"]
 

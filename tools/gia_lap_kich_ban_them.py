@@ -1313,12 +1313,24 @@ _PHAN_BIEN_THUAN_TAP: Dict[str, Any] = {
 }
 
 
+#: 23/11/2026: lời khai SAP §5 cho biến cố hiếm theo Firth (khớp g4_quality_gate.phuong_phap_bien_co_hiem_sap «firth»)
+TRA_LOI_FIRTH = ("hồi quy logistic Firth (hợp lý phạt Jeffreys, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt) khi số "
+                 "biến cố dưới 10 × số tham số; áp cho mọi phân tích nhị phân của SAP, kể cả tổn hại")
+#: lời khai mô tả chính xác — thiết kế CỤM giữ phương pháp này (Firth không có sai số chuẩn theo cụm)
+TRA_LOI_MO_TA_CHINH_XAC = ("mô tả số biến cố từng nhóm + KTC chính xác Clopper–Pearson + p chính xác Fisher, "
+                           "không chạy hồi quy khi số biến cố dưới 10 × số tham số; áp cho mọi phân tích nhị phân của "
+                           "SAP, kể cả tổn hại")
+
+
 def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
     nhom_gioi = "Giới (nam/nữ) — ghi trước khi xem dữ liệu"
     gia_dinh_poisson = "Kiểm quá phân tán (Pearson χ²/df), dạng tuyến tính của tuổi, VIF < 5"
     return {
         "rct_nhi_phan": {
-            "tra_loi_G4": _tra_loi_sap(
+            # 23/11/2026 (điều phối giao: «Firth khi SAP khai Firth cho biến cố hiếm»): thống kê viên RCT chọn hồi quy
+            # Firth cho biến cố hiếm (tổn hại nghiêm trọng chỉ vài biến cố) — G6 chạy Firth, đối chiếu R logistf. Mẫu
+            # cụ thể đứng TRƯỚC mẫu chung «bien co hiem» (mô tả chính xác) của TRA_LOI_CHUNG.
+            "tra_loi_G4": [(r"bien co hiem", TRA_LOI_FIRTH)] + _tra_loi_sap(
                 "Biến cố bất lợi do tin nhắn (phàn nàn, lo âu) ghi theo phiếu biến cố", "tuổi và giới là yếu tố "
                 "tiên lượng mạnh của kiểm soát huyết áp, hiệu chỉnh để tăng độ chính xác (không phải gây nhiễu do "
                 "đã ngẫu nhiên hoá)", "Kiểm dạng tuyến tính của tuổi; VIF < 5", nhom_gioi,

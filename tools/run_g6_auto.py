@@ -768,6 +768,8 @@ def ap_vai_tro_ma_tran(v: dict, out_dir: Path, study: str, ten_goc: dict,
             v["time_col"] = vt["thoi_gian"]
         if vt.get("cum"):
             v["cluster_col"] = vt["cum"]
+        if vt.get("bo_ghep"):  # 23/11/2026: bệnh–chứng ghép cặp cá thể — mã bộ ghép cho clogit
+            v["bo_ghep_col"] = vt["bo_ghep"]
     else:
         log.append("⚠️  Đề tài CHƯA có ma trận mục tiêu–biến ĐẠT (_ma-tran-muc-tieu-bien.csv) — vai trò biến chỉ còn theo "
                    "SAP; vai trò SAP không nêu thì KHÔNG đoán")
@@ -4408,7 +4410,39 @@ message("03_analysis.R ({label}, kết cục liên tục MD) — Biến: {exposu
 """
 
 
+def _r03_clogit_with_vars(v: dict) -> str:
+    """03_analysis.R bệnh–chứng ghép cặp CÁ THỂ (23/11/2026): SAP §4 khoá hồi quy logistic có điều kiện ⇒ dòng ◆ là
+    survival::clogit theo ĐÚNG cột mã bộ ghép của ma trận mục tiêu–biến (vai trò bo_ghep). Ma trận chưa khai vai trò
+    đó ⇒ không có dòng thi hành (không đoán tên cột bộ ghép) — ghi rõ việc cần làm; G6-AUTO-09 không PASS."""
+    exposure, outcome, bo = v["exposure"], v["outcome"], v.get("bo_ghep_col")
+    cov_fml = " + ".join(v["covariates"])
+    if not bo:
+        mo_hinh = (f"# [CẦN MA TRẬN KHAI VAI TRÒ bo_ghep] SAP §4 khoá logistic CÓ ĐIỀU KIỆN nhưng ma trận mục tiêu–biến "
+                   f"chưa có biến mã bộ ghép —\n# clogit_adj <- survival::clogit({outcome} ~ {exposure}{_cong(cov_fml)} + "
+                   "strata(<mã bộ ghép>), data=df)")
+    else:
+        mo_hinh = (f"# clogit_tho <- survival::clogit({outcome} ~ {exposure} + strata({bo}), data=df, method=\"exact\")"
+                   "  # ◆ MÔ HÌNH CHÍNH (SAP §4) — OR thô có điều kiện\n"
+                   f"# clogit_adj <- survival::clogit({outcome} ~ {exposure}{_cong(cov_fml)} + strata({bo}), data=df, "
+                   "method=\"exact\")  # ◆ MÔ HÌNH CHÍNH (SAP §4) — có điều kiện theo bộ ghép\n"
+                   "# summary(clogit_adj)$conf.int")
+    return f"""\
+# 03_analysis.R — Bệnh–chứng ghép cặp cá thể (hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép → OR)
+# Biến: phơi nhiễm={exposure} | ca/chứng (outcome)={outcome} | mã bộ ghép={bo or "[CẦN MA TRẬN KHAI]"}
+# Hợp lý có điều kiện trên từng bộ ghép (tham số chặn riêng của bộ bị khử) — logistic KHÔNG điều kiện trên dữ liệu
+# ghép cá thể cho OR lệch. Biến dùng để ghép (hằng trong bộ) không ước lượng được — không đưa vào công thức.
+# Bản chạy chính thức: run_stats_analysis.py --bo-ghep {bo or "<mã bộ ghép>"} (đặc tả G6); kiểm chéo R/SPSS COXREG.
+source(here::here("scripts", "00_setup.R"))
+# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
+{mo_hinh}
+
+message("03_analysis.R (bệnh–chứng ghép cặp) — Biến: {exposure}/{outcome} | bộ ghép: {bo or "chưa khai"} | dữ liệu ĐÃ KHOÁ (G5)")
+"""
+
+
 def _r03_case_control_with_vars(v: dict) -> str:
+    if v.get("logistic_dk"):
+        return _r03_clogit_with_vars(v)
     exposure = v["exposure"]
     outcome  = v["outcome"]
     covars   = v["covariates"]

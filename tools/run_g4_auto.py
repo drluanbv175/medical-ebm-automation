@@ -1128,7 +1128,7 @@ def _dien_khung(sap: str, khung, design_code, hypothesis_type: str = "superiorit
 
 
 _NHAN_VAI_TRO_CAU_TRUC = (("cum", "biến cụm"), ("thoi_gian", "biến thời gian theo dõi"), ("su_kien", "biến sự kiện"),
-                          ("trong_so", "biến trọng số"))
+                          ("trong_so", "biến trọng số"), ("bo_ghep", "biến mã bộ ghép"))
 
 
 def _them_bien_vai_tro(sap: str, khung) -> str:
@@ -1186,7 +1186,7 @@ def _khung_sap(out, meta):
         "bien_phan_tich": [f"`{b}` ({khai.get(b) or b})" for b in phan_tich],
         "bien_imputation": [b for b in ([vt.get("ket_cuc")] + phan_tich) if b],
         "khai_niem": khai,
-        "bien_cau_truc": {k: vt.get(k) for k in ("cum", "thoi_gian", "su_kien", "trong_so")},
+        "bien_cau_truc": {k: vt.get(k) for k in ("cum", "thoi_gian", "su_kien", "trong_so", "bo_ghep")},
         "bien_mo_ta": list(vt.get("mo_ta") or []),
         "dinh_nghia_thay_the": _DTT_tu_ma_tran(dong_mt),
         "tuan_thu_de_cuong": _DTT_tuan_thu(dong_mt),

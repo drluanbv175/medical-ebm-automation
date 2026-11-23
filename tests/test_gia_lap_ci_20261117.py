@@ -120,8 +120,17 @@ def test_cong_phan_bo_qua_bieu_do_khi_g6_khong_tu_dong(tmp_path):
 
 @pytest.mark.parametrize("ten", list(KG.KICH_BAN.values()))
 def test_moi_kich_ban_co_nen_g0_trong_fixtures(ten):
-    """CI chạy offline ⇒ mỗi kịch bản phải có nền G0 đã lưu (thiếu thì Phần A «không đo được» ⇒ 0/16)."""
-    assert (REPO / "tests" / "fixtures" / "gia_lap_nen_g0" / ten / "_nen.json").is_file()
+    """CI chạy offline ⇒ mỗi kịch bản phải có nền G0 đã lưu (thiếu thì Phần A «không đo được» ⇒ 0/16). Kịch bản kế thừa
+    CÙNG đề tài/chủ đề (khoá `nen_g0_tu`, 23/11/2026: bệnh–chứng ghép cặp cá thể) đọc nền của kịch bản gốc khi không có
+    nền riêng — đúng luật GiaLap._nen_g0."""
+    nen = REPO / "tests" / "fixtures" / "gia_lap_nen_g0"
+    kb = TV.GL.KICH_BAN.get(ten) or TV._kich_ban_kho()[ten]
+    tu = kb.get("nen_g0_tu")
+    goc = nen / str(tu) if tu and not (nen / ten).is_dir() else nen / ten
+    assert (goc / "_nen.json").is_file()
+    if tu:  # kế thừa nền chỉ hợp lệ khi đề tài và chủ đề trùng gốc (G0 trùng hệt)
+        g = TV.GL.KICH_BAN.get(tu) or TV._kich_ban_kho()[tu]
+        assert (kb["study"], kb["topic"], kb.get("query_en")) == (g["study"], g["topic"], g.get("query_en")), ten
 
 
 def test_bien_spss_tro_tep_khong_co_la_khong_co_spss(monkeypatch, tmp_path):
