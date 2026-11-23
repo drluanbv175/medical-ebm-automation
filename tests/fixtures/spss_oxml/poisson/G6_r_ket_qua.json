@@ -1,6 +1,6 @@
 {
  "study": "F2-POISSON",
- "luc": "2026-11-23T20:32:53+07:00",
+ "luc": "2026-11-24T01:47:56+07:00",
  "rscript": "/usr/local/bin/Rscript",
  "chay_bang": "nền (Rscript --vanilla — cùng R với RStudio)",
  "r_phien_ban": "R version 4.6.2 (2026-10-29)",
@@ -11,7 +11,7 @@
   "survival": "3.8.12",
   "ordinal": "2026.7.26"
  },
- "du_lieu": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-kyroq_5a/exports/F2-POISSON/05_clean_locked/k.csv",
+ "du_lieu": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-n1k9qxui/exports/F2-POISSON/05_clean_locked/k.csv",
  "sha256_du_lieu": "1ca37f2b6c4138739a4efabddd86a6e2069b12b6c9ffc8bd8792f17fe3143aab",
  "so_ca_doc": 600,
  "dac_ta": {
@@ -104,15 +104,15 @@
    ],
    "or": 2.53640862495581,
    "ci": [
-    1.77299477618396,
-    3.62853224339267
+    1.77300644215029,
+    3.62850836850197
    ],
    "p_yates": 3.91924859139863e-07,
    "p_pearson": 2.44444495030652e-07,
    "rd": 0.194319947245476,
    "rd_ci": [
-    0.121192800853573,
-    0.26744709363738
+    0.121194144582048,
+    0.267445749908904
    ],
    "rd_phuong_phap": "wald",
    "bien_co_hiem": null
@@ -314,7 +314,7 @@
  },
  "loi": {},
  "canh_bao": [],
- "script": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-kyroq_5a/exports/F2-POISSON/r/F2-POISSON_phan_tich.R",
- "nhat_ky": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-kyroq_5a/exports/F2-POISSON/r/ket_qua/F2-POISSON_phan_tich.log",
+ "script": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-n1k9qxui/exports/F2-POISSON/r/F2-POISSON_phan_tich.R",
+ "nhat_ky": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-n1k9qxui/exports/F2-POISSON/r/ket_qua/F2-POISSON_phan_tich.log",
  "disclaimer": "Cần bác sĩ kiểm chứng."
 }

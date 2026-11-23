@@ -1,10 +1,10 @@
 {
   "study": "F2-POISSON",
   "gate": "G6",
-  "generated": "2026-11-23T20:31:57.703238",
-  "data_source": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-kyroq_5a/exports/F2-POISSON/05_clean_locked/k.csv",
+  "generated": "2026-11-24T01:47:26.900961",
+  "data_source": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-n1k9qxui/exports/F2-POISSON/05_clean_locked/k.csv",
   "data_lock": {
-    "manifest": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-kyroq_5a/exports/F2-POISSON/DATA_LOCK_manifest.json",
+    "manifest": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-n1k9qxui/exports/F2-POISSON/DATA_LOCK_manifest.json",
     "locked_dataset_path": "05_clean_locked/k.csv",
     "sha256": "1ca37f2b6c4138739a4efabddd86a6e2069b12b6c9ffc8bd8792f17fe3143aab",
     "lock_date": "2026-11-24",
