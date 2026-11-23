@@ -161,6 +161,11 @@ def _so_vn(n) -> str:
     return f"{int(n):,}".replace(",", ".")
 
 
+#: câu xử lý dữ liệu thiếu (khối SAP §4 và chiến lược §6 dùng CHUNG; bộ đọc nhận «listwise»/«mean replacement»)
+CAU_THIEU = {"listwise": "loại khỏi phân tích ca thiếu bất kỳ chỉ báo nào của mô hình (phân tích ca đầy đủ, listwise)",
+             "trung_binh": "điền khuyết ô thiếu bằng trung bình của chỉ báo (mean replacement)"}
+
+
 def dong_sap(khoi: dict) -> list[str]:
     """Dòng SAP §4 của đề tài PLS-SEM — dựng từ khối G1 đã chốt; ô thiếu ⇒ [CẦN …] (G4-AUTO-10 chặn khoá khi còn ô)."""
     def can(viec: str) -> str:
@@ -201,10 +206,7 @@ def dong_sap(khoi: dict) -> list[str]:
         L.append("- **PLSpredict (PLS-SEM):** "
                  f"{can('cấu trúc đích, số phần k, số lần lặp — hoặc «không thực hiện»')}  ")
     th = khoi.get("du_lieu_thieu")
-    L.append("- **Dữ liệu thiếu (PLS-SEM):** " + {
-        "listwise": "loại khỏi phân tích ca thiếu bất kỳ chỉ báo nào của mô hình (phân tích ca đầy đủ, listwise)",
-        "trung_binh": "điền khuyết ô thiếu bằng trung bình của chỉ báo (mean replacement)"}.get(
-            th, can("listwise hoặc trung_binh")) + "  ")
+    L.append("- **Dữ liệu thiếu (PLS-SEM):** " + CAU_THIEU.get(th, can("listwise hoặc trung_binh")) + "  ")
     L.append("- **Ngưỡng đánh giá định trước (PLS-SEM):**  ")
     L += [f"  - {mo_ta} — " + "; ".join(trich(m) for m in nguon) + "  " for _k, mo_ta, nguon in DONG_NGUONG_SAP]
     L += [f"- **Kiểm nguồn ngưỡng:** {XAC_MINH_NGUON}  ",

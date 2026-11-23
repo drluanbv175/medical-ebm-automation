@@ -4455,6 +4455,10 @@ def generate_manuscript(
         f"α = {so_viet(_a)} ({_phia}), power = {int(power*100)}%"
     ) if n_adjusted > 0 else "N = [CẦN — từ G3]"
 
+    # 23/11/2026 (PLS-SEM): mã nội bộ «PLS_PATH = 0.2» không vào bản thảo ⇒ tên đại lượng + số kiểu Việt hai chữ số
+    if str(effect_type).upper() == "PLS_PATH" and isinstance(effect_val, (int, float)) and not isinstance(effect_val,
+                                                                                                         bool):
+        effect_type, effect_val = "hệ số đường dẫn nhỏ nhất |β_min|", f"{abs(float(effect_val)):.2f}".replace(".", ",")
     effect_text = (
         (f"với {effect_type} = {effect_val} "
          + (f"(theo {nguon_effect})" if str(nguon_effect).upper().startswith(("PMID", "DOI"))

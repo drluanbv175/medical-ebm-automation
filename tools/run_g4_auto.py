@@ -735,8 +735,10 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "",
             "### §6 DỮ LIỆU THIẾU",
             "",
-            *(["- **Chiến lược:** theo dòng «Dữ liệu thiếu (PLS-SEM)» của SAP §4 (seminr và cSEM nhận CÙNG ma trận đã "
-               "xử lý)  ",
+            # chiến lược viết TRỌN câu (bản thảo G7 chép nguyên dòng này vào phần Phương pháp)
+            *(["- **Chiến lược:** " + PLS.CAU_THIEU.get(str((pls_sem or {}).get("du_lieu_thieu")),
+                                                         "theo dòng «Dữ liệu thiếu (PLS-SEM)» của SAP §4")
+               + "; seminr và cSEM nhận cùng ma trận đã xử lý  ",
                "- **Giả định:** loại ca thiếu hoặc thay trung bình chỉ hợp lý khi ô thiếu ít và thiếu hoàn toàn ngẫu nhiên "
                "(MCAR); nếu nghi MAR/MNAR thì diễn giải thận trọng, đối chiếu phân tích độ nhạy của SAP §9  ",
                "- **Báo cáo:** số ô thiếu từng chỉ báo và số ca phân tích  "] if pls_sem else [
@@ -764,8 +766,9 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "",
             # 17/11/2026 (phản biện máy, 9/16 đề tài): «±1 SD» vô nghĩa với phơi nhiễm/kết cục nhị phân.
             # 23/11/2026: PLS-SEM — độ nhạy theo cách xử lý ô thiếu (pls_sem.py --du-lieu-thieu); không có MI
-            *(["- **Dữ liệu thiếu:** ước lượng lại mô hình với ô thiếu thay bằng trung bình chỉ báo (phân tích chính xử "
-                "lý theo dòng dữ liệu thiếu của SAP §4) — so sánh hệ số đường dẫn và R²  "] if pls_sem else [
+            # gạch đầu dòng THƯỜNG (không nhãn đậm) — G7 chỉ chép gạch thường của §9 vào «Phân tích độ nhạy»
+            *(["- Dữ liệu thiếu: ước lượng lại mô hình với ô thiếu thay bằng trung bình chỉ báo (phân tích chính xử lý "
+                "theo dòng dữ liệu thiếu của SAP §4), so sánh hệ số đường dẫn và R²  "] if pls_sem else [
                 "- Định nghĩa thay thế của phơi nhiễm/kết cục, khai trước khi xem dữ liệu  ",
                 "- Complete case vs MI  ",
                 "- [CẦN BÁC SĨ thêm kịch bản cụ thể]  "]),

@@ -460,6 +460,13 @@
    ],
    "source": "pubmed"
   },
+  "34112122": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "34432914": {
    "status": "ok",
    "sources_tried": [
@@ -566,6 +573,13 @@
    "source": "pubmed"
   },
   "36526813": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "36803662": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -2108,6 +2122,27 @@
    "year": "2022",
    "doi": "10.1136/gutjnl-2021-324243"
   },
+  "34112122": {
+   "status": "resolved",
+   "title": "The effect of high blood pressure-health literacy, self-management behavior, self-efficacy and social support on the health-related quality of life of Kazakh hypertension patients in a low-income rural area of China: a structural equation model.",
+   "authors": "Zhang Q, Huang F, Zhang L, Li S, Zhang J",
+   "journal": "BMC public health",
+   "year": "2021",
+   "doi": "10.1186/s12889-021-11129-5",
+   "n_authors": 5,
+   "authors_6": [
+    "Zhang Q",
+    "Huang F",
+    "Zhang L",
+    "Li S",
+    "Zhang J"
+   ],
+   "journal_abbr": "BMC Public Health",
+   "volume": "21",
+   "issue": "1",
+   "pages": "1114",
+   "pmcid": "PMC8194055"
+  },
   "34432914": {
    "status": "resolved",
    "title": "Individual, healthcare professional and system-level barriers and facilitators to initiation and adherence to injectable therapies for type 2 diabetes: A systematic review and meta-ethnography.",
@@ -2347,6 +2382,28 @@
    "volume": "68",
    "issue": "5",
    "pages": "1975-1982"
+  },
+  "36803662": {
+   "status": "resolved",
+   "title": "Impact of health literacy and social support on medication adherence in patients with hypertension: a cross-sectional community-based study.",
+   "authors": "Guo A, Jin H, Mao J, Zhu W, Zhou Y",
+   "journal": "BMC cardiovascular disorders",
+   "year": "2023",
+   "doi": "10.1186/s12872-023-03117-x",
+   "n_authors": 7,
+   "authors_6": [
+    "Guo A",
+    "Jin H",
+    "Mao J",
+    "Zhu W",
+    "Zhou Y",
+    "Ge X"
+   ],
+   "journal_abbr": "BMC Cardiovasc Disord",
+   "volume": "23",
+   "issue": "1",
+   "pages": "93",
+   "pmcid": "PMC9940429"
   },
   "36828607": {
    "status": "resolved",

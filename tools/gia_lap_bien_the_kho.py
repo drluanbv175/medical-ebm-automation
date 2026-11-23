@@ -1052,9 +1052,9 @@ def _pls_sem(cn: Dict[str, Any], vi: Callable[[str], str], tt: str, _ky_g2: Call
         "knowledge_gap": vi("Thiếu mô hình cấu trúc các yếu tố tâm lý – giao tiếp của tuân thủ điều trị tại cơ sở này"),
         # câu bằng chứng chép đúng số trong abstract PubMed (PMID 36803662, BMC Cardiovasc Disord 2023) — kho A12
         "evidence_summary": ("Nghiên cứu cắt ngang cộng đồng trên 1697 người tăng huyết áp tại Thượng Hải (PMID "
-                             "36803662) dùng mô hình phương trình cấu trúc ghi nhận 38,54% người bệnh tuân thủ thuốc ở "
-                             "mức thấp; hiểu biết sức khoẻ ảnh hưởng trực tiếp lên tuân thủ (β = 0,291) và hỗ trợ xã "
-                             "hội ảnh hưởng trực tiếp lên tuân thủ (β = 0,165)"),
+                             "36803662) dùng mô hình phương trình cấu trúc ghi nhận tỷ lệ người bệnh tuân thủ thuốc "
+                             "ở mức thấp là 38,54%; hiểu biết sức khoẻ ảnh hưởng trực tiếp lên tuân thủ (β = 0,291) "
+                             "và hỗ trợ xã hội ảnh hưởng trực tiếp lên tuân thủ (β = 0,165)"),
         "bias_controls": [
             {"sai_lech": "Sai lệch chọn do chọn mẫu liên tiếp người đến khám",
              "bien_phap": "Tuyển liên tiếp mọi người đủ tiêu chuẩn trong các ngày khám; ghi số người từ chối và lý do",

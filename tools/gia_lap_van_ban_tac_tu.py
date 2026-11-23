@@ -73,6 +73,9 @@ TU_THIET_KE = frozenset({
     "cross-sectional", "randomized controlled trial", "randomized controlled trials", "randomised controlled trial",
     "non-inferiority", "noninferiority", "follow-up", "sensitivity and specificity", "diagnostic accuracy", "auroc",
     "cohort", "cohort studies", "meta-analysis", "systematic review",
+    # 23/11/2026 (kịch bản PLS-SEM): phương pháp phân tích là THIẾT KẾ/kỹ thuật, không phải khái niệm của câu hỏi — bài
+    # cùng quần thể, phơi nhiễm, kết cục mà tiêu đề không nêu «structural equation» vẫn là liên quan trực tiếp
+    "structural equation", "structural equation modeling", "path analysis", "partial least squares", "pls-sem",
 })
 # Thuật ngữ BỐI CẢNH — theo thang mức liên quan bác sĩ chốt 18/11/2026 (`g0_tong_hop.DINH_NGHIA_LIEN_QUAN`): khác nước
 # hay khác bối cảnh VẪN là trực tiếp ⇒ khối chỉ gồm bối cảnh (ngoại trú, chăm sóc ban đầu…) không tính khi xếp mức.

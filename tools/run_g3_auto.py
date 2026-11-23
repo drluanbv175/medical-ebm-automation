@@ -622,10 +622,12 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
                 f"PLS-SEM cần --effect-size là HỆ SỐ ĐƯỜNG DẪN nhỏ nhất cần phát hiện |β_min| trong (0,1), nhận {effect_val}.")
         n = math.ceil(((z(alpha / 2) + z(1 - power)) / abs(effect_val)) ** 2)
         kq.update(n_per_group=n, n_total=n)
+        # số thập phân kiểu Việt (dấu phẩy) — bản thảo G7 chép nguyên chuỗi này; G7-AUTO-06 bắt «α = 0.05»
+        _vn = lambda x: f"{x}".replace(".", ",")  # noqa: E731
         kq["formula"] = (f"PLS-SEM — phương pháp căn bậc hai nghịch đảo (Kock & Hadaya 2018, doi:10.1111/isj.12131): "
-                         f"n > ((z₁₋α/₂ + z₁₋β)/|β_min|)² với |β_min| = {abs(effect_val):.2f}, α = {alpha} hai phía, lực "
-                         f"{power:.0%} ⇒ n = {n}. Công thức gốc dùng α MỘT phía; SAP kiểm định hệ số đường dẫn bằng KTC "
-                         "bootstrap HAI phía nên dùng z₁₋α/₂ (thận trọng hơn).")
+                         f"n > ((z₁₋α/₂ + z₁₋β)/|β_min|)² với |β_min| = {_vn(f'{abs(effect_val):.2f}')}, "
+                         f"α = {_vn(alpha)} hai phía, lực {power:.0%} ⇒ n = {n}. Công thức gốc dùng α MỘT phía; SAP "
+                         "kiểm định hệ số đường dẫn bằng KTC bootstrap HAI phía nên dùng z₁₋α/₂ (thận trọng hơn)")
     elif design_code == "cross_sectional":
         if not (0 < effect_val < 1):
             raise InvalidEffectSizeError(

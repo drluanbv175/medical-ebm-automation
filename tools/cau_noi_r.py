@@ -3664,13 +3664,14 @@ if (isTRUE(CH$kiem_cheo)) kq$csem <- tryCatch(withCallingHandlers({
   # lặp có tương quan ≤ 0 (đo 23/11/2026, nhóm nữ 59 ca: 31% mẫu lặp; phân vị 5% HTMT GT–NT seminr 0,216 · cSEM 0,172 ·
   # mã độc lập theo định nghĩa seminr 0,219–0,220). Kiểm chéo bootstrap HTMT vì vậy dùng MẪU LẶP CỦA cSEM (bộ sinh số
   # độc lập) với công thức HTMT đúng định nghĩa seminr, và đếm số mẫu lặp có tương quan ≤ 0 để báo cáo
-  A_ <- TEN[MODE[TEN] == "A" & lengths(MUC[TEN]) >= 2]
+  # cấu trúc MỘT chỉ báo: tương quan cùng nét = 1 (đúng seminr:::HTMT)
+  A_ <- TEN[MODE[TEN] == "A"]
   CAP_A <- if (length(A_) >= 2) utils::combn(A_, 2, simplify = FALSE) else list()
+  mono <- function(X, m) if (length(m) < 2) 1 else { a <- abs(stats::cor(X[, m])); mean(a[upper.tri(a)]) }
   hta <- function(X) unlist(lapply(CAP_A, function(p) {
-    ma <- abs(stats::cor(X[, MUC[[p[1]]]])); mb <- abs(stats::cor(X[, MUC[[p[2]]]]))
     v <- stats::cor(X[, c(MUC[[p[1]]], MUC[[p[2]]])])
     c(mean(abs(stats::cor(X[, MUC[[p[1]]]], X[, MUC[[p[2]]]]))) /
-        sqrt(mean(ma[upper.tri(ma)]) * mean(mb[upper.tri(mb)])),
+        sqrt(mono(X, MUC[[p[1]]]) * mono(X, MUC[[p[2]]])),
       as.numeric(any(v[upper.tri(v)] <= 0)))
   }))
   rb <- goi(.disattenuate = FALSE, .resample_method = "bootstrap", .R = B, .seed = SEED,
