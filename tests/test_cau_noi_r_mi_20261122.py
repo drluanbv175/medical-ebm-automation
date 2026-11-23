@@ -58,8 +58,8 @@ def test_khoi_mi_bat_dung_mo_hinh_va_bien():
 @pytest.mark.parametrize("cum", [True, False])
 def test_mcse_python_bang_do_dao_dong_that_giua_cac_luot_gan(cum):
     """mcse = √(B/m) mà Python ghi phải xấp xỉ độ lệch chuẩn THẬT của ước lượng gộp giữa các lượt gán độc lập (cùng
-    dữ liệu, hạt giống khác) — căn cứ của dung sai đối chiếu R. Hai bộ máy: tự lập (Poisson cụm) và MICE dựng sẵn
-    (logistic không cụm)."""
+    dữ liệu, hạt giống khác) — căn cứ của dung sai đối chiếu R. Hai mô hình: Poisson cụm và logistic không cụm
+    (24/11/2026: cả hai qua bộ gán BoGanPMM; hạt giống là tham số `hat_giong`, không còn đọc bộ sinh toàn cục)."""
     import run_stats_analysis as RSA
 
     rng = np.random.default_rng(8)
@@ -72,9 +72,8 @@ def test_mcse_python_bang_do_dao_dong_that_giua_cac_luot_gan(cum):
     df.loc[rng.random(n) < 0.3, "x1"] = np.nan
     b, mcse = [], []
     for lan in range(8):
-        np.random.seed(100 + lan)
-        mi = (RSA.multiple_imputation_model(df, "y", "x3", ["x1"], "poisson_pr", 20, "cum", {}) if cum
-              else RSA.multiple_imputation_model(df, "y", "x3", ["x1"], "binary", 20))
+        mi = (RSA.multiple_imputation_model(df, "y", "x3", ["x1"], "poisson_pr", 20, "cum", {}, hat_giong=100 + lan)
+              if cum else RSA.multiple_imputation_model(df, "y", "x3", ["x1"], "binary", 20, hat_giong=100 + lan))
         r = next(x for x in mi["results"] if x["variable"] == "x1")
         b.append(r["b"])
         mcse.append(r["mcse"])
@@ -349,8 +348,9 @@ def test_that_mi_gan_theo_nhanh_python_khop_r(tmp_path, monkeypatch):
 @CAN_R
 def test_that_mi_du_bao_roi_rac_pmm_khong_phong_phuong_sai_giua_bo(tmp_path, monkeypatch):
     """Mọi biến dự báo của x1 đều nhị phân (y, x2) ⇒ trung bình dự đoán của PMM chỉ có 4 giá trị. mice 3.19 mặc định
-    (matchindex) tách đồng hạng theo thứ tự cố định ⇒ SD giữa bộ ≈ 3 lần Python (đo 23/11/2026: 0,068 so 0,022). Bản R
-    dùng PMM rút người cho ngẫu nhiên khi đồng hạng (use.matcher = TRUE) — SD giữa bộ phải cùng cỡ Python.
+    (matchindex) tách đồng hạng theo thứ tự cố định ⇒ SD giữa bộ ≈ 3 lần Python (đo 23/11/2026: 0,068 so 0,022). Từ
+    24/11/2026 cả hai phía dùng CÙNG phương pháp (PMM kiểu 1 tham số bootstrap, 10 người cho chọn riêng từng ca, phá thế
+    trùng ngẫu nhiên — Python BoGanPMM, R mice method "pmmboot") — SD giữa bộ phải cùng cỡ.
     Ngưỡng 2,1 lần: B̂ ~ B·χ²(m−1)/(m−1), m = 20 ⇒ SD log(√B̂_R/√B̂_Py) ≈ 0,23; 3,3 SD ≈ log 2,1 (chọn TRƯỚC khi chạy)."""
     rng = np.random.default_rng(70)
     n = 1200
