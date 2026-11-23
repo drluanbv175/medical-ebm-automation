@@ -1239,14 +1239,26 @@ def chay_r(loai: str, ch: Dict[str, Any], df: Any, cot: Sequence[str], d: Path, 
         ma, out, err = R.chay_r(rscript, [str(script), str(tep_dl), str(tep_kq), str(tep_ch)], thu_muc=Path(tmp),
                                 thoi_han=THOI_HAN_R)
         if ma != 0 or not tep_kq.is_file():
-            thieu_goi = re.search(r"there is no package called ‘([^’]+)’", err or "")
+            thieu_goi = goi_r_thieu(err or "")
             if thieu_goi:
-                raise KhongDoDuoc(f"R thiếu gói «{thieu_goi.group(1)}» — cài bằng `python3 tools/cau_noi_r.py cai-goi`")
+                raise KhongDoDuoc(f"R thiếu gói «{thieu_goi}» — cài bằng `python3 tools/cau_noi_r.py cai-goi`")
             raise RuntimeError("R lỗi (mã %s): %s" % (ma, ((err or out or "").strip()[-600:])))
         kq = json.loads(tep_kq.read_text(encoding="utf-8"))
     kq["script_r"] = str(script.relative_to(d))
     kq["chay_bang"] = f"Rscript --vanilla ({rscript})"
     return kq
+
+
+_MAU_THIEU_GOI_R = re.compile(r"there is no package called [‘'\"“]([^’'\"”]+)[’'\"”]")
+
+
+def goi_r_thieu(err: str) -> Optional[str]:
+    """Tên gói R mà thông báo lỗi của R nói là chưa cài; None nếu không phải lỗi thiếu gói.
+
+    23/11/2026: R in dấu nháy CONG ‘gói’ ở locale UTF-8 (Mac) nhưng nháy THẲNG 'gói' trên Windows/locale khác —
+    mẫu cũ chỉ nhận nháy cong ⇒ trên Windows thiếu gói bị báo «R lỗi» thay vì «không đo được — cài gói»."""
+    m = _MAU_THIEU_GOI_R.search(err or "")
+    return m.group(1) if m else None
 
 
 def _ghi(p: Path, noi_dung: str) -> None:
