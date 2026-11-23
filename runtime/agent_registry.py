@@ -225,8 +225,9 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # config/phan_cong_cong_cu.json, chép từ nhánh gốc claude/phan-cong-goc-20261122 — vẫn 64.
 # 23/11/2026: chép 2 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
 # 23/11/2026: chép 4 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
+# 23/11/2026: thêm dòng doctrine hệ nhập liệu cục bộ (tools/nhap_lieu_cuc_bo.py) vào quan-ly-du-lieu + dieu-phoi-g5.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "762e528c582049b7212113ce5d8cebdfb9c82bb344eca71cc980a014d43b713c"
+    "14b35ffd0ba36a02a1288d3a7e2f7a4c53ccd58c5174bb5cbbe11fe7633cf72e"
 )
 
 MINIMUM_AGENT_COUNT = 64
