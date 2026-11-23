@@ -78,6 +78,11 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                "intervention_dose_adherence": "6 lần tái khám qua điện thoại; tuân thủ = số lần gọi thành công",
                "evidence_summary": vi("TEXT4BP (PMID 35342691) báo tỷ lệ đạt đích HA 48–70% sau 3 tháng ở nhóm can "
                                       "thiệp nhắn tin; chưa có thử nghiệm không kém hơn về tái khám qua điện thoại"),
+               # 23/11/2026: bối cảnh riêng của can thiệp tái khám từ xa — không thừa hưởng câu «quên uống thuốc» của
+               # kịch bản nhắn tin gốc (Giới thiệu §1 của G7 điền từ khoá này)
+               "background_problem": vi("Tỷ lệ kiểm soát huyết áp ở người tăng huyết áp điều trị ngoại trú còn thấp; "
+                                        "tái khám trực tiếp hằng tháng đòi người bệnh đi lại nhiều lần nên dễ bị bỏ "
+                                        "lỡ lần tái khám"),
                "knowledge_gap": vi("Thiếu thử nghiệm không kém hơn về tái khám qua điện thoại tại Việt Nam"),
                # 22/11/2026 (CONSORT 2010 mở rộng NI — Piaggio 2012, PMID 23268518 — mục 2a, 4a, 5, 6a)
                "ni_rationale": vi("Chọn thiết kế không kém hơn vì tái khám qua điện thoại giảm đi lại và thời gian "
