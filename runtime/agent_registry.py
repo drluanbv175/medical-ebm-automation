@@ -223,9 +223,19 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # khối ký thứ ba theo đơn vị ngay trên Khoa (mã ở PR #419; cặp gốc EBM-drluanbv175#490) — vẫn 64.
 # 22/11/2026 (sổ phân công công cụ C1–C6): 23 agent nhận dòng «Công cụ `tools/x.py` (chủ|kiểm|dùng phụ)» theo
 # config/phan_cong_cong_cu.json, chép từ nhánh gốc claude/phan-cong-goc-20261122 — vẫn 64.
+# 23/11/2026 (chốt chung «điền sai kiểu»): viet-ban-thao (chủ) và tham-dinh-dau-ra (kiểm) nhận dòng
+# `tools/quet_dien_sai_kieu.py` theo config/phan_cong_cong_cu.json; khối trách nhiệm sinh tự động của dieu-phoi-g7 và
+# viet-ban-thao thêm G7-AUTO-09 — vẫn 64.
 # 23/11/2026: chép 2 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
+# 23/11/2026: chép 4 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
+# 23/11/2026 (hợp đồng SAP máy đọc): 4 agent nhận dòng `tools/hop_dong_sap.py` (thiet-ke-nghien-cuu chủ, dieu-phoi-g4
+# kiểm, phan-tich-thong-ke và viet-ban-thao dùng phụ) — vẫn 64.
+# 24/11/2026 (hợp đồng SAP v2): dòng hop_dong_sap.py của thiet-ke-nghien-cuu nêu thêm nơi đọc hợp đồng — vẫn 64.
+# 24/11/2026 (nhánh tích hợp 2): gộp dòng doctrine của nhánh hợp đồng SAP v2 và nhánh «điền sai kiểu» — vẫn 64.
+# 24/11/2026 (PLS-SEM): phan-tich-thong-ke (chủ tools/pls_sem.py), thiet-ke-nghien-cuu (kiểm) và viet-ban-thao nhận dòng
+# PLS-SEM (hợp đồng SAP v3 trường pls_sem, quy ước số tiếng Việt) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "aefa6efe0c816773aadbe919dc765193b0f9c59a295f159f1a6ef766ac38d6f7"
+    "71f5a10fbde33d2bedc7d396e53d92c7075e6d1e3549ec5e5aa11d5c4667bd96"
 )
 
 MINIMUM_AGENT_COUNT = 64

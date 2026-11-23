@@ -1576,12 +1576,15 @@ def doan_co_mau(n: Nguon) -> List[str]:
             f"tỷ lệ ước tính p = {_so(p)} và sai số tuyệt đối cho phép d = {_so(c.get('precision'))}. Cỡ mẫu tính "
             f"được là {_n(c.get('n_total'))} người.")
     elif loai == "PLS_PATH":
-        # 23/11/2026: PLS-SEM — căn bậc hai nghịch đảo (Kock & Hadaya 2018); |β_min| phải có nguồn (STROBE mục 10)
+        # 23/11/2026: PLS-SEM — căn bậc hai nghịch đảo (Kock & Hadaya 2018); |β_min| phải có nguồn (STROBE mục 10).
+        # 24/11/2026: số in bằng hàm chung `quet_dien_sai_kieu.viet_so` (chốt K11/K22 dùng cùng quy ước)
+        import quet_dien_sai_kieu as QDSK  # noqa: PLC0415
+
         dong.append(
             "Cỡ mẫu được tính theo phương pháp căn bậc hai nghịch đảo cho mô hình PLS-SEM (Kock và Hadaya 2018, "
             "doi:10.1111/isj.12131): n > ((z₁₋α/₂ + z₁₋β)/|β_min|)², với α = " + an + " (hai phía), lực mẫu " + luc
             + " và hệ số đường dẫn nhỏ nhất cần phát hiện |β_min| = "  # hai chữ số như G3/SAP («0,20»)
-            + f"{abs(float(c.get('effect_val') or g3.get('effect_size') or 0)):.2f}".replace(".", ",")
+            + QDSK.viet_so(abs(float(c.get('effect_val') or g3.get('effect_size') or 0)), 2)
             + (f", dựa trên {nguon_hq}" if nguon_hq else "") + (f" ({mo_ta_hq.rstrip('.')})" if _co(mo_ta_hq) else "")
             + f". Cỡ mẫu tính được là {_n(c.get('n_total'))} người.")
     elif loai == "AUC":

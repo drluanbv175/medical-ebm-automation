@@ -66,6 +66,7 @@ TOOLS = Path(__file__).resolve().parent
 BASE = TOOLS.parent
 sys.path.insert(0, str(TOOLS))
 import bien_phai_sinh as BPS  # noqa: E402
+import hop_dong_sap as HD  # noqa: E402 — hợp đồng SAP máy đọc: `kiem` đọc HỢP ĐỒNG, không dò chữ SAP
 
 TEP_DAC_TA = "G6_DAC_TA_SAP.json"
 TEP_KQ_JSON, TEP_KQ_MD = "G6_SAP_ket_qua.json", "G6_SAP_ket_qua.md"
@@ -410,8 +411,21 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
     if so_chinh != 1:
         loi.append(f"cần ĐÚNG một phân tích vai «chinh» có tham_so (đang có {so_chinh})")
     phu: dict = {}
+    hd = None
     if sap.is_file() and dt.get("nguon_sap"):
-        phu = kiem_phu_sap(dt, sap.read_text(encoding="utf-8"))
+        # 23/11/2026 (hợp đồng SAP máy đọc, bác sĩ duyệt): đọc HỢP ĐỒNG G4_SAP_CONTRACT_<mã>.json — không tự dò chữ SAP.
+        # Hợp đồng thiếu/cũ/lệch văn bản SAP ⇒ LỖI (chặn chạy); các phép đối chiếu dưới chỉ chạy trên hợp đồng hợp lệ.
+        m_ten = re.fullmatch(r"G4_A5_SAP_FINAL_(.+)\.md", str(dt.get("nguon_sap")))
+        if not m_ten:
+            loi.append(f"nguon_sap {dt.get('nguon_sap')!r} không theo tên SAP chuẩn G4_A5_SAP_FINAL_<mã>.md — "
+                       "không đối chiếu được hợp đồng SAP")
+        else:
+            hd, loi_hd = HD.doc(d, m_ten.group(1))
+            loi += [f"hợp đồng SAP: {x}" for x in loi_hd]
+            if loi_hd:
+                hd = None
+    if hd is not None:
+        phu = kiem_phu_sap(dt, hd)
         loi += [f"{pid}: SAP hiện tại không có cụm neo «{neo}» (sap_neo trỏ phân tích SAP không còn)"
                 for pid, neo in phu["neo_thieu"]]
         loi += [f"SAP {muc} có phân tích chưa vào đặc tả: «{dong[:100]}»" for muc, dong in phu["muc_chua_phu"]]
@@ -422,13 +436,14 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         canh_bao += [f"{pid}: cụm neo «{neo}» chỉ nằm trong câu PHỦ ĐỊNH của SAP («{cau}») — SAP có thể đã LOẠI phân "
                      "tích này; thống kê viên xem lại: bỏ mục khỏi đặc tả, hoặc neo vào câu khẳng định"
                      for pid, neo, cau in phu["neo_phu_dinh"]]
-        loi_kc, canh_kc = kiem_kc_hieu_so_sap(ds, sap.read_text(encoding="utf-8"))
+        loi_kc, canh_kc = kiem_kc_hieu_so_sap(ds, hd)
         loi += loi_kc
         canh_bao += canh_kc
-        loi += kiem_bien_co_hiem_sap(ds, sap.read_text(encoding="utf-8"))
-        loi += kiem_bo_ghep_sap(ds, sap.read_text(encoding="utf-8"))
-        loi += kiem_pls_sap(ds, sap.read_text(encoding="utf-8"))
-        qt = quan_the_chinh_sap(sap.read_text(encoding="utf-8"))
+        loi += kiem_bien_co_hiem_sap(ds, hd)
+        loi += kiem_bo_ghep_sap(ds, hd)
+        loi += kiem_du_lieu_thieu_sap(ds, hd)
+        loi += kiem_pls_sap(ds, hd)
+        qt = quan_the_chinh_sap(hd)
         for pt in ds:
             if not qt or not isinstance(pt, dict) or not isinstance(pt.get("tham_so"), dict):
                 continue
@@ -448,7 +463,16 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
                         "--vai PI|THONG_KE_VIEN --tham-chieu <mã người duyệt> --ap-dung` "
                         f"(ghi nguoi_duyet «<VAI>:<tham chiếu>:<YYYY-MM-DD>:{dau}»)")
     return {"loi": loi, "canh_bao": canh_bao, "dau": dau, "duyet": duyet, "sap_khop": sap_khop, "phan_tich": ds,
-            "phu_sap": phu}
+            "phu_sap": phu, "hop_dong_sap": (hd or {}).get("sha256_hop_dong")}
+
+
+def _noi_dung(sap) -> dict:
+    """Nội dung hợp đồng SAP: nhận hợp đồng (dict, đường chạy thật) hoặc văn bản SAP (kiểm đơn vị — suy qua bộ đọc SAP
+    DUY NHẤT hop_dong_sap, không dò chữ riêng ở đây)."""
+    if isinstance(sap, dict):
+        nd = sap.get("noi_dung") if "noi_dung" in sap else sap
+        return nd if isinstance(nd, dict) else {}
+    return HD.rut_noi_dung(str(sap or ""))
 
 
 def kiem_kc_hieu_so_sap(ds: list, sap_text: str) -> tuple[list[str], list[str]]:
@@ -457,9 +481,8 @@ def kiem_kc_hieu_so_sap(ds: list, sap_text: str) -> tuple[list[str], list[str]]:
     SAP §4 khai phương pháp G6 chưa tính ⇒ LỖI (chốt đỏ, không tự lùi về Wald). SAP khai Newcombe/Wald ⇒ phân tích
     CHÍNH và mọi phân tích run_stats_analysis CÙNG kết cục chính phải khai `kc_hieu_so` đúng phương pháp đó — thiếu
     hoặc khác ⇒ LỖI. SAP không khai mà đặc tả tự chọn ⇒ cảnh báo (lựa chọn của thống kê viên, ghi trong tóm tắt)."""
-    import g6_quality_gate as G6Q  # noqa: PLC0415
-
-    kc = G6Q.phuong_phap_kc_hieu_so_sap(G6Q._sec(sap_text, 4))
+    ktc = _noi_dung(sap_text).get("khoang_tin_cay") or {}
+    kc = {"phuong_phap": ktc.get("hieu_so_nguy_co"), "chua_ho_tro": ktc.get("hieu_so_chua_ho_tro") or []}
     loi: list[str] = []
     canh: list[str] = []
     if kc["chua_ho_tro"]:
@@ -490,13 +513,14 @@ def kiem_bien_co_hiem_sap(ds: list, sap_text: str) -> list[str]:
     chặn bất kỳ phân tích nhị phân nào — nhóm con, tổn hại); Firth kèm `cot_cum` ⇒ LỖI (Firth không có sai số chuẩn
     theo cụm). Phương pháp engine chưa tự chạy (cờ False trong G4Q.BIEN_CO_HIEM) ⇒ phải có phân tích loai_bo_sung cùng
     mã. SAP không có dòng biến cố hiếm (SAP cũ) ⇒ không đòi (chốt G4-AUTO-04 lo phần khai)."""
-    import g4_quality_gate as G4Q  # noqa: PLC0415
+    import g4_quality_gate as G4Q  # noqa: PLC0415 — danh mục phương pháp (tên, engine tự chạy?)
 
-    bch = G4Q.phuong_phap_bien_co_hiem_sap(G4Q._section_body(sap_text, "§5"))
-    pp = bch["phuong_phap"]
+    bch = _noi_dung(sap_text).get("bien_co_hiem") or {}
+    pp = bch.get("phuong_phap")
     if not pp:
-        return [f"SAP §5 có dòng biến cố hiếm nhưng chưa nêu phương pháp nhận ra được: «{bch['dong'][:120]}»"
-                ] if bch["co_dong"] else []
+        dong_bch = (bch.get("dong") or "")[:120]
+        return [f"SAP §5 có dòng biến cố hiếm nhưng chưa nêu phương pháp nhận ra được: «{dong_bch}»"
+                ] if bch.get("co_dong") else []
     if not G4Q.BIEN_CO_HIEM[pp][1]:
         co_bo_sung = any(isinstance(pt, dict) and (pt.get("tham_so") or {}).get("loai_bo_sung") == pp for pt in ds)
         return [] if co_bo_sung else [
@@ -530,9 +554,7 @@ def kiem_bo_ghep_sap(ds: list, sap_text: str) -> list[str]:
     SAP §4 khoá họ `logistic_dk` ⇒ phân tích CHÍNH và mọi phân tích run_stats_analysis CÙNG kết cục chính phải khai
     `bo_ghep` (cột mã bộ ghép) — thiếu thì engine chạy logistic KHÔNG điều kiện, lệch SAP. Đặc tả khai `bo_ghep` mà SAP
     §4 không khoá họ đó ⇒ LỖI (lượt chạy sẽ ra họ khác SAP)."""
-    import g6_quality_gate as G6Q  # noqa: PLC0415
-
-    co_dk = "logistic_dk" in G6Q._ho_mo_hinh_sap(G6Q._sec(sap_text, 4))
+    co_dk = "logistic_dk" in ((_noi_dung(sap_text).get("phan_tich_chinh") or {}).get("ho_mo_hinh") or [])
     ts_chinh = next((pt.get("tham_so") for pt in ds if isinstance(pt, dict) and pt.get("vai") == "chinh"
                      and isinstance(pt.get("tham_so"), dict)), None) or {}
     loi = []
@@ -559,22 +581,29 @@ def kiem_bo_ghep_sap(ds: list, sap_text: str) -> list[str]:
 # so sánh nhóm 1 lượt khám — đặc tả G6 soạn trước đó KHÔNG có, và không gì báo (chỉ có SHA lệch ⇒ «đặc tả cũ», không nói
 # thiếu phân tích nào). Nay: mỗi mục đặc tả neo vào SAP bằng `sap_neo` (cụm chữ nguyên văn, nhiều cụm cách « | » hoặc
 # danh sách); mọi gạch đầu dòng cấp 1 của §9 và mọi mục nhãn đậm là phân tích ở §1/§3/§5/§7 phải có ít nhất một neo.
-_MUC_SAP_RE = re.compile(r"^#{2,4}\s*§\s*(\d{1,2})\b[^\n]*\n(.*?)(?=^#{2,4}\s*§\s*\d|^#{1,2}\s|\Z)", re.M | re.S)
-_NHAN_PHAN_TICH = re.compile(r"phân tích|đặc tính đo lường|đáp ứng|nhóm nhỏ tiền định", re.I)
+# 23/11/2026 (hợp đồng SAP máy đọc): các bộ dò chữ SAP (mục bắt buộc, quần thể chính, mệnh đề phân tích phụ, phủ
+# định) nay ở bộ đọc SAP DUY NHẤT tools/hop_dong_sap.py — tên dưới đây là bí danh; `kiem` đọc kết quả của chúng qua
+# hợp đồng G4_SAP_CONTRACT_<mã>.json.
+muc_sap_bat_buoc = HD.muc_sap_bat_buoc
+menh_de_phan_tich_phu = HD.menh_de_phan_tich_phu
+_bi_phu_dinh = HD.bi_phu_dinh
+CUA_SO_PHU_DINH = HD.CUA_SO_PHU_DINH
 
 
-def kiem_pls_sap(ds: list, sap_text: str) -> list[str]:
+def kiem_pls_sap(ds: list, hd: dict | None) -> list[str]:
     """Lỗi đặc tả ↔ PLS-SEM của SAP §4 (23/11/2026). SAP §4 khai PLS-SEM ⇒ phân tích CHÍNH phải là PLS-SEM, khối mô
     hình của SAP phải đọc được, và mọi phân tích PLS-SEM khai đúng số mẫu bootstrap SAP; đặc tả khai PLS-SEM mà SAP
-    không khai ⇒ LỖI (lượt chạy sẽ ra phương pháp không có trong SAP)."""
+    không khai ⇒ LỖI (lượt chạy sẽ ra phương pháp không có trong SAP). 24/11/2026: đọc trường `pls_sem` của HỢP ĐỒNG
+    SAP (hop_dong_sap) — không dò chữ SAP."""
     import pls_sem as PLS  # noqa: PLC0415
 
-    co_pls = PLS.la_pls_sap(sap_text)
+    khoi = HD.truong(hd, "pls_sem")
+    co_pls = khoi is not None
     loi: list[str] = []
     mh = None
     if co_pls:
         try:
-            mh = PLS.doc_sap(sap_text)
+            mh = PLS.mo_hinh_hop_dong(hd)
         except PLS.TuChoi as e:
             loi.append(str(e))
     chinh = next((pt for pt in ds if isinstance(pt, dict) and pt.get("vai") == "chinh"
@@ -605,64 +634,14 @@ def neo_cua(pt: dict) -> list[str]:
     return [x.strip() for x in str(v or "").split("|") if x.strip()]
 
 
-def muc_sap_bat_buoc(sap_text: str) -> list[tuple[str, str]]:
-    """Phân tích SAP mà đặc tả BẮT BUỘC phải phủ: gạch đầu dòng cấp 1 của §9; mục nhãn đậm là phân tích ở §1/§3/§5/§7
-    (trừ mục ghi «KHÔNG CÓ»)."""
-    import unicodedata  # noqa: PLC0415
+def quan_the_chinh_sap(sap) -> tuple[str, str] | None:
+    """(biến, giá trị) SAP §1 dùng khoanh «Quần thể chính» (vd «mọi hồ sơ có `du_tieu_chuan` = 1») — từ hợp đồng SAP
+    (`phan_tich_chinh.quan_the.loc`); không có ⇒ None.
 
-    ra: list[tuple[str, str]] = []
-    for m in _MUC_SAP_RE.finditer(unicodedata.normalize("NFC", sap_text)):
-        muc, than = m.group(1), m.group(2)
-        for dong in than.splitlines():
-            if not dong.startswith("- "):
-                continue
-            if muc == "9":
-                ra.append((f"§{muc}", dong.strip()))
-            elif muc in ("1", "3", "5", "7"):
-                nhan = re.match(r"- \*\*(.+?)\*\*", dong)
-                if nhan and _NHAN_PHAN_TICH.search(nhan.group(1)) and "KHÔNG CÓ" not in dong.upper():
-                    ra.append((f"§{muc}", dong.strip()))
-    return ra
-
-
-_BIEN_BANG_RE = re.compile(r"`([A-Za-z_][A-Za-z0-9_]*)`\s*={1,2}\s*'?([A-Za-z0-9_.-]+)'?")
-
-
-def quan_the_chinh_sap(sap_text: str) -> tuple[str, str] | None:
-    """(biến, giá trị) SAP §1 dùng khoanh «Quần thể chính» (vd «mọi hồ sơ có `du_tieu_chuan` = 1»); không thấy ⇒ None.
-
-    17/11/2026 (giả lập dữ liệu trên khung BTM): bộ dữ liệu BTM ghi CẢ hồ sơ bị loại ở bước sàng lọc (phiếu phần A);
-    thống kê viên mô phỏng quên `loc` ⇒ Bảng 1 tính trên 458 hồ sơ đã mở (gồm 73 hồ sơ loại và biến sàng lọc) thay vì
-    385 người của quần thể phân tích, G7 chép N = 458 vào bản thảo. Hệ đã có `tham_so.loc` nhưng không gì nhắc."""
-    import unicodedata  # noqa: PLC0415
-
-    for m in _MUC_SAP_RE.finditer(unicodedata.normalize("NFC", sap_text)):
-        if m.group(1) != "1":
-            continue
-        for dong in m.group(2).splitlines():
-            if "quần thể chính" in dong.casefold():
-                k = _BIEN_BANG_RE.search(dong)
-                if k:
-                    return k.group(1), k.group(2)
-    return None
-
-
-# 18/11/2026 — cụm neo nằm trong câu PHỦ ĐỊNH: đặc tả BTM giữ mục `MT1_fpc` neo «quần thể hữu hạn» trong khi SAP §4 ghi
-# «Không áp hiệu chỉnh quần thể hữu hạn» (chủ nhiệm đã bỏ) — phép khớp chuỗi coi là neo hợp lệ nên `kiem` không báo, mục
-# bị SAP loại vẫn sẽ chạy. Nay: MỌI lần xuất hiện của cụm neo đều đứng sau một từ phủ định trong cùng mệnh đề ⇒ CẢNH BÁO
-# (không chặn — nhận diện phủ định bằng luật có thể nhầm; thống kê viên quyết).
-_TU_PHU_DINH = re.compile(r"(?<!\w)(?:không|chưa|chẳng|loại bỏ|bỏ|thay vì)(?!\w)")
-_RANH_GIOI_MENH_DE = re.compile(r"[.;:!?\n,()]|—|–")
-CUA_SO_PHU_DINH = 50  # ký tự trước cụm neo được xét (đủ cho «Không áp hiệu chỉnh …», không với sang mệnh đề khác)
-
-
-def _bi_phu_dinh(sap_cf: str, vi_tri: int) -> bool:
-    """Cụm neo bắt đầu ở `vi_tri` (trong văn bản đã casefold) đứng sau một từ phủ định của CÙNG mệnh đề."""
-    truoc = sap_cf[max(0, vi_tri - CUA_SO_PHU_DINH):vi_tri]
-    ranh = list(_RANH_GIOI_MENH_DE.finditer(truoc))
-    if ranh:
-        truoc = truoc[ranh[-1].end():]
-    return bool(_TU_PHU_DINH.search(truoc))
+    17/11/2026 (giả lập dữ liệu trên khung BTM): bộ dữ liệu BTM ghi CẢ hồ sơ bị loại ở bước sàng lọc; thống kê viên mô
+    phỏng quên `loc` ⇒ Bảng 1 tính trên 458 hồ sơ đã mở thay vì 385 người của quần thể phân tích."""
+    loc = ((_noi_dung(sap).get("phan_tich_chinh") or {}).get("quan_the") or {}).get("loc")
+    return (str(loc["bien"]), str(loc["gia_tri"])) if isinstance(loc, dict) and loc.get("bien") else None
 
 
 def _cau_quanh(sap: str, vi_tri: int, do_dai: int) -> str:
@@ -673,9 +652,10 @@ def _cau_quanh(sap: str, vi_tri: int, do_dai: int) -> str:
 
 
 def neo_chi_trong_cau_phu_dinh(sap_text: str, neo: str) -> str | None:
-    """Câu phủ định đầu tiên nếu MỌI lần cụm `neo` xuất hiện trong SAP đều bị phủ định.
+    """Câu phủ định đầu tiên nếu MỌI lần cụm `neo` xuất hiện trong văn bản đều bị phủ định (18/11/2026 — đặc tả BTM giữ
+    `MT1_fpc` neo «quần thể hữu hạn» trong khi SAP §4 ghi «Không áp hiệu chỉnh quần thể hữu hạn»).
 
-    None nếu có ít nhất một lần khẳng định (hoặc cụm không có trong SAP — việc đó do `neo_thieu` báo)."""
+    None nếu có ít nhất một lần khẳng định (hoặc cụm không có — việc đó do `neo_thieu` báo)."""
     import unicodedata  # noqa: PLC0415
 
     sap = unicodedata.normalize("NFC", sap_text)
@@ -688,59 +668,76 @@ def neo_chi_trong_cau_phu_dinh(sap_text: str, neo: str) -> str | None:
     return _cau_quanh(sap, vi_tri[0], len(neo_cf))
 
 
-# 18/11/2026 — phân tích PHỤ viết LIỀN trong câu văn: bỏ nhầm `MT1_fpc` (BTM, #313) không làm gì đỏ vì luật phủ chỉ đòi
-# gạch đầu dòng §9 và mục nhãn đậm ở §1/§3/§5/§7; câu «nếu biết khung mẫu thì báo thêm KTC có hiệu chỉnh … như một thông
-# tin phụ» nằm giữa gạch đầu dòng «Phương pháp» của §4 — cùng dòng với neo của phân tích CHÍNH, nên phủ theo DÒNG cũng
-# không bắt được. Nay mỗi MỆNH ĐỀ (tách theo «.»/«;») mang dấu hiệu phân tích phụ phải có cụm neo NẰM TRONG chính nó.
-_TU_PHAN_TICH_PHU = re.compile(r"(?<!\w)(?:báo thêm|trình bày thêm|tính thêm|ước lượng thêm|kèm thêm|chạy thêm|làm thêm"
-                               r"|thông tin phụ|phân tích phụ|phân tích bổ sung)(?!\w)")
+def _van_ban_truy_nguyen(sap) -> str:
+    """Văn bản dùng TRUY NGUYÊN cụm neo: tiêu đề + mọi dòng của mọi § trong hợp đồng SAP (hoặc văn bản thô khi kiểm
+    đơn vị truyền chữ SAP)."""
+    if isinstance(sap, dict):
+        hd = sap if "noi_dung" in sap else {"noi_dung": sap}
+        nd = hd.get("noi_dung") or {}
+        muc = nd.get("muc") or {}
+        return "\n".join(f"### §{so} {muc[so].get('tieu_de') or ''}\n" + "\n".join(muc[so].get("dong") or [])
+                         for so in sorted(muc, key=lambda s: int(s) if str(s).isdigit() else 99))
+    return str(sap or "")
 
 
-def menh_de_phan_tich_phu(sap_text: str) -> list[tuple[str, str]]:
-    """Mệnh đề SAP hứa một phân tích PHỤ viết liền trong câu (ngoài §9 — §9 đã đòi phủ cả gạch đầu dòng).
-
-    Bỏ qua: dấu hiệu bị phủ định («không báo thêm …»), dòng bảng, tiêu đề, khối mã, trích dẫn. Đo 18/11/2026: 2 SAP thật
-    + 16 SAP giả lập ⇒ đúng 2 mệnh đề, cả hai là phân tích phụ thật (BTM §4 KTC hiệu chỉnh FPC, §5 mô hình biến chia
-    nhóm)."""
-    import unicodedata  # noqa: PLC0415
-
-    ra: list[tuple[str, str]] = []
-    for m in _MUC_SAP_RE.finditer(unicodedata.normalize("NFC", sap_text)):
-        muc, than = m.group(1), m.group(2)
-        if muc == "9":
-            continue
-        for dong in than.splitlines():
-            s = dong.strip()
-            if not s or s.startswith(("|", "#", "```", ">")):
-                continue
-            for menh_de in re.split(r"(?<=[.;])\s+", s):
-                cf = menh_de.casefold()
-                if any(not _bi_phu_dinh(cf, k.start()) for k in _TU_PHAN_TICH_PHU.finditer(cf)):
-                    ra.append((f"§{muc}", menh_de.strip()))
-    return ra
-
-
-def kiem_phu_sap(dt: dict, sap_text: str) -> dict:
+def kiem_phu_sap(dt: dict, sap) -> dict:
     """{neo_thieu: [(id, neo)], chua_neo: [id], muc_chua_phu: [(§k, dòng)], phu_chua_phu: [(§k, mệnh đề)],
-    neo_phu_dinh: [(id, neo, câu)]} — đặc tả ↔ SAP hai chiều."""
+    neo_phu_dinh: [(id, neo, câu)]} — đặc tả ↔ SAP hai chiều; danh sách phân tích SAP bắt buộc và mệnh đề phân tích phụ
+    lấy từ HỢP ĐỒNG SAP (`phan_tich_bat_buoc`, `phan_tich_phu_trong_cau`), cụm neo truy nguyên trên văn bản các § của
+    hợp đồng."""
     import unicodedata  # noqa: PLC0415
 
-    sap = unicodedata.normalize("NFC", sap_text).casefold()
+    nd = _noi_dung(sap)
+    van_ban = _van_ban_truy_nguyen(sap)
+    vb_cf = unicodedata.normalize("NFC", van_ban).casefold()
     ds = [pt for pt in dt.get("phan_tich") or [] if isinstance(pt, dict)]
     neo = [(str(pt.get("id")), unicodedata.normalize("NFC", n)) for pt in ds for n in neo_cua(pt)]
     phu_dinh = []
     for pt in ds:  # mục có ít nhất một neo khẳng định thì không cảnh báo (neo phụ có thể nằm trong câu loại trừ)
         cac_neo = neo_cua(pt)
-        cau = [neo_chi_trong_cau_phu_dinh(sap_text, n) for n in cac_neo if n.casefold() in sap]
+        cau = [neo_chi_trong_cau_phu_dinh(van_ban, n) for n in cac_neo if n.casefold() in vb_cf]
         if cau and all(cau):
             phu_dinh.append((str(pt.get("id")), cac_neo[0], cau[0]))
-    return {"neo_thieu": [(pid, n) for pid, n in neo if n.casefold() not in sap],
+    bat_buoc = [(str(x.get("muc")), str(x.get("dong"))) for x in nd.get("phan_tich_bat_buoc") or []
+                if isinstance(x, dict)]
+    phu_cau = [(str(x.get("muc")), str(x.get("menh_de"))) for x in nd.get("phan_tich_phu_trong_cau") or []
+               if isinstance(x, dict)]
+    return {"neo_thieu": [(pid, n) for pid, n in neo if n.casefold() not in vb_cf],
             "chua_neo": [str(pt.get("id")) for pt in ds if not neo_cua(pt)],
-            "muc_chua_phu": [(muc, dong) for muc, dong in muc_sap_bat_buoc(sap_text)
+            "muc_chua_phu": [(muc, dong) for muc, dong in bat_buoc
                              if not any(n.casefold() in dong.casefold() for _, n in neo)],
-            "phu_chua_phu": [(muc, md) for muc, md in menh_de_phan_tich_phu(sap_text)
+            "phu_chua_phu": [(muc, md) for muc, md in phu_cau
                              if not any(n.casefold() in md.casefold() for _, n in neo)],
             "neo_phu_dinh": phu_dinh}
+
+
+def kiem_du_lieu_thieu_sap(ds: list, sap) -> list[str]:
+    """Lỗi đặc tả ↔ chiến lược dữ liệu thiếu của hợp đồng SAP §6 (23/11/2026 — một trong các lệch G6↔G7: «phân tích
+    chính khi gán đa trị»). Chỉ bắt mâu thuẫn RÕ: SAP chốt phân tích chính là ca đầy đủ mà phân tích CHÍNH khai
+    `n_imputations` > 0; SAP chốt gán đa trị là phân tích chính mà phân tích CHÍNH khai `n_imputations` = 0; SAP khai số
+    bộ gán m (hoặc m tối thiểu) mà một phân tích khai số bộ khác. Đặc tả không khai `n_imputations` ⇒ engine mặc định
+    (gán đa trị song song khi có dữ liệu thiếu) — không phải mâu thuẫn."""
+    dlt = _noi_dung(sap).get("du_lieu_thieu") or {}
+    loi: list[str] = []
+    for pt in ds:
+        ts = pt.get("tham_so") if isinstance(pt, dict) else None
+        if not isinstance(ts, dict) or "n_imputations" not in ts:
+            continue
+        n = ts.get("n_imputations")
+        if not isinstance(n, int) or isinstance(n, bool):
+            continue
+        if pt.get("vai") == "chinh" and dlt.get("phan_tich_chinh") == "complete_case" and n > 0:
+            loi.append(f"{pt.get('id')}: SAP §6 chốt phân tích CHÍNH là ca đầy đủ (complete case) nhưng đặc tả khai "
+                       f"n_imputations = {n} — phân tích chính sẽ là gán đa trị, lệch SAP")
+        elif pt.get("vai") == "chinh" and dlt.get("phan_tich_chinh") == "mi" and n == 0:
+            loi.append(f"{pt.get('id')}: SAP §6 chốt gán đa trị (MI) cho phân tích chính nhưng đặc tả khai "
+                       "n_imputations = 0 (ca đầy đủ) — lệch SAP; ca đầy đủ là phân tích độ nhạy")
+        m = dlt.get("m")
+        if n > 0 and isinstance(m, int) and dlt.get("phuong_phap") in ("mi", "complete_case") and (
+                n < m if dlt.get("m_toi_thieu") else n != m):
+            loi.append(f"{pt.get('id')}: SAP §6 khai m {'≥' if dlt.get('m_toi_thieu') else '='} {m} bộ gán đa trị "
+                       f"nhưng đặc tả khai n_imputations = {n}")
+    return loi
 
 
 def _quan_the_rieng() -> tuple:

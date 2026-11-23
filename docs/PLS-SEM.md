@@ -53,11 +53,16 @@ PI chốt mô hình lý thuyết ở G1: `gate_params.G1.pls_sem` =
 ```
 
 `run_g4_auto.py` in khối máy đọc được ở SAP §4 (`pls_sem.dong_sap`): phương pháp, biện minh PLS-SEM thay CB-SEM, mô
-hình đo lường từng cấu trúc (mã — tên — Mode A/B: chỉ báo), mô hình cấu trúc (`A` → `B`), bootstrap (`5.000 mẫu lặp`,
+hình đo lường từng cấu trúc (mã — tên — Mode A/B: chỉ báo), mô hình cấu trúc (`A` → `B`), bootstrap (`5000 mẫu lặp`; từ 10.000 nhóm nghìn — `viet_so`,
 KTC phân vị 95% cho đường dẫn/trọng số/tải, KTC 90% cho HTMT), PLSpredict, xử lý dữ liệu thiếu, ngưỡng đánh giá định trước
 kèm nguồn đã kiểm. §5/§6 theo PLS-SEM (biến độc lập = tiền tố theo mô hình; VIF; thiếu theo §4, giả định MCAR, nghi
 MAR/MNAR ⇒ độ nhạy §9). Hạt giống ở §10 (`set.seed(N)` hoặc `**Random seed:** N`); §10 ghi phần mềm có phiên bản.
-G4-AUTO-10 đọc lại khối bằng ĐÚNG hàm G6 chạy (`pls_sem.doc_sap`): khối thiếu/hỏng hoặc G1 khai mà SAP không có ⇒ REVIEW.
+**Một bộ đọc SAP (24/11/2026):** khối này chỉ được đọc qua `tools/hop_dong_sap.py` — hợp đồng
+`G4_SAP_CONTRACT_<mã>.json` schema `ebm.g4_sap_contract/3` thêm trường `pls_sem` = `{"mo_hinh": …, "loi": [...]}`
+(`null` khi SAP không khai PLS-SEM); hợp đồng v1/v2 vẫn hợp lệ (`kiem` chỉ so khoá của phiên bản đó), `doc` nâng cấp
+trong bộ nhớ và ghi `nang_cap_tu`. `pls_sem.doc_sap`/`mo_hinh_hop_dong`, G4-AUTO-10, `chay_sap_g6.kiem_pls_sap`,
+G6-AUTO-09 (`phan_tich_chinh.ho_mo_hinh`) và `quyet_dinh_da_chot` đọc HỢP ĐỒNG — không dò chữ SAP riêng.
+G4-AUTO-10: khối thiếu/hỏng hoặc G1 khai mà SAP không có ⇒ REVIEW.
 Bộ đọc chỉ dựa vào mã cấu trúc trong backtick, cụm «kết quả (reflective, Mode A)»/«cấu tạo (formative, Mode B)» và danh
 sách chỉ báo trong backtick — không dựa vào dấu ngăn cách, vì bộ chuẩn hoá văn phong của G4 (`vn_prose_style`) đổi « — »
 thành «. »/«, » (lượt giả lập đầu 23/11/2026 từng bị chặn oan vì vậy; phép thử
@@ -114,7 +119,7 @@ là họ khác ⇒ CHẶN; SAP không khai mà lượt chạy là PLS-SEM ⇒ CH
   SD²(2 + κ)/(4B) với SD và κ (độ nhọn dư) của CHÍNH phân phối bootstrap gói đó; hiệu hai cận KTC theo
   √(p(1−p)·(s_seminr²/B₁ + s_cSEM²/B₂)), s độ thưa thực nghiệm của từng gói trên cửa sổ h = max(0,01; 15/B). Ngưỡng
   Bonferroni cho CẢ HỌ phép so (α họ = 0,01) — giữ xác suất báo lệch giả của cả lượt ≤ 1%. Lý do dùng phân phối riêng
-  từng gói (đo 23/11/2026, giả lập nhóm nam 144 ca): 1/5.000 mẫu lặp cSEM đổi dấu cấu trúc TT (tải tt_1 = −0,911),
+  từng gói (đo 23/11/2026, giả lập nhóm nam 144 ca): 1/5000 mẫu lặp cSEM đổi dấu cấu trúc TT (tải tt_1 = −0,911),
   seminr không — SD cSEM 0,041–0,048 so với 0,033 trong khi KTC phân vị trùng; độ nhọn của riêng seminr không giải
   thích được.
 - **Đổi dấu cấu trúc trong bootstrap** (thành phần PLS xác định tới một dấu): đếm mẫu lặp mà MỌI tải của một cấu trúc
@@ -170,8 +175,13 @@ lệch SD tải TT, nữ 4 lệch HTMT, rồi 1 lệch MAE PLSpredict khi chỉ 
 ## 8. G7
 
 `run_g7_auto.py` chép NGUYÊN VĂN các dòng `pls_sem.trinh_bay_md` mà G6 dựng (thứ tự Hair 2019: đo lường trước, cấu trúc
-sau; số kiểu Việt ba chữ số, dấu trừ «−», KTC có cận âm viết «a đến b») — phép tự kiểm số của G7 đối chiếu chuỗi số với
-tệp tóm tắt. Bảng mô hình cấu trúc có cả r thô (tương quan chưa hiệu chỉnh giữa điểm hai cấu trúc, KTC 95% Fisher z,
+sau; KTC có cận âm viết «a đến b»). **Quy ước số (24/11/2026):** mọi số PLS-SEM do bộ sinh in ra (SAP §4, bảng
+`trinh_bay_md`, đề cương nộp, A4 của G3) đi qua hàm chung `quet_dien_sai_kieu.viet_so` — dấu phẩy thập phân, từ 10.000
+nhóm nghìn («5000 mẫu lặp», «10.000 mẫu lặp»); bảng in bằng `pls_sem.so3` = đúng cách `run_g7_auto.hien_so_g6` in giá
+trị JSON (tối đa 4 chữ số lẻ, dấu trừ ASCII) và qua sạch chốt `quet` (K22, G7-AUTO-09, K11). Vì bảng nằm TRONG tóm tắt
+G6, tự kiểm chung của G7 luôn khớp với chính nó ⇒ `_khoi_pls_sem_g6` đối chiếu từng số ở HÀNG DỮ LIỆU của bảng với giá
+trị tính của tóm tắt đã bỏ `trinh_bay_md`; số sửa tay/làm tròn lại ⇒ ô [CẦN THỐNG KÊ VIÊN] thay bảng (sổ đột biến
+`G7-PLS-SEM-TU-KIEM-SO`). Bảng mô hình cấu trúc có cả r thô (tương quan chưa hiệu chỉnh giữa điểm hai cấu trúc, KTC 95% Fisher z,
 kiểm chéo tất định với `Construct_VCV` của cSEM) và β hiệu chỉnh — STROBE 16a. G6 tự sinh hình cột điểm trung bình các
 cấu trúc Mode A kèm KTC 95% (`hinh_g6`, hình bắt buộc của cắt ngang). Đề cương G10: yếu tố nhiễu lấy từ dòng «Kiểm soát
 nhiễu» SAP §5 (`quyet_dinh_da_chot`). Kiểm chéo cSEM không khớp ⇒ ô

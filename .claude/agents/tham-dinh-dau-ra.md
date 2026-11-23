@@ -247,6 +247,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/approve_gate.py` (kiểm) — đầu ra của `dieu-phoi-nghien-cuu`: ghi phê duyệt của người vào sổ cái niêm phong — vai có thẩm quyền tự chạy, agent không chạy; chốt kiểm `tools/stakeholder_review_audit.py`; nguyên tắc: đạo đức · đạt chuẩn định trước · trung thực–minh bạch.
 - Công cụ `tools/hoi_dong_khoa_hoc.py` (kiểm) — đầu ra của `binh-duyet`: Hội đồng Khoa học máy chấm đề cương theo thể thức hội đồng; chốt kiểm `tools/duyet_kiem_may_api.py`; nguyên tắc: khách quan · câu hỏi giá trị · khoa học.
 - Công cụ `tools/run_g10_assemble.py` (kiểm) — đầu ra của `dieu-phoi-g10`: lắp đề cương thống nhất + manifest gói phát hành; chốt kiểm `tools/g10_quality_gate.py`; nguyên tắc: đạt chuẩn định trước · trung thực–minh bạch · tái lập.
+- Công cụ `tools/quet_dien_sai_kieu.py` (kiểm) — đầu ra của `viet-ban-thao`: không còn lỗi điền sai kiểu (số đứng lẻ, mã số ở ô hỏi người, số chưa làm tròn, dấu chấm thập phân, ký hiệu nội bộ) trong văn bản trả bác sĩ; chốt kiểm `K22`, `G7-AUTO-09`; nguyên tắc: kiểm soát chất lượng liên tục · trung thực–minh bạch.
 - Công cụ `tools/sinh_de_cuong_nop_hoi_dong.py` (kiểm) — đầu ra của `viet-ban-thao`: sinh đề cương nộp Hội đồng từ quyết định đã chốt; chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: trung thực–minh bạch · tái lập.
 - Công cụ `tools/so_doc_de_cuong.py` (chủ) — sổ đọc từng câu, hàng bảng, hình, công thức, tài liệu tham khảo trước khi giao đề cương (K21; `tach` → đọc → `ghi --tu <JSON>` → `trang-thai`); chốt kiểm `tests/test_so_doc_de_cuong_20261122.py`; nguyên tắc: trung thực–minh bạch · kiểm soát chất lượng liên tục · đạt chuẩn định trước.
 - Công cụ `tools/tam_nguyen_tac_de_cuong.py` (kiểm) — đầu ra của `viet-ban-thao`: ma trận 8 nguyên tắc (K20) trước khi trả đề cương; chốt kiểm `tests/test_tam_nguyen_tac_de_cuong_20261122.py`; nguyên tắc: đạt chuẩn định trước.
@@ -255,6 +256,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/ho_so_hdd_bvqy175.py` (kiểm) — đầu ra của `dao-duc-dang-ky`: hồ sơ Hội đồng Đạo đức cấp bệnh viện; chốt kiểm `tests/test_ho_so_hdd_bvqy175_20261119.py`; nguyên tắc: đạo đức · trung thực–minh bạch.
 - Công cụ `tools/ho_so_dtcs_bvqy175.py` (kiểm) — đầu ra của `ke-hoach-trien-khai`: hồ sơ đề tài cấp cơ sở và phiếu đề xuất nhiệm vụ (Mẫu DTCS-XDNV.01-PDX); chốt kiểm `tests/test_ho_so_dtcs_bvqy175_20261121.py`; nguyên tắc: trung thực–minh bạch.
 - Công cụ `tools/kiem_dot_bien_dinh_ky.py` (kiểm) — đầu ra của `dieu-phoi-nghien-cuu`: báo cáo đột biến định kỳ không có đột biến sống sót; chốt kiểm `tests/test_kiem_dot_bien_dinh_ky_20261123.py`; nguyên tắc: kiểm soát chất lượng liên tục.
+- Công cụ `tools/dung_goi_ky.py` (kiểm) — đầu ra của `dieu-phoi-nghien-cuu`: gói ký chỉ xuất khi mọi khâu trước đạt; không có mục ký giả đủ; chốt kiểm `tests/test_dung_goi_ky_20261123.py`; nguyên tắc: đạt chuẩn định trước.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 

@@ -4012,16 +4012,23 @@ def main():
     # không có phơi nhiễm nên dòng «không tự phát hiện exposure» không phải tham số chờ điền (G6-AUTO-07).
     v["mo_ta_ty_le"] = (design_code == "cross_sectional" and not v["outcome_ordinal"]
                         and GC.sap_declares_proportion(out, study))
-    # 23/11/2026: SAP §4 khai PLS-SEM ⇒ 03_analysis.R là PLS-SEM (seminr) dựng từ CHÍNH khối mô hình của SAP (cùng hàm
-    # pls_sem.doc_sap mà G6 chạy); khối hỏng ⇒ không đoán — script ghi lý do, G6-AUTO-09 không nhận ra họ mô hình
+    # 23/11/2026: SAP §4 khai PLS-SEM ⇒ 03_analysis.R là PLS-SEM (seminr) dựng từ CHÍNH khối mô hình của SAP; khối hỏng
+    # ⇒ không đoán — script ghi lý do, G6-AUTO-09 không nhận ra họ mô hình. 24/11/2026: đọc trường `pls_sem` của HỢP
+    # ĐỒNG SAP (hop_dong_sap — bộ đọc SAP duy nhất, cùng nguồn pls_sem.py chạy), không dò chữ SAP
+    import hop_dong_sap as HD  # noqa: PLC0415
     import pls_sem as PLS  # noqa: PLC0415
 
     v["pls_sem"] = None
-    if _sap_p.is_file() and PLS.la_pls_sap(_sap_p.read_text(encoding="utf-8")):
-        try:
-            v["pls_sem"] = PLS.doc_sap(_sap_p.read_text(encoding="utf-8"))
-        except PLS.TuChoi as e:
-            v.setdefault("detection_log", []).append(f"⚠️  SAP §4 khai PLS-SEM nhưng khối mô hình hỏng: {e}")
+    _hd_pls, _loi_hd_pls = HD.doc(out, study) if _sap_p.is_file() else (None, [])
+    if HD.truong(_hd_pls, "pls_sem") is not None:
+        if _loi_hd_pls:
+            v.setdefault("detection_log", []).append("⚠️  SAP §4 khai PLS-SEM nhưng hợp đồng SAP không dùng được — "
+                                                     + " | ".join(_loi_hd_pls[:2]))
+        else:
+            try:
+                v["pls_sem"] = PLS.mo_hinh_hop_dong(_hd_pls)
+            except PLS.TuChoi as e:
+                v.setdefault("detection_log", []).append(f"⚠️  SAP §4 khai PLS-SEM nhưng khối mô hình hỏng: {e}")
     if v["mo_ta_ty_le"] or v["pls_sem"] or design_code in ("sr_ma", "qualitative"):
         v["detection_log"] = [("ℹ️  Thiết kế không có biến phơi nhiễm cấp cá nhân (mô tả/tổng hợp/định tính)"
                                if str(d).lstrip("⚠️ ").startswith("Không tự phát hiện exposure ") else d)

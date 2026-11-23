@@ -12,7 +12,8 @@ Dùng:
 
 Đo: tổng số từ, tiêu đề, tóm tắt tiếng Việt và tiếng Anh, từ khoá (số lượng, dấu phân cách), số tài liệu tham khảo,
 số bảng, số hình, kiểu trích dẫn gộp «[4, 5]», trích dẫn đặt ở Kết quả/Kết luận/Khuyến nghị, dấu vết soạn thảo/máy
-(luật K8 dùng chung với đề cương nộp Hội đồng), ô «[CẦN…]» còn chờ điền.
+(luật K8 dùng chung với đề cương nộp Hội đồng), ô «[CẦN…]» còn chờ điền, điền sai kiểu (K22 — chốt chung
+`quet_dien_sai_kieu.py`).
 Số trang chỉ đo khi có `--dem-trang` + `--docx` trên macOS có Microsoft Word; không đo được thì ghi «chưa đo» — KHÔNG
 BAO GIỜ tính là đạt.
 
@@ -197,6 +198,9 @@ def do_ban_thao(md: str, gh: Dict) -> Dict:
     vi_pham.extend(K.loi_k11(khong_o))
     # K15 (21/11/2026): khẳng định mơ hồ không nguồn ở đặt vấn đề/bàn luận (K16 phạm vi tìm chạy ở `kiem`).
     vi_pham.extend(K.loi_k15(khong_o))
+    # K22 (23/11/2026): điền sai kiểu — chốt chung với đề cương nộp (số đứng lẻ, mã số ở ô hỏi người, số chưa làm tròn,
+    # dấu chấm thập phân, ký hiệu nội bộ)
+    vi_pham.extend(K.loi_k22(khong_o))
     so["o_can"] = len(_CAN_RE.findall(md))
     so["so_tu"] = dem_tu(md)
     if so["so_tu"] > gh["so_tu"]:

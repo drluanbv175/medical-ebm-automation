@@ -66,6 +66,8 @@ TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
 import cau_noi_r as R  # noqa: E402 — tìm/chạy Rscript, chuỗi R, kịch bản R PLS-SEM (MỘT cầu nối R)
 import cau_noi_spss as S  # noqa: E402 — khoá dữ liệu, từ điển G5, mã thoát
+import hop_dong_sap as HD  # noqa: E402 — bộ đọc SAP DUY NHẤT (hợp đồng G4_SAP_CONTRACT_<mã>.json)
+import quet_dien_sai_kieu as QDSK  # noqa: E402 — quy ước số tiếng Việt (viet_so · viet_hoa_so — K11/K22/Q3/Q4)
 
 BASE = S.BASE
 MA_OK, MA_LECH, MA_KHONG_DO, MA_TU_CHOI = S.MA_OK, S.MA_LECH, S.MA_KHONG_DO, S.MA_TU_CHOI
@@ -75,7 +77,7 @@ GATE_MAC_DINH = "G6"
 THOI_HAN = 3600
 LOAI_PHAN_TICH = "pls_sem"
 MA_DAC_TA = "pls_pm"  # giá trị duy nhất của tham_so.pls_sem trong G6_DAC_TA_SAP.json
-TEN_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
+TEN_RE = HD.PLS_TEN_RE
 TEP_SO_IN = BASE / "tests" / "fixtures" / "pls_sem" / "hair_2021_so_in.json"
 
 # ───────────────────────────── nguồn & ngưỡng (đã kiểm) ─────────────────────────────
@@ -134,7 +136,7 @@ DONG_NGUONG_SAP = (
     ("plspredict", "PLSpredict: Q²predict > 0; so RMSE (MAE khi sai số dự báo lệch rõ) của PLS với mô hình tuyến tính "
                    "chuẩn trên từng chỉ báo của cấu trúc đích", ("shmueli2019",)),
 )
-CUM_NGUONG_SAP = ("≥ 0,708", "0,70–0,95", "AVE ≥ 0,50", "HTMT < 0,90", "VIF < 3", "Q²predict > 0")
+CUM_NGUONG_SAP = HD.PLS_CUM_NGUONG  # một nguồn: bộ đọc SAP dùng đúng bộ cụm này để bật phân loại
 
 # Dung sai kiểm chéo. Hai gói lặp PLS tới hội tụ (seminr tiêu chí dừng 10⁻⁷; cSEM đặt 10⁻¹⁰) trên CÙNG dữ liệu ⇒ đại
 # lượng tất định trùng tới ~10⁻⁸ (đo 23/11/2026 trên corp_rep_data). 1e-5 là dung sai chặt (đủ cho 3 chữ số báo cáo).
@@ -158,8 +160,8 @@ def khoi_g1(meta: dict | None) -> dict | None:
 
 
 def _so_vn(n) -> str:
-    """Số nguyên có dấu chấm ngăn hàng nghìn (quy ước văn bản tiếng Việt): 5000 ⇒ «5.000»."""
-    return f"{int(n):,}".replace(",", ".")
+    """Số nguyên theo quy ước văn bản tiếng Việt — hàm chung `quet_dien_sai_kieu.viet_so` (từ 10.000 nhóm nghìn)."""
+    return QDSK.viet_so(int(n))
 
 
 #: câu xử lý dữ liệu thiếu (khối SAP §4 và chiến lược §6 dùng CHUNG; bộ đọc nhận «listwise»/«mean replacement»)
@@ -218,158 +220,36 @@ def dong_sap(khoi: dict) -> list[str]:
     return L
 
 
-# ───────────────────────────── đọc SAP (nguồn DUY NHẤT của mô hình) ─────────────────────────────
+# ─────────────────────── mô hình từ HỢP ĐỒNG SAP (bộ đọc SAP duy nhất: hop_dong_sap) ───────────────────────
+# 24/11/2026: khối PLS-SEM của SAP §4 được ĐỌC MỘT LẦN ở hop_dong_sap.pls_sem_sap thành trường `pls_sem` của hợp đồng
+# G4_SAP_CONTRACT_<mã>.json (băm vào chứng chỉ khoá G4); mô-đun này không còn biểu thức dò chữ SAP riêng.
+kiem_mo_hinh = HD.kiem_mo_hinh_pls
 
 
-def muc_sap(van_ban: str, so: int) -> str:
-    """Thân «### §<so> …» tới mục kế tiếp."""
-    m = re.search(rf"^### §{so}\b[^\n]*\n(.*?)(?=^### §|\Z)", van_ban or "", re.S | re.M)
-    return m.group(1) if m else ""
+def _mo_hinh(khoi: dict | None) -> dict | None:
+    """Trường `pls_sem` của hợp đồng ⇒ mô hình; None ⇒ SAP không khai; khai mà hỏng ⇒ TuChoi (liệt kê hết)."""
+    if khoi is None:
+        return None
+    if not isinstance(khoi, dict) or khoi.get("loi") or not isinstance(khoi.get("mo_hinh"), dict):
+        loi = (khoi or {}).get("loi") if isinstance(khoi, dict) else None
+        raise TuChoi("SAP khai PLS-SEM nhưng khối mô hình chưa đủ/không hợp lệ: " + "; ".join(loi or ["khối hỏng"]))
+    return khoi["mo_hinh"]
 
 
-def la_pls_sap(van_ban_sap: str) -> bool:
-    """SAP §4 khai PLS-SEM (khối mô hình đo lường PLS-SEM) — dùng cho G4/G6/G7 và chốt họ G6-AUTO-09."""
-    return "**Mô hình đo lường (PLS-SEM):**" in muc_sap(van_ban_sap, 4)
-
-
-# Bộ chuẩn hoá văn phong của SAP (chuan_trinh_bay/vn_prose_style) đổi « — » thành «. »/«, » ⇒ chỉ dựa vào MÃ trong
-# backtick, cụm loại đo lường cố định và danh sách chỉ báo trong backtick — không dựa vào dấu ngăn cách.
-_DONG_CT = re.compile(r"^\s*-\s*`([A-Za-z][A-Za-z0-9_]*)`[\s.,;:—–-]*(.*?)[\s.,;:—–-]*"
-                      r"(kết quả \(reflective, Mode A\)|cấu tạo \(formative, Mode B\)):\s*(.+?)\s*$")
-_BIEN = re.compile(r"`([A-Za-z][A-Za-z0-9_]*)`")
+def mo_hinh_hop_dong(hd: dict | None) -> dict | None:
+    """Mô hình PLS-SEM từ HỢP ĐỒNG SAP (đã kiểm hợp lệ ở nơi gọi)."""
+    return _mo_hinh(HD.truong(hd, "pls_sem"))
 
 
 def doc_sap(van_ban_sap: str) -> dict | None:
-    """Mô hình PLS-SEM SAP đã khoá khai. None ⇒ SAP không khai PLS-SEM. Khai mà thiếu/hỏng ⇒ TuChoi (liệt kê hết)."""
-    s4 = muc_sap(van_ban_sap, 4)
-    if "**Mô hình đo lường (PLS-SEM):**" not in s4:
-        return None
-    loi: list[str] = []
-    dong = s4.splitlines()
-    ct: list[dict] = []
-    trong = False
-    for d in dong:
-        if "**Mô hình đo lường (PLS-SEM):**" in d:
-            trong = True
-            continue
-        if trong:
-            if re.match(r"^\s*-\s*\*\*", d) or not d.strip():
-                if d.strip():
-                    trong = False
-                continue
-            m = _DONG_CT.match(d)
-            if not m:
-                loi.append(f"dòng mô hình đo lường không đọc được: «{d.strip()[:120]}»")
-                continue
-            ct.append({"ma": m.group(1), "ten": m.group(2).strip(), "mode": "B" if "Mode B" in m.group(3) else "A",
-                       "muc": _BIEN.findall(m.group(4))})
-    m_dd = re.search(r"\*\*Mô hình cấu trúc \(PLS-SEM\):\*\*\s*(.+)", s4)
-    dd = [[a, b] for a, b in re.findall(r"`([A-Za-z][A-Za-z0-9_]*)`\s*→\s*`([A-Za-z][A-Za-z0-9_]*)`",
-                                        m_dd.group(1))] if m_dd else []
-    m_b = re.search(r"\*\*Bootstrap \(PLS-SEM\):\*\*\s*([\d.\s]+?)\s*mẫu lặp", s4)
-    bootstrap = int(re.sub(r"[.\s]", "", m_b.group(1))) if m_b and re.sub(r"[.\s]", "", m_b.group(1)) else None
-    m_ktc = re.search(r"\*\*Bootstrap \(PLS-SEM\):\*\*[^\n]*?KTC phân vị (\d+)%", s4)
-    alpha = round(1 - int(m_ktc.group(1)) / 100, 6) if m_ktc else None
-    m_pp = re.search(r"\*\*PLSpredict \(PLS-SEM\):\*\*\s*(.+)", s4)
-    pp: dict | None = None
-    if not m_pp:
-        loi.append("thiếu dòng «PLSpredict (PLS-SEM)» (khai cấu trúc đích hoặc «không thực hiện»)")
-    elif "không thực hiện" not in m_pp.group(1):
-        k_ = re.search(r"k\s*=\s*(\d+)\s*phần", m_pp.group(1))
-        lap = re.search(r"(\d+)\s*lần lặp", m_pp.group(1))
-        pp = {"k": int(k_.group(1)) if k_ else None, "lap": int(lap.group(1)) if lap else None,
-              "dich": _BIEN.findall(m_pp.group(1).split("cấu trúc đích", 1)[-1]) if "cấu trúc đích" in m_pp.group(1)
-              else []}
-    m_th = re.search(r"\*\*Dữ liệu thiếu \(PLS-SEM\):\*\*\s*(.+)", s4)
-    thieu = None
-    if m_th:
-        thieu = "listwise" if "listwise" in m_th.group(1) else ("trung_binh" if "mean replacement" in m_th.group(1)
-                                                                 else None)
-    m_ng = s4[s4.find("**Ngưỡng đánh giá định trước (PLS-SEM):**"):] if "**Ngưỡng đánh giá định trước (PLS-SEM):**" \
-        in s4 else ""
-    # hạt giống của SAP §10 — bỏ ví dụ nằm trong ô [CẦN …] chưa điền («ví dụ: set.seed(2026)» không phải quyết định)
-    s10 = re.sub(r"\[CẦN[^\]]*\]", "", muc_sap(van_ban_sap, 10))
-    hat = sorted({int(x) for x in re.findall(r"set\.seed\((\d+)\)", s10)}
-                 | {int(x) for x in re.findall(r"\*\*Random seed:\*\*\s*(\d+)\s*$", s10, re.M)})
-    mh = {"cau_truc": ct, "duong_dan": dd, "bootstrap": bootstrap, "alpha": alpha, "plspredict": pp,
-          "du_lieu_thieu": thieu, "seed": hat[0] if len(hat) == 1 else None,
-          "nguong_sap": bool(m_ng) and all(c in m_ng for c in CUM_NGUONG_SAP)}
-    if "[CẦN" in s4.split("**Ngưỡng đánh giá định trước (PLS-SEM):**")[0]:
-        loi.append("khối PLS-SEM của SAP §4 còn ô [CẦN …]")
-    if bootstrap is None:
-        loi.append("không đọc được số mẫu bootstrap («Bootstrap (PLS-SEM): N mẫu lặp»)")
-    if alpha is None:
-        loi.append("không đọc được mức KTC phân vị bootstrap («KTC phân vị 95%»)")
-    if thieu is None:
-        loi.append("không đọc được cách xử lý dữ liệu thiếu («listwise» hoặc «mean replacement»)")
-    if len(hat) != 1:
-        loi.append(f"SAP §10 cần ĐÚNG một hạt giống set.seed(N) cho bootstrap/PLSpredict (thấy {hat or 'không có'})")
-    loi += kiem_mo_hinh(mh)
-    if loi:
-        raise TuChoi("SAP khai PLS-SEM nhưng khối mô hình chưa đủ/không hợp lệ: " + "; ".join(loi))
-    return mh
+    """Mô hình PLS-SEM từ VĂN BẢN SAP qua đúng hàm của hợp đồng (hop_dong_sap.pls_sem_van_ban) — cho đồ gá/bản nháp
+    trong bộ nhớ. None ⇒ SAP không khai PLS-SEM. Khai mà thiếu/hỏng ⇒ TuChoi."""
+    return _mo_hinh(HD.pls_sem_van_ban(van_ban_sap))
 
 
-def kiem_mo_hinh(mh: dict) -> list[str]:
-    """Lỗi cấu trúc mô hình (rỗng = hợp lệ): tên, chỉ báo, đường dẫn, chu trình, PLSpredict, bootstrap."""
-    loi: list[str] = []
-    ct, dd = mh.get("cau_truc") or [], mh.get("duong_dan") or []
-    ten = [c.get("ma") for c in ct]
-    if len(ct) < 2:
-        loi.append("cần ít nhất hai cấu trúc")
-    if len(set(ten)) != len(ten):
-        loi.append("mã cấu trúc trùng")
-    muc_tat_ca = [m for c in ct for m in c.get("muc") or []]
-    trung = sorted({m for m in muc_tat_ca if muc_tat_ca.count(m) > 1})
-    if trung:
-        loi.append(f"chỉ báo thuộc nhiều cấu trúc: {', '.join(trung)}")
-    for c in ct:
-        if not TEN_RE.match(str(c.get("ma") or "")):
-            loi.append(f"mã cấu trúc không hợp lệ: {c.get('ma')!r}")
-        if not c.get("muc"):
-            loi.append(f"{c.get('ma')}: không có chỉ báo")
-        if c.get("mode") == "B" and len(c.get("muc") or []) < 2:
-            loi.append(f"{c.get('ma')}: cấu tạo (Mode B) cần ≥ 2 chỉ báo")
-    if not dd:
-        loi.append("không có đường dẫn nào ở mô hình cấu trúc")
-    for a, b in dd:
-        if a not in ten or b not in ten:
-            loi.append(f"đường dẫn {a} → {b} dùng cấu trúc chưa khai ở mô hình đo lường")
-        if a == b:
-            loi.append(f"đường dẫn tự vòng {a} → {b}")
-    if len({tuple(p) for p in dd}) != len(dd):
-        loi.append("đường dẫn trùng")
-    co_dd = {x for p in dd for x in p}
-    loi += [f"{t}: không nằm trên đường dẫn nào" for t in ten if t not in co_dd]
-    # chu trình: seminr/cSEM PLS-PM chỉ nhận mô hình đệ quy
-    ke = {t: [b for a, b in dd if a == t] for t in ten}
-    trang: dict = {}
-
-    def co_vong(u) -> bool:
-        trang[u] = 1
-        for v in ke.get(u, []):
-            if trang.get(v) == 1 or (trang.get(v) is None and co_vong(v)):
-                return True
-        trang[u] = 2
-        return False
-
-    if any(trang.get(t) is None and co_vong(t) for t in ten):
-        loi.append("mô hình cấu trúc có chu trình — PLS-PM chỉ ước lượng mô hình đệ quy")
-    b = mh.get("bootstrap")
-    if b is not None and (isinstance(b, bool) or not isinstance(b, int) or not 1 <= b <= 100000):
-        loi.append(f"số mẫu bootstrap phải là số nguyên 1–100.000 (đang {b!r})")
-    pp = mh.get("plspredict")
-    if isinstance(pp, dict):
-        noi = {b_ for _a, b_ in dd}
-        if not pp.get("dich"):
-            loi.append("PLSpredict thiếu cấu trúc đích")
-        loi += [f"PLSpredict: cấu trúc đích {x} không phải cấu trúc nội sinh" for x in pp.get("dich") or []
-                if x not in noi]
-        if not isinstance(pp.get("k"), int) or pp["k"] < 2:
-            loi.append("PLSpredict: số phần k phải ≥ 2")
-        if not isinstance(pp.get("lap"), int) or pp["lap"] < 1:
-            loi.append("PLSpredict: số lần lặp phải ≥ 1")
-    return loi
+def la_pls_sap(van_ban_sap: str) -> bool:
+    """SAP khai PLS-SEM (có khối máy đọc ở §4) — cùng hàm của hợp đồng."""
+    return HD.pls_sem_van_ban(van_ban_sap) is not None
 
 
 def noi_sinh(mh: dict) -> list[str]:
@@ -506,10 +386,13 @@ def chuan_bi(args) -> dict:
     d = S.thu_muc_de_tai(args.study)
     if not d.is_dir():
         raise TuChoi(f"không có thư mục đề tài exports/{args.study}")
-    sap_p = d / f"G4_A5_SAP_FINAL_{args.study}.md"
+    sap_p = d / HD.ten_sap(args.study)
     if not sap_p.is_file():
         raise KhongDoDuoc(f"không thấy SAP {sap_p.name} — không biết mô hình đã khoá")
-    mh = doc_sap(sap_p.read_text(encoding="utf-8"))
+    hd, loi_hd = HD.doc(d, args.study)  # bộ đọc SAP DUY NHẤT; hợp đồng thiếu/cũ/lệch văn bản SAP ⇒ không chạy
+    if loi_hd or hd is None:
+        raise TuChoi("hợp đồng SAP máy đọc không dùng được — " + " | ".join(loi_hd[:3] or ["không đọc được"]))
+    mh = mo_hinh_hop_dong(hd)
     if mh is None:
         raise TuChoi("SAP §4 không khai PLS-SEM (không có khối «Mô hình đo lường (PLS-SEM)») — không chạy PLS-SEM trái "
                      "SAP")
@@ -579,7 +462,8 @@ def chuan_bi(args) -> dict:
         canh_bao.append(f"listwise bỏ {n_bo}/{tk['n_sau_loc']} ca thiếu ít nhất một chỉ báo")
     dac = {"study": args.study, "luc": datetime.now().astimezone().isoformat(timespec="seconds"), "ban_nhap": ban_nhap,
            "du_lieu_nguon": str(csv_p), "sha256_nguon": S.sha256_tep(csv_p), "tap_phan_tich": tep_dl.name,
-           "sha256_tap": sha_dl, "tu_dien": td_p.name, "sap": {"tep": sap_p.name, "sha256": S.sha256_tep(sap_p)},
+           "sha256_tap": sha_dl, "tu_dien": td_p.name, "sap": {"tep": sap_p.name, "sha256": S.sha256_tep(sap_p),
+                                                               "hop_dong": hd.get("sha256_hop_dong")},
            "mo_hinh": mh, "loc": args.loc, "thong_ke_tap": tk, "canh_bao": canh_bao, "disclaimer": CAN_KIEM}
     (ra_r / "pls_sem_dac_ta.json").write_text(json.dumps(dac, ensure_ascii=False, indent=1), encoding="utf-8",
                                               newline="\n")
@@ -773,7 +657,7 @@ def doi_chieu(kq: dict, mh: dict) -> dict:
             if sd_s is not None and sd_c is not None:
                 # Var(SD_s − SD_c) = Var(SD_s) + Var(SD_c), Var(SD) ≈ SD²(2 + κ)/(4B) với SD và κ (độ nhọn dư) của
                 # CHÍNH phân phối bootstrap từng gói — một mẫu lặp đổi dấu cấu trúc ở một gói làm κ gói đó rất lớn và SD
-                # của nó kém ổn định (đo 23/11/2026, nhóm nam 144 ca: 1/5.000 mẫu lặp cSEM đổi dấu TT, seminr 0)
+                # của nó kém ổn định (đo 23/11/2026, nhóm nam 144 ca: 1/5000 mẫu lặp cSEM đổi dấu TT, seminr 0)
                 he_s = max(2 + (kurt if kurt is not None else 0.0), 0.0)
                 he_c = max(2 + (kurt_c if kurt_c is not None else (kurt if kurt is not None else 0.0)), 0.0)
                 bt_mc.append({"nhom": f"bootstrap/{nhom}", "ten": f"{khoa} · SD", "seminr": sd_s, "csem": sd_c,
@@ -966,24 +850,23 @@ def danh_gia(s: dict, mh: dict) -> dict:
 # ───────────────────────────── tóm tắt + báo cáo ─────────────────────────────
 
 
-def so3(x, chu_so: int = 3) -> str:
-    """Số theo quy ước văn bản tiếng Việt (dấu phẩy thập phân, dấu trừ «−» như bieu_do_chung.so, làm tròn để TRÌNH
-    BÀY) — số đầy đủ nằm trong JSON. Số làm tròn về 0 không mang dấu trừ («−0,000» ⇒ «0,000»)."""
-    x = _so(x)
-    if x is None:
+def so3(x) -> str:
+    """Một số của bảng trình bày theo ĐÚNG cách bản thảo G7 in số G6 (`run_g7_auto.hien_so_g6` = `viet_hoa_so` trên
+    repr của giá trị): dấu phẩy thập phân, tối đa 4 chữ số lẻ, số nguyên từ 5 chữ số nhóm nghìn. Vì vậy tự kiểm số của
+    G7 (`kiem_so_trich_g6`) đối chiếu được từng số của bảng với GIÁ TRỊ trong tóm tắt G6 (không với chính bảng)."""
+    if _so(x) is None:
         return "—"
-    t = f"{x:.{chu_so}f}"
-    if t.startswith("-"):
-        t = t[1:] if float(t) == 0 else "−" + t[1:]
-    return t.replace(".", ",")
+    if isinstance(x, int):  # số đếm (n, số mẫu lặp) — JSON ghi «5000», không «5000.0»
+        return QDSK.viet_so(x)
+    return QDSK.viet_hoa_so(repr(float(x)))  # «1.0» ⇒ «1,0» như hien_so_g6 in giá trị JSON 1.0
 
 
 def ktc3(k) -> str:
-    """Khoảng tin cậy: «a–b»; có cận âm ⇒ «a đến b» (gạch khoảng đặt sát dấu trừ «−0,063–0,252» dễ đọc nhầm dấu)."""
+    """Khoảng tin cậy: «a–b»; có cận âm ⇒ «a đến b» (gạch khoảng đặt sát dấu trừ «-0,063–0,252» dễ đọc nhầm dấu)."""
     if not (isinstance(k, (list, tuple)) and len(k) == 2):
         return "—"
     a, b = so3(k[0]), so3(k[1])
-    return f"{a} đến {b}" if a.startswith("−") or b.startswith("−") else f"{a}–{b}"
+    return f"{a} đến {b}" if a.startswith("-") or b.startswith("-") else f"{a}–{b}"
 
 
 def lam_tom_tat(args, c: dict, kq: dict, ma_r: int, loi_r: str, chay_bang: str) -> tuple[dict, dict, int]:
@@ -1049,8 +932,9 @@ def lam_tom_tat(args, c: dict, kq: dict, ma_r: int, loi_r: str, chay_bang: str) 
 
 def trinh_bay_ket_qua(dg: dict | None, q2: dict | None, kc: dict) -> list[str]:
     """Dòng Markdown trình bày Kết quả PLS-SEM theo thứ tự Hair và cộng sự 2019 (mô hình đo lường trước, cấu trúc sau)
-    — số theo quy ước văn bản tiếng Việt (dấu phẩy, 3 chữ số). G6 dựng MỘT lần, ghi vào tóm tắt; G7 CHÉP NGUYÊN VĂN các
-    dòng này (phép tự kiểm số của G7 đối chiếu chuỗi số với tệp tóm tắt) — không làm tròn/tính lại ở G7."""
+    — số in bằng `so3` (đúng cách `run_g7_auto.hien_so_g6` in giá trị: dấu phẩy thập phân, tối đa 4 chữ số lẻ).
+    G6 dựng MỘT lần, ghi vào tóm tắt; G7 CHÉP NGUYÊN VĂN các dòng này sau khi đối chiếu từng số ở hàng dữ liệu với
+    giá trị tính của tóm tắt (`run_g7_auto._khoi_pls_sem_g6`) — không làm tròn/tính lại ở G7."""
     if not dg:
         return []
     L = [f"Trình bày theo Hair và cộng sự 2019 ({trich('hair2019')}): mô hình đo lường trước, mô hình cấu trúc sau; "

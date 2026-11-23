@@ -85,7 +85,7 @@ def test_g7_bang1_chep_nguyen_van_tu_g6_va_tu_kiem_sach(tmp_path):
     assert kq["da_dung"], kq.get("ly_do")
     assert kq["bien_bang1"] == ["tuoi", "so_thuoc_nen"]
     s2 = "\n".join(kq["s2"])
-    assert "| `tuoi` | 59.56 ± 10.84 | 59.60 ± 9.66 | không kiểm định (RCT — CONSORT 2010) |" in s2
+    assert "| `tuoi` | 59,56 ± 10,84 | 59,60 ± 9,66 | không kiểm định (RCT — CONSORT 2010) |" in s2
     assert "| `so_thuoc_nen` | 1: 47(43%); 2: 35(32%); 3: 22(20%); 4: 5(5%) |" in s2
     assert "Nhóm `0` (N=109)" in s2 and G7A.NHAN_DOI_CHIEU_G6 in s2
     assert "chưa mang giá trị từng biến" not in s2
@@ -125,7 +125,7 @@ def test_g7_chu_giai_bang1_thay_khung_tu_dien_va_vao_ban_thao(tmp_path):
     cg = G7A.chu_giai_bang1_g6(tu_dien, kq["bien_bang1"])
     assert "`tuoi` = Tuổi (năm)" in cg and "kiem_soat_t6" not in cg, "chỉ chú giải biến của Bảng 1 G6"
     text = _sinh(ket_qua_g6=kq, table1_shell=cg)
-    assert "| `tuoi` | 59.56 ± 10.84 |" in text and "`so_thuoc_nen` = Số thuốc hạ áp lúc nền (≥ 2 thuốc)" in text
+    assert "| `tuoi` | 59,56 ± 10,84 |" in text and "`so_thuoc_nen` = Số thuốc hạ áp lúc nền (≥ 2 thuốc)" in text
     assert G7A.guardrail_g7(text)[0] == []
 
 
@@ -155,7 +155,7 @@ def test_g7_ket_cuc_phu_tu_chi_muc_sap_g6(tmp_path):
         {"id": "DN1", "vai": "do_nhay", "trang_thai": "DA_CHAY", "gate": "G6_DN1"}])
     dong = G7A.dung_ket_cuc_phu_g6(out)
     text = "\n".join(dong)
-    assert "**`KCP1`** (SAP §8)" in text and "n = 184" in text and "MD = 0.9178" in text and "7.0412" in text
+    assert "**`KCP1`** (SAP §8)" in text and "n = 184" in text and "MD = 0,9178" in text and "7,0412" in text
     assert "`KCP2`** (SAP §8): [CẦN THỐNG KÊ VIÊN — SAP cam kết nhưng hệ chưa có công cụ" in text
     assert "`KCP3`** (SAP §8): [CẦN THỐNG KÊ VIÊN — G6 chạy phân tích này LỖI: thiếu biến x]" in text
     assert "DN1" not in text and "`chinh`" not in text, "chỉ vai «phu» vào §4"
@@ -202,7 +202,7 @@ def test_g7_ket_cuc_phu_vao_ban_thao_va_qua_guardrail(tmp_path):
     kq["s4"] = G7A.dung_ket_cuc_phu_g6(out)
     text = _sinh(ket_qua_g6=kq)
     muc4 = text.split("**§4 Kết cục phụ")[1].split("**§5")[0]
-    assert "0.9178" in muc4 and "tóm tắt G6 không chứa kết cục phụ" not in muc4
+    assert "0,9178" in muc4 and "tóm tắt G6 không chứa kết cục phụ" not in muc4
     assert G7A.guardrail_g7(text)[0] == []
 
 
@@ -226,7 +226,7 @@ def test_g7_bang1_o_dai_khong_cat_va_giu_ngoac_vuong(tmp_path):
     g6 = G7A.doc_tom_tat_g6_hop_le(out)
     kq = G7A.dung_ket_qua_tu_g6(g6)
     s2 = "\n".join(kq["s2"])
-    assert dai in s2 and "…" not in s2 and "2.00 [1.00–9.75]" in s2
+    assert dai in s2 and "…" not in s2 and "2,00 [1,00–9,75]" in s2  # 23/11/2026: số theo quy ước tiếng Việt
     assert G7A.kiem_so_trich_g6(s2, g6["van_ban"]) == []
 
 
@@ -240,7 +240,7 @@ def test_g7_bang1_tra_theo_khoa_nhom_goc_va_o_rong_la_o_cho(tmp_path):
     out = _de_tai(tmp_path, table1=t1)
     kq = G7A.dung_ket_qua_tu_g6(G7A.doc_tom_tat_g6_hop_le(out))
     s2 = "\n".join(kq["s2"])
-    assert "| `tuoi` | 57.42 ± 6.28 | 58.10 ± 5.01 |" in s2 and "N/A" not in s2
+    assert "| `tuoi` | 57,42 ± 6,28 | 58,10 ± 5,01 |" in s2 and "N/A" not in s2
     assert "| `hoc_van` | Cấp 1: 2(67%) | [CẦN THỐNG KÊ VIÊN — G6 không ghi giá trị ô này] |" in s2
 
 
@@ -293,7 +293,7 @@ def test_g7_ket_cuc_phu_doi_chieu_dac_ta_sap(tmp_path):
     _chi_muc_co_dau(out, [{"id": "KCP1", "vai": "phu", "sap_muc": "§8", "trang_thai": "DA_CHAY", "gate": "G6_KCP1",
                            "uoc_luong": CSG._tom_tat_uoc_luong(tt)}])
     text = "\n".join(G7A.dung_ket_cuc_phu_g6(out))
-    assert "MD = 0.9178" in text and "`G6_KCP1_table4_multivariate.txt`" in text
+    assert "MD = 0,9178" in text and "`G6_KCP1_table4_multivariate.txt`" in text
     assert "`G6_table4_multivariate.txt`" not in text
     assert "**`KCP2`** (SAP §8): [CẦN THỐNG KÊ VIÊN — SAP cam kết kết cục phụ này" in text
 

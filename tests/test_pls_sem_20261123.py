@@ -19,7 +19,9 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 import chay_sap_g6 as CS6  # noqa: E402
 import g6_quality_gate as G6Q  # noqa: E402
+import hop_dong_sap as HD  # noqa: E402
 import pls_sem as PLS  # noqa: E402
+import quet_dien_sai_kieu as QDSK  # noqa: E402
 import run_g3_auto as G3A  # noqa: E402
 import run_g7_auto as G7  # noqa: E402
 
@@ -34,6 +36,11 @@ KHOI = {
     "bien_minh": "Mục tiêu dự báo – giải thích tuân thủ; có cấu trúc cấu tạo (Hair 2019)",
     "bootstrap": 5000, "plspredict": {"k": 10, "lap": 10, "dich": ["TT"]}, "du_lieu_thieu": "listwise",
 }
+
+
+def _hd(van_ban_sap: str) -> dict:
+    """Hợp đồng SAP (bộ đọc SAP duy nhất) cho văn bản SAP trong bộ nhớ — nơi tiêu thụ đọc HỢP ĐỒNG, không dò chữ."""
+    return HD.lap(van_ban_sap, "ZZ-PLS", None, HD.NGUON_SUY)
 
 
 def _sap(khoi: dict = KHOI, seed: str = "set.seed(20261123)", them4: str = "") -> str:
@@ -51,8 +58,12 @@ def test_khoi_sap_doc_lai_dung_mo_hinh():
     assert [c["mode"] for c in mh["cau_truc"]] == ["A", "B", "A", "A"]
     assert mh["cau_truc"][1]["muc"] == ["hb_1", "hb_2", "hb_3"]
     assert mh["duong_dan"] == KHOI["duong_dan"]
-    assert mh["bootstrap"] == 5000  # «5.000 mẫu lặp» — dấu chấm ngăn hàng nghìn kiểu Việt
-    assert "5.000 mẫu lặp" in _sap()
+    assert mh["bootstrap"] == 5000  # «5000 mẫu lặp» — quy ước số tiếng Việt: dưới 10.000 không nhóm nghìn (viet_so)
+    assert "5000 mẫu lặp" in _sap()
+    k = copy.deepcopy(KHOI)
+    k["bootstrap"] = 10000
+    assert "10.000 mẫu lặp" in _sap(k) and PLS.doc_sap(_sap(k))["bootstrap"] == 10000  # K11: từ 10.000 nhóm nghìn
+    assert QDSK.quet(_sap()) == [] and QDSK.quet(_sap(k)) == [] and QDSK.quet("\n".join(PLS.dong_sap({}))) == []
     assert mh["alpha"] == 0.05 and mh["seed"] == 20261123 and mh["du_lieu_thieu"] == "listwise"
     assert mh["plspredict"] == {"k": 10, "lap": 10, "dich": ["TT"]}
     assert mh["nguong_sap"] is True
@@ -72,6 +83,47 @@ def test_khoi_sap_doc_duoc_sau_chuan_hoa_van_phong_g4():
     assert [(c["ma"], c["mode"]) for c in mh["cau_truc"]] == [("GT", "A"), ("HB", "B"), ("NT", "A"), ("TT", "A")]
     assert mh["cau_truc"][3]["muc"] == ["tt_1", "tt_2", "tt_3"] and mh["seed"] == 20261115
     assert mh["duong_dan"] == KHOI["duong_dan"] and mh["bootstrap"] == 5000
+
+
+def test_hop_dong_v3_mang_khoi_pls_va_v2_van_hop_le(tmp_path):
+    """Một bộ đọc SAP (hop_dong_sap, schema v3): trường `pls_sem` của hợp đồng mang mô hình (SAP không khai ⇒ None), họ
+    mô hình chính ĐỘC QUYỀN «pls_sem»; hợp đồng v2 (BTM/C1a suy từ bản ký) vẫn hợp lệ — kiem chỉ so khoá v2, rồi nâng
+    cấp nội dung từ CHÍNH văn bản SAP khớp băm."""
+    nd = HD.rut_noi_dung(_sap())
+    assert HD.SCHEMA == "ebm.g4_sap_contract/3" and nd["pls_sem"]["loi"] == []
+    assert nd["pls_sem"]["mo_hinh"] == PLS.doc_sap(_sap()) and nd["phan_tich_chinh"]["ho_mo_hinh"] == ["pls_sem"]
+    assert HD.rut_noi_dung("### §4 PHÂN TÍCH CHÍNH\n\n- **Phương pháp:** Cox\n")["pls_sem"] is None
+    k = copy.deepcopy(KHOI)
+    k["duong_dan"] = [["GT", "NT"], ["NT", "TT"], ["TT", "GT"], ["HB", "TT"]]
+    hong = HD.rut_noi_dung(_sap(k))["pls_sem"]
+    assert hong["mo_hinh"] is None and any("chu trình" in x for x in hong["loi"])
+    (tmp_path / HD.ten_sap("ZZ")).write_text(_sap(), encoding="utf-8", newline="\n")
+    hd = HD.lap(_sap(), "ZZ", tmp_path, HD.NGUON_SUY)
+    v2 = {**hd, "schema": HD.SCHEMA_V2, "noi_dung": {kk: hd["noi_dung"][kk] for kk in HD.KHOA_V2}}
+    v2["sha256_hop_dong"] = HD.bam_hop_dong(v2)
+    HD.luu(tmp_path, "ZZ", v2)
+    doc, loi = HD.doc(tmp_path, "ZZ")
+    assert loi == [] and doc["nang_cap_tu"] == HD.SCHEMA_V2 and PLS.mo_hinh_hop_dong(doc) == PLS.doc_sap(_sap())
+    v2["noi_dung"]["kieu_ghep"] = "ca_the"  # lệch khoá v2 ⇒ vẫn chặn
+    v2["sha256_hop_dong"] = HD.bam_hop_dong(v2)
+    HD.luu(tmp_path, "ZZ", v2)
+    assert any("LỆCH văn bản SAP" in x for x in HD.doc(tmp_path, "ZZ")[1])
+
+
+def test_noi_tieu_thu_pls_doc_hop_dong_khong_do_chu_sap():
+    """pls_sem.py, kiem_pls_sap (chay_sap_g6), G4-AUTO-10, hinh_g6, run_g6_auto không còn biểu thức dò chữ khối PLS-SEM
+    riêng — đọc trường `pls_sem` của hợp đồng (hoặc hàm hop_dong_sap.pls_sem_van_ban)."""
+    import re
+
+    pls = (ROOT / "tools" / "pls_sem.py").read_text(encoding="utf-8")
+    assert not re.search(r"def muc_sap\(|_DONG_CT\s*=|Mô hình cấu trúc \\\(PLS-SEM|Bootstrap \\\(PLS-SEM", pls)
+    assert PLS.kiem_mo_hinh is HD.kiem_mo_hinh_pls and PLS.CUM_NGUONG_SAP is HD.PLS_CUM_NGUONG
+    cs6 = (ROOT / "tools" / "chay_sap_g6.py").read_text(encoding="utf-8")
+    khoi = cs6[cs6.index("def kiem_pls_sap"):cs6.index("def neo_cua")]
+    assert 'HD.truong(hd, "pls_sem")' in khoi and "la_pls_sap" not in khoi and "doc_sap(" not in khoi
+    for tep, cam in (("g4_quality_gate.py", "PLS.doc_sap("), ("hinh_g6.py", "G4_A5_SAP_FINAL_"),
+                     ("run_g6_auto.py", "PLS.doc_sap("), ("quyet_dinh_da_chot.py", "PLS.doc_sap(")):
+        assert cam not in (ROOT / "tools" / tep).read_text(encoding="utf-8"), tep
 
 
 def test_khoi_sap_hong_bi_tu_choi():
@@ -169,16 +221,16 @@ def _ds(**ts_chinh) -> list:
 
 
 def test_dac_ta_khop_sap_khong_loi():
-    assert CS6.kiem_pls_sap(_ds(), _sap()) == []
+    assert CS6.kiem_pls_sap(_ds(), _hd(_sap())) == []
 
 
 def test_dac_ta_lech_sap_bi_chan():
-    assert any("lệch SAP" in x for x in CS6.kiem_pls_sap(_ds(bootstrap_pls=1000), _sap()))
+    assert any("lệch SAP" in x for x in CS6.kiem_pls_sap(_ds(bootstrap_pls=1000), _hd(_sap())))
     chinh_khac = [{"id": "MT1", "vai": "chinh", "sap_muc": "§4", "mo_ta": "x",
                    "tham_so": {"outcome": "diem_tt", "covariates": ["tuoi"]}}]
-    assert any("không phải PLS-SEM" in x for x in CS6.kiem_pls_sap(chinh_khac, _sap()))
+    assert any("không phải PLS-SEM" in x for x in CS6.kiem_pls_sap(chinh_khac, _hd(_sap())))
     sap_khong_pls = "### §4 PHÂN TÍCH CHÍNH\n\n- **Phương pháp:** Hồi quy tuyến tính\n"
-    assert any("không có khối" in x for x in CS6.kiem_pls_sap(_ds(), sap_khong_pls))
+    assert any("không có khối" in x for x in CS6.kiem_pls_sap(_ds(), _hd(sap_khong_pls)))
 
 
 def test_tham_so_dac_ta_pls():
@@ -235,7 +287,7 @@ def test_doi_chieu_bootstrap_theo_sai_so_monte_carlo():
 
 
 def test_doi_chieu_sd_theo_phan_phoi_rieng_tung_goi():
-    """Một mẫu lặp đổi dấu cấu trúc ở cSEM (đo thật 23/11/2026, nhóm nam 144 ca: tải tt_1 = −0,911 trong 1/5.000 mẫu
+    """Một mẫu lặp đổi dấu cấu trúc ở cSEM (đo thật 23/11/2026, nhóm nam 144 ca: tải tt_1 = −0,911 trong 1/5000 mẫu
     lặp; seminr 0) làm SD của cSEM lớn hơn mà KTC phân vị không đổi. Sai số Monte Carlo của hiệu hai SD là
     √(Var SD_s + Var SD_c), mỗi Var theo SD và độ nhọn CỦA CHÍNH gói đó; thiếu độ nhọn phía cSEM thì giữ cách cũ (độ
     nhọn seminr cho cả hai) — không nới khi không có số đo."""
@@ -271,6 +323,47 @@ def test_khong_csem_thi_khong_do_duoc():
 # ───────────────────────────── G7: chép nguyên văn dòng trình bày G6 ─────────────────────────────
 
 
+def _tt_pls_that() -> dict:
+    """Tóm tắt G6 PLS-SEM dựng đúng đường `lam_tom_tat`: giá trị tính (`danh_gia`) + bảng `trinh_bay_md` in từ đó."""
+    mh = PLS.doc_sap(_sap())
+    s = {"n_phan_tich": 203,
+         "tai": {"GT": {"gt_1": 0.8123456, "gt_2": 0.7911, "gt_3": 0.70812345}},
+         "tin_cay": {"GT": {"alpha": 0.7034, "rho_a": 0.7121, "rho_c": 0.8312, "ave": 0.6209}},
+         "duong_dan": {"NT -> TT": {"he_so": -0.2391347, "f2": 0.0912}, "GT -> NT": {"he_so": 0.31, "f2": 1.0}},
+         "tuong_quan_tho": {"NT -> TT": 0.41, "GT -> NT": 0.3333},
+         "bootstrap": {"duong_dan": {"NT -> TT": {"sd": 0.07, "ktc": [-0.3771, -0.0912]},
+                                     "GT -> NT": {"sd": 0.05, "ktc": [0.2, 0.4]}},
+                       "tai": {"GT": {"gt_1": {"ktc": [0.7, 0.9]}, "gt_2": {"ktc": [0.61, 0.85]},
+                                      "gt_3": {"ktc": [0.52, 0.8]}}}}}
+    dg = PLS.danh_gia(s, mh)
+    kc = {"trang_thai": "KHOP", "dem": {"KHOP": 12}}
+    return {"n_total": 203, "pls_sem": {"seminr": s, "danh_gia": dg, "q2_predict_csem": None,
+                                        "trinh_bay_md": PLS.trinh_bay_ket_qua(dg, None, kc), "loi": {}},
+            "kiem_cheo": {"trang_thai": "KHOP", "dem": kc["dem"]}}
+
+
+def test_g7_tu_kiem_bang_pls_voi_gia_tri_tinh_bat_so_sai():
+    """Bảng trình bày nằm TRONG tóm tắt G6 ⇒ tự kiểm chung luôn khớp với chính nó. G7 đối chiếu từng số ở hàng dữ liệu
+    với GIÁ TRỊ tính (tóm tắt đã bỏ `trinh_bay_md`): bảng in đúng ⇒ chép; một số bị sửa/làm tròn lại ⇒ [CẦN]."""
+    tt = _tt_pls_that()
+    md = tt["pls_sem"]["trinh_bay_md"]
+    hang = G7._hang_du_lieu_bang(md)
+    assert hang and all(h.startswith("|") for h in hang) and not any("---" in h for h in hang)
+    assert any("-0,2391 (-0,3771 đến -0,0912)" in h for h in hang)  # số kiểu Việt in bằng hien_so_g6 của giá trị
+    s3 = G7._khoi_pls_sem_g6(tt, "G6_analysis_summary.json")
+    assert md[0] in s3 and not any(x.startswith("[CẦN") for x in s3), s3
+    assert not [x for x in s3 if QDSK.quet(x)]  # Q1–Q5 sạch (dấu phẩy thập phân, nhóm nghìn)
+    for cu, moi in (("-0,2391", "-0,239"), ("0,7081", "0,7082"), ("0,8123", "0,81")):
+        sai = copy.deepcopy(tt)
+        sai["pls_sem"]["trinh_bay_md"] = [x.replace(cu, moi) for x in md]
+        assert sai["pls_sem"]["trinh_bay_md"] != md
+        ra = G7._khoi_pls_sem_g6(sai, "G6_analysis_summary.json")
+        assert ra[0].startswith("[CẦN THỐNG KÊ VIÊN — bảng PLS-SEM của G6 có số không truy được"), (cu, ra[:2])
+        # tự kiểm chung trên cả tệp (gồm chính bảng) KHÔNG bắt được — lý do phải kiểm riêng ở đây
+        assert G7.kiem_so_trich_g6("\n".join(sai["pls_sem"]["trinh_bay_md"]),
+                                   json.dumps(sai, ensure_ascii=False)) == []
+
+
 def test_g7_chep_nguyen_van_va_tu_kiem_so():
     dong = ["| GT → NT | 0,312 (0,201–0,420) | 0,105 | 1,234 |"]
     tt = {"n_total": 200, "pls_sem": {"trinh_bay_md": dong, "loi": {}}, "kiem_cheo": {"trang_thai": "KHOP"}}
@@ -284,9 +377,15 @@ def test_g7_chep_nguyen_van_va_tu_kiem_so():
 
 
 def test_so_kieu_viet_dau_tru_va_khoang_co_so_am():
-    """Bảng PLS-SEM: dấu phẩy thập phân, dấu trừ «−» (như bieu_do_chung.so), KTC có cận âm viết «a đến b»."""
-    assert PLS.so3(-0.2391) == "−0,239" and PLS.so3(-0.0001) == "0,000" and PLS.so3(None) == "—"
-    assert PLS.ktc3([-0.567, 0.114]) == "−0,567 đến 0,114" and PLS.ktc3([0.1, 0.2]) == "0,100–0,200"
+    """Bảng PLS-SEM in số ĐÚNG như bản thảo G7 in số G6 (`hien_so_g6`): dấu phẩy thập phân, tối đa 4 chữ số lẻ, số
+    nguyên từ 5 chữ số nhóm nghìn (K11); KTC có cận âm viết «a đến b». Mỗi số in ra trùng `_dang_viet_so_g6` của giá
+    trị JSON ⇒ tự kiểm số G7 đối chiếu được với tóm tắt G6."""
+    assert PLS.so3(-0.2391347) == "-0,2391" and PLS.so3(-0.0001) == "-0,0001" and PLS.so3(None) == "—"
+    assert PLS.so3(1.0) == "1,0" and PLS.so3(5000) == "5000" and PLS.so3(12000) == "12.000"
+    assert PLS.so3(2.5e-07) == "< 0,0001" and PLS.so3(float("nan")) == "—" and PLS.so3(True) == "—"
+    assert PLS.ktc3([-0.567, 0.114]) == "-0,567 đến 0,114" and PLS.ktc3([0.1, 0.2]) == "0,1–0,2"
+    for v in (-0.2391347, 0.70812345, 1.0, 12345.678, 3.0, -0.0001):
+        assert PLS.so3(v) == G7._dang_viet_so_g6(repr(v))
 
 
 def test_de_cuong_nop_co_mau_va_gia_thuyet_pls(tmp_path):
@@ -302,11 +401,13 @@ def test_de_cuong_nop_co_mau_va_gia_thuyet_pls(tmp_path):
     n.g3cp.update({"effect_type": "PLS_PATH", "effect_val": 0.2, "n_total": 197, "alpha": 0.05, "power": 0.8})
     ra = " ".join(SDC.doan_co_mau(n))
     assert "căn bậc hai nghịch đảo" in ra and "|β_min| = 0,20" in ra and "197 người" in ra, ra
+    assert QDSK.quet(ra) == [], QDSK.quet(ra)  # K11/K22: dấu phẩy thập phân, nhóm nghìn
     assert "TRIAL [1]" in ra, ra  # effect_source «PMID: … (TRIAL)» của đề tài giả ⇒ nguồn có số trích dẫn
     assert "không kiểm định giả thuyết" in " ".join(SDC.chuong_muc_tieu(n))
     n.meta.setdefault("gate_params", {}).setdefault("G1", {})["pls_sem"] = copy.deepcopy(KHOI)
     mt = " ".join(SDC.chuong_muc_tieu(n))
     assert "Giả thuyết đối (H1)" in mt and "không kiểm định giả thuyết" not in mt, mt
+    assert QDSK.quet(mt) == [], QDSK.quet(mt)
 
 
 def test_ktc_fisher_va_bang_co_uoc_luong_tho_hieu_chinh():
@@ -324,7 +425,7 @@ def test_ktc_fisher_va_bang_co_uoc_luong_tho_hieu_chinh():
     x = next(c for c in dg["cau_truc"] if c["duong_dan"] == "NT -> TT")
     assert x["r_tho"] == 0.41 and x["ktc_r_tho"] == PLS.ktc_fisher(0.41, 203)
     md = "\n".join(PLS.trinh_bay_ket_qua(dg, None, {"trang_thai": "KHOP", "dem": {}}))
-    assert "r thô (KTC 95%)" in md and "β hiệu chỉnh (KTC 95%)" in md and "| NT → TT | 0,410 (" in md
+    assert "r thô (KTC 95%)" in md and "β hiệu chỉnh (KTC 95%)" in md and "| NT → TT | 0,41 (" in md
     assert "tuong_quan_tho" in PLS.DAI_LUONG  # so tất định với cSEM (Construct_VCV)
 
 
@@ -360,9 +461,9 @@ def test_he_tu_lap_yeu_to_nhieu_pls_tu_sap_5():
 
     sap = _sap().replace("### §5 PHÂN TÍCH ĐA BIẾN\n\n- x", "### §5 PHÂN TÍCH ĐA BIẾN\n\n- **Kiểm soát nhiễu:** mỗi hệ "
                                                           "số đường dẫn hiệu chỉnh cho các tiền tố còn lại  ")
-    assert QD._kiem_soat_nhieu_pls(sap) == "mỗi hệ số đường dẫn hiệu chỉnh cho các tiền tố còn lại"
-    assert QD._kiem_soat_nhieu_pls(sap.replace("**Mô hình đo lường (PLS-SEM):**", "**Mô hình đo lường:**")) == ""
-    tt = QD._tien_to_pls(sap)  # phơi nhiễm của ma trận truy xuất G10 = cấu trúc có đường dẫn đi ra
+    assert QD._kiem_soat_nhieu_pls(_hd(sap)) == "mỗi hệ số đường dẫn hiệu chỉnh cho các tiền tố còn lại"
+    assert QD._kiem_soat_nhieu_pls(_hd(sap.replace("**Mô hình đo lường (PLS-SEM):**", "**Mô hình đo lường:**"))) == ""
+    tt = QD._tien_to_pls(_hd(sap))  # phơi nhiễm của ma trận truy xuất G10 = cấu trúc có đường dẫn đi ra
     assert tt.startswith("Giao tiếp") and "`GT`" in tt and "`HB`" in tt and "`NT`" in tt and "`TT`" not in tt
 
 

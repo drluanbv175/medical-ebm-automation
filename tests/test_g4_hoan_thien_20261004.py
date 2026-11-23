@@ -277,7 +277,8 @@ def test_g4_04_luong_that_g3_da_chot_san_sang_ky(tmp_path, monkeypatch):
     xac_nhan_g4(d, text)
     # SAP sinh THẬT mang tham số quyết định N của G3 (G4-06/G4-08): bỏ cuộc, SD — không chỉ alpha/power/N.
     body12 = G4Q._section_body(text, "§12")
-    assert "Tỷ lệ bỏ cuộc dự kiến:** 0.1" in body12 and "Độ lệch chuẩn (SD) kết cục:** 10" in body12
+    # 23/11/2026 (chốt «điền sai kiểu» Q4): SAP tiếng Việt in dấu phẩy thập phân
+    assert "Tỷ lệ bỏ cuộc dự kiến:** 0,1" in body12 and "Độ lệch chuẩn (SD) kết cục:** 10" in body12
     r = _cham(d, "S-G4-DU", tmp_path)
     loi = [(c["id"], c["evidence"]) for c in r["automatic_criteria"] if c["status"] != "PASS"]
     assert r["status"] == G4Q.STATUS_READY, loi
@@ -362,7 +363,7 @@ def _sap_mo_ta(precision=0.05, **kw):
 def test_g4_06_thiet_ke_chinh_xac_ky_d_khong_ky_power():
     text = _sap_mo_ta()
     body12 = G4Q._section_body(text, "§12")
-    assert "Sai số tuyệt đối cho phép (d):** ±0.05" in body12 and "Tỷ lệ ước lượng (p):** 0.5" in body12
+    assert "Sai số tuyệt đối cho phép (d):** ±0,05" in body12 and "Tỷ lệ ước lượng (p):** 0,5" in body12
     assert "**Power:** 80%" not in text and "Power     : 80%" not in text
     assert "Sai số d" in G4Q._phan_body(text, "5")
     p = G4Q.parse_signed_numbers(text)
@@ -434,9 +435,9 @@ def test_g4_06_ni_ky_chieu_ket_cuc():
     assert p["outcome_direction"] == "higher_better" and p["effect_val"] == 0.85
     # 22/11/2026 (CONSORT mở rộng NI mục 12a): nêu khoảng tin cậy hai phía tương ứng α một phía của G3
     body = G4Q._section_body(text, "§4")
-    m = re.search(r"so cận khoảng tin cậy hai phía (\d+)% \(tương ứng kiểm định một phía α = ([\d.]+)\) với biên "
-                  r"Δ = 0\.1", body)
-    assert m and int(m.group(1)) == round(100 * (1 - 2 * float(m.group(2))))
+    m = re.search(r"so cận khoảng tin cậy hai phía (\d+)% \(tương ứng kiểm định một phía α = ([\d,]+)\) với biên "
+                  r"Δ = 0,1", body)
+    assert m and int(m.group(1)) == round(100 * (1 - 2 * float(m.group(2).replace(",", "."))))
     g3 = _g3_checkpoint(hypothesis_type="non_inferiority", margin=0.1, effect_type="NI_PROPORTION", effect_val=0.85,
                         outcome_direction="lower_better", p0=0.8)
     row = _row(_evaluate(artifact_text=text, g3_checkpoint=g3), "G4-AUTO-03")
@@ -704,6 +705,10 @@ def test_g4_luong_ky_that_cuoi_chuoi(monkeypatch, _khoa_gia):
         sap = _sap(d, study)
         text = dien_sap_g4(sap.read_text(encoding="utf-8"))
         sap.write_text(text, encoding="utf-8", newline="\n")
+        # 23/11/2026: thống kê viên lập hợp đồng SAP máy đọc sau khi điền (G4-AUTO-13) — để (a) cô lập tiêu chí người
+        from _chuoi_da_chot import lap_hop_dong_g4  # noqa: PLC0415
+
+        lap_hop_dong_g4(d, study)
         # (a) Chưa xác nhận G4 ⇒ approve_gate TỪ CHỐI (tiêu chí người kiểm được trước khi ký).
         CS.xoa_dem()
         rc, out = _ky(monkeypatch, study, sap)

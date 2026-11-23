@@ -38,7 +38,9 @@ class TestG7ConsortNiChecklist:
         assert "Piaggio" in block
         assert "doi:10.1001/jama.2012.87802" in block
         assert "1a-NI" in block and "22-NI" in block
-        assert "margin Δ=0.1" in block or "0.1" in block
+        # 24/11/2026: biên in theo quy ước số tiếng Việt (chốt «điền sai kiểu» Q4 — giả lập rct_ni từng bị
+        # G7-AUTO-09 chặn vì «Δ=0.1»); assert cũ «"0.1" in block» luôn đúng vì doi «10.1001…» chứa «0.1»
+        assert "margin Δ=0,1" in block and "margin Δ=0.1" not in block
 
     def test_ni_extension_appended_for_equivalence(self):
         block = G7.generate_checklist(
@@ -75,6 +77,23 @@ class TestG8ConsortNiChecklist:
         assert ni["margin"] == 0.10
         assert ni["hypothesis_type"] == "non_inferiority"
         assert len(ni["items"]) == 11
+
+    def test_a9_ghi_bien_theo_quy_uoc_so_tieng_viet(self, tmp_path):
+        """24/11/2026: văn bản A9 in biên Δ theo quy ước số tiếng Việt («0,1»), như phụ lục CONSORT-NI của G7."""
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from test_g8_citation_gate_and_specialist_module import (  # noqa: PLC0415
+            _BASE_GATES,
+            _PIPELINE,
+            _STAT_CHECK,
+        )
+
+        rep = G8.build_reporting_checklist("rct", {}, hypothesis_type="non_inferiority", margin=0.10)
+        d = tmp_path / "exports" / "ZZ-NI"
+        d.mkdir(parents=True)
+        pre = G8.build_presubmission_checklist(_PIPELINE, rep, _STAT_CHECK, _BASE_GATES, [], study="ZZ-NI", out_dir=d)
+        md = G8.generate_a9_artifact("ZZ-NI", "2026-11-24", _BASE_GATES, _PIPELINE, rep, _STAT_CHECK, [], pre, "",
+                                     0.0, "PENDING")
+        assert "margin Δ=0,1" in md and "margin Δ=0.1" not in md
 
     def test_no_ni_extension_for_default_superiority(self):
         r = G8.build_reporting_checklist("rct", {})

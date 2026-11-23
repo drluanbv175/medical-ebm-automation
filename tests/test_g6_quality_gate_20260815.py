@@ -98,6 +98,10 @@ def test_sapdrift_seed_bi_bat(de_tai_g6):
     nd_moi, so = re.subn(r"set\.seed\(\d+\)", "set.seed(9999)", nd)
     assert so >= 1, "mẫu phải có seed máy-đọc-được ở SAP §10"
     sap.write_text(nd_moi, encoding="utf-8", newline="\n")
+    # 24/11/2026: SAP sửa thì thống kê viên lập lại hợp đồng SAP máy đọc (G6 đọc seed từ hợp đồng, không từ chữ SAP)
+    from tests._chuoi_da_chot import lap_hop_dong_g4  # noqa: PLC0415
+
+    lap_hop_dong_g4(out, study)
     bao = G6Q.evaluate_study(study, out, write=False, repo_root=goc)
     lech = [k for k in bao["checks"] if k["id"] == "G6-AUTO-02"]
     assert bao["status"] == "BLOCKED"
@@ -118,6 +122,10 @@ def test_fixture_lanh_khong_bi_block_oan(de_tai_g6, monkeypatch):
     sap = _sap(out, study)
     sap.write_text(re.sub(r"set\.seed\(\d+\)", "[CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]",
                           sap.read_text(encoding="utf-8")), encoding="utf-8", newline="\n")
+    # 23/11/2026: «G4 đã khoá» giả lập gồm cả hợp đồng SAP máy đọc của chính SAP này (G6-AUTO-09 đọc hợp đồng)
+    from tests._chuoi_da_chot import lap_hop_dong_g4  # noqa: PLC0415
+
+    lap_hop_dong_g4(out, study)
     bao2 = G6Q.evaluate_study(study, out, write=False, repo_root=goc)
     assert _ck(bao2, "G6-AUTO-02")["pass"] is None
     assert bao2["status"] in TRANG_THAI_CHO_NGUOI, [(k["id"], k["pass"]) for k in bao2["checks"]

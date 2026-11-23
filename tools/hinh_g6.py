@@ -261,10 +261,14 @@ def hinh_cua_phan_tich(study: str, pt: Dict[str, Any], thu_muc: Path, nap: Calla
         # Mode B là chỉ số gộp có trọng số nên không lấy trung bình cộng chỉ báo.
         import bieu_do_mo_ta as MT  # noqa: PLC0415
         import cau_noi_spss as CN  # noqa: PLC0415
+        import hop_dong_sap as HD  # noqa: PLC0415
         import pandas as pd  # noqa: PLC0415
         import pls_sem as PLS  # noqa: PLC0415
 
-        mh = PLS.doc_sap((CN.thu_muc_de_tai(study) / f"G4_A5_SAP_FINAL_{study}.md").read_text(encoding="utf-8"))
+        hd, loi_hd = HD.doc(CN.thu_muc_de_tai(study), study)  # bộ đọc SAP duy nhất — hợp đồng hỏng ⇒ không vẽ
+        mh = PLS.mo_hinh_hop_dong(hd) if hd is not None and not loi_hd else None
+        if mh is None:
+            raise RuntimeError("hợp đồng SAP không mang mô hình PLS-SEM hợp lệ — " + " | ".join(loi_hd[:2]))
         ct = [c for c in mh["cau_truc"] if c["mode"] == "A"]
         df = nap(study, [m for c in ct for m in c["muc"]], loc)
         dai = [{"cau_truc": c["ma"], "diem": repr(float(v))} for c in ct

@@ -21,7 +21,13 @@ dừng khi chạy — không đoán hộ. Không PII: chỉ dùng mã bàn khám
 from __future__ import annotations
 
 import re
+import sys
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+import hop_dong_sap as _HD  # noqa: E402 — bộ đọc SAP duy nhất (24/11/2026)
 
 #: Dòng đầu nhận diện tệp do module này sinh (dọn tệp cũ khi SAP không còn đòi trọng số).
 DAU_TEP = "# Sinh tự động bởi tools/g6_trong_so_survey.py"
@@ -32,10 +38,8 @@ _RE_NGAY = re.compile(r"ngay_trong_tuan|thu_trong_tuan|ngay_tuan|weekday|day_of_
 _RE_KHUNG = re.compile(r"khung_?gio|time_?slot|ca_kham", re.I)
 
 
-def _sec(sap: str, so: int) -> str:
-    """Nguyên văn §N của SAP (tới § kế tiếp) — cùng ranh giới với g6_quality_gate._sec mặc định."""
-    m = re.search(rf"###\s*§{so}\b.*?(?=###\s*§|\Z)", sap, re.S | re.M)
-    return m.group(0) if m else ""
+#: Nguyên văn §N của SAP (tới § kế tiếp) — bộ cắt mục của bộ đọc SAP duy nhất (cùng ranh giới g6_quality_gate).
+_sec = _HD.muc_g6
 
 
 def _so(chuoi: str) -> float:
@@ -49,13 +53,10 @@ def _tim_bien(all_vars, mau: re.Pattern) -> Optional[str]:
     return None
 
 
-def sap_goi_post_stratify(sap_text: str) -> bool:
-    """SAP §4 có GỌI `postStratify(` không — điều kiện DUY NHẤT để đòi trọng số hậu phân tầng.
-
-    Dùng chung cho bộ sinh (`doc_tham_so_trong_so` → run_g6_auto sinh script 04) và bộ chấm (G6-AUTO-11 của
-    g6_quality_gate) để hai bên không bao giờ hiểu SAP khác nhau. Chữ «trọng số» trơn không đủ (mọi SAP do G4 sinh
-    đều có câu nhắc trọng số chung chung)."""
-    return bool(re.search(r"postStratify\s*\(", _sec(sap_text, 4)))
+#: SAP §4 có GỌI `postStratify(` — điều kiện DUY NHẤT để đòi trọng số hậu phân tầng. 24/11/2026: hàm sống ở bộ
+#: đọc SAP duy nhất (hop_dong_sap.goi_post_stratify) — bộ sinh dùng tên này, hợp đồng SAP (cổng G6-AUTO-11) dùng
+#: chính hàm đó; hai bên không bao giờ hiểu SAP khác nhau.
+sap_goi_post_stratify = _HD.goi_post_stratify
 
 
 #: Tham số SỐ mô-đun đọc từ SAP: tên → (mục §, biểu thức rút số — nhóm 1 là số như SAP viết). MỘT nguồn cho bộ sinh

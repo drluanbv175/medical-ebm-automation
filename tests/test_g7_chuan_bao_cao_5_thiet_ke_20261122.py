@@ -182,7 +182,7 @@ def test_stard_muc_3_11_12a_12b_21a_dat_21b_trung_thuc_thieu(tmp_path, monkeypat
                                                                           ("3", "11", "12a", "12b", "21a", "29")}, tt
     # 21b: chưa có phân tích chẩn đoán khác trên dữ liệu đã khoá ⇒ ô [CẦN], K18 báo thiếu (không dựng số)
     assert tt["21b"] == "thieu"
-    assert ("*Phân bố mức độ bệnh ở người có bệnh đích (Độ đàn hồi gan (kPa), `lsm_kpa`):* 16.06 ± 2.87 (n = 17) "
+    assert ("*Phân bố mức độ bệnh ở người có bệnh đích (Độ đàn hồi gan (kPa), `lsm_kpa`):* 16,06 ± 2,87 (n = 17) "
             + G7.NHAN_DOI_CHIEU_G6) in md
 
 
@@ -217,7 +217,7 @@ def test_tripod_13_muc_dat_khi_co_ho_so(tmp_path, monkeypatch):
     md = _ban_thao(d, "prediction", "Nghiên cứu phát triển mô hình dự báo", "TRIPOD+AI")
     tt = _tt(md, "prediction", "TRIPOD+AI 2024")
     assert {m: tt[m] for m in MUC_TRIPOD} == {m: "dat" for m in MUC_TRIPOD}, tt
-    assert f"*Hệ số hồi quy đầy đủ của mô hình (β):* hằng số = -4.28; `tuoi` = 0.0384 {G7.NHAN_DOI_CHIEU_G6}" in md
+    assert f"*Hệ số hồi quy đầy đủ của mô hình (β):* hằng số = -4,28; `tuoi` = 0,0384 {G7.NHAN_DOI_CHIEU_G6}" in md
 
 
 def test_tripod_vang_ho_so_thi_o_can_va_thieu(tmp_path, monkeypatch):
@@ -254,7 +254,7 @@ def test_prisma_a5_a7_7_11_16a_24b_24c_dat_16b_17_trung_thuc_thieu(tmp_path, mon
     tt = _tt(md, "sr_ma", "PRISMA 2020")
     assert {m: tt[m] for m in ("7", "11", "16a", "24b", "24c")} == {m: "dat" for m in ("7", "11", "16a", "24b",
                                                                                          "24c")}, tt
-    assert "**Included studies:** 15 nghiên cứu, 79845 người tham gia" in md
+    assert "**Included studies:** 15 nghiên cứu, 79.845 người tham gia" in md  # 23/11/2026: K11 nhóm nghìn
     assert "Xác định được 557 bản ghi qua tìm kiếm; 15 nghiên cứu được đưa vào tổng quan." in md
     assert "Đề cương tổng quan đã đăng ký tại CRD42099999999" in md
     # bảng trích xuất không có cột định danh bài báo, sổ sàng lọc chỉ có số đếm ⇒ ô [CẦN], K18 thiếu 16b, 17

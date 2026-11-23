@@ -261,16 +261,17 @@ def test_n16_nhap_chep_nguyen_van_so_g6_va_tu_kiem_sach(de_tai_g6):
     kq = G7A.dung_ket_qua_tu_g6(g6)
     assert kq["da_dung"], kq.get("ly_do")
     nhap = "\n".join(kq["s1"] + kq["s2"] + kq["s3"] + kq["s5"])
-    for chuoi in ("Phân tích (G6): N = 218", "184/218 (84.4%)", "`0`: 109; `1`: 109",
-                  "Nhóm `0`: 31/94 (33.0%); nhóm `1`: 52/90 (57.8%)",
-                  "Ước lượng thô (nhóm `1` so với `0`): OR = 2.783 (95% CI 1.536–5.043)",
-                  "Hiệu số nguy cơ thô (`1` − `0`): RD = 0.2481 (95% CI 0.1093–0.3869)",
-                  "p = 0.0008 (Chi-square)", "| `nhom` | 2.914 | 1.581–5.371 | 0.0006 |",
-                  "| `tuoi` | 1.012 | 0.987–1.038 | 0.3471 |", "m = 20; 34/218",
-                  "| `nhom` | 2.651 | 1.512–4.648 | 0.0 [CẦN KẾT QUẢ THẬT — G6 làm tròn về 0"):
+    for chuoi in ("Phân tích (G6): N = 218", "184/218 (84,4%)", "`0`: 109; `1`: 109",
+                  "Nhóm `0`: 31/94 (33,0%); nhóm `1`: 52/90 (57,8%)",
+                  "Ước lượng thô (nhóm `1` so với `0`): OR = 2,783 (95% CI 1,536–5,043)",
+                  "Hiệu số nguy cơ thô (`1` − `0`): RD = 0,2481 (95% CI 0,1093–0,3869)",
+                  "p = 0,0008 (Chi-square)", "| `nhom` | 2,914 | 1,581–5,371 | 0,0006 |",
+                  "| `tuoi` | 1,012 | 0,987–1,038 | 0,3471 |", "m = 20; 34/218",
+                  "| `nhom` | 2,651 | 1,512–4,648 | 0,0 [CẦN KẾT QUẢ THẬT — G6 làm tròn về 0"):
         assert chuoi in nhap, chuoi
-    assert "0.25 " not in nhap and "2.78 " not in nhap, "không làm tròn lại"
-    assert "41.27" not in nhap and "9999" not in nhap, "số G6 gắn cờ không hội tụ KHÔNG được chép"
+    # 23/11/2026: bản nháp in quy ước tiếng Việt — không làm tròn lại ở CẢ hai dấu
+    assert all(x not in nhap for x in ("0.25 ", "2.78 ", "0,25 ", "2,78 ")), "không làm tròn lại"
+    assert all(x not in nhap for x in ("41.27", "41,27", "9999")), "số G6 gắn cờ không hội tụ KHÔNG được chép"
     assert "| `gioi_2` | [CẦN THỐNG KÊ VIÊN" in nhap
     assert "ĐỘC LẬP" not in nhap, "không có cụm ⇒ không dán nhãn «giả định quan sát ĐỘC LẬP» thừa"
     assert G7A.kiem_so_trich_g6(nhap, g6["van_ban"]) == [], "mọi số của nháp có nguyên văn trong tệp G6"
@@ -296,7 +297,7 @@ def test_n16_ban_thao_co_nhap_qua_guardrail_khong_khang_dinh_moi_va_khop_n_cua_b
     assert G7Q.find_unsupported_claims(co_nhap, {}) == G7Q.find_unsupported_claims(goc, {}), \
         "chỉ dẫn của nháp không tự sinh khẳng định trần (dữ liệu/SAP đã khoá…)"
     assert G7Q.o_can_chua_dong(co_nhap) == []
-    assert "OR = 2.783" in _muc_ket_qua(co_nhap) and "OR = 2.783" not in _muc_ket_qua(goc)
+    assert "OR = 2,783" in _muc_ket_qua(co_nhap) and "OR = 2,783" not in _muc_ket_qua(goc)
     # Bộ chấm G7 thật (G7-AUTO-03): N phân tích của G6 có mặt trong mục Kết quả ⇒ đối chiếu khớp.
     assert G7Q.doi_chieu_ket_qua_g6("THU", de_tai_g6, goc)["status"] == "REVIEW"
     assert G7Q.doi_chieu_ket_qua_g6("THU", de_tai_g6, co_nhap)["status"] == "PASS"
@@ -400,7 +401,7 @@ def test_n16_uu_tien_tep_co_uoc_luong_ke_ca_khi_tep_chi_co_n_dung_truoc(tmp_path
     _ghi_tom_tat(out, _tom_tat_nhi_phan(n_total=57), "06_ket_qua/G6_analysis_summary.json")
     g6 = G7A.doc_tom_tat_g6_hop_le(out)
     assert g6["hop_le"] and g6["nguon"] == "06_ket_qua/G6_analysis_summary.json"
-    assert "OR = 2.783" in "\n".join(G7A.dung_ket_qua_tu_g6(g6)["s3"])
+    assert "OR = 2,783" in "\n".join(G7A.dung_ket_qua_tu_g6(g6)["s3"])
 
 
 def test_n16_lien_tuc_song_con_thu_tu_ty_le(tmp_path):
@@ -433,15 +434,15 @@ def test_n16_lien_tuc_song_con_thu_tu_ty_le(tmp_path):
     kq = G7A.dung_ket_qua_tu_g6(g6)
     assert kq["da_dung"], kq.get("ly_do")
     nhap = "\n".join(kq["s1"] + kq["s2"] + kq["s3"] + kq["s5"])
-    for chuoi in ("trung bình 132.418 (SD 14.207)", "Hiệu số trung bình thô (`B` − `A`): MD = -7.325",
-                  "chiều `A` − `B` — NGƯỢC chiều MD thô ở trên): MD=7.325 (95%CI 1.189–13.461)",
-                  "p = 0.0197 (Welch's t-test)", "Cox thô: HR = 0.642 (95% CI 0.451–0.914), p = 0.0139",
+    for chuoi in ("trung bình 132,418 (SD 14,207)", "Hiệu số trung bình thô (`B` − `A`): MD = -7,325",
+                  "chiều `A` − `B` — NGƯỢC chiều MD thô ở trên): MD=7,325 (95%CI 1,189–13,461)",
+                  "p = 0,0197 (Welch's t-test)", "Cox thô: HR = 0,642 (95% CI 0,451–0,914), p = 0,0139",
                   # 22/11/2026: nêu rõ ước lượng hiệu chỉnh THEO biến nào (STROBE 2007 16a)
-                  "Cox hiệu chỉnh theo các hiệp biến tuoi, bmi: HR = 0.668 (95% CI 0.468–0.954), p = 0.0265",
-                  "| `A` | 40 | 22 | 14.25 |", "| `B` | 41 | 15 | chưa đạt trung vị (G6) |", "Log-rank: p = 0.0144",
-                  "| `thoi_gian_cho` | 0.873 | 0.801–0.951 | 0.0021 |", "OR cho MỖI 15 đơn vị",
-                  "hai_long ≥ 4: 63/81 = 0.7778 (95% CI 0.6744–0.8552",
-                  "| `thoi_gian_cho` | -0.0187 | -0.0301–-0.0073 | 0.0014 |",
+                  "Cox hiệu chỉnh theo các hiệp biến tuoi, bmi: HR = 0,668 (95% CI 0,468–0,954), p = 0,0265",
+                  "| `A` | 40 | 22 | 14,25 |", "| `B` | 41 | 15 | chưa đạt trung vị (G6) |", "Log-rank: p = 0,0144",
+                  "| `thoi_gian_cho` | 0,873 | 0,801–0,951 | 0,0021 |", "OR cho MỖI 15 đơn vị",
+                  "hai_long ≥ 4: 63/81 = 0,7778 (95% CI 0,6744–0,8552",
+                  "| `thoi_gian_cho` | -0,0187 | -0,0301–-0,0073 | 0,0014 |",
                   "Mô hình đa biến (G6, `G6_table4_multivariate.txt`): [CẦN THỐNG KÊ VIÊN — G6 không chạy mô hình"):
         assert chuoi in nhap, chuoi
     assert G7A.kiem_so_trich_g6(nhap, g6["van_ban"]) == []
@@ -508,7 +509,7 @@ def test_tham_dinh_dien_giai_ni_equivalence_that_van_la_o_cho_sau_khi_go_nhan(tm
     _ghi_tom_tat(out, tt)
     kq = G7A.dung_ket_qua_tu_g6(G7A.doc_tom_tat_g6_hop_le(out))
     assert kq["da_dung"], kq.get("ly_do")
-    ghi_chu = G7A._gop_mot_dong(hi["note"])
+    ghi_chu = G7A.hien_so_g6(G7A._gop_mot_dong(hi["note"]))  # 23/11/2026: số in theo quy ước tiếng Việt
     dong = [d for d in kq["s3"] if ghi_chu in d]
     assert len(dong) == 1, "ghi chú G6 chép NGUYÊN VĂN (giữ ngoặc vuông, không cắt) — đúng một dòng"
     dong_sau = _go_nhan_doi_chieu(dong[0])
@@ -595,33 +596,33 @@ def test_tham_dinh_canh_bao_g6_va_cum_khong_bi_bo_am_tham(tmp_path):
     assert G7A.kiem_so_trich_g6(nhap, g6["van_ban"]) == [] and G7Q.o_can_chua_dong(nhap) == []
 
     # (a) Thiết kế cụm: ước lượng hiệu chỉnh cụm là dòng CHÍNH, đứng TRƯỚC; số độc lập mang nhãn và đứng sau ô cảnh báo.
-    i_cum = _vi_tri(s3, "Hiệu chỉnh cụm (nhóm `1` so với `0`): OR = 2.783 (95% CI 0.6121–12.65), p = 0.2104")
+    i_cum = _vi_tri(s3, "Hiệu chỉnh cụm (nhóm `1` so với `0`): OR = 2,783 (95% CI 0,6121–12,65), p = 0,2104")
     assert "Ước lượng CHÍNH theo thiết kế cụm — G6 hiệu chỉnh cụm «ban_kham»" in s3[i_cum - 2]
     assert "6 cụm; n phân tích = 184" in s3[i_cum - 2] and "G6 loại 3 hàng thiếu mã cụm" in s3[i_cum - 1]
-    i_rd_cum = _vi_tri(s3, "Hiệu chỉnh cụm (`1` − `0`): RD = 0.2481 (95% CI -0.1702–0.6664), p = 0.2311")
+    i_rd_cum = _vi_tri(s3, "Hiệu chỉnh cụm (`1` − `0`): RD = 0,2481 (95% CI -0,1702–0,6664), p = 0,2311")
     i_cb_cum = _vi_tri(s3, CANH_BAO_CUM)
     i_chan = _vi_tri(s3, "GIẢ ĐỊNH QUAN SÁT ĐỘC LẬP")
-    i_or = _vi_tri(s3, "Ước lượng thô — giả định quan sát ĐỘC LẬP (nhóm `1` so với `0`): OR = 2.783 "
-                       "(95% CI 1.536–5.043)")
-    i_rd = _vi_tri(s3, "Hiệu số nguy cơ thô — giả định quan sát ĐỘC LẬP (`1` − `0`): RD = 0.2481")
-    i_p = _vi_tri(s3, "p = 0.0412 (Chi-square) — giả định quan sát ĐỘC LẬP")
+    i_or = _vi_tri(s3, "Ước lượng thô — giả định quan sát ĐỘC LẬP (nhóm `1` so với `0`): OR = 2,783 "
+                       "(95% CI 1,536–5,043)")
+    i_rd = _vi_tri(s3, "Hiệu số nguy cơ thô — giả định quan sát ĐỘC LẬP (`1` − `0`): RD = 0,2481")
+    i_p = _vi_tri(s3, "p = 0,0412 (Chi-square) — giả định quan sát ĐỘC LẬP")
     assert i_cum < i_rd_cum < i_cb_cum < i_chan < i_or < i_rd < i_p
     assert s3[i_chan].startswith("[CẦN THỐNG KÊ VIÊN") and "KHÔNG phải ước lượng chính" in s3[i_chan]
     assert "G6 có thêm ước lượng hiệu chỉnh cụm" not in nhap, "không còn dòng chung chung thay cho số cụm"
 
     # (b) Mỗi cảnh báo G6 chép NGUYÊN VĂN trong một ô [CẦN THỐNG KÊ VIÊN …], NGAY dưới số nó gắn với.
-    i_hr = _vi_tri(s3, "Cox thô: HR = 0.642")
+    i_hr = _vi_tri(s3, "Cox thô: HR = 0,642")
     assert EPV in s3[i_hr + 1] and s3[i_hr + 1].startswith("[CẦN THỐNG KÊ VIÊN — G6 cảnh báo EPV")
-    i_ty = _vi_tri(s3, "hai_long ≥ 4: 184/184 = 1.0 (95% CI 0.9611–1.0")
+    i_ty = _vi_tri(s3, "hai_long ≥ 4: 184/184 = 1,0 (95% CI 0,9611–1,0")
     assert CB_TY_LE in s3[i_ty + 1] and CB_SCIPY in s3[i_ty + 2]
-    i_ord = _vi_tri(s3, "| `thoi_gian_cho` | 0.873 | 0.801–0.951 | 0.0021 |")
+    i_ord = _vi_tri(s3, "| `thoi_gian_cho` | 0,873 | 0,801–0,951 | 0,0021 |")
     assert s3[i_ord + 1] == "" and CB_ORD in s3[i_ord + 2]
     assert CB_BRANT in s3[_vi_tri(s3, "kiểm định Brant")]
-    assert "3.1" not in nhap and "0.3765" not in nhap, "số Brant không chép vào nháp"
-    i_mv = _vi_tri(s3, "| `tuoi` | 1.012 | 0.987–1.038 | 0.3471 |")
+    assert all(x not in nhap for x in ("3.1", "0.3765", "3,1", "0,3765")), "số Brant không chép vào nháp"
+    i_mv = _vi_tri(s3, "| `tuoi` | 1,012 | 0,987–1,038 | 0,3471 |")
     assert CB_MV in "\n".join(s3[i_mv + 1:i_mv + 6]) and CB_ORD in "\n".join(s3[i_mv + 1:i_mv + 6]), \
         "warning của mô hình CÓ results vẫn được in"
-    i_mi = _vi_tri(s5, "| `nhom` | 2.651 | 1.512–4.648 |")
+    i_mi = _vi_tri(s5, "| `nhom` | 2,651 | 1,512–4,648 |")
     assert CANH_BAO_CUM in "\n".join(s5[i_mi + 1:i_mi + 4])
 
     # (c) Gỡ nhãn đối chiếu xong, từng cảnh báo vẫn nằm trong ô chờ người thật (bộ chấm G7/G8 vẫn thấy).
@@ -707,7 +708,7 @@ def test_dau_cuoi_g7_doc_tu_dien_g5_that_va_dung_nhap_tu_g6(tmp_path, monkeypatc
         "có nháp Kết quả: guardrail không chặn (mã 3), vẫn DỪNG chờ bác sĩ đối chiếu (mã 2)"
     text = (out / f"G7_A8_MANUSCRIPT_{study}.md").read_text(encoding="utf-8")
     kq = _muc_ket_qua(text)
-    assert "Phân tích (G6): N = 6 " in kq and "OR = 2.783 (95% CI 1.536–5.043)" in kq
+    assert "Phân tích (G6): N = 6 " in kq and "OR = 2,783 (95% CI 1,536–5,043)" in kq
     assert "| Biến | Nhóm `0` (N=3) | Nhóm `1` (N=3) | p / SMD |" in kq
     cp = json.loads((out / "G7_checkpoint.json").read_text(encoding="utf-8"))
     assert cp["ket_qua_g6"]["da_dung_nhap"] is True and cp["ket_qua_g6"]["nguon"] == "G6_analysis_summary.json"

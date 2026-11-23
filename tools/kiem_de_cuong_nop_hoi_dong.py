@@ -72,6 +72,10 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       vị `so_doc_de_cuong.py`. Đề cương ở trạng thái TRÌNH (có G10_checkpoint.json và G10 chấm sống READY/PASS) mà sổ
       phủ < 100% đơn vị của bản hiện hành (bản ghi mang băm cũ = chưa đọc) hoặc còn đơn vị «sua» chưa xử lý ⇒ CHẶN.
       Chưa tới trạng thái trình ⇒ chỉ báo tỷ lệ phủ (cảnh báo), không chặn.
+  K22 (23/11/2026; bác sĩ duyệt đề xuất «bộ quét điền sai kiểu»): chốt chung `quet_dien_sai_kieu.py` — số đứng lẻ
+      thành câu (Q1), ô hỏi người/vai trò điền mã số (Q2), số thập phân chưa làm tròn (Q3), dấu chấm thập phân trong câu
+      tiếng Việt (Q4 — trừ số hiệu tham chiếu, phiên bản, mã, công thức, PMID/DOI), ký hiệu nội bộ của khuôn (Q5).
+      Sửa ở bộ sinh, không sửa tay.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -98,6 +102,7 @@ if str(BASE / "tools") not in sys.path:
     sys.path.insert(0, str(BASE / "tools"))
 
 import g10_quality_gate as G10  # noqa: E402
+import quet_dien_sai_kieu as QDSK  # noqa: E402  (luật số lớn K11 + ngữ cảnh mã — nguồn chung, 23/11/2026)
 
 TEN = "DE_CUONG_NOP_HOI_DONG_{study}"
 # (nhãn hiển thị, các từ khoá — một đề mục bất kỳ chứa MỘT từ khoá là đạt; so không phân biệt hoa thường)
@@ -392,10 +397,10 @@ def loi_k16(out_dir: Path, md: str) -> List[str]:
 # viết tắt cùng nghĩa (SD và ĐLC), mục viết tắt không dùng, bảng viết tắt không theo vần, loại biến «Định danh/thứ bậc»,
 # tên bảng hai ngoặc liền «(…) (Mục tiêu 3)», «vs», chữ IN HOA nhấn mạnh trong câu («ước lượng CAO»).
 _SO_THAP_PHAN_MAY_RE = re.compile(r"(?<![\w.,])0\.\d+(?![\d.])")
-_SO_LON_MAY_RE = re.compile(r"(?<![\w.,/-])\d{5,}(?![\w.,/-])")
+_SO_LON_MAY_RE = QDSK.SO_LON_RE
 _NGAY_ISO_RE = re.compile(r"(?<![\w-])(?:19|20)\d{2}-[01]\d-[0-3]\d(?![\w-])")
 _NGOAC_KEP_RE = re.compile(r"[«»]|\"[^\"\n]{1,200}\"")
-_NGU_CANH_MA_RE = re.compile(r"(?:seed|hạt giống|mã|ID|ISSN|NCT|số hiệu|số)\s*[:=]?\s*$", re.I)
+_NGU_CANH_MA_RE = QDSK.NGU_CANH_MA_RE
 _VS_RE = re.compile(r"(?<![\wÀ-ỹ])vs\.?(?![\wÀ-ỹ])")
 _IN_HOA_NHAN_RE = re.compile(r"(?<![\wÀ-ỹ])(?:CAO|THẤP|KHÔNG|CHỈ|MỌI|PHẢI|LUÔN|TĂNG|GIẢM|ĐÚNG|SAI)(?![\wÀ-ỹ])")
 _TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.I)
@@ -462,6 +467,12 @@ def la_loi_so_do(thong_diep_k11: str) -> bool:
     return str(thong_diep_k11).split(": ", 1)[-1].startswith(TIEN_TO_LOI_SO_DO)
 
 
+def la_loi_so_lon(thong_diep_k11: str) -> bool:
+    """Thông điệp K11 của luật số nguyên từ 5 chữ số chưa nhóm nghìn (23/11/2026 — bộ giả lập soát bản thảo G7 và báo
+    cáo tổng hợp bằng luật này)."""
+    return str(thong_diep_k11).split(": ", 1)[-1].startswith(QDSK.NHAN_SO_LON)
+
+
 def loi_so_do(s: str) -> Optional[str]:
     """Lỗi trình bày số đo ĐẦU TIÊN trong một dòng (None = đúng chuẩn): số đo huyết áp (`loi_huyet_ap`), số dính
     đơn vị, ký hiệu đơn vị sai chữ, dấu so sánh dính số. Dòng đã bỏ mã `…`, DOI/URL/PMID trước khi gọi."""
@@ -499,15 +510,22 @@ def _khoa_van_viet(k: str) -> str:
 
 def loi_k11(md: str) -> List[str]:
     """K11 — chuẩn trình bày tiếng Việt của văn bản nộp (đề cương, bản thảo). Bỏ qua: danh mục tài liệu tham khảo (giữ
-    nguyên văn), mã trong `…`, dòng chuỗi tìm kiếm ([tiab]/[Mesh]…), DOI/URL, PMID, dòng hình. Mỗi dòng báo một lỗi."""
+    nguyên văn), mã trong `…` và khối mã ```…``` (23/11/2026 — khối JSON kiểm toán ký của hồ sơ G2 «"g3_n": 25462»
+    là dữ liệu máy, không phải văn xuôi), dòng chuỗi tìm kiếm ([tiab]/[Mesh]…), DOI/URL, PMID, dòng hình. Mỗi dòng
+    báo một lỗi."""
     loi: List[str] = []
     dong = md.splitlines()
-    trong_tltk = trong_vt = phu_luc = False
+    trong_tltk = trong_vt = phu_luc = trong_ma = False
     vt: Dict[str, str] = {}
     vt_dong: List[int] = []
     cot_nguyen_van: set = set()
     dong_than: List[Tuple[int, str]] = []  # dòng thân bài (ngoài danh mục viết tắt, TLTK, mã)
     for so, d in enumerate(dong, 1):
+        if d.strip().startswith("```"):
+            trong_ma = not trong_ma
+            continue
+        if trong_ma:
+            continue
         m = _DE_MUC_RE.match(d)
         if m:
             ten = m.group(2).upper()
@@ -535,10 +553,11 @@ def loi_k11(md: str) -> List[str]:
         else:
             cot_nguyen_van = set()
         s = G10._DOI_URL_RE.sub(" ", re.sub(r"`[^`]*`", " ", d))
-        s = re.sub(r"PMID:?\s*\d+|\b10\.\d{4,9}/\S+", " ", s)
+        # 23/11/2026: cả DÃY PMID («PMID 36828607, 35014147») là định danh — trước đây PMID thứ hai bị đọc thành số lớn
+        s = re.sub(r"PMIDs?:?\s*\d+(?:\s*(?:[,;]|và)\s*\d{5,9})*|\b10\.\d{4,9}/\S+", " ", s)
         luat = (
             (_SO_THAP_PHAN_MAY_RE, "số thập phân dùng dấu chấm — viết dấu phẩy (0,1)"),
-            (_SO_LON_MAY_RE, "số từ 5 chữ số chưa nhóm nghìn — viết 10.000"),
+            (_SO_LON_MAY_RE, QDSK.NHAN_SO_LON),
             (_NGAY_ISO_RE, "ngày dạng ISO — viết dd/mm/yyyy"),
             (_NGOAC_KEP_RE, "ngoặc kép thẳng hoặc «» — dùng ngoặc kép tiếng Việt “…”"),
             (_VS_RE, "«vs» — viết «so với»"),
@@ -1025,6 +1044,13 @@ def canh_bao_k20_k21(out_dir: Path, study: str) -> List[str]:
     return TNT.canh_bao_k20(out_dir, study) + SDD.canh_bao_k21(out_dir, study)
 
 
+def loi_k22(md: str) -> List[str]:
+    """K22 — điền sai kiểu (chốt chung `quet_dien_sai_kieu.quet`, dùng cho đề cương nộp lẫn bản thảo tạp chí)."""
+    import quet_dien_sai_kieu as QDSK  # noqa: PLC0415
+
+    return [f"K22 {x}" for x in QDSK.quet(md)]
+
+
 def kiem(out_dir: Path, study: str) -> List[str]:
     """Danh sách lỗi của bản đề cương nộp Hội đồng (rỗng = đạt). Thiếu tệp `.md` ⇒ một lỗi K1."""
     out_dir = Path(out_dir)
@@ -1136,6 +1162,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     except (OSError, ValueError):
         dv = ""
     loi.extend(loi_k19(md, dv))
+    loi.extend(loi_k22(md))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     loi.extend(loi_k21(out_dir, study) + loi_k20(out_dir, study, loi))
