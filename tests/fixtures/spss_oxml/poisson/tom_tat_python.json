@@ -1,285 +1,422 @@
 {
- "n_total": 600,
- "dac_ta_phan_tich": {
-  "outcome": "khong_xn_du",
-  "group": "insulin",
-  "covariates": [
-   "tuoi10",
-   "doi_tuong",
-   "hba1c3",
-   "pk"
-  ],
-  "outcome_type": "poisson_pr",
-  "time": null,
-  "event": null,
-  "cot_cum": null,
-  "don_vi_phoi_nhiem": null,
-  "hiep_bien_phan_loai": {
-   "doi_tuong": {
-    "tham_chieu": "1",
-    "muc": [
-     "2",
-     "3",
-     "4"
-    ],
-    "ten": [
-     "doi_tuong_2",
-     "doi_tuong_3",
-     "doi_tuong_4"
-    ]
-   },
-   "hba1c3": {
-    "tham_chieu": "0",
-    "muc": [
-     "1",
-     "2"
-    ],
-    "ten": [
-     "hba1c3_1",
-     "hba1c3_2"
-    ]
-   },
-   "pk": {
-    "tham_chieu": "1",
-    "muc": [
-     "2",
-     "3"
-    ],
-    "ten": [
-     "pk_2",
-     "pk_3"
-    ]
-   }
-  }
- },
- "primary_outcome": {
-  "outcome_type": "binary",
-  "groups": [
-   "0",
-   "1"
-  ],
-  "group_0": {
-   "n": 313,
-   "events": 100,
-   "pct": 31.9
+  "study": "F2-POISSON",
+  "gate": "G6",
+  "generated": "2026-11-23T20:31:57.703238",
+  "data_source": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-kyroq_5a/exports/F2-POISSON/05_clean_locked/k.csv",
+  "data_lock": {
+    "manifest": "/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/f2-dc-kyroq_5a/exports/F2-POISSON/DATA_LOCK_manifest.json",
+    "locked_dataset_path": "05_clean_locked/k.csv",
+    "sha256": "1ca37f2b6c4138739a4efabddd86a6e2069b12b6c9ffc8bd8792f17fe3143aab",
+    "lock_date": "2026-11-24",
+    "approved_by": "đề tài thử của fixture",
+    "sap_version": "1.0"
   },
-  "group_1": {
-   "n": 287,
-   "events": 145,
-   "pct": 50.5
+  "n_total": 600,
+  "khoa_g4": {
+    "trang_thai_song": true,
+    "nguon": "đề tài thử: G4 khoá sống",
+    "so_cai_khop_sap": true,
+    "ghi_de_i_confirm_sap_locked": false,
+    "co_truyen_i_confirm_sap_locked": false
   },
-  "or_crude": 2.175,
-  "ci_95": [
-   1.561,
-   3.03
-  ],
-  "risk_diff": 0.1857,
-  "risk_diff_ci_95": [
-   0.1082,
-   0.2633
-  ],
-  "p_value": 0.0,
-  "test": "Chi-square"
- },
- "poisson_pr": {
-  "model": "poisson_robust_hc0",
-  "n": 538,
-  "n_bien_co": 218,
-  "phuong_sai": "HC0 (sandwich) — Zou 2004 PMID 15033648",
-  "tho": [
-   {
-    "variable": "insulin",
-    "PR": 1.573,
-    "CI_95": [
-     1.2744,
-     1.9417
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "dac_ta_phan_tich": {
+    "outcome": "khong_xn_du",
+    "group": "insulin",
+    "covariates": [
+      "tuoi10",
+      "doi_tuong",
+      "hba1c3",
+      "pk"
     ],
-    "p": 0.0
-   },
-   {
-    "variable": "tuoi10",
-    "PR": 0.985,
-    "CI_95": [
-     0.8975,
-     1.081
+    "outcome_type": "poisson_pr",
+    "time": null,
+    "event": null,
+    "cot_cum": null,
+    "don_vi_phoi_nhiem": null,
+    "hiep_bien_phan_loai": {
+      "doi_tuong": {
+        "tham_chieu": "1",
+        "muc": [
+          "2",
+          "3",
+          "4"
+        ],
+        "ten": [
+          "doi_tuong_2",
+          "doi_tuong_3",
+          "doi_tuong_4"
+        ]
+      },
+      "hba1c3": {
+        "tham_chieu": "0",
+        "muc": [
+          "1",
+          "2"
+        ],
+        "ten": [
+          "hba1c3_1",
+          "hba1c3_2"
+        ]
+      },
+      "pk": {
+        "tham_chieu": "1",
+        "muc": [
+          "2",
+          "3"
+        ],
+        "ten": [
+          "pk_2",
+          "pk_3"
+        ]
+      }
+    },
+    "loc": null,
+    "loc_cot_ngay": [],
+    "hiep_bien_hang_sau_loc": [],
+    "ty_le": [],
+    "nguong_ty_le": null,
+    "kc_hieu_so": "wald",
+    "bien_co_hiem": null,
+    "bo_ghep": null,
+    "bien_ghep": []
+  },
+  "missing_data": {
+    "n_total": 600,
+    "n_complete_cases": 527,
+    "pct_complete": 87.8,
+    "variables_with_missing": {
+      "tuoi10": {
+        "n_missing": 15,
+        "pct": 2.5
+      },
+      "doi_tuong": {
+        "n_missing": 21,
+        "pct": 3.5
+      },
+      "hba1c3": {
+        "n_missing": 21,
+        "pct": 3.5
+      },
+      "pk": {
+        "n_missing": 19,
+        "pct": 3.2
+      },
+      "doi_tuong_2": {
+        "n_missing": 21,
+        "pct": 3.5
+      },
+      "doi_tuong_3": {
+        "n_missing": 21,
+        "pct": 3.5
+      },
+      "doi_tuong_4": {
+        "n_missing": 21,
+        "pct": 3.5
+      },
+      "hba1c3_1": {
+        "n_missing": 21,
+        "pct": 3.5
+      },
+      "hba1c3_2": {
+        "n_missing": 21,
+        "pct": 3.5
+      },
+      "pk_2": {
+        "n_missing": 19,
+        "pct": 3.2
+      },
+      "pk_3": {
+        "n_missing": 19,
+        "pct": 3.2
+      }
+    },
+    "max_missing_pct": 3.5,
+    "recommendation": "Thiếu < 5% — Complete Case Analysis chấp nhận được (kiểm MCAR nếu có thể)."
+  },
+  "table1": {
+    "n_per_group": {
+      "0": 323,
+      "1": 277
+    },
+    "groups": [
+      "0",
+      "1"
     ],
-    "p": 0.7497
-   },
-   {
-    "variable": "doi_tuong_2",
-    "PR": 1.329,
-    "CI_95": [
-     1.0075,
-     1.7531
+    "rows": [
+      {
+        "variable": "tuoi10",
+        "type": "continuous",
+        "gia_tri": {
+          "0": "5.95 ± 0.98",
+          "1": "6.00 ± 0.92"
+        },
+        "p": 0.5384,
+        "test": "Welch's t-test"
+      },
+      {
+        "variable": "doi_tuong",
+        "type": "categorical",
+        "gia_tri": {
+          "0": "1.0: 128(41%); 2.0: 93(30%); 3.0: 57(18%); 4.0: 35(11%)",
+          "1": "1.0: 105(39%); 2.0: 82(31%); 3.0: 54(20%); 4.0: 25(9%)"
+        },
+        "p": 0.8254,
+        "test": "Chi-square"
+      },
+      {
+        "variable": "hba1c3",
+        "type": "categorical",
+        "gia_tri": {
+          "0": "0.0: 108(35%); 1.0: 102(33%); 2.0: 101(32%)",
+          "1": "0.0: 100(37%); 1.0: 90(34%); 2.0: 78(29%)"
+        },
+        "p": 0.6623,
+        "test": "Chi-square"
+      },
+      {
+        "variable": "pk",
+        "type": "categorical",
+        "gia_tri": {
+          "0": "2.0: 126(40%); 1.0: 115(36%); 3.0: 75(24%)",
+          "1": "1.0: 113(43%); 2.0: 91(34%); 3.0: 61(23%)"
+        },
+        "p": 0.2661,
+        "test": "Chi-square"
+      }
+    ]
+  },
+  "primary_outcome": {
+    "outcome_type": "binary",
+    "groups": [
+      "0",
+      "1"
     ],
-    "p": 0.0441
-   },
-   {
-    "variable": "doi_tuong_3",
-    "PR": 1.5996,
-    "CI_95": [
-     1.1905,
-     2.1493
+    "group_0": {
+      "n": 323,
+      "events": 69,
+      "pct": 21.4
+    },
+    "group_1": {
+      "n": 277,
+      "events": 113,
+      "pct": 40.8
+    },
+    "or_crude": 2.536,
+    "ci_95": [
+      1.773,
+      3.629
     ],
-    "p": 0.0018
-   },
-   {
-    "variable": "doi_tuong_4",
-    "PR": 1.2037,
-    "CI_95": [
-     0.8116,
-     1.7852
+    "risk_diff": 0.1943,
+    "risk_diff_ci_95": [
+      0.1212,
+      0.2674
     ],
-    "p": 0.3566
-   },
-   {
-    "variable": "hba1c3_1",
-    "PR": 0.8569,
-    "CI_95": [
-     0.6738,
-     1.0898
+    "risk_diff_ci_method": "wald",
+    "risk_diff_ci_ten": "Wald (xấp xỉ chuẩn, z = 1,96)",
+    "p_value": 0.0,
+    "test": "Chi-square"
+  },
+  "poisson_pr": {
+    "model": "poisson_robust_hc0",
+    "n": 527,
+    "n_bien_co": 160,
+    "phuong_sai": "HC0 (sandwich) — Zou 2004 PMID 15033648",
+    "tho": [
+      {
+        "variable": "insulin",
+        "PR": 1.8412,
+        "CI_95": [
+          1.41,
+          2.4042
+        ],
+        "p": 0.0
+      },
+      {
+        "variable": "tuoi10",
+        "PR": 0.947,
+        "CI_95": [
+          0.8274,
+          1.0839
+        ],
+        "p": 0.4291
+      },
+      {
+        "variable": "doi_tuong_2",
+        "PR": 1.0698,
+        "CI_95": [
+          0.7704,
+          1.4854
+        ],
+        "p": 0.6871
+      },
+      {
+        "variable": "doi_tuong_3",
+        "PR": 1.4573,
+        "CI_95": [
+          1.056,
+          2.011
+        ],
+        "p": 0.0219
+      },
+      {
+        "variable": "doi_tuong_4",
+        "PR": 1.0169,
+        "CI_95": [
+          0.628,
+          1.6467
+        ],
+        "p": 0.9455
+      },
+      {
+        "variable": "hba1c3_1",
+        "PR": 1.032,
+        "CI_95": [
+          0.7642,
+          1.3936
+        ],
+        "p": 0.8373
+      },
+      {
+        "variable": "hba1c3_2",
+        "PR": 0.8601,
+        "CI_95": [
+          0.6188,
+          1.1956
+        ],
+        "p": 0.3698
+      },
+      {
+        "variable": "pk_2",
+        "PR": 1.1454,
+        "CI_95": [
+          0.8497,
+          1.544
+        ],
+        "p": 0.373
+      },
+      {
+        "variable": "pk_3",
+        "PR": 1.1112,
+        "CI_95": [
+          0.7901,
+          1.5626
+        ],
+        "p": 0.5446
+      }
     ],
-    "p": 0.2079
-   },
-   {
-    "variable": "hba1c3_2",
-    "PR": 0.7747,
-    "CI_95": [
-     0.6025,
-     0.9961
+    "results": [
+      {
+        "variable": "insulin",
+        "PR_adj": 1.8395,
+        "CI_95": [
+          1.408,
+          2.4032
+        ],
+        "p": 0.0
+      },
+      {
+        "variable": "tuoi10",
+        "PR_adj": 0.9448,
+        "CI_95": [
+          0.8294,
+          1.0763
+        ],
+        "p": 0.3933
+      },
+      {
+        "variable": "doi_tuong_2",
+        "PR_adj": 1.0806,
+        "CI_95": [
+          0.7771,
+          1.5025
+        ],
+        "p": 0.6449
+      },
+      {
+        "variable": "doi_tuong_3",
+        "PR_adj": 1.4399,
+        "CI_95": [
+          1.0495,
+          1.9755
+        ],
+        "p": 0.0239
+      },
+      {
+        "variable": "doi_tuong_4",
+        "PR_adj": 1.0521,
+        "CI_95": [
+          0.668,
+          1.6571
+        ],
+        "p": 0.8264
+      },
+      {
+        "variable": "hba1c3_1",
+        "PR_adj": 1.018,
+        "CI_95": [
+          0.7571,
+          1.3687
+        ],
+        "p": 0.9061
+      },
+      {
+        "variable": "hba1c3_2",
+        "PR_adj": 0.8885,
+        "CI_95": [
+          0.6454,
+          1.2232
+        ],
+        "p": 0.4685
+      },
+      {
+        "variable": "pk_2",
+        "PR_adj": 1.2099,
+        "CI_95": [
+          0.9007,
+          1.6252
+        ],
+        "p": 0.2057
+      },
+      {
+        "variable": "pk_3",
+        "PR_adj": 1.1581,
+        "CI_95": [
+          0.8276,
+          1.6206
+        ],
+        "p": 0.3919
+      }
     ],
-    "p": 0.0465
-   },
-   {
-    "variable": "pk_2",
-    "PR": 0.8416,
-    "CI_95": [
-     0.6528,
-     1.085
-    ],
-    "p": 0.1833
-   },
-   {
-    "variable": "pk_3",
-    "PR": 0.9556,
-    "CI_95": [
-     0.7503,
-     1.2172
-    ],
-    "p": 0.7131
-   }
-  ],
-  "results": [
-   {
-    "variable": "insulin",
-    "PR_adj": 1.6188,
-    "CI_95": [
-     1.3145,
-     1.9936
-    ],
-    "p": 0.0
-   },
-   {
-    "variable": "tuoi10",
-    "PR_adj": 0.9715,
-    "CI_95": [
-     0.8897,
-     1.0608
-    ],
-    "p": 0.519
-   },
-   {
-    "variable": "doi_tuong_2",
-    "PR_adj": 1.3678,
-    "CI_95": [
-     1.0417,
-     1.796
-    ],
-    "p": 0.0242
-   },
-   {
-    "variable": "doi_tuong_3",
-    "PR_adj": 1.6015,
-    "CI_95": [
-     1.1937,
-     2.1486
-    ],
-    "p": 0.0017
-   },
-   {
-    "variable": "doi_tuong_4",
-    "PR_adj": 1.2621,
-    "CI_95": [
-     0.8651,
-     1.8411
-    ],
-    "p": 0.2271
-   },
-   {
-    "variable": "hba1c3_1",
-    "PR_adj": 0.8207,
-    "CI_95": [
-     0.6511,
-     1.0345
-    ],
-    "p": 0.0944
-   },
-   {
-    "variable": "hba1c3_2",
-    "PR_adj": 0.7424,
-    "CI_95": [
-     0.5789,
-     0.9521
-    ],
-    "p": 0.0189
-   },
-   {
-    "variable": "pk_2",
-    "PR_adj": 0.8334,
-    "CI_95": [
-     0.6509,
-     1.0671
-    ],
-    "p": 0.1484
-   },
-   {
-    "variable": "pk_3",
-    "PR_adj": 0.9,
-    "CI_95": [
-     0.7079,
-     1.1443
-    ],
-    "p": 0.3899
-   }
-  ],
-  "nhom_bien": {
-   "insulin": [
-    "insulin"
-   ],
-   "tuoi10": [
-    "tuoi10"
-   ],
-   "doi_tuong": [
-    "doi_tuong_2",
-    "doi_tuong_3",
-    "doi_tuong_4"
-   ],
-   "hba1c3": [
-    "hba1c3_1",
-    "hba1c3_2"
-   ],
-   "pk": [
-    "pk_2",
-    "pk_3"
-   ]
+    "nhom_bien": {
+      "insulin": [
+        "insulin"
+      ],
+      "tuoi10": [
+        "tuoi10"
+      ],
+      "doi_tuong": [
+        "doi_tuong_2",
+        "doi_tuong_3",
+        "doi_tuong_4"
+      ],
+      "hba1c3": [
+        "hba1c3_1",
+        "hba1c3_2"
+      ],
+      "pk": [
+        "pk_2",
+        "pk_3"
+      ]
+    }
+  },
+  "multiple_imputation": {
+    "skipped": true,
+    "ca_day_du": true,
+    "n_imputations": 0,
+    "n_total": 600,
+    "n_complete_case": 527,
+    "n_missing_rows": 73,
+    "reason": "đặc tả khai n_imputations = 0 — phân tích CA ĐẦY ĐỦ, không gán đa trị: ước lượng là mô hình ca đầy đủ ở Bảng 4 (527/600 quan sát đủ dữ liệu ở 6 biến phân tích)"
   }
- },
- "data_lock": {
-  "manifest": "/tmp/f2-dc-gs6pq1dx/exports/F2-POISSON/DATA_LOCK_manifest.json",
-  "locked_dataset_path": "05_clean_locked/k.csv",
-  "sha256": "327854b6c36c0120e36aee9943cdfb4acf6fa1657402add660bf2191d31f7ce9",
-  "lock_date": "2026-11-14",
-  "approved_by": null,
-  "sap_version": null
- }
 }
