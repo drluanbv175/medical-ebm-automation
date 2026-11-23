@@ -69,6 +69,10 @@ def de_tai(tmp_path, monkeypatch):
     assert re.search(r"###\s*§4\b", sap_goc)
     sap_p.write_text(re.sub(r"(###\s*§4\b[^\n]*\n)", lambda m: m.group(1) + _THEM_SAP_4, sap_goc, count=1),
                      encoding="utf-8", newline="\n")
+    # 23/11/2026: SAP sửa §4 thì thống kê viên lập lại hợp đồng SAP máy đọc (G6-AUTO-09 đọc hợp đồng, chặn khi cũ)
+    from tests._chuoi_da_chot import lap_hop_dong_g4  # noqa: PLC0415
+
+    lap_hop_dong_g4(out, study)
 
     def chay() -> None:
         CS.xoa_dem()

@@ -91,6 +91,7 @@ from typing import Any, Mapping, Optional, Sequence
 
 import cong_song as CS
 import gate_contract as GC
+import hop_dong_sap as HD
 import pipeline_freshness as PF
 import placeholder_contract as PC
 import skill_standards as S
@@ -332,9 +333,9 @@ def dong_khuon_bien_co_hiem(kieu_ghep: Any = None) -> str:
 
 
 def la_sap_co_dieu_kien(sap4: str) -> bool:
-    """SAP §4 khoá hồi quy logistic CÓ ĐIỀU KIỆN (bệnh–chứng ghép cặp cá thể)."""
-    bd = _bo_dau_thuong(sap4)
-    return bool(re.search(r"logistic\s+co\s+dieu\s+kien|conditional\s+logistic|\bclogit\b", bd))
+    """SAP §4 khoá hồi quy logistic CÓ ĐIỀU KIỆN (bệnh–chứng ghép cặp cá thể) — họ «logistic_dk» của bộ đọc SAP
+    duy nhất (hop_dong_sap.ho_mo_hinh; 23/11/2026 gỡ biểu thức dò riêng)."""
+    return "logistic_dk" in HD.ho_mo_hinh(sap4)
 
 
 def ap_dung_bien_co_hiem(design_code: Any, sap4: str = "") -> bool:
@@ -346,25 +347,8 @@ def ap_dung_bien_co_hiem(design_code: Any, sap4: str = "") -> bool:
     return not (ma == "cross_sectional" and re.search(r"ước lượng tỷ lệ|uoc luong ty le", sap4 or "", re.I))
 
 
-def phuong_phap_bien_co_hiem_sap(sap5: str) -> dict:
-    """Phương pháp biến cố hiếm SAP §5 khai: {"co_dong", "o_trong", "phuong_phap" (mã | None), "dong"}."""
-    dong = next((d for d in (sap5 or "").splitlines() if "bien co hiem" in _bo_dau_thuong(d)), "")
-    bd = _bo_dau_thuong(dong)
-    o_trong = "[can" in bd
-    pp = None
-    if not o_trong:
-        if "firth" in bd and re.search(r"co\s+dieu\s+kien|conditional", bd):
-            pp = "firth_dk"
-        elif "firth" in bd:
-            pp = "firth"
-        elif "clopper" in bd or ("chinh xac" in bd and "fisher" in bd):
-            pp = "mo_ta_chinh_xac"
-    return {"co_dong": bool(dong), "o_trong": o_trong, "phuong_phap": pp, "dong": dong.strip()}
-
-
-def _bo_dau_thuong(s: str) -> str:
-    s = unicodedata.normalize("NFD", s or "")
-    return "".join(c for c in s if unicodedata.category(c) != "Mn").lower().replace("đ", "d")
+#: phương pháp biến cố hiếm SAP §5 khai — bộ đọc SAP duy nhất (hop_dong_sap); tên cũ là bí danh
+phuong_phap_bien_co_hiem_sap = HD.phuong_phap_bien_co_hiem
 
 
 def _section_body(text: str, section_num: str) -> str:
@@ -679,6 +663,7 @@ def evaluate_g4_quality(
     ledger_lock_timestamp: Optional[str] = None,
     dac_ta: Optional[Mapping[str, Any]] = None,
     ban_ky_theo_vai: Optional[Mapping[str, str]] = None,
+    hop_dong_loi: Optional[Sequence[str]] = None,
 ) -> dict[str, Any]:
     """Chấm G4 hai tầng: máy kiểm NỘI DUNG SAP, rồi bằng chứng ký người thật.
 
@@ -687,7 +672,10 @@ def evaluate_g4_quality(
     ledger_lock_timestamp: timestamp_utc của bản ghi phê duyệt G4 mới nhất còn hợp lệ — so với data_lock_date (G4-07).
     dac_ta: skill_standards.dac_ta_thiet_ke(out_dir) — estimand G1 cho G4-AUTO-15; vắng thì đọc gate_params.G1.
     ban_ky_theo_vai: doc_ban_ky_theo_vai(sổ cái) — «<cổng>/<nhóm vai>» → reviewer_ref (evaluate_study truyền vào); có
-      thì G4-HUMAN-03 so theo VAI thống kê viên, vắng thì so theo cổng bằng cross_gate_refs như bản cũ."""
+      thì G4-HUMAN-03 so theo VAI thống kê viên, vắng thì so theo cổng bằng cross_gate_refs như bản cũ.
+    hop_dong_loi: hop_dong_sap.kiem_cho_khoa(out_dir, study) — lỗi hợp đồng SAP máy đọc (evaluate_study truyền
+      vào; rỗng = hợp đồng hợp lệ, băm nằm trong chứng chỉ khoá). VẮNG ⇒ G4-AUTO-13 REVIEW «không đo được»
+      (fail-closed như g3_song)."""
     g4_meta = _gate_params(meta, "G4")
     design_code = str(checkpoint.get("design_code") or "")
     g3_design_code = str(g3_checkpoint.get("design_code") or "")
@@ -1264,12 +1252,27 @@ def evaluate_g4_quality(
                            f"({m_kc.group(1).strip()[:60]!r}) — văn bản ký phải nói cùng một kết cục chính")
         else:
             cc_status, cc_evidence = "PASS", "chứng chỉ khoá đã điền, «KQ chính» cùng kết cục với §2"
+    # 23/11/2026 (hợp đồng SAP máy đọc, bác sĩ duyệt): văn bản ký phải mang băm của G4_SAP_CONTRACT_<mã>.json — G6/G7
+    # đọc hợp đồng thay vì dò chữ SAP, nên chữ ký G4 phải khoá luôn hợp đồng. Hợp đồng thiếu/cũ/lệch văn bản SAP hoặc
+    # băm trong chứng chỉ khác ⇒ REVIEW (chưa ký được). Chỉ hiển thị sau khi đã ký (_chi_hien_thi_sau_ky): SAP ký trước
+    # khi có hợp đồng (BTM, C1a) không bị hạ cấp — hợp đồng của chúng suy từ bản ký.
+    if hop_dong_loi is None:
+        hd_status, hd_evidence = "REVIEW", "chưa đo hợp đồng SAP máy đọc (nơi gọi không truyền kết quả kiểm hợp đồng)"
+    elif hop_dong_loi:
+        hd_status, hd_evidence = "REVIEW", "hợp đồng SAP máy đọc: " + " | ".join(str(x) for x in hop_dong_loi[:3])
+    else:
+        hd_status, hd_evidence = "PASS", "hợp đồng SAP máy đọc khớp văn bản SAP, băm nằm trong chứng chỉ khoá"
+    if hd_status != "PASS":
+        cc_status = "REVIEW"
+    cc_evidence = f"{cc_evidence}; {hd_evidence}"
     automatic.append(_criterion(
         "G4-AUTO-13",
-        "Chứng chỉ khoá SAP (PHẦN 5) đã điền đủ và «KQ chính» khớp §2",
+        "Chứng chỉ khoá SAP (PHẦN 5) đã điền đủ, «KQ chính» khớp §2 và mang băm hợp đồng SAP máy đọc khớp văn bản",
         cc_status,
         cc_evidence,
-        "Điền «KQ chính»/«Phân tích» ở chứng chỉ khoá (PHẦN 5) đúng như §2/§4 trước khi ký.",
+        "Điền «KQ chính»/«Phân tích» ở chứng chỉ khoá (PHẦN 5) đúng như §2/§4, rồi chạy "
+        "`python3 tools/hop_dong_sap.py ghi --study <đề tài>` (lập G4_SAP_CONTRACT_<đề tài>.json và ghi băm vào chứng "
+        "chỉ khoá) trước khi ký.",
     ))
 
     # ── G4-AUTO-14 — N kế hoạch THẤP HƠN N tối thiểu phải được NÓI THẬT và giải trình (G4-05) ─────────────────────────
@@ -1710,6 +1713,8 @@ def evaluate_study(study: str, out_dir: Path, *, repo_root: Optional[Path] = Non
         dac_ta=S.dac_ta_thiet_ke(out_dir),
         # VÁ 14/11/2026 (K3): G4-HUMAN-03 so theo VAI thống kê viên, không theo bản ký G4 mới nhất bất kỳ vai.
         ban_ky_theo_vai=doc_ban_ky_theo_vai(records),
+        # 23/11/2026: hợp đồng SAP máy đọc (G4-AUTO-13) — băm trong chứng chỉ khoá khớp tệp hợp đồng.
+        hop_dong_loi=HD.kiem_cho_khoa(out_dir, study),
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)

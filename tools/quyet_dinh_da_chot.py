@@ -41,11 +41,14 @@ BASE = TOOLS.parent
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
+import hop_dong_sap as HD  # noqa: E402 — bộ đọc SAP duy nhất
+
 KHOA_NGUON = "_nguon_quyet_dinh_da_chot"
 # Chú thích soạn thảo mà run_g4_auto gắn sau dòng SAP điền sẵn («*(điền sẵn từ quyết định đã chốt — thống kê viên/PI
 # sửa nếu cần)*»). Không phải nội dung kết cục: G7 không chép vào bản nộp, G8 và nhất quán xuyên cổng bỏ khi so — MỘT
 # mẫu dùng chung (16/11/2026: G7 bỏ còn G8 so nguyên dòng ⇒ G8-AUTO-05 chặn nhầm «kết cục chính vắng trong bản thảo»).
-GHI_CHU_DIEN_SAN_RE = re.compile(r"\s*\*\(điền sẵn từ quyết định đã chốt[^)]*\)\*")
+# 23/11/2026: mẫu sống ở bộ đọc SAP duy nhất (hop_dong_sap) — đây là bí danh.
+GHI_CHU_DIEN_SAN_RE = HD.GHI_CHU_DIEN_SAN_RE
 #: vai của ma trận G3 mà cột «công cụ» chứa ĐỊNH NGHĨA chứ không phải nguồn đo (`dinh_nghia_thay_the.VAI_TRO`, biến
 #: tuân thủ đề cương của RCT)
 VAI_MANG_DINH_NGHIA = frozenset({"dinh_nghia_thay_the", "tuan_thu_de_cuong"})
@@ -119,9 +122,8 @@ def _sap(out_dir: Path, study: str) -> str:
 
 
 def muc_sap(sap: str, so: int) -> str:
-    """Thân §so của SAP (tới § kế tiếp / «## PHẦN»)."""
-    m = re.search(rf"^#{{2,4}}\s*§\s*{so}\b[^\n]*\n(.*?)(?=^#{{2,4}}\s*§\s*\d|^#{{1,2}}\s|\Z)", sap, re.M | re.S)
-    return m.group(1) if m else ""
+    """Thân §so của SAP (tới § kế tiếp / «## PHẦN») — bộ cắt mục của bộ đọc SAP duy nhất (hop_dong_sap)."""
+    return HD.muc_than(sap, so)
 
 
 def nhan_sap(sap: str, so: int, nhan: str) -> str:

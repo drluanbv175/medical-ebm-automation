@@ -798,28 +798,26 @@ def _them_tltk(s: str, tltk: str) -> str:
     return "\n".join(dong[:k_cuoi + 1] + [f"[{n_cuoi + 1}] {tltk}"] + dong[k_cuoi + 1:])
 
 
-def _than_muc_sap(text: str, so: str) -> str:
-    m = re.search(rf"^#{{2,4}}\s*§\s*{so}\b[^\n]*\n(.*?)(?=^#{{2,4}}\s*§\s*\d|^#{{1,2}}\s|\Z)", text, re.M | re.S)
-    return m.group(1) if m else ""
+def phuong_phap_sap(hd: Dict[str, Any]) -> str:
+    """Cụm chữ NGUYÊN VĂN của phương pháp phân tích chính (§4) — làm `sap_neo` cho phân tích chính. Đọc HỢP ĐỒNG SAP
+    (23/11/2026 — thống kê viên giả lập dùng cùng bộ đọc SAP duy nhất với G6/G7)."""
+    import hop_dong_sap as HD  # noqa: PLC0415
 
-
-def phuong_phap_sap(text: str) -> str:
-    """Cụm chữ NGUYÊN VĂN của phương pháp phân tích chính (§4) — làm `sap_neo` cho phân tích chính."""
-    than = _than_muc_sap(text, "4")
-    m = re.search(r"\*\*Phương pháp:\*\*\s*([^\n]+)", than)
-    goc = m.group(1) if m else next((d[2:] for d in than.splitlines() if d.startswith("- ")), "")
+    goc = HD.nhan_tho(hd, 4, "Phương pháp") or next((d[2:] for d in HD.dong(hd, 4) if d.startswith("- ")), "")
     return goc.strip()[:50].strip()
 
 
-def loai_kc_tu_sap(text: str) -> str:
-    """Kiểu kết cục của phân tích chính theo phương pháp SAP §4 đã khoá (thống kê viên đọc SAP, không đoán)."""
-    t = bo_dau(_than_muc_sap(text, "4"))
-    for mau, loai in ((r"poisson|log-binomial", "poisson_pr"), (r"logistic thu tu|thu tu|ordinal|ty le chenh tich luy",
-                                                                 "ordinal"),
-                      (r"logistic", "binary"), (r"tuyen tinh|ancova|t-test|linear", "continuous")):
-        if re.search(mau, t):
-            return loai
-    return "auto"
+#: họ mô hình SAP §4 (hợp đồng) → kiểu kết cục của phân tích chính — theo thứ tự ưu tiên
+_LOAI_KC_THEO_HO = (("poisson", "poisson_pr"), ("ordinal", "ordinal"), ("logistic_dk", "binary"),
+                    ("logistic", "binary"), ("linear", "continuous"))
+
+
+def loai_kc_tu_sap(hd: Dict[str, Any]) -> str:
+    """Kiểu kết cục của phân tích chính theo họ mô hình SAP §4 của HỢP ĐỒNG (thống kê viên đọc SAP, không đoán)."""
+    import hop_dong_sap as HD  # noqa: PLC0415
+
+    ho = set(HD.truong(hd, "phan_tich_chinh", "ho_mo_hinh") or [])
+    return next((loai for h, loai in _LOAI_KC_THEO_HO if h in ho), "auto")
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════ chạy trọn vòng
@@ -931,10 +929,12 @@ class TronVong:
         s = tep.read_text(encoding="utf-8")
         cps: Dict[str, Any] = {x: self._cp(x) for x in ("G0", "G1", "G3")}
         sap = self.out / f"G4_A5_SAP_FINAL_{self.study}.md"
-        if g != "G4" and sap.is_file():  # SAP đã khoá là nguồn đã chốt cho các cổng sau
-            pm = re.search(r"\*\*Phần mềm:\*\*\s*([^\n]+)", _than_muc_sap(sap.read_text(encoding="utf-8"), "10"))
-            if pm and not O_RE.search(pm.group(1)):
-                cps["_SAP"] = {"phan_mem": pm.group(1).strip()}
+        if g != "G4" and sap.is_file():  # SAP đã khoá là nguồn đã chốt cho các cổng sau — đọc qua HỢP ĐỒNG SAP
+            import hop_dong_sap as HD  # noqa: PLC0415
+
+            pm = HD.nhan(HD.doc_hop_le(self.out, self.study), 10, "Phần mềm")
+            if pm and not O_RE.search(pm):
+                cps["_SAP"] = {"phan_mem": pm.strip()}
         qt = self.out / "_quy-trinh-du-lieu.csv"  # quy trình dữ liệu đã chốt (G1/G5) — nguồn đã chốt cho G2/G5
         if qt.is_file():
             with qt.open(encoding="utf-8-sig", newline="") as fh:
@@ -1065,6 +1065,9 @@ class TronVong:
         self.hoan_thien_tep("G4", sap, tl + rct + list(TRA_LOI_CHUNG), da_hoi)
         self._bo_sung_epv(sap)
         self._ghi_doi_chieu_sai_lech_sap()
+        # 23/11/2026 (hợp đồng SAP máy đọc): thống kê viên lập G4_SAP_CONTRACT_<mã>.json + ghi băm vào chứng chỉ khoá
+        # SAU khi điền xong — G4-AUTO-13 chặn ký khi hợp đồng thiếu/cũ; G6/G7 đọc hợp đồng này
+        self.chay("G4 lập hợp đồng SAP máy đọc (thống kê viên)", "hop_dong_sap.py", "ghi", "--study", self.study)
         meta = self._meta()
         meta.setdefault("gate_params", {}).setdefault("G4", {}).update({
             "epv_vif_reviewed": True, "missing_data_mechanism_confirmed": True,
@@ -1654,31 +1657,36 @@ class TronVong:
         if not mau or not sap.is_file():
             return None
         import chay_sap_g6 as CS6  # noqa: PLC0415
+        import hop_dong_sap as HD  # noqa: PLC0415
 
-        text = sap.read_text(encoding="utf-8")
+        # 23/11/2026 (hợp đồng SAP máy đọc): thống kê viên giả lập đọc HỢP ĐỒNG SAP đã khoá (cùng nguồn với `kiem`,
+        # G6-AUTO-09 và G7) — hợp đồng thiếu/lệch ⇒ không soạn đặc tả (bước G4 phải lập hợp đồng trước khi ký)
+        hd, loi_hd = HD.doc(self.out, self.study)
+        if hd is None or loi_hd:
+            self.dung = self.dung or f"G6:hop_dong_sap:{'; '.join(loi_hd)[:200]}"
+            return None
+        text = CS6._van_ban_truy_nguyen(hd)
         chinh = next(x for x in mau if x.get("vai") == "chinh")
         ts_chinh = dict(chinh["tham_so"])
         if ts_chinh.get("outcome") and "outcome_type" not in ts_chinh and not ts_chinh.get("loai_dac_thu"):
-            ts_chinh["outcome_type"] = loai_kc_tu_sap(text)
+            ts_chinh["outcome_type"] = loai_kc_tu_sap(hd)
         # 23/11/2026 (G7 phát hiện G6 lệch SAP — thử nghiệm không kém hơn): thống kê viên đọc phương pháp KTC hiệu số
         # nguy cơ SAP §4 khai (cùng hàm chay_sap_g6 `kiem` và cổng G6-AUTO-09 dùng) và truyền vào đặc tả; phân tích kế
         # thừa (nhóm con, độ nhạy) nhận cùng phương pháp. SAP khai phương pháp G6 chưa tính ⇒ `kiem` từ chối đặc tả.
-        import g6_quality_gate as G6Q  # noqa: PLC0415
-
-        kc_sap = G6Q.phuong_phap_kc_hieu_so_sap(G6Q._sec(text, 4))["phuong_phap"]
+        kc_sap = HD.truong(hd, "khoang_tin_cay", "hieu_so_nguy_co")
         if kc_sap and ts_chinh.get("outcome") and not ts_chinh.get("loai_dac_thu"):
             ts_chinh.setdefault("kc_hieu_so", kc_sap)
         # 23/11/2026: phương pháp biến cố hiếm SAP §5 (rào EPV chặn hồi quy) — mọi phân tích có kết cục mang theo
         import g4_quality_gate as G4Q  # noqa: PLC0415
 
-        bch_sap = G4Q.phuong_phap_bien_co_hiem_sap(G4Q._section_body(text, "§5"))["phuong_phap"]
+        bch_sap = HD.truong(hd, "bien_co_hiem", "phuong_phap")
         if bch_sap and G4Q.BIEN_CO_HIEM[bch_sap][1] and ts_chinh.get("outcome") and not ts_chinh.get("loai_dac_thu"):
             ts_chinh.setdefault("bien_co_hiem", bch_sap)
         # 23/11/2026: SAP §4 khoá hồi quy logistic CÓ ĐIỀU KIỆN (bệnh–chứng ghép cặp cá thể) ⇒ thống kê viên khai cột mã
         # bộ ghép theo vai trò bo_ghep của ma trận G3 (cùng hàm chay_sap_g6 `kiem` dùng); phân tích kế thừa nhận theo.
         # Biến dùng để ghép (vai trò bien_ghep) vào mô hình gán đa trị (Seaman & Keogh 2015).
         if (ts_chinh.get("outcome") and not ts_chinh.get("loai_dac_thu")
-                and "logistic_dk" in G6Q._ho_mo_hinh_sap(G6Q._sec(text, 4))):
+                and HD.truong(hd, "kieu_ghep") == "ca_the"):
             import ma_tran_muc_tieu_bien as MT0  # noqa: PLC0415
 
             vt0 = MT0.vai_tro_tu_dong(MT0.doc_ma_tran(self.out)[0] or [])
@@ -1696,7 +1704,7 @@ class TronVong:
             elif x.get("ke_thua"):
                 pt["tham_so"] = {k: v for k, v in {**ts_chinh, **(x.get("tham_so") or {})}.items() if v is not None}
             if pt.get("sap_neo") == "<§4>":
-                pt["sap_neo"] = phuong_phap_sap(text)
+                pt["sap_neo"] = phuong_phap_sap(hd)
             ds.append(pt)
         if self.thiet_ke == "rct":
             self._dac_ta_rct(ts_chinh, ds)
@@ -1711,7 +1719,7 @@ class TronVong:
         if (self.thiet_ke == "rct" and tt and DTT.NEO_THEO_DE_CUONG.casefold() in text.casefold()
                 and not any(pt.get("id") == "DN_theo_de_cuong" for pt in ds)):
             ds.append(DTT.phan_tich_theo_de_cuong(tt, ts_chinh))
-        for i, (muc, dong) in enumerate(CS6.kiem_phu_sap({"phan_tich": ds}, text)["muc_chua_phu"], 1):
+        for i, (muc, dong) in enumerate(CS6.kiem_phu_sap({"phan_tich": ds}, hd)["muc_chua_phu"], 1):
             neo = dong[2:].strip()[:60].strip()
             ds.append({"id": f"CHO_LAM_TAY_{i}", "vai": "do_nhay" if muc == "§9" else "phu", "sap_muc": muc,
                        "mo_ta": neo, "sap_neo": neo,

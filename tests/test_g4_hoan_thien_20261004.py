@@ -704,6 +704,10 @@ def test_g4_luong_ky_that_cuoi_chuoi(monkeypatch, _khoa_gia):
         sap = _sap(d, study)
         text = dien_sap_g4(sap.read_text(encoding="utf-8"))
         sap.write_text(text, encoding="utf-8", newline="\n")
+        # 23/11/2026: thống kê viên lập hợp đồng SAP máy đọc sau khi điền (G4-AUTO-13) — để (a) cô lập tiêu chí người
+        from _chuoi_da_chot import lap_hop_dong_g4  # noqa: PLC0415
+
+        lap_hop_dong_g4(d, study)
         # (a) Chưa xác nhận G4 ⇒ approve_gate TỪ CHỐI (tiêu chí người kiểm được trước khi ký).
         CS.xoa_dem()
         rc, out = _ky(monkeypatch, study, sap)

@@ -118,6 +118,10 @@ def test_fixture_lanh_khong_bi_block_oan(de_tai_g6, monkeypatch):
     sap = _sap(out, study)
     sap.write_text(re.sub(r"set\.seed\(\d+\)", "[CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]",
                           sap.read_text(encoding="utf-8")), encoding="utf-8", newline="\n")
+    # 23/11/2026: «G4 đã khoá» giả lập gồm cả hợp đồng SAP máy đọc của chính SAP này (G6-AUTO-09 đọc hợp đồng)
+    from tests._chuoi_da_chot import lap_hop_dong_g4  # noqa: PLC0415
+
+    lap_hop_dong_g4(out, study)
     bao2 = G6Q.evaluate_study(study, out, write=False, repo_root=goc)
     assert _ck(bao2, "G6-AUTO-02")["pass"] is None
     assert bao2["status"] in TRANG_THAI_CHO_NGUOI, [(k["id"], k["pass"]) for k in bao2["checks"]

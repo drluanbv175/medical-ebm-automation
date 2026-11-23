@@ -1116,6 +1116,21 @@
     "nt:khoa_hoc": "chấm mục tiêu và phương pháp"
    }
   },
+  "hop_dong_sap.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thiet-ke-nghien-cuu",
+   "cong": ["G4"],
+   "nhiem_vu": ["G4-T1"],
+   "viec": "hợp đồng SAP máy đọc G4_SAP_CONTRACT_<mã>.json — bộ đọc SAP duy nhất cho G6/G7, băm vào chứng chỉ khoá",
+   "nguoi_dung_phu": ["phan-tich-thong-ke", "viet-ban-thao"],
+   "nguoi_kiem": ["dieu-phoi-g4"],
+   "chot_kiem": ["tools/g4_quality_gate.py", "tools/g6_quality_gate.py", "tools/g7_quality_gate.py", "tests/test_hop_dong_sap_20261123.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "G6 và G7 hiểu SAP như nhau — đọc một hợp đồng, không mỗi công cụ một bộ dò chữ",
+    "nt:tai_lap": "hợp đồng bằng đúng bộ đọc chạy lại trên văn bản SAP; lệch thì chặn",
+    "tong:kiem_chung": "băm hợp đồng nằm trong chứng chỉ khoá mà chữ ký G4 khoá"
+   }
+  },
   "hon_hop.py": {
    "pham_vi": "nghien_cuu",
    "chu": "nghien-cuu-dinh-tinh",

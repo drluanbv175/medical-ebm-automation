@@ -39,8 +39,10 @@ PP_DN = {"model": "poisson_robust_hc0", "n": 2830, "n_bien_co": 287,
 
 DAC_TA = [
     {"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "tham_so": {"outcome": "kq", "group": "nhom"}},
+    # 23/11/2026: mục neo vào gạch §9 của SAP («Theo đề cương») — G7-AUTO-08 đối chiếu danh sách độ nhạy của hợp đồng
+    # SAP với các mục đặc tả neo vào nó (cùng luật phủ của chay_sap_g6 `kiem`)
     {"id": "DN_theo_de_cuong", "vai": "do_nhay", "sap_muc": "§9", "mo_ta": "Phân tích theo đề cương",
-     "tham_so": {"outcome": "kq", "group": "nhom", "loc": "tuan_thu_de_cuong == 1"}},
+     "sap_neo": "Theo đề cương", "tham_so": {"outcome": "kq", "group": "nhom", "loc": "tuan_thu_de_cuong == 1"}},
     {"id": "DN_theo_doi_12t", "vai": "do_nhay", "sap_muc": "§9", "mo_ta": "Chỉ người theo dõi từ mười hai tháng",
      "tham_so": {"outcome": "kq", "group": "nhom", "n_imputations": 20, "outcome_type": "poisson_pr"}},
     {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "mo_ta": "Ca đầy đủ",

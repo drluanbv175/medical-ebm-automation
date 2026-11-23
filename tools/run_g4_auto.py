@@ -31,6 +31,7 @@ import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6,
 import g4_quality_gate as G4Q  # noqa: E402  (khung §12 dùng chung với bộ chấm — G4-06)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import hon_hop as HH  # noqa: E402  (thiết kế hỗn hợp — §17, 17/11/2026)
+import hop_dong_sap as HD  # noqa: E402  (hợp đồng SAP máy đọc — 23/11/2026)
 import skill_standards as S  # noqa: E402  (đặc tả thiết kế khoá ở G1, chuẩn báo cáo theo thiết kế)
 import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
@@ -1024,8 +1025,9 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "**Để G4 đạt PASS_G4_SAP_LOCKED:**",
         f"1. Điền TẤT CẢ ô [CẦN...] ở các mục bắt buộc {muc_bat_buoc} và ở chứng chỉ khoá (Phần 5); "
         "không xoá mục bắt buộc nào",
-        f"2. Chạy `python3 tools/g4_quality_gate.py --study {study}` — trạng thái phải là READY_FOR_SIGNATURE "
-        "(G3 đã chốt PASS_G3_CONFIRMED, số liệu ký khớp G3)",
+        f"2. Chạy `python3 tools/hop_dong_sap.py ghi --study {study}` sau khi điền xong (lập hợp đồng SAP máy đọc "
+        f"G4_SAP_CONTRACT_{study}.json, ghi băm vào chứng chỉ khoá), rồi `python3 tools/g4_quality_gate.py --study "
+        f"{study}` — trạng thái phải là READY_FOR_SIGNATURE (G3 đã chốt PASS_G3_CONFIRMED, số liệu ký khớp G3)",
         "3. Thống kê viên/PI ghi xác nhận vào study_meta.json → gate_params.G4 (epv_vif_reviewed, "
         "missing_data_mechanism_confirmed, subgroup_multiplicity_predefined_confirmed, reviewed_by_role, reviewed_at "
         "ISO-8601, dau_van_tay_chot = dấu nội dung SAP mà bộ chấm in)",
@@ -1560,9 +1562,18 @@ def main():
         elif quyet_dinh_de["ghi_chu"]:
             print(f"  ↻ {quyet_dinh_de['ghi_chu']}.")
     if not giu_ban_bien_tap:
+        # 23/11/2026 (hợp đồng SAP máy đọc, bác sĩ duyệt): G4 dựng SAP ⇒ xuất kèm G4_SAP_CONTRACT_<mã>.json và ghi băm
+        # hợp đồng vào chứng chỉ khoá (PHẦN 5). Điền xong SAP thì thống kê viên chạy lại `hop_dong_sap.py ghi` (văn bản
+        # đổi ⇒ hợp đồng cũ — G4-AUTO-13 chặn ký tới khi làm mới). Bản đã biên tập (giữ nguyên) không bị đụng.
+        sap_co_bam, hop_dong = HD.gan_vao_sap(artifact, study, out)
+        if sap_co_bam is not None:
+            artifact = sap_co_bam
         md.write_text(artifact, encoding="utf-8", newline="\n")
         print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
         DMS.ghi_dau(md, artifact, dau_vao_sinh, "run_g4_auto.py")
+        if sap_co_bam is not None:
+            print(f"  → Hợp đồng SAP máy đọc: {HD.luu(out, study, hop_dong).name} (sha256 "
+                  f"{hop_dong['sha256_hop_dong'][:16]}…, băm trong chứng chỉ khoá)")
 
     print("🛡️  Kiểm guardrail...")
     errors, warnings = guardrail(artifact)
@@ -1592,6 +1603,8 @@ def main():
         # G4_STATUS=LOCKED» — trái cơ chế thật (approve_gate + sổ cái niêm phong + mục bắt buộc + chất lượng READY).
         "pending_doctor_actions": [
             f"Điền mọi ô [CẦN…] ở mục bắt buộc {muc_bat_buoc} và chứng chỉ khoá (Phần 5); không xoá mục bắt buộc",
+            f"Điền xong thì chạy python3 tools/hop_dong_sap.py ghi --study {study} (hợp đồng SAP máy đọc + băm vào "
+            "chứng chỉ khoá — G6/G7 đọc hợp đồng này)",
             "Xử lý các mục REVIEW/BLOCK của python3 tools/g4_quality_gate.py (G3 phải PASS_G3_CONFIRMED)",
             "Thống kê viên/PI ghi gate_params.G4 (EPV/VIF, cơ chế dữ liệu thiếu, nhóm nhỏ tiền định, reviewed_by_role, "
             "reviewed_at ISO, dau_van_tay_chot theo dấu bộ chấm in)",
