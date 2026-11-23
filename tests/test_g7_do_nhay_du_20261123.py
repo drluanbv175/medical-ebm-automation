@@ -238,7 +238,8 @@ def test_main_ghep_muc_5_du_do_nhay_va_khung():
     import inspect
 
     src = inspect.getsource(G7.main)
-    assert "do_nhay = dung_do_nhay_g6(out_dir, _sap_tom_tat(out_dir, study))" in src
+    assert ("do_nhay = dung_do_nhay_g6(out_dir, _sap_tom_tat(out_dir, study),\n"
+            '                                  dinh_tinh=GC.resolve_design_code(out_dir)[0] == "qualitative")') in src
     assert ('ket_qua_g6["s5"] = gan_ten_nhom([*(ket_qua_g6.get("s5_phu") or []), *do_nhay], '
             'ket_qua_g6.get("nhan_nhom"))') in src
     assert 'ket_qua_g6["do_nhay_khung"] = khoi_do_nhay_khung(out_dir)' in src

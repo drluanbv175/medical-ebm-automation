@@ -510,7 +510,9 @@ def muc_do_nhay_ban_thao(text: str) -> Optional[str]:
     """Thân khối «§5 Phân tích nhạy cảm» trong mục III. KẾT QUẢ của bản thảo — tới tiêu đề in đậm kế tiếp không phải
     tiêu đề một phân tích («**`mã`**»), «---» hoặc tiêu đề mục. None ⇒ bản thảo không có khối này."""
     kq = _section(text or "", "III. KẾT QUẢ", "IV. BÀN LUẬN")
-    m = re.search(r"^\*\*§\s*5\s+Phân tích nhạy cảm[^\n]*\n(.*?)(?=^\*\*(?!`)|^---|^##\s|\Z)", kq,
+    # 23/11/2026: thiết kế định tính gọi khối này «§5 Kiểm tra độ tin cậy (trustworthiness)» (SAP §9 Lincoln–Guba)
+    m = re.search(r"^\*\*§\s*5\s+(?:Phân tích nhạy cảm|Kiểm tra độ tin cậy)[^\n]*\n(.*?)(?=^\*\*(?!`)|^---|^##\s|\Z)",
+                  kq,
                   re.MULTILINE | re.DOTALL)
     return m.group(1) if m else None
 
@@ -564,11 +566,16 @@ def doi_chieu_do_nhay_g6(out_dir: Path, manuscript_text: str) -> Optional[Dict[s
                                           + (f": {', '.join(can)}" if can else "")}
 
 
-def o_cho_co_du_kien(out_dir: Path, study: str, text: str) -> List[str]:
+def o_cho_co_du_kien(out_dir: Path, study: str, text: str, design_code: Optional[str] = None) -> List[str]:
     """Ô chờ bộ sinh G7 để lại ở chỗ ĐÃ CÓ dữ kiện đã chốt để viết (23/11/2026 — giả lập: Bàn luận «Điểm mạnh» còn ô chờ
     dù G3 đã chốt cỡ mẫu và G1 đã chốt biện pháp kiểm soát sai lệch; ô rơi về «chưa có thông tin»). Mỗi quy tắc: dấu
     hiệu ô bộ sinh in khi THIẾU dữ kiện + nguồn dữ kiện đã chốt; thấy dấu hiệu trong khi nguồn có ⇒ lỗi bộ sinh (sửa bộ
-    sinh rồi sinh lại, không điền tay). Trả danh sách «chỗ: dấu hiệu» (rỗng = sạch)."""
+    sinh rồi sinh lại, không điền tay). Trả danh sách «chỗ: dấu hiệu» (rỗng = sạch).
+
+    23/11/2026 (giả lập định tính): thêm loại thứ hai — ô chờ/dòng định lượng cho trường KHÔNG ÁP DỤNG với thiết kế
+    hoặc với dữ kiện G1 (ô «ai thực hiện can thiệp» khi thiết kế không có can thiệp; ô kết cục phụ khi G1 chốt không có
+    hoặc thiết kế định tính; «Dữ liệu thiếu/Phân tích độ nhạy», «α … 95%CI», «Định nghĩa biến cố», nhãn «Outcomes» cho
+    định tính; «N kế hoạch = 0» khi G3 đã chốt N). `design_code` vắng ⇒ đọc sống từ gate_contract."""
     out_dir = Path(out_dir)
     import run_g7_auto as G7  # noqa: PLC0415 — import lười (run_g7_auto nhập module này)
 
@@ -586,7 +593,32 @@ def o_cho_co_du_kien(out_dir: Path, study: str, text: str) -> List[str]:
         ("Phương pháp §6 — phân tích độ nhạy SAP §9", "Phân tích độ nhạy: [CẦN", bool(sap.get("do_nhay"))),
         ("Phương pháp §6 — dữ liệu thiếu SAP §6", "Dữ liệu thiếu: [CẦN", bool(sap.get("du_lieu_thieu"))),
     )
-    return [f"{ten}: «{dau_hieu}»" for ten, dau_hieu, co in quy_tac if co and dau_hieu in (text or "")]
+    if design_code is None:
+        try:
+            design_code = GC.resolve_design_code(out_dir)[0]
+        except Exception:  # noqa: BLE001 — không đọc được thiết kế ⇒ chỉ đo quy tắc không phụ thuộc thiết kế
+            design_code = ""
+    phu_g1 = G7._g1_g2_g7(out_dir)[0].get("secondary_outcomes")
+    dinh_tinh = design_code == "qualitative"
+    khong_phu = dinh_tinh or (isinstance(phu_g1, list) and not [x for x in phu_g1 if str(x).strip()])
+    ly_do_phu = "thiết kế định tính" if dinh_tinh else "G1 chốt không có kết cục phụ"
+    khong_ap_dung = (
+        (f"Không áp dụng với thiết kế «{design_code}» (không có can thiệp) — ô ai thực hiện can thiệp",
+         "[CẦN bổ sung: ai thực hiện can thiệp", bool(design_code) and design_code not in G7.THIET_KE_CO_CAN_THIEP),
+        (f"Không áp dụng ({ly_do_phu}) — Tóm tắt, kết cục phụ", "Kết cục phụ: [CẦN]", khong_phu),
+        (f"Không áp dụng ({ly_do_phu}) — Phương pháp §4, kết cục phụ", "[CẦN — liệt kê từ SAP §2]", khong_phu),
+        (f"Không áp dụng ({ly_do_phu}) — Kết quả §4, kết cục phụ",
+         "[CẦN KẾT QUẢ THẬT — tóm tắt G6 không chứa kết cục phụ", khong_phu),
+        ("Không áp dụng với thiết kế định tính — dữ liệu thiếu/gán đa trị", "Dữ liệu thiếu: [CẦN", dinh_tinh),
+        ("Không áp dụng với thiết kế định tính — phân tích độ nhạy định lượng", "Phân tích độ nhạy: [CẦN", dinh_tinh),
+        ("Không áp dụng với thiết kế định tính — ngưỡng α và KTC 95%", "Ngưỡng ý nghĩa thống kê", dinh_tinh),
+        ("Không áp dụng với thiết kế định tính — định nghĩa biến cố", "*Định nghĩa biến cố:*", dinh_tinh),
+        ("Không áp dụng với thiết kế định tính — nhãn kết cục định lượng của Tóm tắt", "**Outcomes:** Kết cục chính",
+         dinh_tinh),
+        ("Tóm tắt — N kế hoạch = 0 dù G3 đã chốt cỡ mẫu", "N kế hoạch = 0;", co_mau),
+    )
+    return [f"{ten}: «{dau_hieu}»" for ten, dau_hieu, co in (*quy_tac, *khong_ap_dung)
+            if co and dau_hieu in (text or "")]
 
 
 def evaluate_g7_quality(
@@ -724,7 +756,8 @@ def evaluate_g7_quality(
     automatic.append(_criterion(
         "G7-AUTO-05", "Không còn ô trống / ô mẫu chưa soạn trong phần bản thảo gửi tạp chí",
         "BLOCK" if o_du_kien else "PASS" if not con_trong and ph["results"] == 0 else "REVIEW",
-        (f"ô chờ ở chỗ bộ sinh đã có dữ kiện đã chốt (lỗi bộ sinh): {' · '.join(o_du_kien)}; " if o_du_kien else "")
+        (f"ô chờ ở chỗ bộ sinh đã có dữ kiện đã chốt, hoặc ô/dòng cho trường không áp dụng với thiết kế (lỗi bộ sinh): "
+         f"{' · '.join(o_du_kien)}; " if o_du_kien else "")
         + (f"còn {len(con_trong)} dòng chưa soạn: {' · '.join(con_trong[:3])}" if con_trong
            else "không còn ô trống/ô mẫu") + f"; [CẦN KẾT QUẢ THẬT]={ph['results']}",
         "Điền nội dung thật (kết quả, trích dẫn, tác giả/tạp chí/năm) — KHÔNG nộp khi còn ô này. Ô ở chỗ đã có dữ kiện "

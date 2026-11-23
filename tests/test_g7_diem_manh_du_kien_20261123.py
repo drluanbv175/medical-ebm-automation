@@ -145,7 +145,7 @@ def test_evaluate_study_gop_o_cua_ban_vua_sinh_trong_checkpoint(tmp_path):
 
 def test_bo_sinh_ghi_o_cua_ban_vua_sinh_vao_checkpoint(tmp_path):
     src = inspect.getsource(G7.main)
-    assert "o_cho_co_du_kien_khi_sinh=G7Q.o_cho_co_du_kien(out_dir, study, artifact)," in src
+    assert "o_cho_co_du_kien_khi_sinh=G7Q.o_cho_co_du_kien(out_dir, study, artifact, design_code=design_code)," in src
     cp = G7.write_checkpoint(
         study="X", out_dir=tmp_path, run_date="2026-11-23", design_code="cohort", reporting_std="STROBE",
         target_journal=None, word_limit=3000, pmids_used=[], n_adjusted=10, guardrail_status="PASS",
