@@ -49,7 +49,7 @@ def test_dinh_tinh_khong_kem_cau_hoi_phu_khi_g1_khong_khai():
     assert "Kết cục" not in muc4 and "[CẦN" not in muc4 and "Định nghĩa biến cố" not in muc4
     assert "câu hỏi/chủ đề nghiên cứu phụ" not in muc4.lower(), "G1 không khai câu hỏi phụ ⇒ không có dòng câu hỏi phụ"
     muc6 = "\n".join(k["muc_phan_tich"]("SAP đã khoá", "Phương pháp phân tích kết cục chính: phân tích chủ đề. ", "",
-                                        0.05))
+                                        "α = 0,05 (hai phía)"))
     assert muc6.startswith("**§6 Phân tích dữ liệu định tính:**")
     assert "Phương pháp phân tích: phân tích chủ đề." in muc6
     assert "Độ tin cậy (trustworthiness): Credibility: kiểm tra lại với người tham gia." in muc6
@@ -78,8 +78,8 @@ def test_thiet_ke_dinh_luong_bo_ket_cuc_phu_khi_g1_chot_khong_co():
     assert k2["tom_tat_ket_cuc"]("A", "[CẦN]")[1] == "Kết cục phụ: [CẦN]  " and k2["co_ket_cuc_phu"] is True
     k3 = G7.khung_theo_thiet_ke_g7("rct", ["Huyết áp tâm thu"], {})
     assert k3["tom_tat_ket_cuc"]("A", "[CẦN]")[1] == "Kết cục phụ: Huyết áp tâm thu  " and k3["co_can_thiep"] is True
-    muc6 = "\n".join(k3["muc_phan_tich"]("SAP", "Phương pháp phân tích kết cục chính: x. ", "", 0.05))
-    assert muc6.startswith("**§6 Phân tích thống kê:**") and "α = 0.05 (two-sided)" in muc6
+    muc6 = "\n".join(k3["muc_phan_tich"]("SAP", "Phương pháp phân tích kết cục chính: x. ", "", "α = 0,05 (hai phía)"))
+    assert muc6.startswith("**§6 Phân tích thống kê:**") and "Ngưỡng ý nghĩa thống kê: α = 0,05 (hai phía);" in muc6
 
 
 def _sinh(design_code: str, **kw) -> str:
@@ -234,3 +234,69 @@ def test_muc_do_nhay_kappa_chi_chep_do_thong_nhat(tmp_path):
     text = "\n".join(G7.dung_do_nhay_g6(out, dinh_tinh=True))
     assert text.startswith("*Kiểm tra độ tin cậy theo SAP")
     assert "kappa Cohen = 0.6516; 15/20 cặp mã trùng" in text and "Gia đình hỗ trợ" not in text
+
+
+# ── α, số phía, khung giả thuyết theo SAP §12/G3 (agent thống kê phát hiện ở bản thảo không kém hơn) ─────────────────
+
+SAP_NI = "### §12 ALPHA + POWER\n\n- **Alpha (one-sided):** 0.025  \n- **Power:** 80%  \n" \
+         "- **Loại giả thuyết:** non_inferiority  \n\n## PHẦN 4\n"
+
+
+def test_alpha_theo_sap_12_va_du_phong_g3(tmp_path):
+    _ghi(tmp_path / "G4_A5_SAP_FINAL_X.md", "# SAP\n\n" + SAP_NI)
+    sap = G7._sap_tom_tat(tmp_path, "X")
+    assert (sap["alpha"], sap["alpha_phia"], sap["loai_gia_thuyet"]) == (0.025, "một phía", "non_inferiority")
+    assert G7.alpha_theo_sap_g7(sap, 0.05, "superiority") == (0.025, "một phía", "không kém hơn")
+    # SAP vắng ⇒ α của G3 + quy tắc số phía G3/G4
+    assert G7.alpha_theo_sap_g7({}, 0.025, "non_inferiority") == (0.025, "một phía", "không kém hơn")
+    assert G7.alpha_theo_sap_g7(None, 0.05, "superiority") == (0.05, "hai phía", "")
+    assert (G7.so_viet(0.025), G7.so_viet(0.05), G7.so_viet("x")) == ("0,025", "0,05", "x")
+
+
+def test_ban_thao_khong_kem_hon_alpha_mot_phia_so_kieu_viet():
+    sap = {"alpha": 0.025, "alpha_phia": "một phía", "loai_gia_thuyet": "non_inferiority"}
+    md = _sinh("rct", n_adjusted=888, n_total=755, alpha=0.025, formula_used="Non-inferiority (one-sided), alpha=0.025",
+               effect_val=0.6, effect_type="NI_PROPORTION", sap_tom_tat=sap, hypothesis_type="non_inferiority")
+    than = md.split("## TÀI LIỆU THAM KHẢO", 1)[0]
+    assert "Ngưỡng ý nghĩa thống kê: α = 0,025 (một phía, khung không kém hơn);" in than
+    assert "α = 0,025 (một phía), power = 80%" in than
+    assert "two-sided" not in than and "0.025" not in than and "alpha=" not in than
+    assert G7Q.lech_alpha_g7.__doc__ and not G7Q.re.search(r"(?:α|alpha)\s*=\s*\d+\.\d", than)
+
+
+def test_chot_alpha_lech_so_phia_va_dau_cham(tmp_path):
+    _ghi(tmp_path / "G4_A5_SAP_FINAL_X.md", "# SAP\n\n" + SAP_NI)
+    sai = "Ngưỡng ý nghĩa thống kê: α = 0.025 (two-sided); N = 10, alpha = 0,05 (một phía)."
+    loi = G7Q.lech_alpha_g7(tmp_path, "X", sai)
+    assert any("dấu phẩy" in x for x in loi) and any("ghi hai phía" in x for x in loi)
+    assert any("lệch α đã chốt 0,025" in x for x in loi)
+    assert G7Q.lech_alpha_g7(tmp_path, "X", "α = 0,025 (một phía, khung không kém hơn)") == []
+    # α trong Tài liệu tham khảo/Phụ lục không bị đối chiếu
+    assert G7Q.lech_alpha_g7(tmp_path, "X", "x\n## PHỤ LỤC\nα = 0.05 (two-sided)") == []
+    # không có α đã chốt ⇒ không đối chiếu
+    assert G7Q.lech_alpha_g7(tmp_path / "trong", "X", sai) == []
+    # SAP vắng ⇒ dùng G3 (không kém hơn ⇒ một phía)
+    d = tmp_path / "g3"
+    _ghi(d / "G3_checkpoint.json", json.dumps({"alpha": 0.025, "hypothesis_type": "non_inferiority"}))
+    assert any("ghi hai phía" in x for x in G7Q.lech_alpha_g7(d, "X", "α = 0,025 (hai phía)"))
+
+
+def test_g7_auto_06_chan_alpha_trai_sap(tmp_path):
+    lech = ["«α = 0.025 (two-sided)» ghi hai phía, SAP §12/G3 chốt kiểm định một phía"]
+    rep = G7Q.evaluate_g7_quality(manuscript_text="## III. KẾT QUẢ\n", checkpoints={}, meta={}, lech_alpha=lech)
+    row = next(r for r in rep["automatic_criteria"] if r["id"] == "G7-AUTO-06")
+    assert row["status"] == "BLOCK" and "α/số phía trái SAP đã chốt" in row["evidence"]
+    d = tmp_path / "exports" / "X"
+    _ghi(d / "G4_A5_SAP_FINAL_X.md", "# SAP\n\n" + SAP_NI)
+    _ghi(d / "G7_A8_MANUSCRIPT_X.md", "## III. KẾT QUẢ\nα = 0.025 (two-sided)\n## IV. BÀN LUẬN\n")
+    row = next(r for r in G7Q.evaluate_study("X", d, write=False, repo_root=tmp_path)["automatic_criteria"]
+               if r["id"] == "G7-AUTO-06")
+    assert row["status"] == "BLOCK" and "chốt kiểm định một phía" in row["evidence"]
+
+
+def test_main_truyen_khung_gia_thuyet_g3_vao_bo_sinh():
+    import inspect
+
+    src = inspect.getsource(G7.main)
+    i = src.index("ket_cuc_phu_g1=(lambda v:")
+    assert "        hypothesis_type=hypothesis_type," in src[i:i + 200]

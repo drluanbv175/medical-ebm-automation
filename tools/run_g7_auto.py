@@ -2733,6 +2733,26 @@ def diem_manh_tu_du_kien_g7(*, n_adjusted: int, formula_used: str, sample_size_d
     return ra
 
 
+def so_viet(x: Any) -> str:
+    """Số thập phân theo quy ước tiếng Việt (dấu phẩy): 0.025 ⇒ «0,025»; không phải số ⇒ chuỗi nguyên văn."""
+    return str(x).replace(".", ",") if isinstance(x, (int, float)) and not isinstance(x, bool) else str(x)
+
+
+#: khung giả thuyết G3/SAP §12 ⇒ tên tiếng Việt in cạnh α (vượt trội là mặc định — không in)
+_KHUNG_GIA_THUYET_VI = {"non_inferiority": "không kém hơn", "equivalence": "tương đương"}
+
+
+def alpha_theo_sap_g7(sap_tom_tat: Optional[dict], alpha: Any, hypothesis_type: str = "") -> tuple:
+    """(α, «một phía»/«hai phía», khung giả thuyết tiếng Việt hoặc "") — SAP §12 đã khoá («Alpha (one-sided): 0.025»,
+    «Loại giả thuyết: non_inferiority») là nguồn; SAP vắng ⇒ α của G3 và cùng quy tắc số phía G3/G4 dùng (không kém hơn
+    ⇒ một phía, còn lại ⇒ hai phía) (23/11/2026)."""
+    sap = sap_tom_tat or {}
+    a = sap.get("alpha") if isinstance(sap.get("alpha"), (int, float)) else alpha
+    loai = str(sap.get("loai_gia_thuyet") or hypothesis_type or "").strip()
+    phia = sap.get("alpha_phia") or ("một phía" if loai == "non_inferiority" else "hai phía")
+    return a, phia, _KHUNG_GIA_THUYET_VI.get(loai, "")
+
+
 #: thiết kế có CAN THIỆP do nhóm nghiên cứu thực hiện (TIDieR «ai thực hiện» áp dụng)
 THIET_KE_CO_CAN_THIEP = ("rct",)
 
@@ -2772,7 +2792,7 @@ def khung_theo_thiet_ke_g7(design_code: str, ket_cuc_phu_g1: Optional[list],
                 + ([f"*Kết cục phụ {nhan}:*  ", khoi_phu, "  "] if co_phu else [])
                 + ["*Định nghĩa biến cố:* [CẦN — ICD-10 hoặc tiêu chí lâm sàng cụ thể cho từng biến cố trên]  "])
 
-    def muc_phan_tich(sap_lock_text: str, method_line: str, cau_them: str, alpha: Any) -> list[str]:
+    def muc_phan_tich(sap_lock_text: str, method_line: str, cau_them: str, nguong_alpha: str) -> list[str]:
         phan_mem = sap.get("phan_mem") or "[CẦN — R/Stata/SPSS phiên bản]"
         if dinh_tinh:
             return ["**§6 Phân tích dữ liệu định tính:**  ",
@@ -2784,7 +2804,7 @@ def khung_theo_thiet_ke_g7(design_code: str, ket_cuc_phu_g1: Optional[list],
                 f"Phân tích theo {sap_lock_text}. Phần mềm: {phan_mem}. " + method_line
                 + f"Phân tích độ nhạy: {sap.get('do_nhay') or '[CẦN — từ SAP]'}. "
                 f"Dữ liệu thiếu: {sap.get('du_lieu_thieu') or '[CẦN — multiple imputation m=20 hoặc complete case]'}. "
-                + cau_them + "Ngưỡng ý nghĩa thống kê: α = " + str(alpha) + " (two-sided); mọi ước lượng kèm 95%CI.  "]
+                + cau_them + f"Ngưỡng ý nghĩa thống kê: {nguong_alpha}; mọi ước lượng kèm 95%CI.  "]
 
     return {"co_can_thiep": design_code in THIET_KE_CO_CAN_THIEP, "co_ket_cuc_phu": co_phu and not dinh_tinh or bool(phu),
             # định tính: không có dòng can thiệp/phơi nhiễm (G1 «không áp dụng»), §3 Kết quả là chủ đề, §5 là kiểm tra độ
@@ -2835,6 +2855,14 @@ def _sap_tom_tat(out_dir: Path, study: str) -> dict:
     tc = [(k, v) for k, v in tc if v and "[CẦN" not in v.upper()]
     if tc:
         ra["tin_cay"] = "; ".join(f"{k}: {v[:1].lower() + v[1:]}" for k, v in tc)
+    # 23/11/2026: SAP §12 — α, số phía, loại giả thuyết (G4 ghi «- **Alpha (one-sided):** 0.025»)
+    am = re.search(r"\*\*Alpha \((one|two)-sided\):\*\*\s*([0-9]+(?:[.,][0-9]+)?)", muc(12))
+    if am:
+        ra["alpha"] = float(am.group(2).replace(",", "."))
+        ra["alpha_phia"] = "một phía" if am.group(1) == "one" else "hai phía"
+    lg = re.search(r"\*\*Loại giả thuyết:\*\*\s*([a-z_]+)", muc(12))
+    if lg:
+        ra["loai_gia_thuyet"] = lg.group(1)
     bh = re.search(r"\*\*Tiêu chí bão hòa:\*\*\s*(.+)", unicodedata.normalize("NFC", muc(6)))
     if bh and "[CẦN" not in bh.group(1).upper():
         ra["bao_hoa"] = sach(bh.group(1))
@@ -4243,6 +4271,7 @@ def generate_manuscript(
     mien_dong_thuan: bool = False,
     ket_qua_g6: Optional[dict] = None,
     ket_cuc_phu_g1: Optional[list] = None,  # 23/11/2026: G1.secondary_outcomes đã chốt (None = chưa khai; [] = không có)
+    hypothesis_type: str = "",  # 23/11/2026: khung giả thuyết G3 (dự phòng khi SAP §12 không khai số phía của α)
     g3_n_chot: Optional[int] = None,  # 16/11/2026: N PI đã chốt ở G3 (thiết kế không tính theo lực),
     sap_tom_tat: Optional[dict] = None,
     nguon_effect: Optional[str] = None,  # 22/11/2026: nguồn tham số hiệu ứng G3 (`_nguon_tham_so_g3`)
@@ -4357,9 +4386,16 @@ def generate_manuscript(
         dropout_display = "[CẦN — tỷ lệ bù thất lạc từ G3]"
     else:
         dropout_display = None
+    # 23/11/2026: α, số phía và khung giả thuyết lấy từ SAP §12 (dự phòng G3) — bản cũ luôn in «alpha = 0.025
+    # (two-sided)» kể cả khi SAP khoá kiểm định MỘT phía (không kém hơn), số viết dấu chấm thập phân
+    _a, _phia, _khung_gt = alpha_theo_sap_g7(sap_tom_tat, alpha, hypothesis_type)
+    # α nêu riêng ngay sau công thức (đúng số phía, số kiểu Việt) ⇒ bỏ «alpha=0.05» trong chuỗi công thức của G3 để câu
+    # không nêu α hai lần, một lần dấu chấm thập phân
+    formula_used = re.sub(r",?\s*\balpha\s*=\s*\d+(?:[.,]\d+)?", "", formula_used or "")
+    nguong_alpha = f"α = {so_viet(_a)} ({_phia}" + (f", khung {_khung_gt}" if _khung_gt else "") + ")"
     sample_size_detail = (
         f"N = {n_adjusted} (bao gồm bù thất lạc {dropout_display}), "
-        f"alpha = {alpha} (two-sided), power = {int(power*100)}%"
+        f"α = {so_viet(_a)} ({_phia}), power = {int(power*100)}%"
     ) if n_adjusted > 0 else "N = [CẦN — từ G3]"
 
     effect_text = (
@@ -4756,7 +4792,7 @@ def generate_manuscript(
                  "`python tools/run_g3_auto.py --study <mã>` rồi sinh lại bản thảo.]  "
         ),
         "",
-        *khung_dt["muc_phan_tich"](sap_lock_text, _method_line, _cau_bien_luong + _cau_da_bien, alpha),
+        *khung_dt["muc_phan_tich"](sap_lock_text, _method_line, _cau_bien_luong + _cau_da_bien, nguong_alpha),
         *(_kc.get("phuong_phap") or []),
         "",
         *(_kt.get("phuong_phap") or []),
@@ -5799,6 +5835,7 @@ def main() -> None:
         hon_hop_cau=_hon_hop_g7(out_dir),
         g3_n_chot=g3.get("confirmed_n"),
         ket_cuc_phu_g1=(lambda v: v if isinstance(v, list) else None)(_g1_g2_g7(out_dir)[0].get("secondary_outcomes")),
+        hypothesis_type=hypothesis_type,
         g4_status=g4_status,
         g4_lock_date=g4_lock_date,
         target_journal=args.target_journal,

@@ -621,6 +621,34 @@ def o_cho_co_du_kien(out_dir: Path, study: str, text: str, design_code: Optional
             if co and dau_hieu in (text or "")]
 
 
+def lech_alpha_g7(out_dir: Path, study: str, text: str) -> List[str]:
+    """α và số phía trong bản thảo khớp α ĐÃ CHỐT (SAP §12, vắng thì G3) — 23/11/2026: bản thảo thử nghiệm không kém
+    hơn ghi «α = 0.025 (two-sided)» trong khi SAP §12 khoá kiểm định MỘT phía, số viết dấu chấm thập phân. Quét thân
+    bài (trước Tài liệu tham khảo/Phụ lục) mọi «α|alpha = số (…)»: số khác α đã chốt, số phía khác, hoặc dấu chấm thập
+    phân ⇒ một lỗi. Không có α đã chốt ⇒ [] (không có gì để đối chiếu)."""
+    import run_g7_auto as G7  # noqa: PLC0415 — import lười
+
+    out_dir = Path(out_dir)
+    g3 = _read_json(out_dir / "G3_checkpoint.json")
+    a, phia, _khung = G7.alpha_theo_sap_g7(G7._sap_tom_tat(out_dir, study), g3.get("alpha"),
+                                           str(g3.get("hypothesis_type") or ""))
+    if not isinstance(a, (int, float)) or isinstance(a, bool):
+        return []
+    than = re.split(r"^##\s+(?:TÀI LIỆU THAM KHẢO|PHỤ LỤC)", text or "", maxsplit=1, flags=re.MULTILINE)[0]
+    loi: List[str] = []
+    for m in re.finditer(r"(?:α|\balpha)\s*=\s*(\d+(?:[.,]\d+)?)(?:\s*\(([^)]*)\))?", than):
+        so, ngoac = m.group(1), m.group(2) or ""
+        if "." in so:
+            loi.append(f"«{m.group(0)}» — số thập phân viết dấu phẩy theo quy ước tiếng Việt ({G7.so_viet(a)})")
+        if abs(float(so.replace(",", ".")) - float(a)) > 1e-12:
+            loi.append(f"«{m.group(0)}» lệch α đã chốt {G7.so_viet(a)} (SAP §12/G3)")
+        ghi = ("một phía" if re.search(r"one-sided|một phía", ngoac, re.IGNORECASE) else
+               "hai phía" if re.search(r"two-sided|hai phía", ngoac, re.IGNORECASE) else None)
+        if ghi and ghi != phia:
+            loi.append(f"«{m.group(0)}» ghi {ghi}, SAP §12/G3 chốt kiểm định {phia}")
+    return list(dict.fromkeys(loi))
+
+
 def evaluate_g7_quality(
     *,
     manuscript_text: str,
@@ -635,6 +663,7 @@ def evaluate_g7_quality(
     citation_detail: str = "",
     do_nhay_g6: Optional[Mapping[str, str]] = None,
     o_cho_du_kien: Optional[List[str]] = None,
+    lech_alpha: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Chấm G7 theo hai tầng: máy kiểm được vs người thật phải chốt.
 
@@ -643,7 +672,9 @@ def evaluate_g7_quality(
     — KHÔNG BAO GIỜ đạt. `ket_qua_g6` (G7-05): kết quả doi_chieu_ket_qua_g6; vắng ⇒ không đạt.
     `do_nhay_g6` (23/11/2026): kết quả doi_chieu_do_nhay_g6 — có ⇒ thêm G7-AUTO-08; None ⇒ đề tài không có đặc tả G6
     (tiêu chí không áp dụng). `o_cho_du_kien` (23/11/2026): ô chờ ở chỗ bộ sinh đã có dữ kiện để viết (o_cho_co_du_kien,
-    gộp bản thảo hiện tại với bản bộ sinh vừa sinh — ghi ở G7_checkpoint) — có ⇒ G7-AUTO-05 CHẶN.
+    gộp bản thảo hiện tại với bản bộ sinh vừa sinh — ghi ở G7_checkpoint) — có ⇒ G7-AUTO-05 CHẶN. `lech_alpha`
+    (23/11/2026, lech_alpha_g7): α/số phía ghi trong bản thảo trái α SAP §12/G3 đã chốt — khẳng định trái cổng trước
+    ⇒ G7-AUTO-06 CHẶN.
     """
     artifact_paths = artifact_paths or {}
     automatic: List[Dict[str, str]] = []
@@ -776,7 +807,7 @@ def evaluate_g7_quality(
         "db_locked": td["G5"]["status"] == "PASS",
         "consent": g2_ok and not mien_dong_thuan,
     }
-    claims = find_unsupported_claims(text, signals)
+    claims = find_unsupported_claims(text, signals) + [f"α/số phía trái SAP đã chốt: {x}" for x in (lech_alpha or [])]
     automatic.append(_criterion(
         "G7-AUTO-06", "Không khẳng định việc chưa có bằng chứng ở cổng trước",
         "BLOCK" if claims else "PASS",
@@ -1071,6 +1102,7 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True,
         ket_qua_g6=ket_qua_g6,
         citation_detail=citation_detail,
         do_nhay_g6=doi_chieu_do_nhay_g6(out_dir, text),
+        lech_alpha=lech_alpha_g7(out_dir, study, text),
         o_cho_du_kien=o_cho_co_du_kien(out_dir, study, text)
         + [str(x) for x in ((checkpoints.get("G7") or {}).get("o_cho_co_du_kien_khi_sinh") or [])],
     )
