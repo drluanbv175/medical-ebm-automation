@@ -248,6 +248,22 @@
    "cu": "    hd = _HD_SAP.doc_hop_le(Path(out_dir), study)",
    "moi": "    hd = _HD_SAP.doc(Path(out_dir), study)[0]",
    "test": "tests/test_hop_dong_sap_20261123.py::test_gate_contract_khai_bao_doc_hop_dong"
+  },
+  {
+   "ma": "G7-BIEN-NI-SO-VIET",
+   "chot": "phụ lục CONSORT-NI của bản thảo G7 in biên Δ theo quy ước số tiếng Việt («0,1»), không float thô",
+   "tep": "tools/run_g7_auto.py",
+   "cu": "        margin_note = (f\"margin Δ={QDSK.viet_so(margin)}\" if margin is not None",
+   "moi": "        margin_note = (f\"margin Δ={margin}\" if margin is not None",
+   "test": "tests/test_consort_ni_extension_g7_g8_g9_g10.py::TestG7ConsortNiChecklist::test_ni_extension_appended_for_rct_non_inferiority"
+  },
+  {
+   "ma": "G8-BIEN-NI-SO-VIET",
+   "chot": "văn bản A9 của G8 in biên Δ theo quy ước số tiếng Việt («0,1»)",
+   "tep": "tools/run_g8_auto.py",
+   "cu": "        margin_note = (f\"margin Δ={QDSK.viet_so(ni_ext['margin'])}\" if ni_ext.get(\"margin\") is not None",
+   "moi": "        margin_note = (f\"margin Δ={ni_ext['margin']}\" if ni_ext.get(\"margin\") is not None",
+   "test": "tests/test_consort_ni_extension_g7_g8_g9_g10.py::TestG8ConsortNiChecklist::test_a9_ghi_bien_theo_quy_uoc_so_tieng_viet"
   }
  ]
 }

@@ -599,3 +599,13 @@ def test_hop_dong_doc_hai_quy_uoc_so_cua_sap(tmp_path, quy_uoc):
     assert G7._sap_tom_tat(d, MA)["alpha"] == 0.025 and G7Q.loi_hop_dong_sap(d, MA) == []
     assert re.search(NQ._mau_so(25462), "N tối thiểu 25.462 người") and re.search(NQ._mau_so(25462), "N = 25462")
     assert re.search(NQ._mau_so(1234567), "1.234.567 lượt") and not re.search(NQ._mau_so(1234567), "1.234.5670")
+    # G7 với hợp đồng từ cả hai dạng SAP: bản thảo sạch, α đúng quy ước Việt ⇒ G7-AUTO-05/06/09 ĐẠT (hợp đồng không
+    # sinh ô chờ/lệch α giả)
+    ms = ("## II. PHƯƠNG PHÁP\n\nKiểm định hai phía với α = 0,025; cỡ mẫu N = 25.462 người.\n\n## III. KẾT QUẢ\n\n"
+          "## IV. BÀN LUẬN\n\nKết quả nhất quán với giả thuyết.\n")
+    bao = G7Q.evaluate_g7_quality(manuscript_text=ms, checkpoints={}, meta={},
+                                  o_cho_du_kien=G7Q.o_cho_co_du_kien(d, MA, ms, "rct"),
+                                  lech_alpha=G7Q.lech_alpha_g7(d, MA, ms), dien_sai_kieu=G7Q._quet_dien_sai_kieu(ms))
+    tc = {r["id"]: r for r in bao["automatic_criteria"]}
+    for ma in ("G7-AUTO-05", "G7-AUTO-06", "G7-AUTO-09"):
+        assert tc[ma]["status"] == "PASS", (ma, tc[ma])

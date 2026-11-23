@@ -44,6 +44,7 @@ sys.path.insert(0, str(TOOLS))
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import cong_song as CS  # noqa: E402  (chấm SỐNG cổng trước + hợp đồng băm A9 — 05/10/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — chỉ dùng load_study_meta)
+import quet_dien_sai_kieu as QDSK  # noqa: E402  (quy ước số tiếng Việt cho văn bản sinh ra — 24/11/2026)
 
 # SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12, phát hiện HIGH): tái
 # dùng cơ chế A12 THẬT (đọc artifact A12_CITATION_VERIFICATION_<study>.md +
@@ -1620,7 +1621,9 @@ def generate_a9_artifact(
     # không phải specialist_modules (G1).
     ni_ext = reporting.get("ni_extension_checklist")
     if ni_ext:
-        margin_note = f"margin Δ={ni_ext['margin']}" if ni_ext.get("margin") is not None else "margin [CẦN BÁC SĨ/THỐNG KÊ VIÊN CUNG CẤP]"
+        # 24/11/2026: biên in theo quy ước số tiếng Việt («Δ=0,1» — quet_dien_sai_kieu.viet_so), như phụ lục G7
+        margin_note = (f"margin Δ={QDSK.viet_so(ni_ext['margin'])}" if ni_ext.get("margin") is not None
+                       else "margin [CẦN BÁC SĨ/THỐNG KÊ VIÊN CUNG CẤP]")
         ln(f"### ⚠️ Đề tài {ni_ext['hypothesis_type'].upper()} — CHECKLIST {ni_ext['standard_name']} ({ni_ext['total']} MỤC)")
         ln()
         ln(f"> Đề tài thiết kế **{ni_ext['hypothesis_type']}** ({margin_note}, từ G3_checkpoint.json) — "

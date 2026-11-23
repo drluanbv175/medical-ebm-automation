@@ -5194,7 +5194,9 @@ def generate_checklist(
             "CONSORT Non-inferiority/Equivalence Extension (Piaggio 2012, JAMA;308(24):2594-2604)",
             len(CONSORT_NI_EXTENSION_ITEMS),
         )
-        margin_note = f"margin Δ={margin}" if margin is not None else "margin [CẦN BÁC SĨ/THỐNG KÊ VIÊN CUNG CẤP]"
+        # 24/11/2026 (giả lập rct_ni, G7-AUTO-09): biên in theo quy ước số tiếng Việt («Δ=0,1»), không float thô
+        margin_note = (f"margin Δ={QDSK.viet_so(margin)}" if margin is not None
+                       else "margin [CẦN BÁC SĨ/THỐNG KÊ VIÊN CUNG CẤP]")
         block += (
             "\n---\n"
             f"\n> ⚠️ Đề tài thiết kế **{hypothesis_type.upper()}** ({margin_note}, từ G3_checkpoint.json) "
