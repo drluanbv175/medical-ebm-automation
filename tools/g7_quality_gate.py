@@ -564,6 +564,31 @@ def doi_chieu_do_nhay_g6(out_dir: Path, manuscript_text: str) -> Optional[Dict[s
                                           + (f": {', '.join(can)}" if can else "")}
 
 
+def o_cho_co_du_kien(out_dir: Path, study: str, text: str) -> List[str]:
+    """Ô chờ bộ sinh G7 để lại ở chỗ ĐÃ CÓ dữ kiện đã chốt để viết (23/11/2026 — giả lập: Bàn luận «Điểm mạnh» còn ô chờ
+    dù G3 đã chốt cỡ mẫu và G1 đã chốt biện pháp kiểm soát sai lệch; ô rơi về «chưa có thông tin»). Mỗi quy tắc: dấu
+    hiệu ô bộ sinh in khi THIẾU dữ kiện + nguồn dữ kiện đã chốt; thấy dấu hiệu trong khi nguồn có ⇒ lỗi bộ sinh (sửa bộ
+    sinh rồi sinh lại, không điền tay). Trả danh sách «chỗ: dấu hiệu» (rỗng = sạch)."""
+    out_dir = Path(out_dir)
+    import run_g7_auto as G7  # noqa: PLC0415 — import lười (run_g7_auto nhập module này)
+
+    g3 = _read_json(out_dir / "G3_checkpoint.json")
+    co_mau = bool(g3.get("n_adjusted") or g3.get("confirmed_n"))
+    sai_lech = [x for x in G7.bang_sai_lech_chot_g7(out_dir) if G7._gia_tri_chot(x.get("bien_phap"))]
+    sap = G7._sap_tom_tat(out_dir, study)
+    quy_tac = (
+        ("Bàn luận §4 điểm mạnh (2) — cỡ mẫu đã chốt ở G3", "*(2)* [CẦN thêm điểm mạnh", co_mau),
+        ("Bàn luận §4 điểm mạnh (3) — biện pháp kiểm soát sai lệch đã chốt ở G1", "*(3)* [CẦN — điểm mạnh khác",
+         bool(sai_lech)),
+        ("Phương pháp §6b — sổ sai lệch đã chốt ở G1", "[CẦN — liệt kê nguồn sai lệch tiềm ẩn", bool(sai_lech)),
+        ("Phương pháp §5 — cỡ mẫu đã chốt ở G3", "[CẦN CỠ MẪU TỪ G3", co_mau),
+        ("Phương pháp §6 — phần mềm SAP §10", "Phần mềm: [CẦN", bool(sap.get("phan_mem"))),
+        ("Phương pháp §6 — phân tích độ nhạy SAP §9", "Phân tích độ nhạy: [CẦN", bool(sap.get("do_nhay"))),
+        ("Phương pháp §6 — dữ liệu thiếu SAP §6", "Dữ liệu thiếu: [CẦN", bool(sap.get("du_lieu_thieu"))),
+    )
+    return [f"{ten}: «{dau_hieu}»" for ten, dau_hieu, co in quy_tac if co and dau_hieu in (text or "")]
+
+
 def evaluate_g7_quality(
     *,
     manuscript_text: str,
@@ -577,6 +602,7 @@ def evaluate_g7_quality(
     ket_qua_g6: Optional[Mapping[str, str]] = None,
     citation_detail: str = "",
     do_nhay_g6: Optional[Mapping[str, str]] = None,
+    o_cho_du_kien: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Chấm G7 theo hai tầng: máy kiểm được vs người thật phải chốt.
 
@@ -584,7 +610,8 @@ def evaluate_g7_quality(
     `tien_de` (04/10/2026, G7-01): trạng thái SỐNG G0–G6 do evaluate_study tính (tien_de_song); vắng ⇒ «không đo được»
     — KHÔNG BAO GIỜ đạt. `ket_qua_g6` (G7-05): kết quả doi_chieu_ket_qua_g6; vắng ⇒ không đạt.
     `do_nhay_g6` (23/11/2026): kết quả doi_chieu_do_nhay_g6 — có ⇒ thêm G7-AUTO-08; None ⇒ đề tài không có đặc tả G6
-    (tiêu chí không áp dụng).
+    (tiêu chí không áp dụng). `o_cho_du_kien` (23/11/2026): ô chờ ở chỗ bộ sinh đã có dữ kiện để viết (o_cho_co_du_kien,
+    gộp bản thảo hiện tại với bản bộ sinh vừa sinh — ghi ở G7_checkpoint) — có ⇒ G7-AUTO-05 CHẶN.
     """
     artifact_paths = artifact_paths or {}
     automatic: List[Dict[str, str]] = []
@@ -691,12 +718,17 @@ def evaluate_g7_quality(
         con_trong = [f"{ph['total']} ô [CẦN…]"] if ph["total"] else []
     # Lỗi CẤU TRÚC đứng trước (bằng chứng chỉ hiện 3 dòng đầu).
     con_trong = [f"ô «[CẦN» KHÔNG đóng ngoặc: «{x}…»" for x in o_can_chua_dong(_chuan_hoa_chinh_ta(text))] + con_trong
+    # 23/11/2026: ô chờ ở chỗ bộ sinh ĐÃ CÓ dữ kiện đã chốt để viết là LỖI BỘ SINH (không phải phần tác giả còn nợ)
+    # ⇒ CHẶN, kể cả khi người điền đã lấp ô đó (bộ sinh ghi ô của bản vừa sinh vào G7_checkpoint).
+    o_du_kien = list(dict.fromkeys(o_cho_du_kien or []))
     automatic.append(_criterion(
         "G7-AUTO-05", "Không còn ô trống / ô mẫu chưa soạn trong phần bản thảo gửi tạp chí",
-        "PASS" if not con_trong and ph["results"] == 0 else "REVIEW",
-        (f"còn {len(con_trong)} dòng chưa soạn: {' · '.join(con_trong[:3])}" if con_trong
-         else "không còn ô trống/ô mẫu") + f"; [CẦN KẾT QUẢ THẬT]={ph['results']}",
-        "Điền nội dung thật (kết quả, trích dẫn, tác giả/tạp chí/năm) — KHÔNG nộp khi còn ô này.",
+        "BLOCK" if o_du_kien else "PASS" if not con_trong and ph["results"] == 0 else "REVIEW",
+        (f"ô chờ ở chỗ bộ sinh đã có dữ kiện đã chốt (lỗi bộ sinh): {' · '.join(o_du_kien)}; " if o_du_kien else "")
+        + (f"còn {len(con_trong)} dòng chưa soạn: {' · '.join(con_trong[:3])}" if con_trong
+           else "không còn ô trống/ô mẫu") + f"; [CẦN KẾT QUẢ THẬT]={ph['results']}",
+        "Điền nội dung thật (kết quả, trích dẫn, tác giả/tạp chí/năm) — KHÔNG nộp khi còn ô này. Ô ở chỗ đã có dữ kiện "
+        "đã chốt: sửa bộ sinh run_g7_auto.py rồi sinh lại — không điền tay.",
     ))
 
     # ── Khẳng định trần về việc chưa làm (G7-02) ─────────────────────────────
@@ -1006,6 +1038,8 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True,
         ket_qua_g6=ket_qua_g6,
         citation_detail=citation_detail,
         do_nhay_g6=doi_chieu_do_nhay_g6(out_dir, text),
+        o_cho_du_kien=o_cho_co_du_kien(out_dir, study, text)
+        + [str(x) for x in ((checkpoints.get("G7") or {}).get("o_cho_co_du_kien_khi_sinh") or [])],
     )
     if write:
         write_quality_report(study, out_dir, report)
