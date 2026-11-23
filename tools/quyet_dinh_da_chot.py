@@ -249,6 +249,22 @@ def _kiem_soat_nhieu_pls(sap: str) -> str:
     return re.sub(r"^Kiểm soát nhiễu:\s*", "", _dong_sap_co(sap, (5,), r"Kiểm soát nhiễu"))
 
 
+def _tien_to_pls(sap: str) -> str:
+    """Các cấu trúc có đường dẫn ĐI RA trong mô hình cấu trúc PLS-SEM của SAP §4 (tên, mã, chỉ báo) — '' khi SAP không
+    khai PLS-SEM hoặc khối không đọc được."""
+    import pls_sem as PLS  # noqa: PLC0415
+
+    if not PLS.la_pls_sap(sap):
+        return ""
+    try:
+        mh = PLS.doc_sap(sap)
+    except PLS.TuChoi:
+        return ""
+    nguon = {a for a, _b in mh["duong_dan"]}
+    return "; ".join(f"{c['ten']} (`{c['ma']}`: {', '.join(f'`{m}`' for m in c['muc'])})"
+                     for c in mh["cau_truc"] if c["ma"] in nguon)
+
+
 def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], sap: str,
                    dat: Any) -> None:
     """Quyết định ĐẶC THÙ thiết kế đã chốt ở G1/G4 ⇒ khoá StudySpec đòi (X01 · S01 · Q01/Q02 · M01 · D10 · D13) và dòng
@@ -270,6 +286,10 @@ def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], sap: str,
     elif ma == "cross_sectional" and _kiem_soat_nhieu_pls(sap):
         # 23/11/2026 (PLS-SEM): cách kiểm soát nhiễu đã chốt ở SAP §5 (G4) — đề cương G10 không để «[CẦN BỔ SUNG]»
         dat("confounders", [_kiem_soat_nhieu_pls(sap)], "SAP §5 (PLS-SEM — kiểm soát nhiễu, đã chốt ở G4)")
+        tien_to = _tien_to_pls(sap)
+        if tien_to:  # «phơi nhiễm/yếu tố chính» của ma trận truy xuất = các cấu trúc tiền tố của mô hình cấu trúc
+            dat("exposure", "Các cấu trúc tiền tố của mô hình cấu trúc: " + tien_to,
+                "SAP §4 (PLS-SEM — mô hình cấu trúc đã chốt ở G4)")
     elif ma == "cross_sectional" and GC.sap_declares_proportion(out_dir, study):
         dat("confounders", ["Không áp dụng — mục tiêu mô tả tỷ lệ (SAP §4), không so sánh nhóm"],
             "SAP §4 (ước lượng tỷ lệ — cắt ngang mô tả)")

@@ -362,6 +362,8 @@ def test_he_tu_lap_yeu_to_nhieu_pls_tu_sap_5():
                                                           "số đường dẫn hiệu chỉnh cho các tiền tố còn lại  ")
     assert QD._kiem_soat_nhieu_pls(sap) == "mỗi hệ số đường dẫn hiệu chỉnh cho các tiền tố còn lại"
     assert QD._kiem_soat_nhieu_pls(sap.replace("**Mô hình đo lường (PLS-SEM):**", "**Mô hình đo lường:**")) == ""
+    tt = QD._tien_to_pls(sap)  # phơi nhiễm của ma trận truy xuất G10 = cấu trúc có đường dẫn đi ra
+    assert tt.startswith("Giao tiếp") and "`GT`" in tt and "`HB`" in tt and "`NT`" in tt and "`TT`" not in tt
 
 
 def test_plspredict_chi_so_cung_dinh_nghia_mot_lan_lap():

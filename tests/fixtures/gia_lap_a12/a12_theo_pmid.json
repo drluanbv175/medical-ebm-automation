@@ -42,6 +42,13 @@
    ],
    "source": "pubmed"
   },
+  "18316489": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "18416914": {
    "status": "ok",
    "sources_tried": [
@@ -299,6 +306,13 @@
    ],
    "source": "pubmed"
   },
+  "27086432": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "27422768": {
    "status": "ok",
    "sources_tried": [
@@ -503,6 +517,13 @@
    "source": "pubmed"
   },
   "35068257": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "35309202": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -789,6 +810,13 @@
    ],
    "source": "pubmed"
   },
+  "39842923": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "39843675": {
    "status": "ok",
    "sources_tried": [
@@ -811,6 +839,13 @@
    "source": "pubmed"
   },
   "39938855": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39987031": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -860,6 +895,13 @@
    "source": "pubmed"
   },
   "40440692": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40546292": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -1323,6 +1365,26 @@
    "journal": "International journal for quality in health care : journal of the International Society for Quality in Health Care",
    "year": "2007",
    "doi": "10.1093/intqhc/mzm042"
+  },
+  "18316489": {
+   "status": "resolved",
+   "title": "Improving hypertension control in diabetes mellitus: the effects of collaborative and proactive health communication.",
+   "authors": "Naik AD, Kallen MA, Walder A, Street RL",
+   "journal": "Circulation",
+   "year": "2008",
+   "doi": "10.1161/CIRCULATIONAHA.107.724005",
+   "n_authors": 4,
+   "authors_6": [
+    "Naik AD",
+    "Kallen MA",
+    "Walder A",
+    "Street RL"
+   ],
+   "journal_abbr": "Circulation",
+   "volume": "117",
+   "issue": "11",
+   "pages": "1361-8",
+   "pmcid": "PMC3717409"
   },
   "18416914": {
    "status": "resolved",
@@ -1818,6 +1880,26 @@
    "year": "2016",
    "doi": "10.1016/j.jclinepi.2016.02.031"
   },
+  "27086432": {
+   "status": "resolved",
+   "title": "HEALTH LITERACY, MEDICATION ADHERENCE, AND BLOOD PRESSURE LEVEL AMONG HYPERTENSIVE OLDER ADULTS TREATED AT PRIMARY HEALTH CARE CENTERS.",
+   "authors": "Wannasirikul P, Termsirikulchai L, Sujirarat D, Benjakul S, Tanasugarn C",
+   "journal": "The Southeast Asian journal of tropical medicine and public health",
+   "year": "2016",
+   "doi": null,
+   "n_authors": 5,
+   "authors_6": [
+    "Wannasirikul P",
+    "Termsirikulchai L",
+    "Sujirarat D",
+    "Benjakul S",
+    "Tanasugarn C"
+   ],
+   "journal_abbr": "Southeast Asian J Trop Med Public Health",
+   "volume": "47",
+   "issue": "1",
+   "pages": "109-20"
+  },
   "27422768": {
    "status": "resolved",
    "title": "Safety of metamizole: a systematic review of the literature.",
@@ -1840,7 +1922,21 @@
    "authors": "van Smeden M, de Groot JA, Moons KG, Collins GS, Altman DG",
    "journal": "BMC medical research methodology",
    "year": "2016",
-   "doi": "10.1186/s12874-016-0267-3"
+   "doi": "10.1186/s12874-016-0267-3",
+   "n_authors": 7,
+   "authors_6": [
+    "van Smeden M",
+    "de Groot JA",
+    "Moons KG",
+    "Collins GS",
+    "Altman DG",
+    "Eijkemans MJ"
+   ],
+   "journal_abbr": "BMC Med Res Methodol",
+   "volume": "16",
+   "issue": "1",
+   "pages": "163",
+   "pmcid": "PMC5122171"
   },
   "28301676": {
    "status": "resolved",
@@ -2225,6 +2321,27 @@
    "volume": "13",
    "pages": "21501319211069748",
    "pmcid": "PMC8796071"
+  },
+  "35309202": {
+   "status": "resolved",
+   "title": "Effects of the Two-Dimensional Structure of Trust on Patient Adherence to Medication and Non-pharmaceutical Treatment: A Cross-Sectional Study of Rural Patients With Essential Hypertension in China.",
+   "authors": "Feng Y, Guan S, Xu Y, Chen W, Huang X",
+   "journal": "Frontiers in public health",
+   "year": "2022",
+   "doi": "10.3389/fpubh.2022.818426",
+   "n_authors": 7,
+   "authors_6": [
+    "Feng Y",
+    "Guan S",
+    "Xu Y",
+    "Chen W",
+    "Huang X",
+    "Wang X"
+   ],
+   "journal_abbr": "Front Public Health",
+   "volume": "10",
+   "pages": "818426",
+   "pmcid": "PMC8931731"
   },
   "35342691": {
    "status": "resolved",
@@ -2729,6 +2846,28 @@
    "pages": "e00050023",
    "pmcid": "PMC11654099"
   },
+  "39842923": {
+   "status": "resolved",
+   "title": "Knowledge, attitudes and practices of healthcare professionals in the management of patients with hypertension and concurrent bronchial asthma: a cross-sectional study in the Yellow River Delta region of China.",
+   "authors": "Yu F, Xu W, Ma X, Yang Y, Gao J",
+   "journal": "BMJ open",
+   "year": "2025",
+   "doi": "10.1136/bmjopen-2024-088743",
+   "n_authors": 6,
+   "authors_6": [
+    "Yu F",
+    "Xu W",
+    "Ma X",
+    "Yang Y",
+    "Gao J",
+    "Yan X"
+   ],
+   "journal_abbr": "BMJ Open",
+   "volume": "15",
+   "issue": "1",
+   "pages": "e088743",
+   "pmcid": "PMC11784232"
+  },
   "39843675": {
    "status": "resolved",
    "title": "Patient Perceptions of Provider Race Concordance and Quality of Chronic Illness Care.",
@@ -2773,6 +2912,28 @@
    "journal": "American journal of obstetrics and gynecology",
    "year": "2025",
    "doi": "10.1016/j.ajog.2025.02.012"
+  },
+  "39987031": {
+   "status": "resolved",
+   "title": "Exploring the impact of three-dimensional patient satisfaction structure on adherence to medication and non-pharmaceutical treatment: a cross-sectional study among patients with hypertension in rural China.",
+   "authors": "Zhang M, Chen W, Xu Y, Fang J, Liu Y",
+   "journal": "BMC primary care",
+   "year": "2025",
+   "doi": "10.1186/s12875-025-02739-8",
+   "n_authors": 7,
+   "authors_6": [
+    "Zhang M",
+    "Chen W",
+    "Xu Y",
+    "Fang J",
+    "Liu Y",
+    "Liu X"
+   ],
+   "journal_abbr": "BMC Prim Care",
+   "volume": "26",
+   "issue": "1",
+   "pages": "51",
+   "pmcid": "PMC11846166"
   },
   "40023206": {
    "status": "resolved",
@@ -2882,6 +3043,27 @@
    "journal": "JMIR mHealth and uHealth",
    "year": "2025",
    "doi": "10.2196/59733"
+  },
+  "40546292": {
+   "status": "resolved",
+   "title": "Knowledge, Attitudes, and Practices of Healthcare Professionals Toward Internet-Based Hypertension Management: A Cross-Sectional Study.",
+   "authors": "Zhang Y, Zhang Q, Ren Q, Wang Y, Wang J",
+   "journal": "Journal of multidisciplinary healthcare",
+   "year": "2025",
+   "doi": "10.2147/JMDH.S522108",
+   "n_authors": 13,
+   "authors_6": [
+    "Zhang Y",
+    "Zhang Q",
+    "Ren Q",
+    "Wang Y",
+    "Wang J",
+    "Wu Y"
+   ],
+   "journal_abbr": "J Multidiscip Healthc",
+   "volume": "18",
+   "pages": "3545-3561",
+   "pmcid": "PMC12182747"
   },
   "40583484": {
    "status": "resolved",
