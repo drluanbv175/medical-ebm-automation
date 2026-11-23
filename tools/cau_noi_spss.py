@@ -1492,7 +1492,7 @@ KIEU_SANG_MUC_DO = {"nhi_phan": "NOMINAL", "danh_dinh": "NOMINAL", "thu_tu": "OR
 _VAI_TRO_SPSS = {"ket_cuc_chinh": "TARGET", "ket_cuc_phu": "TARGET", "thoi_gian": "TARGET", "su_kien": "TARGET",
                  "phoi_nhiem": "INPUT", "yeu_to": "INPUT", "hiep_bien": "INPUT", "phan_tang": "INPUT",
                  "mo_ta": "INPUT", "dinh_nghia_thay_the": "INPUT", "tuan_thu_de_cuong": "INPUT", "cum": "NONE",
-                 "trong_so": "NONE"}
+                 "trong_so": "NONE", "bo_ghep": "NONE"}
 
 
 def _so_hay_none(x) -> float | None:
@@ -1565,7 +1565,7 @@ def thuoc_tinh_ky_vong(b: dict) -> dict[str, str]:
 #: Một biến có thể nằm ở nhiều dòng ma trận (vd tuổi: mô tả ở MT1, yếu tố ở MT3) ⇒ vai trò gộp theo thứ tự ưu tiên;
 #: vai trò ĐẦU quyết định VARIABLE ROLE.
 UU_TIEN_VAI_TRO = ("ket_cuc_chinh", "ket_cuc_phu", "phoi_nhiem", "yeu_to", "hiep_bien", "phan_tang", "cum",
-                   "thoi_gian", "su_kien", "trong_so", "dinh_nghia_thay_the", "tuan_thu_de_cuong", "mo_ta")
+                   "thoi_gian", "su_kien", "trong_so", "dinh_nghia_thay_the", "tuan_thu_de_cuong", "bo_ghep", "mo_ta")
 
 
 def vai_tro_spss(b: dict) -> str:
@@ -2148,8 +2148,12 @@ def dac_ta(args) -> dict:
     # 23/11/2026: phương pháp KTC hiệu số nguy cơ của lượt Python (SAP §4) — SPSS/R tính lại đúng phương pháp này.
     # Tóm tắt cũ không ghi (engine cũ luôn Wald) ⇒ None; cú pháp/script coi None là Wald.
     dt["kc_hieu_so"] = tom.get("kc_hieu_so")
-    # 23/11/2026: Python đã chạy phương pháp biến cố hiếm (rào EPV chặn hồi quy) ⇒ SPSS/R tính lại cùng phương pháp
-    dt["bien_co_hiem_da_chay"] = bool(tom_day_du.get("bien_co_hiem"))
+    # 23/11/2026: Python đã chạy phương pháp biến cố hiếm (rào EPV chặn hồi quy) ⇒ SPSS/R tính lại cùng phương pháp —
+    # giá trị = mã phương pháp đã chạy (mo_ta_chinh_xac | firth), None khi không chạy hoặc lỗi
+    bch = tom_day_du.get("bien_co_hiem")
+    dt["bien_co_hiem_da_chay"] = (bch.get("phuong_phap") or None) if isinstance(bch, dict) and not bch.get("error") \
+        else None
+    dt["bo_ghep"] = tom.get("bo_ghep")  # 23/11/2026: mã bộ ghép ⇒ logistic có điều kiện (COXREG theo STRATA)
     pl = dt["hiep_bien_phan_loai"]
     dt["covariates_mo_hinh"] = [t for c in dt["covariates"] for t in (pl[c]["ten"] if c in pl else [c])]
     # OR theo MỖI k đơn vị phơi nhiễm (C1a: mỗi 15 phút chờ) — thiếu thì SPSS tính theo mỗi phút ⇒ «lệch» giả
@@ -2290,7 +2294,14 @@ def cu_phap_phan_tich(
         ps, pc = tach(pred)
         by = f"\n    BY {goi_ds(pc)}" if pc else ""
         wi = f"\n    WITH {goi_ds(ps)}" if ps else ""
-        if loai == "binary":
+        if loai == "binary" and dt.get("bo_ghep"):
+            # 23/11/2026: bệnh–chứng ghép cặp cá thể — hồi quy logistic có điều kiện = Cox phân tầng theo bộ ghép
+            # (thời gian giả: ca 1, chứng 2 — mọi người trong bộ cùng tập nguy cơ tại thời điểm của ca)
+            dong_dk, cb_dk = cu_phap_clogit(y, ten(dt["bo_ghep"]), pred, cov, bien[dt["outcome"]], so, man)
+            khoi("da_bien", dong_dk[0])
+            khoi("da_bien_tho", dong_dk[1])
+            canh_bao.extend(cb_dk)
+        elif loai == "binary":
             cat = [f"  /CATEGORICAL={goi_ds(pc)}"] + [f"  /CONTRAST({v})=Indicator(1)" for v in pc] if pc else []
             khoi(
                 "da_bien",
@@ -2606,6 +2617,42 @@ def cu_phap_hieu_so(y: str, g: str, muc_g: list | None, g_la_so: bool | None, kc
     ]
 
 
+#: biến tạm thời gian giả của COXREG cho hồi quy logistic có điều kiện (.sav có biến trùng tên ⇒ từ chối)
+BIEN_TAM_CLOGIT = "ebm_tg"
+
+
+def cu_phap_clogit(y: str, bo: str, pred: list[str], cov: list[str], b_y: dict, so: dict,
+                   man: dict) -> tuple[tuple[list[str], list[str]], list[str]]:
+    """Hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép bằng SPSS (23/11/2026): COXREG phân tầng theo mã bộ ghép, thời gian
+    giả = 2 − (ca) ⇒ ca có biến cố ở thời điểm 1, chứng kiểm duyệt ở 2 — hợp lý từng phần trong mỗi tầng chính là hợp lý
+    có điều kiện của bộ ghép. Mỗi bộ ĐÚNG MỘT ca: không có thời điểm trùng ⇒ Breslow của COXREG = hợp lý có điều kiện
+    chính xác (Python/R); bộ nhiều ca thì khác (đối chiếu ghi rõ). Trả ((lệnh hiệu chỉnh, lệnh thô), cảnh báo).
+    Thô = chỉ phơi nhiễm, CÙNG tập ca đầy đủ hiệp biến (TEMPORARY + SELECT IF) như Python."""
+    if not so.get(y):
+        raise TuChoi(f"logistic có điều kiện cần kết cục (ca/chứng) dạng số — {y} là chuỗi")
+    if any(not so.get(v) for v in pred):
+        raise TuChoi(f"logistic có điều kiện cần biến dự báo dạng số (biến chuỗi: "
+                     f"{', '.join(v for v in pred if not so.get(v))}) — khai hiệp biến phân loại để thành biến giả")
+    if BIEN_TAM_CLOGIT.upper() in {b["ten"].upper() for b in man["bien"]}:
+        raise TuChoi(f"biến trong .sav trùng biến tạm «{BIEN_TAM_CLOGIT}» của khối logistic có điều kiện — đổi tên")
+    muc = b_y.get("muc") or []
+    if len(muc) != 2:
+        raise TuChoi(f"logistic có điều kiện cần kết cục đúng 2 mức (ca/chứng) — {y} có {len(muc)}")
+    bc = max(float(m) for m in muc)
+    bc_s = f"{bc:g}"
+    tinh = f"COMPUTE {BIEN_TAM_CLOGIT} = 2 - ({y} = {bc_s})."
+
+    def cox(ds: list[str]) -> str:
+        return (f"COXREG {BIEN_TAM_CLOGIT} /STATUS={y}({bc_s}) /STRATA={bo}\n  /METHOD=ENTER {goi_ds(ds)}\n"
+                "  /PRINT=CI(95) /CRITERIA=ITERATE(100) LCON(0.00000001) BCON(0.00000001).")
+
+    dk = " AND ".join(f"NOT MISSING({v})" for v in cov)
+    tho = [tinh, *(["TEMPORARY.", f"SELECT IF ({dk})."] if cov else []), cox(pred[:1])]
+    return ([tinh, cox(pred)], tho), [
+        "Logistic có điều kiện: SPSS COXREG phân tầng theo bộ ghép (Breslow) — trùng hợp lý có điều kiện chính xác khi "
+        "mỗi bộ ghép có đúng một ca"]
+
+
 def cu_phap_bien_co_hiem(y: str, g: str) -> list[str]:
     """Biến cố hiếm (23/11/2026): KTC 95% chính xác Clopper–Pearson của tỷ lệ biến cố TỪNG nhóm (PROPORTIONS
     /ONESAMPLE theo SPLIT FILE nhóm). p chính xác Fisher lấy từ bảng Chi-Square Tests của CROSSTABS kết cục chính (bảng
@@ -2710,7 +2757,7 @@ def doc_ket_qua(thu_muc_kq: Path, dt: dict, man: dict) -> dict:
                 "ci": [-x for x in (_lay(cot, "upper"), _lay(cot, "lower")) if x is not None] or None,
             }
         ra["ket_cuc_chinh"] = kq
-    for tag, khoa in (("da_bien", "da_bien"), ("da_bien_cum", "da_bien_cum")):
+    for tag, khoa in (("da_bien", "da_bien"), ("da_bien_cum", "da_bien_cum"), ("da_bien_tho", "da_bien_tho")):
         p = thu_muc_kq / f"oms_{tag}.xml"
         if not p.exists():
             continue
@@ -3218,6 +3265,22 @@ def doi_chieu_bien_co_hiem(b: dict | None, sp: dict | None, p_fisher: float | No
     return ra
 
 
+#: SPSS không có hồi quy logistic Firth (hợp lý phạt) sẵn — như phép bootstrap: ghi rõ, đối chiếu bằng R
+KHONG_SO_FIRTH_SPSS = "không đối chiếu được bằng SPSS (SPSS không có hồi quy Firth sẵn) — đối chiếu bằng R (logistf)"
+
+
+def doi_chieu_firth(b: dict | None) -> list[dict]:
+    """Biến cố hiếm theo Firth (23/11/2026): mỗi hệ số một dòng «không so được» có lý do — không bỏ dòng im lặng, không
+    chấm khớp giả; con số được đối chiếu ở cầu nối R (logistf)."""
+    if not isinstance(b, dict) or b.get("phuong_phap") != "firth":
+        return []
+    if b.get("error"):
+        return [_khong_so("Biến cố hiếm — Firth", f"Python lỗi: {b['error']}")]
+    return [_khong_so(f"Biến cố hiếm — Firth — {r.get('variable')}", KHONG_SO_FIRTH_SPSS,
+                      py={"uoc_luong": r.get("OR_adj"), "ci": r.get("CI_95"), "p": r.get("p")})
+            for r in b.get("results") or []]
+
+
 def doi_chieu_hieu_so(pc: dict, hs: dict | None) -> list[dict]:
     """Hiệu số nguy cơ thô + KTC (23/11/2026): SPSS PROPORTIONS cùng phương pháp Python ghi; phép tất định ⇒ dung sai
     = đơn vị làm tròn của Python. Khác phương pháp ⇒ không so được (không chấm khớp hai phương pháp khác nhau)."""
@@ -3307,8 +3370,12 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                 f"Python «{loai_pc or 'không có'}» · SPSS «{sc.get('loai') or 'không có'}» — không cùng loại để so",
             )
         )
+    dong += doi_chieu_firth(tom.get("bien_co_hiem"))
     co_thu_tu = "ordinal" in tom
     mv = (tom.get("ordinal") if co_thu_tu else tom.get("multivariate")) or {}
+    pp_dk = ("bộ ghép có tới " + str(mv.get("ca_toi_da_moi_bo")) + " ca: SPSS COXREG xử lý thời điểm trùng bằng "
+             "Breslow, Python/R dùng hợp lý có điều kiện chính xác"
+             if mv.get("model") == "logistic_dk" and int(mv.get("ca_toi_da_moi_bo") or 1) > 1 else None)
     ten_mv = "Hồi quy thứ tự" if co_thu_tu else "Đa biến"
     cum = (mv.get("cov_type") == "cluster") or bool((tom.get("dac_ta_phan_tich") or {}).get("cot_cum"))
     nguon = kq.get("da_bien_cum") if cum else kq.get("da_bien")
@@ -3353,7 +3420,9 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                     {"uoc_luong": uoc, "ci": r.get("CI_95"), "p": r.get("p")},
                     qd or sp_so,
                     phuong_phap_khac=(
-                        None
+                        pp_dk
+                        if pp_dk
+                        else None
                         if qd is not None
                         else "hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich có hiệu chỉnh mẫu nhỏ (Python) — tóm tắt "
                         "thiếu số để quy đổi (chạy lại run_stats_analysis bản ≥ 23/11/2026)"
@@ -3369,6 +3438,18 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
             if qd is not None:
                 dong[-1]["ghi_chu"] = " · ".join(x for x in (dong[-1]["ghi_chu"], ghi_qd) if x)
                 dong[-1]["spss_goc"] = sp_so
+    if mv.get("model") == "logistic_dk":
+        nguon_tho = (kq.get("da_bien_tho") or {}).get("he_so") or {}
+        for r in mv.get("crude") or []:
+            v, sp = r.get("variable"), nguon_tho.get(r.get("variable"))
+            ten_tho = f"Logistic có điều kiện theo bộ ghép — OR thô (chỉ phơi nhiễm) — {v}"
+            if sp is None:
+                dong.append(_khong_so(ten_tho, "SPSS không có hệ số thô cùng tên (xem nhật ký chạy)",
+                                      py={"uoc_luong": r.get("OR_adj")}))
+                continue
+            dong.append(so_mot(ten_tho, {"uoc_luong": r.get("OR_adj"), "ci": r.get("CI_95"), "p": r.get("p")},
+                               {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]}, phuong_phap_khac=pp_dk,
+                               ty_so=True, lam_tron=LAM_TRON["ty_so"]))
     pr = tom.get("poisson_pr")
     if pr is not None:
         if pr.get("error"):

@@ -465,7 +465,79 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     hs["phan_bien_G8"] = {**hs["phan_bien_G8"],
                           "checklist": "CONSORT 2025 + GRAMMS (PMID 18416914) + COREQ (PMID 17872937)"}
     kb["rct_hon_hop"] = hh
+    kb["benh_chung_ghep_cap"] = _ghep_cap(GL.KICH_BAN["benh_chung"], _ky_g2, _tra_loi_sap)
     return kb
+
+
+def _ghep_cap(bc: Dict[str, Any], _ky_g2: Callable, _tra_loi_sap: Callable) -> Dict[str, Any]:
+    """BỆNH–CHỨNG GHÉP CẶP CÁ THỂ 1 ca : 2 chứng theo giới và tuổi ± 2 năm (23/11/2026 — điều phối giao: «logistic có
+    điều kiện cho bệnh–chứng ghép cặp cá thể … dữ liệu giả lập cần một biến thể có mã bộ ghép thật»).
+
+    Kế thừa kịch bản bệnh–chứng ghép tần suất; khác ở chỗ PI chốt matching_type individual ⇒ SAP §4 hồi quy logistic CÓ
+    ĐIỀU KIỆN theo bộ ghép ⇒ G6 chạy statsmodels ConditionalLogit theo `ma_bo_ghep`, R survival::clogit, SPSS COXREG
+    phân tầng. Giới, tuổi là biến ghép (hằng/gần hằng trong bộ) ⇒ vai trò mô tả, không vào mô hình có điều kiện."""
+    # GIỮ mã đề tài + chủ đề của kịch bản gốc (G0 trùng hệt) ⇒ đọc thẳng nền G0 đã lưu của gốc (`nen_g0_tu`, như kịch
+    # bản chân thực); khác ở thiết kế chọn chứng (G1) trở đi
+    gc = _sao(bc, id_test="case_control_ghep_cap", goc="benh_chung", nen_g0_tu="benh_chung",
+              mo_ta="Bệnh–chứng ghép cặp cá thể 1:2 theo giới và tuổi (logistic có điều kiện theo bộ ghép)",
+              bien_the={"ghep_cap": {"cot": "ma_bo_ghep", "so_chung": 2, "dung": ["gioi"], "lech": {"tuoi": 2}}})
+    bs = gc["bien_so"]
+    bs["bo_bien"] = list(bs["bo_bien"]) + [("ma_bo_ghep", "text", "Mã bộ ghép (một ca và 2 chứng ghép cặp với ca đó)",
+                                            "", "integer", "1", "9999")]
+    bs["ma_tran"] = [d for d in bs["ma_tran"] if d[3] not in ("tuoi", "gioi")] + [
+        ("1", "Tuổi (biến ghép cặp cá thể, chênh ≤ 2 năm trong bộ)", "mo_ta", "tuoi", "lien_tuc", "HB2",
+         "Phỏng vấn + hồ sơ", "§3"),
+        ("1", "Giới (biến ghép cặp cá thể, trùng trong bộ)", "mo_ta", "gioi", "nhi_phan", "HB3", "Phỏng vấn", "§3"),
+        ("1", "Bộ ghép (một ca cùng 2 chứng ghép cặp theo giới và tuổi ± 2 năm)", "bo_ghep", "ma_bo_ghep", "lien_tuc",
+         "BG1", "Sổ tuyển chọn chứng", "§4")]
+    g1 = gc["pi"]["G1"]
+    g1.update({
+        # STROBE 6b (K17): nêu tiêu chí ghép và số chứng cho mỗi ca
+        "control_source": ("Người khám ngoại trú cùng cơ sở trong cùng tuần với ca, ghép cặp cá thể: mỗi ca được ghép "
+                           "cặp theo đúng giới và tuổi chênh không quá 2 năm với 2 chứng (2 chứng cho mỗi ca; mỗi ca "
+                           "cùng 2 chứng của mình là một bộ ghép có mã bộ ghép riêng), để nhóm chứng đại diện cho phân "
+                           "bố phơi nhiễm NSAID của quần thể nguồn sinh ra ca trong cùng thời gian"),
+        "matching_type": "individual",
+        "study_schema_timeline": ("Xác định ca → chọn 2 chứng ghép cặp cá thể theo giới và tuổi (± 2 năm), ghi mã bộ "
+                                  "ghép → phỏng vấn phơi nhiễm → trích hồ sơ đơn thuốc"),
+        "bias_controls": [
+            dict(g1["bias_controls"][0]),
+            {**g1["bias_controls"][1],
+             "bien_phap": ("Chọn chứng cùng cơ sở và cùng tuần với ca, ghép cặp cá thể 2 chứng : 1 ca theo giới và "
+                           "tuổi (± 2 năm), ghi mã bộ ghép cho từng bộ")},
+            {**g1["bias_controls"][2],
+             "bien_phap": ("Thu thập và hiệu chỉnh trong hồi quy logistic có điều kiện theo bộ ghép; giới và tuổi đã "
+                           "được kiểm soát bằng ghép cặp cá thể")}]})
+    g1["estimand"] = {**g1["estimand"], "population_summary_measure": "Tỷ số chênh (OR) có điều kiện hiệu chỉnh"}
+    hs = gc["ho_so_tron_vong"]
+    hs["G2"] = {**hs["G2"], "public_title": "NSAID và xuất huyết tiêu hoá trên ở người cao tuổi (ghép cặp cá thể)"}
+    hs["ky_G2"] = _ky_g2(TIEN_CUU, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999983")
+    hs["tra_loi_G4"] = _tra_loi_sap(
+        "Không áp dụng — nghiên cứu bệnh–chứng, không có can thiệp", "thuốc chống đông/chống kết tập và tiền sử loét "
+        "liên quan cả việc dùng NSAID lẫn xuất huyết (gây nhiễu); giới và tuổi đã được kiểm soát bằng ghép cặp cá thể "
+        "(hằng trong bộ ghép) nên không đưa vào mô hình logistic có điều kiện", "VIF < 5 cho các hiệp biến",
+        "Giới (nam/nữ) — ghi trước khi xem dữ liệu", "Loại người dùng thuốc chống đông")
+    for pt in hs["g6"]:  # giới, tuổi là biến ghép — không ước lượng được trong hồi quy có điều kiện
+        ts = pt.get("tham_so")
+        if isinstance(ts, dict) and ts.get("covariates"):
+            pt["tham_so"] = {**ts, "covariates": [c for c in ts["covariates"] if c not in ("tuoi", "gioi")]}
+    hs["g6"][0]["mo_ta"] = "NSAID 30 ngày và xuất huyết tiêu hoá trên (OR có điều kiện theo bộ ghép, hiệu chỉnh)"
+    dg = copy.deepcopy(hs["dien_giai"])
+    dg["bang"] = [({**d, "thuoc_do": "OR thô có điều kiện (theo bộ ghép)", "lay": "or_tho_dk",
+                    "y_nghia": "Gần với OR hiệu chỉnh — nhiễu đo được ít"} if d.get("lay") == "or_tho" else
+                   {**d, "thuoc_do": d["thuoc_do"].replace("hồi quy logistic", "hồi quy logistic có điều kiện")})
+                  for d in dg["bang"]]
+    gc["ho_so_tron_vong"]["dien_giai"] = dg
+    hs["dac_ta_G10"] = {**hs["dac_ta_G10"],
+                        "bias_controls": ("Phơi nhiễm lấy từ hồ sơ kê đơn; chứng ghép cặp cá thể theo giới và tuổi "
+                                          "(± 2 năm), mỗi bộ ghép có mã riêng, phân tích bằng hồi quy logistic có điều "
+                                          "kiện theo bộ ghép hiệu chỉnh chống đông, tiền sử loét; độ nhạy loại người "
+                                          "dùng chống đông"),
+                        "summary": ("Bối cảnh: NSAID dùng phổ biến ở người cao tuổi. Mục tiêu: đánh giá liên quan giữa "
+                                    "dùng NSAID 30 ngày và xuất huyết tiêu hoá trên. Phương pháp: bệnh–chứng ghép cặp "
+                                    "cá thể, hồi quy logistic có điều kiện theo bộ ghép ước lượng OR hiệu chỉnh.")}
+    hs["phan_bien_G8"] = {**hs["phan_bien_G8"], "thiet_ke": "Bệnh–chứng ghép cặp cá thể"}
+    return gc
 
 
 def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_loi_sap) -> None:  # noqa: PLR0913
@@ -590,8 +662,13 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                                                            "phòng khám đồng ý, thống kê viên thông báo nhánh cho "
                                                            "phòng khám (SPIRIT 23)")})
     # thống kê viên chọn cách tính cấu trúc cụm ở SAP §4 (khớp G6: Poisson sai số chuẩn theo cụm phòng khám)
+    # 23/11/2026: RCT gốc khai Firth cho biến cố hiếm; thiết kế CỤM giữ mô tả chính xác (Firth không có sai số chuẩn
+    # theo cụm — chay_sap_g6 `kiem` chặn Firth kèm cột cụm)
+    from gia_lap_kich_ban_them import TRA_LOI_MO_TA_CHINH_XAC  # noqa: PLC0415
+
     hs["tra_loi_G4"] = [(r"cau truc cum", "Hồi quy Poisson với sai số chuẩn theo cụm (cluster-robust), phòng khám là "
-                                          "cụm")] + list(hs.get("tra_loi_G4") or [])
+                                          "cụm"), (r"bien co hiem", TRA_LOI_MO_TA_CHINH_XAC)] + [
+        x for x in hs.get("tra_loi_G4") or [] if x[0] != r"bien co hiem"]
     # 23/11/2026: thống kê viên xét cảnh báo SỐ CỤM mà G6 gắn dưới mọi ước lượng theo cụm (§3 và từng phân tích độ nhạy
     # ở §5) — một quyết định, khớp cách tính cấu trúc cụm đã chốt ở SAP §4; trước đây ô này rơi về «chưa có thông tin»
     hs["tra_loi_G7"] = [(r"g6 canh bao gan voi so o tren: so cum",

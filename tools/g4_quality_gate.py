@@ -306,7 +306,7 @@ NHAN_BIEN_CO_HIEM = "Biến cố hiếm (số biến cố dưới 10 lần số 
 #: mã ⇒ (tên đầy đủ, G6 tự chạy khi rào EPV chặn?)
 BIEN_CO_HIEM = {
     "mo_ta_chinh_xac": ("mô tả số biến cố từng nhóm + KTC chính xác Clopper–Pearson + p chính xác Fisher", True),
-    "firth": ("hồi quy logistic Firth (logistf)", False),
+    "firth": ("hồi quy logistic Firth (logistf)", True),  # G6 tự chạy từ 23/11/2026 (run_stats_analysis Firth)
 }
 _THIET_KE_BIEN_CO_HIEM = ("rct", "cohort", "case_control", "cross_sectional")
 #: dòng khuôn SAP §5 (run_g4_auto in nguyên văn) — thống kê viên thay ô bằng MỘT phương pháp

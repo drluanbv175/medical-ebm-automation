@@ -40,10 +40,11 @@ nạp đều không tính ⇒ CHẶN. Phân tích TĨNH: không xét luồng đi
 THÊM 23/11/2026 (G6-AUTO-09 phần LƯỢT CHẠY, G7 phát hiện hai lệch G6↔SAP): đối chiếu phương pháp SAP §4 với lượt chạy
 THẬT của phân tích chính (`G6_analysis_summary.json`), không chỉ với script — gộp vào G6-AUTO-09 để phân công trách
 nhiệm cổng giữ một chủ: (1) họ mô hình đã chạy phải thuộc họ SAP khoá — «logistic
-có điều kiện» nay là họ riêng (`logistic_dk`), SAP khai nó mà engine chạy logistic không điều kiện ⇒ CHẶN (G6 chưa có
-đường logistic có điều kiện, không tự lùi); (2) SAP khai phương pháp KTC hiệu số nguy cơ (Newcombe/Wald) ⇒ tóm tắt
-phải ghi đúng phương pháp đó (`risk_diff_ci_method`); SAP khai phương pháp G6 chưa tính (Miettinen–Nurminen,
-Agresti–Caffo, Newcombe có hiệu chỉnh liên tục…) ⇒ CHẶN, không tự lùi về Wald.
+có điều kiện» nay là họ riêng (`logistic_dk`), SAP khai nó mà engine chạy logistic không điều kiện ⇒ CHẶN (engine
+chạy hồi quy có điều kiện khi đặc tả khai `bo_ghep` — từ 23/11/2026 chiều; không tự lùi); (2) SAP khai phương
+pháp KTC hiệu số nguy cơ (Newcombe/Wald) ⇒ tóm tắt phải ghi đúng phương pháp đó (`risk_diff_ci_method`); SAP
+khai phương pháp G6 chưa tính (Miettinen–Nurminen, Agresti–Caffo, Newcombe có hiệu chỉnh liên tục…) ⇒ CHẶN, không
+tự lùi về Wald.
 
 Dùng:  python3 tools/g6_quality_gate.py --study <mã>     (tự chạy cuối run_g6_auto)
 """
@@ -701,8 +702,8 @@ def doi_chieu_phuong_phap_da_chay(sap4: str, tom: dict | None, sap5: str = "") -
         return None, f"không nhận ra họ mô hình ở {thieu} — chưa đối chiếu được (SAP {sorted(ho_sap)} · đã chạy " \
                      f"{sorted(ho_chay)})"
     if not ho_sap & ho_chay:
-        them = (" — G6 chưa có đường cho hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép; không tự lùi về logistic không "
-                "điều kiện" if "logistic_dk" in ho_sap else "")
+        them = (" — hồi quy logistic CÓ ĐIỀU KIỆN chạy khi đặc tả G6 khai bo_ghep (cột mã bộ ghép); không tự lùi về "
+                "logistic không điều kiện" if "logistic_dk" in ho_sap else "")
         loi.append(f"SAP §4 khoá họ {sorted(ho_sap)} nhưng phân tích chính ĐÃ CHẠY họ {sorted(ho_chay)}{them}")
     po = tom.get("primary_outcome") if isinstance(tom.get("primary_outcome"), dict) else {}
     if kc["phuong_phap"]:

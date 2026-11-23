@@ -73,7 +73,8 @@ MA_OK, MA_LECH, MA_KHONG_DO, MA_TU_CHOI = S.MA_OK, S.MA_LECH, S.MA_KHONG_DO, S.M
 CAN_KIEM = S.CAN_KIEM
 TuChoi, KhongDoDuoc = S.TuChoi, S.KhongDoDuoc
 GOI_CAN = ("jsonlite", "sandwich", "lmtest", "survival", "ordinal", "mice",  # mice: chỉ khi có Bảng 5 (MI)
-           "DescTools")  # DescTools: chỉ khi SAP khai KTC Newcombe cho hiệu số nguy cơ (23/11/2026)
+           "DescTools",  # DescTools: chỉ khi SAP khai KTC Newcombe cho hiệu số nguy cơ (23/11/2026)
+           "logistf")  # logistf: chỉ khi Python chạy Firth cho biến cố hiếm SAP §5 (23/11/2026)
 KHO_CRAN = "https://cloud.r-project.org"
 # keep_default_na của pandas 2.x — chỉ dùng khi máy sinh script không có pandas (bình thường đọc thẳng từ pandas).
 NA_PANDAS_DU_PHONG = (
@@ -540,12 +541,14 @@ DON_VI_PHOI_NHIEM <- @@DON_VI@@  # --don-vi-phoi-nhiem của Python (mọi họ 
 TY_LE <- @@TY_LE@@  # Bảng 1b: cột tính tỷ lệ + KTC Wilson (--ty-le)
 NGUONG_TY_LE <- @@NGUONG_TY_LE@@  # --nguong-ty-le (sự kiện = giá trị ≥ ngưỡng); NA ⇒ cột 0/1
 KC_HIEU_SO <- @@KC_HIEU_SO@@  # --kc-hieu-so: phương pháp KTC hiệu số nguy cơ SAP §4 khai (newcombe | wald)
-BIEN_CO_HIEM <- @@BIEN_CO_HIEM@@  # Python chạy phương pháp biến cố hiếm SAP §5 (rào EPV chặn hồi quy) ⇒ R tính lại
+BIEN_CO_HIEM <- @@BIEN_CO_HIEM@@  # Python chạy mô tả chính xác (biến cố hiếm SAP §5, rào EPV chặn hồi quy) ⇒ R tính lại
+FIRTH <- @@FIRTH@@  # Python chạy hồi quy Firth (biến cố hiếm SAP §5) ⇒ R tính lại bằng logistf (pl = TRUE)
+BO_GHEP <- @@BO_GHEP@@  # mã bộ ghép (bệnh–chứng ghép cặp cá thể) ⇒ hồi quy logistic có điều kiện survival::clogit
 # Chuỗi pandas.read_csv coi là THIẾU (keep_default_na) — chép từ pandas @@PANDAS@@ lúc sinh script.
 NA_PANDAS <- @@NA_PANDAS@@
 @@KHOI_MI@@
 GOI_CAN <- c("jsonlite", "sandwich", "lmtest", "survival", "ordinal", if (MI_CO) "mice",
-             if (identical(KC_HIEU_SO, "newcombe")) "DescTools")
+             if (identical(KC_HIEU_SO, "newcombe")) "DescTools", if (isTRUE(FIRTH)) "logistf")
 
 dung <- function(ma, ...) {
   thong_diep <- paste0(...)
@@ -710,7 +713,23 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
   }
   # ── 4. Đa biến — multivariate_model() ──────────────────────────────────────────────────────────────
   if (!POISSON) {
-  .kq <- khoi("da_bien", {
+  if (co(BO_GHEP) && LOAI == "binary") .kq <- khoi("da_bien", {
+    # 23/11/2026: bệnh–chứng ghép cặp cá thể — conditional_logit_model(): hợp lý có điều kiện CHÍNH XÁC theo bộ ghép
+    # (cài đặt độc lập với statsmodels), KTC Wald theo z; OR thô có điều kiện (chỉ phơi nhiễm) trên CÙNG tập ca
+    suppressPackageStartupMessages(library(survival))
+    hb <- HIEP_BIEN[HIEP_BIEN %in% names(D)]
+    dm <- ca_du(D, c(KET_CUC, NHOM, hb, BO_GHEP))
+    gt <- sap_xep(dm[[KET_CUC]])
+    k <- khung(as.numeric(dm[[KET_CUC]] == gt[length(gt)]), ma_tran_du_bao(dm, c(NHOM, hb)), list(.bo = dm[[BO_GHEP]]))
+    fit <- clogit(stats::as.formula(paste(".y ~", k$ve_phai, "+ strata(.bo)")), data = k$df, method = "exact")
+    vn <- names(k$ten)[k$ten == NHOM | startsWith(k$ten, paste0(NHOM, "_"))]
+    tho <- clogit(stats::as.formula(paste(".y ~", paste(vn, collapse = " + "), "+ strata(.bo)")), data = k$df,
+                  method = "exact")
+    list(thuong = list(mo_hinh = "logistic_dk", thang = "OR", n = nrow(dm),
+                       he_so = bang_he_so(coef(fit), stats::vcov(fit), k$ten, Inf, TRUE)),
+         tho = list(mo_hinh = "logistic_dk", thang = "OR", n = nrow(dm),
+                    he_so = bang_he_so(coef(tho), stats::vcov(tho), k$ten[vn], Inf, TRUE)))
+  }) else .kq <- khoi("da_bien", {
     hb <- HIEP_BIEN[HIEP_BIEN %in% names(D)]
     dm <- ca_du(D, c(KET_CUC, NHOM, hb, if (co(CUM)) CUM))
     k <- khung(as.numeric(dm[[KET_CUC]]), ma_tran_du_bao(dm, c(NHOM, hb)))
@@ -732,7 +751,26 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
   })
   KET$da_bien <- .kq$thuong
   KET$da_bien_cum <- .kq$cum
+  KET$da_bien_tho <- .kq$tho
   }
+  # 23/11/2026: biến cố hiếm theo Firth (firth_logistic_model) — logistf, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt;
+  # CÙNG ma trận thiết kế với mô hình đa biến, biến cố = giá trị LỚN của kết cục (như Python)
+  if (isTRUE(FIRTH) && LOAI == "binary") KET$firth <- khoi("firth", {
+    hb <- HIEP_BIEN[HIEP_BIEN %in% names(D)]
+    dm <- ca_du(D, c(KET_CUC, NHOM, hb))
+    gt <- sap_xep(dm[[KET_CUC]])
+    k <- khung(as.numeric(dm[[KET_CUC]] == gt[length(gt)]), ma_tran_du_bao(dm, c(NHOM, hb)))
+    fi <- logistf::logistf(stats::as.formula(paste(".y ~", k$ve_phai)), data = k$df, pl = TRUE,
+                           control = logistf::logistf.control(maxit = 500, lconv = 1e-10, gconv = 1e-10, xconv = 1e-10),
+                           plcontrol = logistf::logistpl.control(maxit = 500, lconv = 1e-10, xconv = 1e-10))
+    he <- list()
+    for (v in names(k$ten)) {
+      i <- match(v, names(fi$coefficients))
+      he[[k$ten[[v]]]] <- list(uoc_luong = exp(fi$coefficients[[i]]), ci = exp(c(fi$ci.lower[[i]], fi$ci.upper[[i]])),
+                              p = fi$prob[[i]], b = unname(fi$coefficients[[i]]))
+    }
+    list(mo_hinh = "firth", thang = "OR", n = nrow(dm), so_bien_co = sum(k$df$.y), he_so = he)
+  })
 }
 
 # ── 4b. Poisson log-link, SE vững HC0 — poisson_pr_model() (F2; Zou 2004) ─────────────────────────────
@@ -1111,7 +1149,9 @@ def sinh_script_r(
         "@@TY_LE@@": vec_r(dt.get("ty_le") or []),
         "@@NGUONG_TY_LE@@": gia_tri_r(dt.get("nguong_ty_le"), so=True),
         "@@KC_HIEU_SO@@": chuoi_r(dt.get("kc_hieu_so") or "wald"),
-        "@@BIEN_CO_HIEM@@": "TRUE" if dt.get("bien_co_hiem_da_chay") else "FALSE",
+        "@@BIEN_CO_HIEM@@": "TRUE" if dt.get("bien_co_hiem_da_chay") == "mo_ta_chinh_xac" else "FALSE",
+        "@@FIRTH@@": "TRUE" if dt.get("bien_co_hiem_da_chay") == "firth" else "FALSE",
+        "@@BO_GHEP@@": gia_tri_r(dt.get("bo_ghep")),
         "@@PANDAS@@": ver_pd,
         "@@NA_PANDAS@@": vec_r(na),
         "@@KHOI_MI@@": khoi_mi if khoi_mi is not None else khoi_mi_r({}, Path("."), csv_p),
@@ -2330,7 +2370,7 @@ def _bien_co_hiem_r(tom: dict, rc: dict) -> list[dict]:
     """Biến cố hiếm (23/11/2026): KTC Clopper–Pearson từng nhóm + p Fisher của Python ↔ R (binom.test/fisher.test).
     Phép tất định ⇒ dung sai = đơn vị làm tròn 4 chữ số của Python."""
     b = tom.get("bien_co_hiem")
-    if not isinstance(b, dict) or b.get("error"):
+    if not isinstance(b, dict) or b.get("error") or b.get("phuong_phap") == "firth":  # Firth: _firth_r so riêng
         return []
     rb = rc.get("bien_co_hiem") or {}
     if not rb:
@@ -2347,6 +2387,16 @@ def _bien_co_hiem_r(tom: dict, rc: dict) -> list[dict]:
         ra.append(_dong("Biến cố hiếm — p chính xác Fisher (hai phía)", {"uoc_luong": b["fisher_p_hai_phia"]},
                         {"uoc_luong": rb.get("fisher_p")}, tran=S.DUNG_SAI_TY_LE))
     return ra
+
+
+def _firth_r(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
+    """Biến cố hiếm theo Firth (23/11/2026): OR + KTC hợp lý phạt hồ sơ + p tỷ số hợp lý phạt của Python
+    (firth_logistic_model) ↔ R logistf(pl = TRUE) — hai cài đặt độc lập của cùng đại lượng, từng hệ số hai chiều."""
+    b = tom.get("bien_co_hiem")
+    if not (isinstance(b, dict) and b.get("phuong_phap") == "firth") and not kq.get("firth"):
+        return []
+    return _he_so_hai_phia("Biến cố hiếm — Firth (OR, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt)", b,
+                           kq.get("firth"), loi_r.get("firth"), ("OR_adj",))
 
 
 def _ket_cuc_chinh_cum(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
@@ -2727,6 +2777,11 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
         dong += _he_so_hai_phia("Poisson HC0 — PR thô", tho_py, kq.get("poisson_tho"), loi_r.get("poisson"), ("PR",))
         dong += _he_so_hai_phia("Poisson HC0 — PR hiệu chỉnh", pr, kq.get("poisson_hieu_chinh"), loi_r.get("poisson"),
                                 ("PR_adj",))  # fmt: skip
+    if (mv or {}).get("model") == "logistic_dk" or kq.get("da_bien_tho"):
+        tho = {"results": (mv or {}).get("crude"), "n": (mv or {}).get("n")} if mv and not mv.get("error") else mv
+        dong += _he_so_hai_phia("Logistic có điều kiện theo bộ ghép — OR thô (chỉ phơi nhiễm)", tho,
+                                kq.get("da_bien_tho"), loi_r.get("da_bien"), ("OR_adj",))
+    dong += _firth_r(tom, kq, loi_r)
     dong += _mi(tom, kq, loi_r)
     dong += _ty_le(tom, kq, loi_r)
     dong += _song_con(tom, kq, loi_r)
@@ -2736,7 +2791,7 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
 
 def _dac_ta_lech(dt_py: dict, dt_r: dict) -> list[str]:
     lech = []
-    for k in ("outcome", "group", "time", "event", "cot_cum", "loc", "nguong_ty_le", "kc_hieu_so"):
+    for k in ("outcome", "group", "time", "event", "cot_cum", "loc", "nguong_ty_le", "kc_hieu_so", "bo_ghep"):
         if (dt_py.get(k) or None) != (dt_r.get(k) or None):
             lech.append(f"{k}: Python={dt_py.get(k)!r} · R={dt_r.get(k)!r}")
     if dt_py.get("ty_le") is not None and list(dt_py.get("ty_le") or []) != list(dt_r.get("ty_le") or []):

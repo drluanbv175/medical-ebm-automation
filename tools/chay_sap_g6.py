@@ -94,8 +94,12 @@ THAM_SO = {
     "kc_hieu_so": ("--kc-hieu-so", "kc_hieu_so"),
     # 23/11/2026 (G7 phát hiện ở rct_cum — tổn hại 2 biến cố, rào EPV chặn logistic, bảng bản thảo trống): phương pháp
     # biến cố hiếm SAP §5 khai; engine chạy nó khi rào EPV chặn. `kiem` đòi mọi phân tích có kết cục khai đúng phương
-    # pháp SAP; SAP khai Firth ⇒ khai phân tích loai_bo_sung firth (engine chưa tự chạy Firth khi rào EPV chặn).
+    # pháp SAP (mo_ta_chinh_xac | firth — engine tự chạy cả hai từ 23/11/2026; Firth không kết hợp được cột cụm).
     "bien_co_hiem": ("--bien-co-hiem", "bien_co_hiem"),
+    # 23/11/2026 (bệnh–chứng ghép cặp CÁ THỂ): cột MÃ BỘ GHÉP ⇒ engine chạy hồi quy logistic có điều kiện theo bộ ghép.
+    # `kiem`: SAP §4 họ «logistic có điều kiện» ⇒ phân tích cùng kết cục chính phải khai; SAP không khai họ đó mà đặc
+    # tả khai ⇒ LỖI (lượt chạy sẽ lệch họ SAP).
+    "bo_ghep": ("--bo-ghep", "s"),
     # 16/11/2026 (giả lập 8 thiết kế): phân tích ĐẶC THÙ — chẩn đoán · dự báo · tổng quan–gộp · định tính — chạy bằng
     # phan_tich_thiet_ke_dac_thu.py (run_stats_analysis chưa có đường); cùng nhật ký/tóm tắt/kiểm chéo SPSS–R.
     "loai_dac_thu": ("--loai", "loai"),
@@ -392,6 +396,7 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         loi += loi_kc
         canh_bao += canh_kc
         loi += kiem_bien_co_hiem_sap(ds, sap.read_text(encoding="utf-8"))
+        loi += kiem_bo_ghep_sap(ds, sap.read_text(encoding="utf-8"))
         qt = quan_the_chinh_sap(sap.read_text(encoding="utf-8"))
         for pt in ds:
             if not qt or not isinstance(pt, dict) or not isinstance(pt.get("tham_so"), dict):
@@ -450,10 +455,11 @@ def kiem_kc_hieu_so_sap(ds: list, sap_text: str) -> tuple[list[str], list[str]]:
 
 
 def kiem_bien_co_hiem_sap(ds: list, sap_text: str) -> list[str]:
-    """Lỗi đặc tả ↔ phương pháp biến cố hiếm SAP §5 (23/11/2026). SAP khai phương pháp engine tự chạy ⇒ MỌI phân tích
-    run_stats_analysis có kết cục (`outcome`) phải khai `bien_co_hiem` đúng mã đó (rào EPV có thể chặn bất kỳ phân tích
-    nhị phân nào — nhóm con, tổn hại); SAP khai Firth ⇒ phải có phân tích loai_bo_sung firth (R logistf) — engine
-    không tự chạy Firth. SAP không có dòng biến cố hiếm (SAP cũ) ⇒ không đòi (chốt G4-AUTO-04 lo phần khai)."""
+    """Lỗi đặc tả ↔ phương pháp biến cố hiếm SAP §5 (23/11/2026). SAP khai phương pháp engine tự chạy (mo_ta_chinh_xac,
+    firth) ⇒ MỌI phân tích run_stats_analysis có kết cục (`outcome`) phải khai `bien_co_hiem` đúng mã đó (rào EPV có thể
+    chặn bất kỳ phân tích nhị phân nào — nhóm con, tổn hại); Firth kèm `cot_cum` ⇒ LỖI (Firth không có sai số chuẩn
+    theo cụm). Phương pháp engine chưa tự chạy (cờ False trong G4Q.BIEN_CO_HIEM) ⇒ phải có phân tích loai_bo_sung cùng
+    mã. SAP không có dòng biến cố hiếm (SAP cũ) ⇒ không đòi (chốt G4-AUTO-04 lo phần khai)."""
     import g4_quality_gate as G4Q  # noqa: PLC0415
 
     bch = G4Q.phuong_phap_bien_co_hiem_sap(G4Q._section_body(sap_text, "§5"))
@@ -476,6 +482,37 @@ def kiem_bien_co_hiem_sap(ds: list, sap_text: str) -> list[str]:
             loi.append(f"{pt.get('id')}: SAP §5 khai biến cố hiếm «{pp}» nhưng đặc tả "
                        f"{'khai «' + str(ts['bien_co_hiem']) + '»' if ts.get('bien_co_hiem') else 'không khai'}"
                        " bien_co_hiem — rào EPV chặn thì bảng sẽ trống")
+        elif pp == "firth" and ts.get("cot_cum"):
+            loi.append(f"{pt.get('id')}: SAP §5 khai Firth cho biến cố hiếm nhưng phân tích có cột cụm "
+                       f"«{ts['cot_cum']}» — hồi quy Firth không có sai số chuẩn theo cụm; SAP thiết kế cụm cần "
+                       "phương pháp khác")
+    return loi
+
+
+def kiem_bo_ghep_sap(ds: list, sap_text: str) -> list[str]:
+    """Lỗi đặc tả ↔ họ «logistic có điều kiện» của SAP §4 (23/11/2026 — bệnh–chứng ghép cặp cá thể).
+
+    SAP §4 khoá họ `logistic_dk` ⇒ phân tích CHÍNH và mọi phân tích run_stats_analysis CÙNG kết cục chính phải khai
+    `bo_ghep` (cột mã bộ ghép) — thiếu thì engine chạy logistic KHÔNG điều kiện, lệch SAP. Đặc tả khai `bo_ghep` mà SAP
+    §4 không khoá họ đó ⇒ LỖI (lượt chạy sẽ ra họ khác SAP)."""
+    import g6_quality_gate as G6Q  # noqa: PLC0415
+
+    co_dk = "logistic_dk" in G6Q._ho_mo_hinh_sap(G6Q._sec(sap_text, 4))
+    ts_chinh = next((pt.get("tham_so") for pt in ds if isinstance(pt, dict) and pt.get("vai") == "chinh"
+                     and isinstance(pt.get("tham_so"), dict)), None) or {}
+    loi = []
+    for pt in ds:
+        ts = pt.get("tham_so") if isinstance(pt, dict) else None
+        if not isinstance(ts, dict) or any(ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to",
+                                                                 "bang_chung")):
+            continue
+        cung_kc = pt.get("vai") == "chinh" or (ts_chinh.get("outcome") and ts.get("outcome") == ts_chinh["outcome"])
+        if co_dk and cung_kc and not ts.get("bo_ghep"):
+            loi.append(f"{pt.get('id')}: SAP §4 khoá hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép nhưng đặc tả không "
+                       "khai bo_ghep (cột mã bộ ghép) — engine sẽ chạy logistic không điều kiện, lệch SAP")
+        elif ts.get("bo_ghep") and not co_dk:
+            loi.append(f"{pt.get('id')}: đặc tả khai bo_ghep «{ts['bo_ghep']}» nhưng SAP §4 không khoá hồi quy "
+                       "logistic có điều kiện — lượt chạy sẽ ra họ mô hình khác SAP")
     return loi
 
 

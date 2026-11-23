@@ -1428,6 +1428,8 @@ def _bang_bien_co_hiem_g6(b: Any, tien_to: str) -> list[str]:
     tieu_de = f"Biến cố hiếm — {_mot_dong(b.get('ten') or '?')} (G6, `{tien_to}_table4b_bien_co_hiem.txt`)"
     if b.get("error"):
         return [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(b['error'])}]  ", ""]
+    if b.get("phuong_phap") == "firth":
+        return _bang_firth_g6(b, tieu_de)
     # «95% CI» là cụm cố định bộ tự kiểm số bỏ qua (kiem_so_trich_g6) — viết «KTC 95%» sẽ bị coi là số chép sai
     dong = [f"*{tieu_de}* {NHAN_DOI_CHIEU_G6}  ", "", "| Nhóm | Biến cố/n | Tỷ lệ | 95% CI chính xác |", "|---|---|---|---|"]
     for g in b.get("nhom") or []:
@@ -1437,6 +1439,19 @@ def _bang_bien_co_hiem_g6(b: Any, tien_to: str) -> list[str]:
     if "fisher_p_hai_phia" in b:
         dong += [f"p chính xác Fisher (hai phía) = {_p_g6(b['fisher_p_hai_phia'])}  ", ""]
     return dong
+
+
+def _bang_firth_g6(b: dict, tieu_de: str) -> list[str]:
+    """Biến cố hiếm theo Firth (23/11/2026): OR hợp lý phạt + KTC hợp lý phạt hồ sơ + p tỷ số hợp lý phạt của G6 —
+    chép NGUYÊN VĂN. Cận KTC hồ sơ G6 không tìm được (None) ⇒ ô [CẦN THỐNG KÊ VIÊN], không in số."""
+    dong = [f"*{tieu_de} — n = {_so_g6(b.get('n'))}, số biến cố = {_so_g6(b.get('so_bien_co'))}* {NHAN_DOI_CHIEU_G6}  ",
+            "", "| Biến | OR (Firth) | 95% CI hợp lý phạt hồ sơ | p tỷ số hợp lý phạt |", "|---|---|---|---|"]
+    for r in b.get("results") or []:
+        ci = r.get("CI_95")
+        o_ci = (_ci_g6(ci) if isinstance(ci, (list, tuple)) and None not in ci
+                else "[CẦN THỐNG KÊ VIÊN — G6 không tìm được cận KTC hồ sơ]")
+        dong.append(f"| `{_mot_dong(r.get('variable', '?'))}` | {_so_g6(r.get('OR_adj'))} | {o_ci} | {_p_g6(r.get('p'))} |")
+    return dong + [""]
 
 
 def _bang_mo_hinh_g6(tieu_de: str, mh: Any) -> list[str]:
@@ -1474,6 +1489,18 @@ def _bang_mo_hinh_g6(tieu_de: str, mh: Any) -> list[str]:
     if mh.get("khong_hoi_tu"):
         ly_do = _trong_o("; ".join(map(str, mh.get("ly_do") or [])))
         dong += [f"[CẦN THỐNG KÊ VIÊN — G6: mô hình không hội tụ ({ly_do})]  ", ""]
+    if mh.get("model") == "logistic_dk":  # 23/11/2026: OR thô CÓ ĐIỀU KIỆN theo bộ ghép (chỉ phơi nhiễm), cùng tập ca
+        dong += [f"OR thô có điều kiện theo bộ ghép `{_mot_dong(mh.get('bo_ghep', '?'))}` (chỉ phơi nhiễm; "
+                 f"{_so_g6(mh.get('so_bo_ghep'))} bộ ghép) {NHAN_DOI_CHIEU_G6}  ", "",
+                 "| Biến | OR thô có điều kiện | 95% CI | p |", "|---|---|---|---|"]
+        for r in mh.get("crude") or []:
+            if r.get("khong_hoi_tu") or "OR_adj" not in r:
+                dong.append(f"| `{_mot_dong(r.get('variable', '?'))}` | [CẦN THỐNG KÊ VIÊN — G6 gắn cờ không hội tụ] | — "
+                            "| — |")
+                continue
+            dong.append(f"| `{_mot_dong(r.get('variable', '?'))}` | {_so_g6(r['OR_adj'])} | {_ci_g6(r.get('CI_95'))} | "
+                        f"{_p_g6(r.get('p'))} |")
+        dong.append("")
     canh_bao = _dong_canh_bao_g6(mh.get("warning"), mh.get("epv_warning"), mh.get("canh_bao"))
     if canh_bao:
         dong += canh_bao + [""]
@@ -1569,6 +1596,8 @@ def _khoi_ket_cuc_chinh_g6(po: dict, mo_hinh_cum_chinh: bool = False, rd_chinh: 
         if "or_crude" in po:
             dong.append(f"Ước lượng thô{doc_lap} (nhóm `{g1}` so với `{g0}`): OR = {_so_g6(po['or_crude'])} "
                         f"(95% CI {_ci_g6(po.get('ci_95'))}) {N}  ")
+        if po.get("ghep_ca_the"):  # 23/11/2026: bệnh–chứng ghép cặp cá thể — OR thô trên KHÔNG điều kiện, chỉ mô tả
+            dong.append(f"Ghép cặp cá thể (G6): {_mot_dong(po['ghep_ca_the'], 300)} {N}  ")
         if "risk_diff" in po:
             vai = f" — {nhan_chinh}" if rd_chinh and not doc_lap else ""
             dong.append(f"Hiệu số nguy cơ thô{doc_lap}{vai} (`{g1}` − `{g0}`): RD = {_so_g6(po['risk_diff'])} "
@@ -2146,12 +2175,13 @@ def _ho_mo_hinh_khop_sap(model: Any, phuong_phap: Any) -> bool:
     pp, m = str(phuong_phap or "").lower(), str(model or "").lower()
     if not pp.strip():
         return True
+    # 23/11/2026: G6 chạy hồi quy logistic có điều kiện với `model` = «logistic_dk» (đặc tả khai bo_ghep)
     if re.search(r"conditional|có điều kiện", pp):
-        return bool(re.search(r"conditional|clogit", m))
+        return bool(re.search(r"conditional|clogit|logistic_dk", m))
     if re.search(r"poisson|log-binomial", pp):
         return bool(re.search(r"poisson|binomial", m))
     if "logistic" in pp:
-        return bool(re.search(r"logistic|logit", m))
+        return bool(re.search(r"logistic|logit", m)) and "logistic_dk" not in m
     if re.search(r"tuyến tính|linear|ancova", pp):
         return bool(re.search(r"ols|linear", m))
     return False

@@ -60,6 +60,8 @@ jobs:
           - { kb: cohort_vong_sua, node: "test_gia_lap_bien_the_kho[cohort_vong_sua]" }
           - { kb: rct_kinh_te, node: "test_gia_lap_bien_the_kho[rct_kinh_te]" }
           - { kb: rct_hon_hop, node: "test_gia_lap_bien_the_kho[rct_hon_hop]" }
+          # 23/11/2026 — bệnh–chứng ghép cặp cá thể: logistic có điều kiện theo bộ ghép (đối chiếu R clogit, SPSS COXREG)
+          - { kb: case_control_ghep_cap, node: "test_gia_lap_bien_the_kho[case_control_ghep_cap]" }
           # 17/11/2026 — 8 kịch bản CHÂN THỰC (phiếu nhiều phần, sàng lọc, nhánh, calc, dữ liệu sinh từ từ điển G5) +
           # phép kiểm độ chính xác: ước lượng chính phải tìm lại tham số dùng để sinh dữ liệu (tools/gia_lap_chan_thuc.py)
           - { kb: rct_chan_thuc, node: "test_gia_lap_chan_thuc[rct_chan_thuc]" }
