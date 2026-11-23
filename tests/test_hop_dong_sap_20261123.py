@@ -300,7 +300,9 @@ def test_noi_tieu_thu_khong_tu_do_chu_sap():
     assert not re.search(r"G6Q\._sec\(|G4Q\._section_body\(|_MUC_SAP_RE|sap\.read_text\(", cs6)
     g6 = (REPO_ROOT / "tools" / "g6_quality_gate.py").read_text(encoding="utf-8")
     khoi9 = g6[g6.index("# ── G6-AUTO-09: họ mô hình"):g6.index("# ── G6-AUTO-10")]
-    assert "_sec(sap" not in khoi9 and "HD.doc(thu_muc, study)" in khoi9
+    assert "_sec(sap" not in khoi9 and 'hd_nd.get("phan_tich_chinh")' in khoi9
+    # 24/11/2026: cổng đọc hợp đồng MỘT lần ở đầu (trước G6-AUTO-02) cho mọi tiêu chí dựa SAP
+    assert g6.index("hop_dong, loi_hop_dong = HD.doc(thu_muc, study)") < g6.index("# ── G6-AUTO-02")
 
 
 # ───────────────────────── nơi tiêu thụ ─────────────────────────
@@ -442,3 +444,126 @@ def test_g6_auto_09_trong_cong_chan_khi_hop_dong_lech(de_tai_g6):  # noqa: F811 
     HD.luu(out, study, hd)
     bao, k = k9()
     assert k["pass"] is False and k["blocking"] and "hợp đồng SAP" in k["detail"] and bao["status"] == "BLOCKED", k
+
+
+# ───────────────────────── v2 (24/11/2026): mọi nơi còn tự đọc chữ SAP chuyển sang hợp đồng ─────────────────────────
+import gate_contract as GC  # noqa: E402
+import nhat_quan_xuyen_cong as NQ  # noqa: E402
+
+
+def test_v2_doc_du_truong_cho_g6_nhat_quan_gate_contract():
+    nd = HD.rut_noi_dung(_sap(dn="- Complete case vs MI\n- Thay `nsaid_30` bằng `nsaid_90`  ") + "\n")
+    assert nd["so_lieu_ky"]["alpha"] == 0.025 and nd["so_lieu_ky"]["hypothesis_type"] == "non_inferiority"
+    assert nd["so_lieu_ky"]["margin"] == 0.1
+    kc = nd["ket_cuc_sap"]
+    assert kc["bien_chinh"] == "nhom_ca" and kc["ten"].startswith("Xuất huyết tiêu hoá trên")
+    assert kc["co_dong_chinh"] is True and kc["ten_trong_muc_2"] == ["nhom_ca"]
+    assert nd["seed_sap"]["gia_tri"] == "20261115" and nd["seed_sap"]["dong_con_trong"] == []
+    assert nd["alpha_sap"]["chu_so"] == "025" and nd["alpha_sap"]["khong_ap_dung"] is False
+    assert nd["khai_bao"] == {"thu_bac": False, "ty_le": False, "post_stratify": False}
+    assert nd["dong_khai"]["thiet_ke_bang"] == "Nghiên cứu Bệnh-Chứng (Case-control)"
+    assert nd["nhac"]["chon_mau"]["nhac"]["toan_bo"] is False
+
+
+@pytest.mark.parametrize("doi, khoa, mong", [
+    ({"pp4": "Hồi quy logistic thứ tự (proportional odds) → OR"}, "thu_bac", True),
+    ({"pp4": "Ước lượng tỷ lệ + KTC 95% Wilson"}, "ty_le", True),
+    ({"pp4": "Hồi quy logistic → OR; Wilson cho tỷ lệ phụ"}, "ty_le", False),
+    ({"pp4": "Hồi quy Poisson; `postStratify(design, ~tang, N)` khi lệch"}, "post_stratify", True),
+])
+def test_v2_khai_bao_mo_hinh(doi, khoa, mong):
+    assert HD.rut_noi_dung(_sap(**doi))["khai_bao"][khoa] is mong
+
+
+def test_v2_seed_alpha_trang_thai_dien():
+    o = "[CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]"
+    sap = _sap().replace("- **Random seed:** 20261115", f"- **Random seed:** {o}")
+    sd = HD.rut_noi_dung(sap)["seed_sap"]
+    assert sd["gia_tri"] is None and sd["muc_con_can"] and sd["dong_con_trong"]  # câu ví dụ trong nhãn không là seed
+    sap = _sap(alpha="- **Alpha:** KHÔNG ÁP DỤNG (định tính)")
+    al = HD.rut_noi_dung(sap)["alpha_sap"]
+    assert al["chu_so"] is None and al["khong_ap_dung"] is True
+
+
+def _v1(hd: dict) -> dict:
+    v1 = {**hd, "schema": HD.SCHEMA_V1, "noi_dung": {k: hd["noi_dung"][k] for k in HD.KHOA_V1}}
+    v1["sha256_hop_dong"] = HD.bam_hop_dong(v1)
+    return v1
+
+
+def test_v1_van_doc_duoc_va_nang_cap_tu_chinh_van_ban(tmp_path):
+    d = _thu_muc(tmp_path, _sap(), tong_hop=False)
+    hd = HD.lap((d / HD.ten_sap(MA)).read_text(encoding="utf-8"), MA, d, HD.NGUON_SUY)
+    v1 = _v1(hd)
+    HD.luu(d, MA, v1)
+    doc, loi = HD.doc(d, MA)
+    assert loi == [] and doc["nang_cap_tu"] == HD.SCHEMA_V1
+    assert doc["noi_dung"]["so_lieu_ky"]["alpha"] == 0.025  # trường v2 suy từ chính văn bản đã khớp băm
+    v1["noi_dung"]["kieu_ghep"] = None  # lệch khoá v1 ⇒ vẫn chặn
+    v1["sha256_hop_dong"] = HD.bam_hop_dong(v1)
+    HD.luu(d, MA, v1)
+    assert any("LỆCH văn bản SAP" in x for x in HD.doc(d, MA)[1])
+
+
+def test_gate_contract_khai_bao_doc_hop_dong(tmp_path):
+    d = _thu_muc(tmp_path, _sap(pp4="Hồi quy logistic thứ tự (proportional odds) → OR"))
+    assert GC.sap_declares_ordinal(d, MA) is True  # SAP chưa mang băm ⇒ hợp đồng suy tại chỗ
+    assert HD.ghi(MA, d)[0] == 0
+    assert GC.sap_declares_ordinal(d, MA) is True
+    hd = json.loads((d / HD.ten_tep(MA)).read_text(encoding="utf-8"))
+    hd["noi_dung"]["khai_bao"]["thu_bac"] = False  # hợp đồng bị sửa ⇒ không dùng được ⇒ fail-closed
+    hd["sha256_hop_dong"] = HD.bam_hop_dong(hd)
+    HD.luu(d, MA, hd)
+    assert GC.sap_declares_ordinal(d, MA) is False
+    assert GC.sap_declares_proportion(tmp_path / "khong_co", MA) is False
+    # Chiều ngược: SAP KHÔNG khai thứ bậc/tỷ lệ mà hợp đồng bị sửa thành có ⇒ hợp đồng sai không được dùng (False)
+    d2 = _thu_muc(tmp_path / "nguoc", _sap())
+    assert HD.ghi(MA, d2)[0] == 0
+    assert GC.sap_declares_ordinal(d2, MA) is False and GC.sap_declares_proportion(d2, MA) is False
+    hd2 = json.loads((d2 / HD.ten_tep(MA)).read_text(encoding="utf-8"))
+    hd2["noi_dung"]["khai_bao"]["thu_bac"] = True
+    hd2["noi_dung"]["khai_bao"]["ty_le"] = True
+    hd2["sha256_hop_dong"] = HD.bam_hop_dong(hd2)
+    HD.luu(d2, MA, hd2)
+    assert HD.doc(d2, MA)[1]  # kiem bắt nội dung lệch văn bản SAP
+    assert GC.sap_declares_ordinal(d2, MA) is False and GC.sap_declares_proportion(d2, MA) is False
+
+
+def test_quyet_dinh_da_chot_rut_doc_hop_dong(tmp_path):
+    d = _thu_muc(tmp_path, _sap())
+    assert HD.ghi(MA, d)[0] == 0
+    ra = QD.rut(d, MA, {})
+    assert ra["analysis_software"][0].startswith("R 4.6 (phân tích chính)")
+    assert ra["missing_data_analysis"][0].startswith("Multiple Imputation (MI, m=20, method=pmm)")
+    sap_p = d / HD.ten_sap(MA)
+    sap_p.write_text(sap_p.read_text(encoding="utf-8").replace("R 4.6", "R 4.7"), encoding="utf-8", newline="\n")
+    ra = QD.rut(d, MA, {})  # SAP đổi sau khi lập hợp đồng ⇒ không lấp gì từ SAP
+    assert "analysis_software" not in ra and "primary_analysis" not in ra
+
+
+def test_nhat_quan_truc_hop_dong_va_doc_so_lieu_tu_hop_dong(tmp_path):
+    d = _thu_muc(tmp_path, _sap())
+    assert HD.ghi(MA, d)[0] == 0
+    nd, so, loi = NQ._sap(d, MA)
+    assert loi == [] and so["alpha"] == 0.025 and nd["ket_cuc_sap"]["bien_chinh"] == "nhom_ca"
+    assert NQ._ten_ket_cuc_sap(nd).startswith("Xuất huyết tiêu hoá trên")
+    (d / HD.ten_tep(MA)).unlink()  # SAP mang băm mà mất tệp hợp đồng ⇒ trục hop_dong_sap LỆCH CỨNG
+    bao = NQ.doi_chieu(d, MA)
+    truc = next(k for k in bao["thong_so"] if k["ma"] == "hop_dong_sap")
+    assert truc["muc"] == NQ.MUC_LECH_CUNG and "thiếu" in truc["ghi_chu"]
+
+
+def test_v2_noi_tieu_thu_khong_tu_do_chu_sap():
+    """quyet_dinh_da_chot, nhat_quan_xuyen_cong, gate_contract và các tiêu chí SAP của g6_quality_gate không còn bộ dò
+    chữ SAP riêng — bộ cắt mục / mẫu là bí danh của hop_dong_sap."""
+    qd = (REPO_ROOT / "tools" / "quyet_dinh_da_chot.py").read_text(encoding="utf-8")
+    assert not re.search(r"def (?:_sap|muc_sap|nhan_sap|gach_sap|bang_sap|_dong_sap_co)\(", qd)
+    nq = (REPO_ROOT / "tools" / "nhat_quan_xuyen_cong.py").read_text(encoding="utf-8")
+    assert not re.search(r"sap_artifact_name|parse_signed_numbers|_section_body|re\.\w+\([^)]*sap_text", nq)
+    gc = (REPO_ROOT / "tools" / "gate_contract.py").read_text(encoding="utf-8")
+    assert "G4_A5_SAP_FINAL" not in gc
+    g6 = (REPO_ROOT / "tools" / "g6_quality_gate.py").read_text(encoding="utf-8")
+    assert "sap_p.read_text" not in g6 and "_sec(sap" not in g6
+    assert G4Q.parse_signed_numbers is HD.doc_so_lieu_ky and G4Q._section_body is HD.than_muc_g4
+    assert G6Q._sec is HD.muc_g6 and G6Q.ket_cuc_chinh_sap is HD.ket_cuc_chinh_bien
+    assert GC.phuong_phap_la_ty_le is HD.phuong_phap_la_ty_le and NQ._ma_cum is HD.ma_cum_chon_mau

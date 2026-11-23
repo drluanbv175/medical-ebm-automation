@@ -116,33 +116,8 @@ def co_noi_dung(v: Any) -> bool:
         return "[CẦN" not in t.upper() and "___" not in t
 
 
-def _sap(out_dir: Path, study: str) -> str:
-    p = Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md"
-    return _doc(p)
-
-
-def muc_sap(sap: str, so: int) -> str:
-    """Thân §so của SAP (tới § kế tiếp / «## PHẦN») — bộ cắt mục của bộ đọc SAP duy nhất (hop_dong_sap)."""
-    return HD.muc_than(sap, so)
-
-
-def nhan_sap(sap: str, so: int, nhan: str) -> str:
-    """Giá trị sau «**<nhãn>:**» trong §so — chỉ khi đã điền (không còn ô trống)."""
-    m = re.search(rf"\*\*{re.escape(nhan)}:\*\*\s*([^\n]+)", muc_sap(sap, so))
-    v = m.group(1).strip().rstrip() if m else ""
-    v = GHI_CHU_DIEN_SAN_RE.sub("", v).strip()
-    return v if co_noi_dung(v) else ""
-
-
-def gach_sap(sap: str, so: int) -> List[str]:
-    """Các gạch đầu dòng cấp 1 đã điền của §so."""
-    return [d[2:].strip() for d in muc_sap(sap, so).splitlines() if d.startswith("- ") and co_noi_dung(d[2:])]
-
-
-def bang_sap(sap: str) -> List[str]:
-    """Tên các bảng khung của SAP §11 («**Bảng …:**»)."""
-    return [re.sub(r"^\*\*|\*\*:?$|:$", "", d.strip()).strip(" *:") for d in muc_sap(sap, 11).splitlines()
-            if d.strip().startswith("**Bảng")]
+# 24/11/2026: SAP G4 đọc qua HỢP ĐỒNG SAP máy đọc (hop_dong_sap) — mô-đun này không còn bộ cắt mục/dò nhãn SAP
+# riêng (nhan/gach/bang/dong_gach_co là accessor của hợp đồng).
 
 
 def ma_tran(out_dir: Path, study: str) -> List[Dict[str, str]]:
@@ -232,17 +207,7 @@ KHONG_NHIEU = {
 }
 
 
-def _dong_sap_co(sap: str, cac_muc: Tuple[int, ...], mau: str) -> str:
-    """Dòng gạch đầu dòng đầu tiên (đã điền) của các mục SAP chứa mẫu `mau` — bỏ định dạng đậm."""
-    for so in cac_muc:
-        for d in muc_sap(sap, so).splitlines():
-            t = d.strip()
-            if t.startswith("- ") and re.search(mau, t, re.I) and co_noi_dung(t[2:]):
-                return re.sub(r"\*\*", "", t[2:]).strip().rstrip(" ")
-    return ""
-
-
-def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], sap: str,
+def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], hd: Optional[Dict[str, Any]],
                    dat: Any) -> None:
     """Quyết định ĐẶC THÙ thiết kế đã chốt ở G1/G4 ⇒ khoá StudySpec đòi (X01 · S01 · Q01/Q02 · M01 · D10 · D13) và dòng
     yếu tố nhiễu — PI không khai lại ở G10 (16/11/2026, giả lập trọn vòng 8 thiết kế)."""
@@ -268,7 +233,7 @@ def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], sap: str,
             + (f" (biến mô tả: {', '.join(mo_ta)})" if mo_ta else ""), "SAP §4 + ma trận G3 (biến mô tả)")
     ds: Dict[str, str] = {}
     if ma == "diagnostic":
-        ng = _dong_sap_co(sap, (4, 5), r"ngưỡng|threshold|cut-?off")
+        ng = HD.dong_gach_co(hd, (4, 5), r"ngưỡng|threshold|cut-?off")
         if ng and re.search(r"\d", ng):
             ds["threshold"] = f"{ng} (SAP — đã chốt ở G4)"
     if ma == "systematic_review":
@@ -296,26 +261,26 @@ def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], sap: str,
                                "note": "Công cụ định tính (hướng dẫn phỏng vấn), không phải thang đo/PROM — không áp "
                                        "dụng kiểm định COSMIN; câu hỏi cụ thể do nhóm nghiên cứu soạn và thử trước"},
                 "G1 (data_collection_method)")
-        cm = nhan_sap(sap, 7, "Chiến lược chọn mẫu")
+        cm = HD.nhan(hd, 7, "Chiến lược chọn mẫu")
         if cm:
             dat("sampling_strategy", f"{cm} (SAP §7 — đã chốt ở G4)", "SAP §7 (chọn mẫu)")
-        at = nhan_sap(sap, 9, "Dependability")
+        at = HD.nhan(hd, 9, "Dependability")
         if at:
             ds["audit_trail"] = f"{at} (SAP §9 — đã chốt ở G4)"
         dat("missing_data_analysis", "Không áp dụng — dữ liệu là bản gỡ băng phỏng vấn, không có biến thiếu cần "
                                      "gán; SAP §6 thay bằng tiêu chí bão hoà dữ liệu",
             "thiết kế định tính (sự thật cấu trúc)")
     if ma == "prediction":
-        pp = nhan_sap(sap, 4, "Phương pháp")
+        pp = HD.nhan(hd, 4, "Phương pháp")
         if re.search(r"c-?statistic|discrimination|auc", pp, re.I):
             ds["discrimination"] = "C-statistic (AUC) + KTC 95% (SAP §4 — đã chốt ở G4)"
-        hc = _dong_sap_co(sap, (4, 5, 9), r"calibration|hiệu chuẩn")
+        hc = HD.dong_gach_co(hd, (4, 5, 9), r"calibration|hiệu chuẩn")
         if hc:
             ds["calibration"] = f"{hc} (SAP — đã chốt ở G4)"
-        kd = _dong_sap_co(sap, (9, 4), r"bootstrap|validation|kiểm định nội")
+        kd = HD.dong_gach_co(hd, (9, 4), r"bootstrap|validation|kiểm định nội")
         if kd:
             ds["validation"] = f"{kd} (SAP — đã chốt ở G4)"
-    pm = nhan_sap(sap, 10, "Phần mềm")
+    pm = HD.nhan(hd, 10, "Phần mềm")
     if pm:
         dat("analysis_software", f"{pm} (SAP §10 — đã chốt ở G4)", "SAP §10")
     if ds:
@@ -325,7 +290,7 @@ def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], sap: str,
 def rut(out_dir: Path, study: str, meta: Mapping[str, Any]) -> Dict[str, Tuple[Any, str]]:
     """{khoá study_meta cấp cao: (giá trị, nguồn)} — mọi quyết định đã chốt rút được (chưa so với khoá PI đã khai)."""
     out_dir = Path(out_dir)
-    sap = _sap(out_dir, study)
+    hd = HD.doc_hop_le(out_dir, study)  # SAP G4 đã chốt — qua hợp đồng máy đọc; thiếu/lệch ⇒ None (không lấp từ SAP)
     g1, g2, g7 = _gp(meta, "G1"), _gp(meta, "G2"), _gp(meta, "G7")
     mt = ma_tran(out_dir, study)
     qt = quy_trinh(out_dir)
@@ -338,7 +303,7 @@ def rut(out_dir: Path, study: str, meta: Mapping[str, Any]) -> Dict[str, Tuple[A
             ra[khoa] = (v, nguon)
 
     # ── đặc thù thiết kế (đi TRƯỚC ma trận: dự báo không gọi yếu tố dự báo là «yếu tố nhiễu»)
-    _theo_thiet_ke(out_dir, study, meta, sap, dat)
+    _theo_thiet_ke(out_dir, study, meta, hd, dat)
 
     # ── ma trận mục tiêu–biến (G3): kết cục chính (nguồn đo, tên biến) · phơi nhiễm · hiệp biến
     kc = next((r for r in mt if r.get("vai_tro") == "ket_cuc_chinh"), None)
@@ -372,17 +337,17 @@ def rut(out_dir: Path, study: str, meta: Mapping[str, Any]) -> Dict[str, Tuple[A
                 "ma trận G3 (nguồn đo đều là hồ sơ)")
 
     # ── SAP G4: phân tích chính · dữ liệu thiếu · khung bảng · câu hỏi sẽ trả lời
-    pp = nhan_sap(sap, 4, "Phương pháp")
+    pp = HD.nhan(hd, 4, "Phương pháp")
     dat("primary_analysis", f"{pp} (SAP §4 — đã chốt ở G4)" if pp else None, "SAP §4")
-    cl = nhan_sap(sap, 6, "Chiến lược")
+    cl = HD.nhan(hd, 6, "Chiến lược")
     dat("missing_data_analysis", f"{cl} (SAP §6 — đã chốt ở G4)" if cl else None, "SAP §6")
-    dat("table_shells", bang_sap(sap) or None, "SAP §11")
+    dat("table_shells", HD.bang(hd) or None, "SAP §11")
     if pp:
         cau = [f"ước lượng chính theo SAP §4 ({pp})"]
-        nn = nhan_sap(sap, 7, "Nhóm nhỏ tiền định")
+        nn = HD.nhan(hd, 7, "Nhóm nhỏ tiền định")
         if nn:
             cau.append(f"nhóm nhỏ tiền định: {nn}")
-        dn = gach_sap(sap, 9)
+        dn = HD.gach(hd, 9)
         if dn:
             cau.append("độ nhạy: " + "; ".join(dn))
         dat("expected_results", "Câu hỏi sẽ trả lời (không số): " + " · ".join(cau) + " (SAP đã chốt ở G4)",

@@ -1,5 +1,5 @@
 {
-  "schema": "ebm.g4_sap_contract/1",
+  "schema": "ebm.g4_sap_contract/2",
   "study": "btm-dtd2-ngoai-tru-BVQY175",
   "tep_sap": "G4_A5_SAP_FINAL_btm-dtd2-ngoai-tru-BVQY175.md",
   "nguon": "suy_tu_ban_ky",
@@ -584,7 +584,138 @@
           "Tỷ lệ bỏ cuộc dự kiến": "0"
         }
       }
+    },
+    "so_lieu_ky": {
+      "found": true,
+      "effect_type": null,
+      "effect_val": null,
+      "alpha_khong_ap_dung": false,
+      "power_khong_ap_dung": false,
+      "alpha": 0.05,
+      "power_pct": null,
+      "n": 385,
+      "hypothesis_type": null,
+      "margin": null,
+      "sd": null,
+      "precision": 0.05,
+      "p_uoc_luong": 0.5,
+      "p0": null,
+      "p_event": null,
+      "dropout": 0.0,
+      "outcome_direction": null,
+      "design_effect": null,
+      "icc": null,
+      "cluster_size": null,
+      "n_clusters": null,
+      "n_benh": null,
+      "n_khong_benh": null,
+      "prevalence": null,
+      "population_n": null,
+      "n_muc1": 385,
+      "n_chung_chi": 385
+    },
+    "ket_cuc_sap": {
+      "nguyen_van": "Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng (biến XN_DU) — biến `xn_du` = 1 khi trong 01/01–31/12/2026 có ít nhất một kết quả UACR dạng tỷ số VÀ ít nhất một kết quả creatinin huyết thanh trong eHospital; = 0 khi thiếu một hoặc cả hai. Không thể thiếu dữ liệu (không có kết quả ⇒ 0).",
+      "ten": "Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng (biến XN_DU) — biến `xn_du` = 1 khi trong 01/01–31/12/2026 có ít nhất một kết quả UACR dạng tỷ số VÀ ít nhất một kết quả creatinin huyết thanh trong eHospital; = 0 khi thiếu một hoặc cả hai. Không thể thiếu dữ liệu (không có kết quả ⇒ 0).",
+      "thoi_diem": "Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng (biến XN_DU) — biến `xn_du` = 1 khi trong 01/01–31/12/2026 có ít nhất một kết quả UACR dạng tỷ số VÀ ít nhất một kết quả creatinin huyết thanh trong eHospital; = 0 khi thiếu một hoặc cả hai. Không thể thiếu dữ liệu (không có kết quả ⇒ 0).",
+      "co_dong_chinh": true,
+      "bien_chinh": "xn_du",
+      "bien_phu": [
+        "phan_loai_btm",
+        "egfr_thap_xn",
+        "alb_xn",
+        "nhom_g",
+        "nhom_a",
+        "btm_chua_ghi_nhan",
+        "dung_raasi",
+        "dung_sglt2i",
+        "khong_xn_du",
+        "xn_du"
+      ],
+      "ten_trong_muc_2": [
+        "alb_xn",
+        "btm_chua_ghi_nhan",
+        "dung_raasi",
+        "dung_sglt2i",
+        "egfr_thap_xn",
+        "khong_xn_du",
+        "nhom_a",
+        "nhom_g",
+        "phan_loai_btm",
+        "xn_du"
+      ]
+    },
+    "seed_sap": {
+      "gia_tri": "20261028",
+      "tho": "20261028",
+      "dong_con_trong": [],
+      "khong_ap_dung": false,
+      "muc_con_can": false
+    },
+    "alpha_sap": {
+      "chu_so": "05",
+      "chu_so_rong": "05",
+      "dong_con_trong": [],
+      "khong_ap_dung": false,
+      "can_hep": false,
+      "can_rong": true
+    },
+    "khai_bao": {
+      "thu_bac": false,
+      "ty_le": true,
+      "post_stratify": false
+    },
+    "dong_khai": {
+      "chuan_bao_cao_tieu_de": "STROBE kèm RECORD (nghiên cứu dùng dữ liệu y tế thu thập thường quy)",
+      "chuan_bao_cao_bang": "STROBE + RECORD",
+      "thiet_ke_bang": "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence), có phân tích yếu tố liên quan thăm dò (MT3)",
+      "phien_ban_tieu_de": "1.0",
+      "phien_ban_lich_su": [
+        "1.0",
+        "1.0",
+        "1.0",
+        "1.0",
+        "1.0",
+        "1.0",
+        "1.0",
+        "1.0",
+        "1.0",
+        "1.0",
+        "1.0"
+      ]
+    },
+    "nhac": {
+      "muc_tieu": [
+        "1",
+        "2",
+        "3"
+      ],
+      "chon_mau_chum": false,
+      "de": [],
+      "bien_sau_chum": [],
+      "n_toi_thieu": [],
+      "chon_mau": {
+        "nhac": {
+          "toan_bo": true,
+          "ngau_nhien_don": true,
+          "he_thong": false,
+          "phan_tang": true,
+          "cum": true,
+          "lien_tiep": false,
+          "chu_dich": true,
+          "thuan_tien": false
+        },
+        "cum": [
+          {
+            "cum": "chọn mẫu ngẫu nhiên đơn",
+            "ma": "ngau_nhien_don",
+            "phu_dinh": false,
+            "thuat_lai": false,
+            "da_giai_trinh": false
+          }
+        ]
+      }
     }
   },
-  "sha256_hop_dong": "a51ba0bb7e8474d8a27c447d94a12d9090184022fa2c288a63d2aaf7709eb377"
+  "sha256_hop_dong": "27558e68ce251f3ada6b68c9f7f2293cfeb663fdbeb262f88b63dedbac15dfaf"
 }

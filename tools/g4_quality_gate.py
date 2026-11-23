@@ -351,44 +351,11 @@ def ap_dung_bien_co_hiem(design_code: Any, sap4: str = "") -> bool:
 phuong_phap_bien_co_hiem_sap = HD.phuong_phap_bien_co_hiem
 
 
-def _section_body(text: str, section_num: str) -> str:
-    """Thân nội dung của mục §N — giữa header §N và header §-kế-tiếp/"## PHẦN".
-
-    Cùng kỹ thuật với ``approve_gate._g4_sections_still_draft`` (đã chạy đúng
-    trong production): ranh giới từ (``\\b``) sau số chặn "§1" khớp nhầm "§12".
-    """
-    lines = text.splitlines()
-    start = None
-    for i, line in enumerate(lines):
-        if re.match(rf"^#{{2,3}}\s+{re.escape(section_num)}\b", line):
-            start = i
-            break
-    if start is None:
-        return ""
-    end = len(lines)
-    for j in range(start + 1, len(lines)):
-        if re.match(r"^#{2,3}\s+§\d", lines[j]) or re.match(r"^##\s+PHẦN", lines[j]):
-            end = j
-            break
-    return "\n".join(lines[start:end])
+# 24/11/2026: bộ cắt mục / bộ đọc số liệu đã ký chuyển về bộ đọc SAP duy nhất (hop_dong_sap) — bí danh.
+_section_body = HD.than_muc_g4
 
 
-def _phan_body(text: str, so_phan: str) -> str:
-    """Thân «## PHẦN <so_phan>» tới «## PHẦN» kế tiếp (hoặc hết tệp) — "" nếu không có."""
-    lines = text.splitlines()
-    start = None
-    for i, line in enumerate(lines):
-        if re.match(rf"^##\s+PHẦN\s+{re.escape(so_phan)}\b", line):
-            start = i
-            break
-    if start is None:
-        return ""
-    end = len(lines)
-    for j in range(start + 1, len(lines)):
-        if re.match(r"^##\s+PHẦN\b", lines[j]):
-            end = j
-            break
-    return "\n".join(lines[start:end])
+_phan_body = HD.than_phan
 
 
 def _than_muc(text: str, section_num: str) -> str:
@@ -398,61 +365,8 @@ def _than_muc(text: str, section_num: str) -> str:
 
 
 # Bộ đọc số liệu đã ký: (khoá, mẫu, kiểu). Nhãn khớp ĐÚNG dòng run_g4_auto.generate() in ở §12.
-_MAU_SO_MUC12: tuple[tuple[str, str, Any], ...] = (
-    ("alpha", r"\*\*Alpha \([^)]*\):\*\*\s*([\d.]+)", float),
-    ("power_pct", r"\*\*Power:\*\*\s*(\d+)%", int),
-    ("n", r"\*\*Cỡ mẫu:\*\*\s*N\s*=\s*(\d+)", int),
-    ("hypothesis_type", r"\*\*Loại giả thuyết:\*\*\s*(\S+)", str),
-    ("margin", r"\*\*Biên \(margin, Δ\):\*\*\s*([\d.]+)", float),
-    ("sd", r"\*\*Độ lệch chuẩn \(SD\) kết cục:\*\*\s*([\d.]+)", float),
-    # VÁ 04/10/2026 (soát từng cổng, G4-06/G4-08): tham số QUYẾT ĐỊNH N mà SAP ký từng không ghi (sai số d của thiết
-    # kế theo độ chính xác, p0, bỏ cuộc, chiều kết cục NI, cụm, chẩn đoán, FPC) — nay in ở §12 và đối chiếu G3.
-    ("precision", r"\*\*Sai số tuyệt đối cho phép \(d\):\*\*\s*±?\s*([\d.]+)", float),
-    ("p_uoc_luong", r"\*\*Tỷ lệ ước lượng \(p\):\*\*\s*([\d.]+)", float),
-    ("p0", r"\*\*Tỷ lệ biến cố nhóm chứng \(p0\):\*\*\s*([\d.]+)", float),
-    ("p_event", r"\*\*Tỷ lệ biến cố \(log-rank, p_event\):\*\*\s*([\d.]+)", float),
-    ("dropout", r"\*\*Tỷ lệ bỏ cuộc dự kiến:\*\*\s*([\d.]+)", float),
-    ("outcome_direction", r"\*\*Chiều kết cục:\*\*\s*(higher_better|lower_better)", str),
-    ("design_effect", r"\*\*Hiệu ứng thiết kế \(DE\):\*\*\s*([\d.]+)", float),
-    ("icc", r"\*\*ICC:\*\*\s*([\d.]+)", float),
-    ("cluster_size", r"\*\*Cỡ cụm trung bình \(m\):\*\*\s*([\d.]+)", float),
-    ("n_clusters", r"\*\*Số cụm:\*\*\s*(\d+)", int),
-    ("n_benh", r"\*\*Số ca bệnh cần:\*\*\s*(\d+)", int),
-    ("n_khong_benh", r"\*\*Số ca không bệnh cần:\*\*\s*(\d+)", int),
-    ("prevalence", r"\*\*Tỷ lệ hiện mắc dự kiến:\*\*\s*([\d.]+)", float),
-    ("population_n", r"\*\*Quần thể hữu hạn \(FPC\):\*\*\s*N\s*=\s*(\d+)", int),
-)
-
-
-def parse_signed_numbers(artifact_text: str) -> dict[str, Any]:
-    """Đọc lại số liệu đã KÝ: §12 (alpha/power/N/effect/giả thuyết/margin/SD + tham số quyết định N), cộng N ở §1 và ở
-    chứng chỉ khoá PHẦN 5.
-
-    VÁ 04/10/2026 (soát từng cổng, G4-08): bản cũ chỉ đọc §12 — «cùng số liệu xuất hiện ở CẢ hai nơi nên lệch ở §12
-    đã đủ» — nhưng chứng chỉ khoá mới là VĂN BẢN ĐƯỢC KÝ, và đổi N ở §1/chứng chỉ thành 999 trong khi §12 bị xoá dòng
-    thì mọi phép so đều «None ⇒ không lệch ⇒ PASS». Nay đọc cả ba nơi (`n_muc1`, `n_chung_chi`) để G4-AUTO-03 đối
-    chiếu chéo; `alpha_khong_ap_dung`/`power_khong_ap_dung` = SAP khai tường minh «KHÔNG ÁP DỤNG» (không phải thiếu số).
-    """
-    section = _section_body(artifact_text, "§12")
-    result: dict[str, Any] = {"found": bool(section), "effect_type": None, "effect_val": None,
-                              "alpha_khong_ap_dung": False, "power_khong_ap_dung": False}
-    result.update({khoa: None for khoa, _mau, _kieu in _MAU_SO_MUC12})
-    if section:
-        for khoa, mau, kieu in _MAU_SO_MUC12:
-            m = re.search(mau, section)
-            if m:
-                result[khoa] = kieu(m.group(1))
-        m = re.search(r"\*\*Effect size dự kiến:\*\*\s*(\S+)\s*=\s*([\d.]+)", section)
-        if m:
-            result["effect_type"] = m.group(1)
-            result["effect_val"] = float(m.group(2))
-        result["alpha_khong_ap_dung"] = bool(re.search(r"\*\*Alpha[^*\n]*:\*\*\s*KHÔNG ÁP DỤNG", section))
-        result["power_khong_ap_dung"] = bool(re.search(r"\*\*Power:\*\*\s*KHÔNG ÁP DỤNG", section))
-    m1 = re.search(r"\*\*Cỡ mẫu cuối:\*\*\s*N\s*=\s*(\d+)", _section_body(artifact_text, "§1"))
-    result["n_muc1"] = int(m1.group(1)) if m1 else None
-    m5 = re.search(r"Cỡ mẫu\s*:\s*N\s*=\s*(\d+)", _phan_body(artifact_text, "5"))
-    result["n_chung_chi"] = int(m5.group(1)) if m5 else None
-    return result
+_MAU_SO_MUC12 = HD.MAU_SO_MUC12
+parse_signed_numbers = HD.doc_so_lieu_ky
 
 
 def loai_muc_12(design_code: Any, g3_checkpoint: Mapping[str, Any]) -> str:

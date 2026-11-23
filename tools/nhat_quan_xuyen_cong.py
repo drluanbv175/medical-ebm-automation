@@ -62,6 +62,8 @@ TOOLS = BASE / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
+import hop_dong_sap as HD  # noqa: E402 — 24/11/2026: phía SAP của mọi trục đọc HỢP ĐỒNG SAP máy đọc
+
 MUC_KHOP = "khop"
 MUC_LECH_CUNG = "lech_cung"
 MUC_LECH_MEM = "lech_mem"
@@ -175,81 +177,56 @@ def _trds(out_dir: Path, study: str) -> Dict[str, Any]:
     return ra
 
 
-def _sap(out_dir: Path, study: str) -> Tuple[str, Dict[str, Any]]:
-    """(văn bản SAP, số liệu §12 đã đọc bằng ĐÚNG bộ đọc của g4_quality_gate)."""
-    try:
-        import g4_quality_gate as G4Q  # noqa: PLC0415
-        text = _doc_text(out_dir / G4Q.sap_artifact_name(study))
-        return text, (G4Q.parse_signed_numbers(text) if text else {})
-    except Exception:  # noqa: BLE001 — thiếu bộ đọc ⇒ không so nguồn SAP (vẫn so các nguồn khác)
-        return "", {}
+def _sap(out_dir: Path, study: str) -> Tuple[Dict[str, Any], Dict[str, Any], List[str]]:
+    """(nội dung hợp đồng SAP máy đọc, số liệu đã ký §12/§1/chứng chỉ, lỗi hợp đồng) — 24/11/2026: phía SAP của mọi trục
+    đọc HỢP ĐỒNG G4_SAP_CONTRACT_<mã>.json (hop_dong_sap), không tự dò chữ SAP. Không có SAP ⇒ ({}, {}, []); có SAP mà
+    hợp đồng thiếu/cũ/lệch ⇒ ({}, {}, [lỗi]) — trục `hop_dong_sap` báo LỆCH CỨNG, các trục khác coi như chưa có SAP."""
+    out_dir = Path(out_dir)
+    if not (out_dir / HD.ten_sap(study)).is_file():
+        return {}, {}, []
+    hd, loi = HD.doc(out_dir, study)
+    if hd is None or loi:
+        return {}, {}, list(loi)
+    nd = hd.get("noi_dung") if isinstance(hd.get("noi_dung"), dict) else {}
+    return nd, (nd.get("so_lieu_ky") or {}), []
 
 
-def _ket_cuc_chinh_sap(text: str) -> str:
-    try:
-        import g4_quality_gate as G4Q  # noqa: PLC0415
-        than = G4Q._section_body(text, "§2")
-    except Exception:  # noqa: BLE001
-        than = ""
-    # 15/11/2026: nhận cả nhãn mục tiêu trong ngoặc («**Kết cục chính (MT1):**», thêm từ giai đoạn 3 — MT-11).
-    # Bản cũ chỉ khớp «**Kết cục chính:**» ⇒ SAP BTM lặng lẽ rơi khỏi trục ket_cuc_chinh (chỉ còn G0/G1/G2 để so).
-    m = re.search(r"\*\*Kết cục chính(?:\s*\([^)]*\))?:\*\*\s*(.+)", than)
-    return m.group(1).strip() if m else ""
+def _nd_sap(sap: Any) -> Dict[str, Any]:
+    """Nội dung hợp đồng SAP từ đối số trục: hợp đồng/nội dung (đường chạy thật) hoặc chữ SAP (kiểm đơn vị — suy qua bộ
+    đọc SAP DUY NHẤT hop_dong_sap, không dò chữ ở đây)."""
+    if isinstance(sap, dict):
+        nd = sap.get("noi_dung") if "noi_dung" in sap else sap
+        return nd if isinstance(nd, dict) else {}
+    return HD.rut_noi_dung(str(sap)) if sap else {}
 
 
-def _ten_ket_cuc_sap(text: str) -> str:
-    """Phần TÊN kết cục chính ở SAP §2 — bỏ đuôi do CHÍNH MÁY điền sẵn (`run_g4_auto._dien_khung`: «tên; đo bằng …;
-    thời điểm: … — biến `x` *(điền sẵn từ quyết định đã chốt …)*»).
+def _ket_cuc_chinh_sap(sap: Any) -> str:
+    """Nguyên văn sau «**Kết cục chính[ (MTk)]:**» ở SAP §2 — từ hợp đồng SAP (`ket_cuc_sap.nguyen_van`)."""
+    return str((_nd_sap(sap).get("ket_cuc_sap") or {}).get("nguyen_van") or "")
 
-    15/11/2026 (giả lập trọn vòng — đề tài thuần tập nhất quán từ G0): trục so NGUYÊN dòng điền sẵn với tên kết cục
-    G0 ⇒ báo lệch mềm, đòi PI xác nhận «cùng một kết cục» cho một §2 do máy chép từ G1 (BTM phải làm đúng bước này,
-    mục B1). Thước đo/thời điểm đã có trục riêng (`thoi_diem_ket_cuc`), nên trục kết cục chính chỉ so phần tên. §2
-    người viết không theo khuôn này giữ nguyên ⇒ dấu vân tay xác nhận cũ không đổi."""
-    import quyet_dinh_da_chot as QD  # noqa: PLC0415 — mẫu chú thích điền sẵn dùng chung (16/11/2026)
 
-    kc = QD.GHI_CHU_DIEN_SAN_RE.sub("", _ket_cuc_chinh_sap(text)).strip()
-    # « — biến `x`» của khuôn, hoặc «. Biến `x`» sau khi bộ chuẩn trình bày đổi gạch dài thành dấu câu.
-    kc = re.sub(r"[\s.,;—–-]+[Bb]iến\s+`[^`]+`\s*$", "", kc)
-    return re.split(r";\s+(?:đo bằng|thời điểm:)\s", kc, maxsplit=1)[0].strip()
+def _ten_ket_cuc_sap(sap: Any) -> str:
+    """Phần TÊN kết cục chính ở SAP §2 (bỏ chú thích điền sẵn và đuôi máy điền «; đo bằng …; thời điểm: … — biến `x`»)
+    — từ hợp đồng SAP (`ket_cuc_sap.ten`). Thước đo/thời điểm có trục riêng (`thoi_diem_ket_cuc`)."""
+    return str((_nd_sap(sap).get("ket_cuc_sap") or {}).get("ten") or "")
 
 
 # --------------------------------------------------------------------- thời điểm đo kết cục chính (PICO-T)
 # THÊM 15/11/2026 (bác sĩ «Tiếp tục vấn đề còn lại» sau kiểm toàn hệ theo khung 12 bước): chữ T của PICO(T) là mục DUY
 # NHẤT của khung chưa có trục máy (lần kiểm trước chỉ soi tay). Đổi thời điểm đo kết cục chính là một dạng đổi kết cục.
-_KHOANG_TG_RE = re.compile(r"(?<![/\-\d])(\d+(?:[.,]\d+)?)\s*(ngày|tuần|tháng|năm|giờ|phút)\b",
-                           re.IGNORECASE)
-_NGAY_RE = re.compile(r"(?<!\d)(\d{1,2})/(\d{1,2})(?:/(\d{4}))?(?!\d)")
+_KHOANG_TG_RE = HD.KHOANG_TG_RE
+_NGAY_RE = HD.NGAY_RE
 
 
 def moc_thoi_gian(v: Any) -> Tuple[frozenset, frozenset]:
-    """(khoảng thời gian «12 tháng», mốc ngày «01/01», «31/12», «2026») trong một mô tả thời điểm đo."""
-    t = unicodedata.normalize("NFC", _van_ban(v)).lower()
-    khoang = frozenset(f"{so.replace(',', '.')} {dv}" for so, dv in _KHOANG_TG_RE.findall(t))
-    ngay = set()
-    for d, m, y in _NGAY_RE.findall(t):
-        if 1 <= int(d) <= 31 and 1 <= int(m) <= 12:
-            ngay.add(f"{int(d):02d}/{int(m):02d}")
-            if y:
-                ngay.add(y)
-    return khoang, frozenset(ngay)
+    """(khoảng thời gian «12 tháng», mốc ngày «01/01», «31/12», «2026») trong một mô tả thời điểm đo — bộ đọc chung."""
+    return HD.moc_thoi_gian(_van_ban(v))
 
 
-def _thoi_diem_sap(text: str) -> Tuple[str, bool]:
-    """(mô tả thời điểm đo kết cục chính trong SAP §2, SAP §2 có dòng kết cục chính?)."""
-    try:
-        import g4_quality_gate as G4Q  # noqa: PLC0415
-        than = G4Q._section_body(text, "§2")
-    except Exception:  # noqa: BLE001
-        than = ""
-    m = re.search(r"\*\*Thời điểm đo[^*]*:\*\*\s*(.+)", than)
-    if m:
-        return m.group(1).strip(), True
-    kc = _ket_cuc_chinh_sap(text)
-    m = re.search(r"thời điểm:\s*([^;]+)", kc, re.IGNORECASE)
-    if m:
-        return m.group(1).strip(), True
-    k, n = moc_thoi_gian(kc)
-    return (kc if (k or n) else ""), bool(kc)
+def _thoi_diem_sap(sap: Any) -> Tuple[str, bool]:
+    """(mô tả thời điểm đo kết cục chính trong SAP §2, SAP §2 có dòng kết cục chính?) — từ hợp đồng SAP."""
+    kc = _nd_sap(sap).get("ket_cuc_sap") or {}
+    return str(kc.get("thoi_diem") or ""), bool(kc.get("co_dong_chinh"))
 
 
 def truc_thoi_diem_ket_cuc(meta: Dict[str, Any], trds: Dict[str, Any], sap_text: str,
@@ -672,8 +649,14 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
     meta = _doc_json(out_dir / "study_meta.json")
     cp = {g: _doc_json(out_dir / f"{g}_checkpoint.json") for g in (f"G{i}" for i in range(11))}
     trds = _trds(out_dir, study)
-    sap_text, sap12 = _sap(out_dir, study)
+    sap_text, sap12, loi_hop_dong = _sap(out_dir, study)  # sap_text: NỘI DUNG hợp đồng SAP (không phải chữ SAP)
     ket: List[Dict[str, Any]] = []
+    if loi_hop_dong:
+        # 24/11/2026: SAP có mà hợp đồng máy đọc không dùng được ⇒ phía SAP của mọi trục không đo được — nói rõ, LỆCH
+        # CỨNG (sửa ở G4: `hop_dong_sap.py ghi`), không để các trục im lặng coi như «chưa có SAP».
+        ket.append(_ket("hop_dong_sap", "Hợp đồng SAP máy đọc (nguồn phía SAP của mọi trục)",
+                        [{"cong": "G4", "noi": HD.ten_tep(study), "gia_tri": "; ".join(loi_hop_dong[:2])}],
+                        MUC_LECH_CUNG, "hợp đồng SAP máy đọc không dùng được — " + " | ".join(loi_hop_dong[:3])))
 
     # 1) Cỡ mẫu kế hoạch.
     g3 = cp["G3"]
@@ -1038,7 +1021,7 @@ def _truc_muc_tieu(meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, An
         if not m:
             continue
         so = re.sub(r"\D", "", m[1])
-        if not re.search(rf"(MT\s*{so}\b|Mục tiêu\s*{so}\b)", sap_text):
+        if so not in ((_nd_sap(sap_text).get("nhac") or {}).get("muc_tieu") or []):
             thieu.append(str(o)[:90])
     if thieu:
         return _ket("muc_tieu_phan_tich", ten, [{"cong": "G1", "noi": "objectives", "gia_tri": x} for x in thieu],
@@ -1092,7 +1075,8 @@ def _truc_muc_tieu_ho_so_g2(out_dir: Path, study: str, meta: Dict[str, Any]) -> 
 def _truc_chon_mau(meta: Dict[str, Any], sap_text: str, td: Dict[str, Dict[str, str]]) -> Optional[Dict[str, Any]]:
     tk = _gp(meta, "G1").get("sampling_design") or []
     tk = tk if isinstance(tk, list) else [tk]
-    co_chum = "cum" in tk or bool(re.search(r"chọn mẫu (theo )?(chùm|cụm)", sap_text or "", re.I))
+    nhac = _nd_sap(sap_text).get("nhac") or {}
+    co_chum = "cum" in tk or bool(nhac.get("chon_mau_chum"))
     if not co_chum:
         return None
     ten = "Chọn mẫu chùm ↔ cỡ mẫu ↔ biến chùm"
@@ -1105,7 +1089,7 @@ def _truc_chon_mau(meta: Dict[str, Any], sap_text: str, td: Dict[str, Dict[str, 
     de = 1 + ((cv ** 2 + 1) * m - 1) * icc
     gia_tri = f"m={m:g} CV={cv:g} ICC={icc:g} ⇒ DE={de:.2f}"
     lech, nguon = [], [{"cong": "G3", "noi": "cluster_size·cv·icc", "gia_tri": gia_tri}]
-    sap_de = [float(x.replace(",", ".")) for x in re.findall(r"\bDE\s*[:=]?\s*(1[.,]\d+)", sap_text or "")]
+    sap_de = [float(x) for x in nhac.get("de") or []]
     # 15/11/2026: MỌI giá trị DE trong SAP phải là DE chính (CV G3), DE độ nhạy CV = 1,0 hoặc DE cỡ chùm đều (CV = 0);
     # luật cũ «chỉ cần MỘT giá trị khớp» để lọt SAP vừa ghi DE đúng vừa ghi DE cũ ở chỗ khác.
     hop_le = _de_hop_le(m, icc, cv)
@@ -1120,8 +1104,7 @@ def _truc_chon_mau(meta: Dict[str, Any], sap_text: str, td: Dict[str, Dict[str, 
     # định danh có trong từ điển; không tên nào có ⇒ biến chùm không nhập được.
     # 17/11/2026: nhận cả «cụm» (cùng nghĩa; SAP dùng «Hiệu chỉnh cụm», run_g4_auto ghi «biến cụm `…`») — trục
     # _KY_THUAT cạnh đây vốn đã nhận «chùm|cụm|cluster».
-    ung_vien = sorted(set(re.findall(r"(?:chùm|cụm|cluster)\s*\(?\s*`([A-Za-z_][A-Za-z0-9_:]*)`", sap_text or "",
-                                     re.I)))
+    ung_vien = list(nhac.get("bien_sau_chum") or [])
     thap = {x.lower() for x in td}
     bien = [b for b in ung_vien if b.lower() in thap]
     if td and not bien:
@@ -1225,8 +1208,9 @@ def _truc_tinh_lai_co_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap_t
             f"N đã chốt {n_chot} < N cần {n_can}")
     # «N tối thiểu» trong SAP / đề cương nộp: ít nhất MỘT lần nhắc phải chứa N cần (lần khác có thể là kịch bản
     # độ nhạy).
-    for ten_vb, vb in (("SAP", sap_text), ("đề cương nộp", _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))):
-        doan = [vb[x.end():x.end() + 90] for x in re.finditer(r"(?:\bN|cỡ\s+mẫu)\s+tối\s+thiểu", vb or "", re.I)]
+    dc_nop = _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md")
+    for ten_vb, doan in (("SAP", (_nd_sap(sap_text).get("nhac") or {}).get("n_toi_thieu") or []),
+                         ("đề cương nộp", HD.doan_n_toi_thieu(dc_nop))):
         if doan and not any(re.search(_mau_so(n_can), t) for t in doan):
             mem.append(f"{ten_vb} ghi «N/cỡ mẫu tối thiểu» nhưng không lần nào là {n_can}")
             nguon.append({"cong": "G4" if ten_vb == "SAP" else "G10", "noi": ten_vb, "gia_tri": doan[0].strip()[:80]})
@@ -1239,42 +1223,19 @@ def _truc_tinh_lai_co_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap_t
 
 
 # mã G1.sampling_design (g1_design_blocks._O_DANH_DAU) ⇒ dấu hiệu trong văn bản
-_KY_THUAT = {"toan_bo": r"toàn\s+bộ", "ngau_nhien_don": r"ngẫu\s+nhiên\s+đơn",
-             "he_thong": r"(?:chọn\s+mẫu|mẫu)\s+hệ\s+thống|systematic", "phan_tang": r"phân\s+tầng|stratif",
-             "cum": r"chùm|cụm|cluster", "lien_tiep": r"liên\s+tiếp|consecutive", "chu_dich": r"chủ\s+đích|purposive",
-             "thuan_tien": r"thuận\s+tiện|convenience"}
-# 17/11/2026: G1 khai cách phi xác suất qua «khac:<mô tả>» (từ vựng g1_design_blocks chỉ có 5 mã xác suất/toàn bộ) —
-# trục từng coi «khác» là CHƯA KHAI ⇒ ⚪ mãi với mọi đề tài tuyển liên tiếp/chủ đích. Nay nhận ra ba cách hay gặp.
+# 24/11/2026: mẫu nhận diện kỹ thuật chọn mẫu, cụm «chọn mẫu <cách>», phủ định, thuật lại, giải trình — sống ở bộ đọc
+# chung (hop_dong_sap.phan_tich_chon_mau) để phía SAP lấy từ HỢP ĐỒNG còn chiến lược tuyển chọn G1/đề cương nộp dùng
+# CÙNG bộ phân tích. Tên dưới đây là bí danh.
+_KY_THUAT = HD.KY_THUAT_CHON_MAU
+# 17/11/2026: G1 khai cách phi xác suất qua «khac:<mô tả>» — nhận ra ba cách hay gặp.
 _KHAC_MA = {"lien_tiep": r"liên\s+tiếp|consecutive", "chu_dich": r"chủ\s+đích|purposive",
             "thuan_tien": r"thuận\s+tiện|convenience"}
-_CUM_CHON_MAU = re.compile(r"chọn\s+mẫu\s+(ngẫu\s+nhiên\s+đơn|hệ\s+thống|phân\s+tầng|(?:theo\s+)?(?:chùm|cụm)|"
-                           r"thuận\s+tiện|chủ\s+đích|toàn\s+bộ)", re.I)
-_PHU_DINH = re.compile(r"(không|thay\s+vì|tránh|chứ\s+không|thay\s+cho|loại\s+bỏ)[^.;\n]{0,25}$", re.I)
+_CUM_CHON_MAU = HD.CUM_CHON_MAU
+_PHU_DINH = HD.PHU_DINH_CHON_MAU
 _PHI_XAC_SUAT = ("thuan_tien", "chu_dich")
-# câu THUẬT LẠI tài liệu khác (C1a §4.4.3: «Thuyết minh đề tài đã nộp Bệnh viện ghi phương pháp chọn mẫu là chọn mẫu
-# thuận tiện…») — không phải phương pháp của văn bản này, nhưng là chênh lệch giữa hai tài liệu nộp ⇒ CẦN XEM,
-# không LỆCH.
-_THUAT_LAI = re.compile(r"thuyết\s+minh|bản\s+(?:cũ|trước)|phiên\s+bản\s+trước|đề\s+cương\s+(?:cũ|trước)", re.I)
-# 15/11/2026: đoạn thuật lại mà CHÍNH NÓ giải trình chênh lệch (đề cương C1a §4.4.3: «… cụ thể hóa phương pháp đó … theo
-# hướng chặt chẽ hơn …») là đã giải trình — không báo «cần xem» mãi. Thuật lại KHÔNG kèm câu giải trình vẫn «cần xem».
-_GIAI_TRINH_DOI = re.compile(r"cụ\s+thể\s+h(?:óa|oá|oa)|thay\s+(?:bằng|thế)|điều\s+chỉnh\s+thành", re.I)
-_GIAI_TRINH_LY_DO = re.compile(r"chặt\s+chẽ\s+hơn|lý\s+do|\bvì\b|bởi\s+vì|nhằm|để\s+(?:tránh|bảo\s+đảm|phủ|giảm)", re.I)
-
-
-def _da_giai_trinh(doan: str) -> bool:
-    """Đoạn thuật lại có câu giải trình: «giải trình», hoặc CẢ động từ thay đổi lẫn lý do (một câu cụt «Đề cương cụ thể
-    hoá.» không đủ)."""
-    return bool(re.search(r"giải\s+trình", doan, re.I)
-                or (_GIAI_TRINH_DOI.search(doan) and _GIAI_TRINH_LY_DO.search(doan)))
-
-
-def _ma_cum(t: str) -> str:
-    t = unicodedata.normalize("NFC", t.lower())
-    for ma, mau in (("ngau_nhien_don", "ngẫu nhiên đơn"), ("he_thong", "hệ thống"), ("phan_tang", "phân tầng"),
-                    ("thuan_tien", "thuận tiện"), ("chu_dich", "chủ đích"), ("toan_bo", "toàn bộ")):
-        if re.search(mau.replace(" ", r"\s+"), t):
-            return ma
-    return "cum"
+_THUAT_LAI = HD.THUAT_LAI
+_da_giai_trinh = HD.da_giai_trinh
+_ma_cum = HD.ma_cum_chon_mau
 
 
 def _truc_ky_thuat_chon_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, Any]]:
@@ -1294,7 +1255,7 @@ def _truc_ky_thuat_chon_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap
     ma += [ma_k for k in khac for ma_k, rx in _KHAC_MA.items() if re.search(rx, k, re.I) and ma_k not in ma]
     rs = unicodedata.normalize("NFC", str(g1.get("recruitment_strategy") or ""))
     dc = unicodedata.normalize("NFC", _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))
-    sap = unicodedata.normalize("NFC", sap_text or "")
+    sap = _nd_sap(sap_text)
     if not ma and not rs and not dc:
         return None
     ten = "Kỹ thuật chọn mẫu G1 ↔ tuyển chọn ↔ đề cương ↔ SAP"
@@ -1302,34 +1263,34 @@ def _truc_ky_thuat_chon_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap
         return _ket("ky_thuat_chon_mau", ten, [], MUC_CHUA_DU, "G1 chưa khai sampling_design — không có chuẩn để so")
     can, cung, mem = [], [], []
     da_giai_trinh: List[str] = []
-    for ten_vb, vb, can_ma in (("chiến lược tuyển chọn G1", rs, [x for x in ma if x in ("toan_bo", "ngau_nhien_don",
-                                                                                     "he_thong", "phan_tang")]),
-                               ("đề cương nộp", dc, ma), ("SAP", sap, [x for x in ma if x in ("phan_tang", "cum")])):
-        if not vb:
+    # phía SAP: phân tích chọn mẫu đã nằm trong HỢP ĐỒNG SAP (`nhac.chon_mau`); hai văn bản kia dùng CÙNG bộ phân tích
+    for ten_vb, ptich, can_ma in (("chiến lược tuyển chọn G1", HD.phan_tich_chon_mau(rs) if rs else None,
+                                   [x for x in ma if x in ("toan_bo", "ngau_nhien_don", "he_thong", "phan_tang")]),
+                                  ("đề cương nộp", HD.phan_tich_chon_mau(dc) if dc else None, ma),
+                                  ("SAP", (sap.get("nhac") or {}).get("chon_mau") if sap else None,
+                                   [x for x in ma if x in ("phan_tang", "cum")])):
+        if not ptich:
             continue
-        thieu = [x for x in can_ma if x in _KY_THUAT and not re.search(_KY_THUAT[x], vb, re.I)]
+        thieu = [x for x in can_ma if x in _KY_THUAT and not (ptich.get("nhac") or {}).get(x)]
         if thieu:
             can.append(f"{ten_vb} không nhắc {', '.join(thieu)}")
-        for mm in _CUM_CHON_MAU.finditer(vb):
-            if _PHU_DINH.search(vb[max(0, mm.start() - 40):mm.start()]):
+        for c in ptich.get("cum") or []:
+            if c.get("phu_dinh"):
                 continue
-            k = _ma_cum(mm.group(1))
+            k = c.get("ma")
             if k in ma:
                 continue
-            dau_cau = max(vb.rfind(". ", 0, mm.start()), vb.rfind("\n", 0, mm.start())) + 1
-            if _THUAT_LAI.search(vb[dau_cau:mm.start()]):
-                dau_doan = vb.rfind("\n\n", 0, mm.start()) + 1
-                cuoi_doan = vb.find("\n\n", mm.end())
-                if _da_giai_trinh(vb[dau_doan:cuoi_doan if cuoi_doan >= 0 else len(vb)]):
+            if c.get("thuat_lai"):
+                if c.get("da_giai_trinh"):
                     da_giai_trinh.append(ten_vb)
                     continue
-                can.append(f"{ten_vb} thuật lại tài liệu khác dùng «{mm.group(0)}» (khác mã G1 {', '.join(ma)}) — "
+                can.append(f"{ten_vb} thuật lại tài liệu khác dùng «{c.get('cum')}» (khác mã G1 {', '.join(ma)}) — "
                            "đối chiếu và giải trình chênh lệch giữa hai tài liệu")
                 continue
             if k in _PHI_XAC_SUAT:
-                cung.append(f"{ten_vb} tả «{mm.group(0)}» (phi xác suất) trong khi G1 chốt {', '.join(ma)}")
+                cung.append(f"{ten_vb} tả «{c.get('cum')}» (phi xác suất) trong khi G1 chốt {', '.join(ma)}")
             else:
-                mem.append(f"{ten_vb} tả «{mm.group(0)}» — không thuộc mã G1 {', '.join(ma)}")
+                mem.append(f"{ten_vb} tả «{c.get('cum')}» — không thuộc mã G1 {', '.join(ma)}")
     nguon = [{"cong": "G1", "noi": "sampling_design", "gia_tri": ", ".join(tk)}]
     if cung:
         return _ket("ky_thuat_chon_mau", ten, nguon, MUC_LECH_CUNG, "; ".join(dict.fromkeys(cung + mem)))
@@ -1770,20 +1731,16 @@ def _truc_ma_tran_muc_tieu(out_dir: Path, study: str, meta: Dict[str, Any]) -> O
 # PHÂN TÍCH và đề cương ghi «có phân tích»; tiêu đề SAP C1a ghi phiên bản 1.4 khi bảng lịch sử đã có 1.5 (G10 in
 # phiên bản
 # từ tiêu đề); (3) bảng kiểm soát sai lệch G1 hứa phân tích SAP không có. Trục `thiet_ke` cũ chỉ so MÃ thiết kế.
-_DONG_CHUAN_BOLD = re.compile(r"^\*\*Chuẩn báo cáo(?: áp dụng)?:\*\*(.*)$", re.M)
-_DONG_CHUAN_BANG = re.compile(r"^\|\s*Chuẩn báo cáo(?: áp dụng)?\s*\|([^|\n]*)\|", re.M)
-_DONG_THIET_KE_BANG = re.compile(r"^\|\s*Thiết kế\s*\|([^|\n]*)\|", re.M)
+_DONG_CHUAN_BOLD = HD.DONG_CHUAN_BOLD
+_DONG_CHUAN_BANG = HD.DONG_CHUAN_BANG
+_DONG_THIET_KE_BANG = HD.DONG_THIET_KE_BANG
 _DONG_THIET_KE_G10 = re.compile(r"^\*\*Thiết kế(?: \(tự động từ G1\))?:\*\*(.*)$", re.M)
 _CUM_CAT_NGANG_DC = re.compile(r"[Nn]ghiên cứu (?:mô tả )?cắt ngang[^.\n|]{0,60}")
 _CO_PHAN_TICH = re.compile(r"ph[âa]n\s+t[íi]ch|analytic", re.I)
 _KHONG_AP_DUNG_CHUAN = re.compile(r"\b(RECORD|CROSS)\b[^.\n]{0,80}kh[ôo]ng\s+[áa]p\s+d[ụu]ng", re.I)
-_PHIEN_BAN_TIEU_DE = re.compile(r"\*\*Phiên bản SAP:\*\*\s*([0-9]+(?:\.[0-9]+)*)")
-_DONG_LICH_SU = re.compile(r"^\|\s*([0-9]+(?:\.[0-9]+)*)\b[^|\n]*\|\s*\d{4}-\d{2}-\d{2}\s*\|", re.M)
-
-
-def _dong_dau(rx: "re.Pattern[str]", van_ban: str) -> Optional[str]:
-    m = rx.search(unicodedata.normalize("NFC", van_ban or ""))
-    return m.group(1).strip() if m else None
+_PHIEN_BAN_TIEU_DE = HD.PHIEN_BAN_TIEU_DE
+_DONG_LICH_SU = HD.DONG_LICH_SU
+_dong_dau = HD.dong_dau
 
 
 def _nguon_chuan_bao_cao(out_dir: Path, study: str, sap_text: str) -> List[Dict[str, Any]]:
@@ -1796,8 +1753,10 @@ def _nguon_chuan_bao_cao(out_dir: Path, study: str, sap_text: str) -> List[Dict[
               _dong_dau(_DONG_CHUAN_BOLD, _doc_text(out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md"))),
              ("G2", "gói đạo đức «| Chuẩn báo cáo |»",
               _dong_dau(_DONG_CHUAN_BANG, _doc_text(out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"))),
-             ("G4", "SAP tiêu đề «Chuẩn báo cáo:»", _dong_dau(_DONG_CHUAN_BOLD, sap_text)),
-             ("G4", "SAP bảng «| Chuẩn báo cáo |»", _dong_dau(_DONG_CHUAN_BANG, sap_text)),
+             ("G4", "SAP tiêu đề «Chuẩn báo cáo:»", (_nd_sap(sap_text).get("dong_khai") or {}).get(
+                 "chuan_bao_cao_tieu_de")),
+             ("G4", "SAP bảng «| Chuẩn báo cáo |»", (_nd_sap(sap_text).get("dong_khai") or {}).get(
+                 "chuan_bao_cao_bang")),
              ("G10", "đề cương nộp «Chuẩn báo cáo áp dụng»",
               _dong_dau(_DONG_CHUAN_BANG, _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))),
              ("G10", "đề cương thống nhất G10 «Chuẩn báo cáo áp dụng:»",
@@ -1901,7 +1860,7 @@ def _truc_mo_ta_thiet_ke(out_dir: Path, study: str, meta: Dict[str, Any], sap_te
                  _dong_dau(_DONG_THIET_KE_BANG, _doc_text(out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"))),
                 ("G2", "đăng ký TRDS mục 15 (description)",
                  trds15.get("description") if isinstance(trds15, dict) else None),
-                ("G4", "SAP «| Thiết kế |»", _dong_dau(_DONG_THIET_KE_BANG, sap_text)),
+                ("G4", "SAP «| Thiết kế |»", (_nd_sap(sap_text).get("dong_khai") or {}).get("thiet_ke_bang")),
                 ("G10", "đề cương thống nhất G10 «Thiết kế (tự động từ G1)»",
                  _dong_dau(_DONG_THIET_KE_G10, _doc_text(out_dir / f"DE_CUONG_THONG_NHAT_{study}.md")))]
         dc = unicodedata.normalize("NFC", _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))
@@ -1936,8 +1895,8 @@ def _truc_mo_ta_thiet_ke(out_dir: Path, study: str, meta: Dict[str, Any], sap_te
             muc.append(MUC_KHOP)
     # TK-03
     if sap_text:
-        tieu_de = _dong_dau(_PHIEN_BAN_TIEU_DE, sap_text[:4000])
-        ls = _DONG_LICH_SU.findall(unicodedata.normalize("NFC", sap_text))
+        dk = _nd_sap(sap_text).get("dong_khai") or {}
+        tieu_de, ls = dk.get("phien_ban_tieu_de"), list(dk.get("phien_ban_lich_su") or [])
         if tieu_de and ls:
             nguon.append({"cong": "G4", "noi": "SAP tiêu đề «Phiên bản SAP» / dòng cuối bảng lịch sử",
                           "gia_tri": f"{tieu_de} / {ls[-1]}"})
@@ -2101,7 +2060,7 @@ def _truc_de_cuong_nop(out_dir: Path, study: str, meta: Dict[str, Any], sap_text
         muc.append(MUC_LECH_MEM)
         ghi.append(f"bìa ghi phiên bản {m.group(1)} nhưng " + ", ".join(f"{c} khai {v}" for c, v in pv.items()))
     # DC-02
-    pb_sap = _dong_dau(_PHIEN_BAN_TIEU_DE, sap_text[:4000]) if sap_text else None
+    pb_sap = (_nd_sap(sap_text).get("dong_khai") or {}).get("phien_ban_tieu_de") if sap_text else None
     trich = [x for d in dc.splitlines() if re.search(r"kế hoạch phân tích", d, re.I)
              for x in _PB_TRONG_DONG.findall(d)]
     if pb_sap and trich:

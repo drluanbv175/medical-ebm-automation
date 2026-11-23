@@ -98,6 +98,10 @@ def test_sapdrift_seed_bi_bat(de_tai_g6):
     nd_moi, so = re.subn(r"set\.seed\(\d+\)", "set.seed(9999)", nd)
     assert so >= 1, "mẫu phải có seed máy-đọc-được ở SAP §10"
     sap.write_text(nd_moi, encoding="utf-8", newline="\n")
+    # 24/11/2026: SAP sửa thì thống kê viên lập lại hợp đồng SAP máy đọc (G6 đọc seed từ hợp đồng, không từ chữ SAP)
+    from tests._chuoi_da_chot import lap_hop_dong_g4  # noqa: PLC0415
+
+    lap_hop_dong_g4(out, study)
     bao = G6Q.evaluate_study(study, out, write=False, repo_root=goc)
     lech = [k for k in bao["checks"] if k["id"] == "G6-AUTO-02"]
     assert bao["status"] == "BLOCKED"

@@ -35,6 +35,7 @@ import g6_quality_gate as G6Q  # noqa: E402
 import g6_trong_so_survey as TSS  # noqa: E402
 import run_g6_auto as G6A  # noqa: E402
 
+from tests._chuoi_da_chot import lap_hop_dong_g4  # noqa: E402
 from tests.g5_test_helpers import (  # noqa: E402
     bat_mo_hinh_chinh_g6,
     configure_test_signing_key,
@@ -70,8 +71,6 @@ def de_tai(tmp_path, monkeypatch):
     sap_p.write_text(re.sub(r"(###\s*§4\b[^\n]*\n)", lambda m: m.group(1) + _THEM_SAP_4, sap_goc, count=1),
                      encoding="utf-8", newline="\n")
     # 23/11/2026: SAP sửa §4 thì thống kê viên lập lại hợp đồng SAP máy đọc (G6-AUTO-09 đọc hợp đồng, chặn khi cũ)
-    from tests._chuoi_da_chot import lap_hop_dong_g4  # noqa: PLC0415
-
     lap_hop_dong_g4(out, study)
 
     def chay() -> None:
@@ -155,6 +154,7 @@ def test_script_khong_chay_trong_so_thi_chan(de_tai, cach):
 def test_sap_khong_goi_poststratify_thi_khong_ap_dung(de_tai):
     study, out, goc, sap_p, sap_goc, chay = de_tai
     sap_p.write_text(sap_goc, encoding="utf-8", newline="\n")   # SAP thôi đòi trọng số ⇒ bộ sinh dọn 04/04a
+    lap_hop_dong_g4(out, study)  # 24/11/2026: SAP sửa ⇒ lập lại hợp đồng SAP máy đọc (cổng đọc hợp đồng)
     chay()
     assert not (out / "scripts" / TSS.TEP_CHAY).exists()
     ck = _ck(_cham(study, out, goc))
@@ -162,6 +162,7 @@ def test_sap_khong_goi_poststratify_thi_khong_ap_dung(de_tai):
     # Chữ «trọng số»/«hậu phân tầng» trơn — kể cả tên hàm KHÔNG có ngoặc gọi — vẫn không áp dụng.
     sap_p.write_text(re.sub(r"(###\s*§4\b[^\n]*\n)", lambda m: m.group(1) + "- Trọng số hậu phân tầng "
                             "(postStratify) theo ngày × khung giờ\n", sap_goc, count=1), encoding="utf-8", newline="\n")
+    lap_hop_dong_g4(out, study)
     ck = _ck(_cham(study, out, goc))
     assert ck["pass"] is True and "không áp dụng" in ck["detail"], ck
 
@@ -171,7 +172,13 @@ def test_dieu_kien_sap_la_ham_cua_bo_sinh(de_tai, monkeypatch):
     study, out, goc, *_ = de_tai
     (out / "scripts" / TSS.TEP_CHAY).unlink()
     _chan(_cham(study, out, goc))
-    monkeypatch.setattr(TSS, "sap_goi_post_stratify", lambda _sap: False)
+    # 24/11/2026: bộ sinh và hợp đồng SAP dùng MỘT hàm (TSS.sap_goi_post_stratify là bí danh của hop_dong_sap); cổng đọc
+    # hợp đồng ⇒ hàm nói «không đòi» thì hợp đồng (lập lại bằng chính hàm đó) và cổng cùng nói «không đòi».
+    import hop_dong_sap as HD  # noqa: PLC0415
+
+    assert TSS.sap_goi_post_stratify is HD.goi_post_stratify
+    monkeypatch.setattr(HD, "goi_post_stratify", lambda _sap: False)
+    lap_hop_dong_g4(out, study)
     ck = _ck(_cham(study, out, goc))
     assert ck["pass"] is True and "không áp dụng" in ck["detail"], ck
 

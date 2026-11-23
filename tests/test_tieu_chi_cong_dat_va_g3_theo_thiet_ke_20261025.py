@@ -149,7 +149,8 @@ def test_thiet_ke_so_sanh_van_giu_truc_power_chua_du_de_so(tmp_path):
 def test_thiet_ke_do_chinh_xac_hai_noi_ghi_power_lech_nhau_van_bao(tmp_path, monkeypatch):
     import nhat_quan_xuyen_cong as NQ  # noqa: PLC0415
 
-    monkeypatch.setattr(NQ, "_sap", lambda out_dir, study: ("", {"power_pct": 90}))
+    # 24/11/2026: _sap trả (nội dung hợp đồng SAP, số liệu đã ký, lỗi hợp đồng)
+    monkeypatch.setattr(NQ, "_sap", lambda out_dir, study: ({}, {"power_pct": 90}, []))
     muc = _xuyen_cong(tmp_path, {"design_code": "cross_sectional", "effect_type": "PREVALENCE", "power": 0.8,
                                  "alpha": 0.05, "precision": 0.05})
     assert muc.get("power") not in (None, "chua_du", "khop"), muc
