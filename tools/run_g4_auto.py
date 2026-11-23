@@ -1053,7 +1053,8 @@ def _dong_bo_chung_chi(sap: str) -> str:
 
 def _dien_khung(sap: str, khung, design_code, hypothesis_type: str = "superiority") -> str:
     """Điền ô [CẦN …] của SAP bằng khung đề tài ĐÃ CHỐT (15/11/2026). Chỉ thay đúng các dòng khuôn; vắng dữ kiện ⇒ giữ
-    nguyên [CẦN …]. Không đụng §2 của thiết kế định tính (đã có nhánh riêng)."""
+    nguyên [CẦN …]. §2 định tính có nhánh riêng; riêng hai dòng «Kết cục phụ 1/2» định tính điền theo danh sách G1
+    đã chốt (23/11/2026)."""
     if not khung:
         return sap
     nhan = " *(điền sẵn từ quyết định đã chốt — thống kê viên/PI sửa nếu cần)*"
@@ -1093,6 +1094,17 @@ def _dien_khung(sap: str, khung, design_code, hypothesis_type: str = "superiorit
     if khung.get("phu_da_khai") and not phu:
         thay["- **Kết cục phụ 2:** [CẦN — câu hỏi/chủ đề nghiên cứu phụ, hoặc KHÔNG ÁP DỤNG]  "] = (
             f"- **Kết cục phụ 2:** Không áp dụng — G1 không chốt kết cục/chủ đề phụ{nhan}  ")
+    # 23/11/2026 (giả lập định tính): SAP định tính để NGUYÊN cả hai ô «Kết cục phụ 1/2» khi G1 chốt KHÔNG có câu hỏi
+    # phụ mà G0 còn mang một chủ đề phụ cũ (danh sách gộp `ket_cuc_phu` lấy G0 khi G1 rỗng) ⇒ ô rơi về «chưa có thông
+    # tin». Định tính quyết bằng danh sách G1 ĐÃ CHỐT: có ⇒ chép từng câu hỏi/chủ đề phụ; rỗng ⇒ không áp dụng.
+    if design_code == "qualitative" and isinstance(khung.get("ket_cuc_phu_g1"), list):
+        phu_g1 = [str(x).strip() for x in khung["ket_cuc_phu_g1"] if str(x).strip()]
+        for i in (1, 2):
+            thay[f"- **Kết cục phụ {i}:** [CẦN — câu hỏi/chủ đề nghiên cứu phụ, hoặc KHÔNG ÁP DỤNG]  "] = (
+                f"- **Kết cục phụ {i}:** {phu_g1[i - 1]}{nhan}  " if i <= len(phu_g1) else
+                f"- **Kết cục phụ {i}:** Không áp dụng — G1 không chốt câu hỏi/chủ đề nghiên cứu phụ{nhan}  "
+                if not phu_g1 else
+                f"- **Kết cục phụ {i}:** Không có — G1 chốt {len(phu_g1)} câu hỏi/chủ đề nghiên cứu phụ{nhan}  ")
     # 16/11/2026: tiêu chí ngừng/cứu trợ cho TỪNG người tham gia (SPIRIT 15b) G1 đã chốt ⇒ §15 không hỏi lại
     if str(khung.get("ngung_mot_nguoi") or "").strip():
         thay["- **Tiêu chí ngừng/đổi can thiệp cho MỘT người tham gia:** [CẦN — vd đổi liều khi có tác "
@@ -1179,6 +1191,8 @@ def _khung_sap(out, meta):
         "ket_cuc": KD.ket_cuc_chinh(meta), "ket_cuc_bien": vt.get("ket_cuc"),
         "ket_cuc_phu": KD.danh_sach(KD.gia_tri(meta, "secondary_outcomes")[0]),
         "phu_da_khai": isinstance(g1.get("secondary_outcomes"), list),
+        # 23/11/2026: danh sách G1 ĐÃ CHỐT nguyên dạng (định tính quyết câu hỏi/chủ đề phụ theo G1, không lùi về G0)
+        "ket_cuc_phu_g1": g1.get("secondary_outcomes") if isinstance(g1.get("secondary_outcomes"), list) else None,
         "ngung_mot_nguoi": g1.get("stopping_rescue_rules"),
         "itt_tu_estimand": bool(re.search(r"treatment[\s-]*policy", str(
             ((g1.get("estimand") or {}) if isinstance(g1.get("estimand"), dict) else {}).get(
