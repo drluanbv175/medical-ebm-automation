@@ -79,6 +79,13 @@ def kiem_mot(p: Path) -> List[str]:
     # 22/11/2026 (kiểm toàn hệ 11 khâu): khâu 9–10 trước đây không có ở cổng phán — 22/24 kịch bản thiếu hình bắt buộc
     # của chuẩn báo cáo (sơ đồ luồng) và bản diễn giải không bàn hạn chế/khái quát theo chuẩn mà CI vẫn xanh.
     g6 = ((j.get("du_lieu") or {}).get("g6") or {})
+    # 23/11/2026: phân tích SAP mà G6 chạy LỖI ⇒ G7 chỉ có ô chờ cho kết quả đó. Trước đây không chốt nào đọc trạng
+    # thái từng phân tích: trên CI (không R/SPSS) mọi phân tích thiết kế đặc thù bị xếp LỖI mà kịch bản chẩn
+    # đoán/dự báo/gộp vẫn xanh. Chỉ rct_kinh_te đỏ (gián tiếp, qua CHEERS 22).
+    pt_loi = [str(x.get("id")) for x in g6.get("phan_tich") or [] if isinstance(x, dict)
+              and x.get("trang_thai") == "LOI"]
+    if pt_loi:
+        loi.append(f"G6 chạy LỖI {len(pt_loi)} phân tích SAP: {', '.join(pt_loi)[:200]}")
     bd = g6.get("bieu_do")
     if "khong_tu_dong" not in g6:
         if not isinstance(bd, dict) or not bd.get("co_tep"):

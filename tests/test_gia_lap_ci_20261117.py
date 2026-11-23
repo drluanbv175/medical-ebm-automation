@@ -112,6 +112,20 @@ def test_cong_phan_khau_9_10_20261122(tmp_path, ghi_de, cum):
     assert any(cum in x for x in loi), loi
 
 
+def test_cong_phan_do_khi_g6_co_phan_tich_loi_20261123(tmp_path):
+    """Phân tích SAP mà G6 xếp LỖI (vd thiết kế đặc thù khi máy không có R/SPSS trước bản vá 23/11/2026) ⇒ đỏ; phân
+    tích DA_CHAY/DA_KIEM với kiểm chéo KHONG_DO_DUOC không làm đỏ."""
+    g6 = _du_lieu_g6()
+    g6["g6"]["phan_tich"] = [{"id": "MT1_chinh", "trang_thai": "DA_CHAY", "kiem_cheo": "KHONG_DO_DUOC"},
+                             {"id": "BC_dinh_tinh", "trang_thai": "DA_KIEM"}]
+    _bao_cao(tmp_path, "rct_nhi_phan", du_lieu=g6)
+    assert KG.kiem_mot(tmp_path / "rct_nhi_phan.json") == []
+    g6["g6"]["phan_tich"].append({"id": "KT_chi_phi_hieu_qua", "trang_thai": "LOI"})
+    _bao_cao(tmp_path, "rct_nhi_phan", du_lieu=g6)
+    loi = KG.kiem_mot(tmp_path / "rct_nhi_phan.json")
+    assert any("G6 chạy LỖI 1 phân tích SAP: KT_chi_phi_hieu_qua" in x for x in loi), loi
+
+
 def test_cong_phan_bo_qua_bieu_do_khi_g6_khong_tu_dong(tmp_path):
     """Thiết kế chưa có engine phân tích chính (g6.khong_tu_dong) — không đòi biểu đồ (đã có cổng khác giữ)."""
     _bao_cao(tmp_path, "rct_nhi_phan", du_lieu={"de_cuong_nop": {"ma": 0}, "g6": {"khong_tu_dong": "…"}})
@@ -145,3 +159,16 @@ def test_bien_spss_tro_tep_khong_co_la_khong_co_spss(monkeypatch, tmp_path):
     that.write_text("", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_SPSS_PYTHON", str(that))
     assert SP.ung_vien_python_spss() == [that]
+
+
+def test_bien_rscript_tro_tep_khong_co_la_khong_co_r_20261123(monkeypatch, tmp_path):
+    """EBM_RSCRIPT trỏ tệp không có ⇒ «không tìm thấy R» (KhongDoDuoc), cùng luật với EBM_SPSS_PYTHON."""
+    import cau_noi_r as CR
+    monkeypatch.setenv("EBM_RSCRIPT", str(tmp_path / "khong-co" / "Rscript"))
+    assert CR.ung_vien_rscript() == []
+    with pytest.raises(CR.KhongDoDuoc):
+        CR.tim_r()
+    that = tmp_path / "Rscript"
+    that.write_text("", encoding="utf-8", newline="\n")
+    monkeypatch.setenv("EBM_RSCRIPT", str(that))
+    assert CR.ung_vien_rscript() == [that]

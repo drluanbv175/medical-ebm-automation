@@ -223,10 +223,12 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # khối ký thứ ba theo đơn vị ngay trên Khoa (mã ở PR #419; cặp gốc EBM-drluanbv175#490) — vẫn 64.
 # 22/11/2026 (sổ phân công công cụ C1–C6): 23 agent nhận dòng «Công cụ `tools/x.py` (chủ|kiểm|dùng phụ)» theo
 # config/phan_cong_cong_cu.json, chép từ nhánh gốc claude/phan-cong-goc-20261122 — vẫn 64.
+# 23/11/2026: chép 2 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
+# 23/11/2026: chép 4 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
 # 23/11/2026 (hợp đồng SAP máy đọc): 4 agent nhận dòng `tools/hop_dong_sap.py` (thiet-ke-nghien-cuu chủ, dieu-phoi-g4
 # kiểm, phan-tich-thong-ke và viet-ban-thao dùng phụ) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "4ef7e5cb3314c9eacfbc51dd28cf8374f20d5947296ead8a1b4ce416393bf186"
+    "c24dbc8f593d8d995e086f28c86072d7695acdf26c20e28d76a28d0264a75090"
 )
 
 MINIMUM_AGENT_COUNT = 64
