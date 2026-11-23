@@ -449,7 +449,9 @@ def test_g7_phan_nhom_tu_chi_muc_sap_chep_nguyen_van(tmp_path):
 def test_g7_phan_nhom_vang_chi_muc_thanh_o_cho_khong_bien_mat(tmp_path):
     out, _ = _de_tai_phan_nhom(tmp_path, nc_trong_chi_muc=False)
     text = "\n".join(G7.dung_phan_nhom_g6(out))
-    assert "**`NC_thuoc`** (SAP §7): [CẦN THỐNG KÊ VIÊN — SAP cam kết phân nhóm này nhưng" in text
+    # 23/11/2026: mục thiếu chỉ mục kèm mô tả đặc tả (người đọc biết phân tích SAP nào còn thiếu kết quả)
+    assert ("**`NC_thuoc`** (SAP §7) — Phân nhóm theo thuốc: [CẦN THỐNG KÊ VIÊN — SAP cam kết phân nhóm này nhưng"
+            in text)
 
 
 def test_g7_phan_nhom_khong_ap_dung_khi_nhom_con_khong_phai_gop_phan_nhom(tmp_path):

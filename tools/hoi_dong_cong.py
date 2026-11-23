@@ -402,6 +402,8 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G7-AUTO-00": "G7-T1", "G7-AUTO-01": "^G1", "G7-AUTO-01b": "^G2", "G7-AUTO-02": "^G0,G2,G3,G4",
         "G7-AUTO-03": "^G5,G6", "G7-AUTO-04": "G7-T1", "G7-AUTO-05": "G7-T1", "G7-AUTO-06": "G7-T1",
         "G7-AUTO-07": "G7-T3",
+        # 23/11/2026: §5 bản thảo đủ mọi phân tích vai «do_nhay» của đặc tả G6 — viet-ban-thao chép từ tóm tắt G6
+        "G7-AUTO-08": "G7-T1",
         "G7-HUMAN-01": "PI@G7-T1", "G7-HUMAN-02": "PI@G7-T1", "G7-HUMAN-03": "PI@G7-T1", "G7-HUMAN-04": "PI@G7-T1",
         "G7-HUMAN-05": "PI@G7-T1",
     },
