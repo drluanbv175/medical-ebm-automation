@@ -2644,6 +2644,52 @@ _N_THEO_THIET_KE = {
 }
 
 
+def diem_manh_tu_du_kien_g7(*, n_adjusted: int, formula_used: str, sample_size_detail: str, effect_text: str,
+                            g3_n_chot: Optional[int], design_code: str, bias_controls: Optional[list],
+                            tom_tat_g6: Optional[dict], sap_tom_tat: Optional[dict]) -> list[str]:
+    """Bàn luận §4 Điểm mạnh (2)–(4) dựng từ DỮ KIỆN ĐÃ CHỐT, không câu khen chung (23/11/2026 — giả lập: câu (2) mang
+    ô «[CẦN bổ sung: tính đại diện quần thể…]» và nhánh không tính cỡ mẫu theo lực chỉ có ô chờ dù G3 đã chốt N; ô rơi
+    về «chưa có thông tin» trong bản thảo):
+      (2) cỡ mẫu — tính trước theo lực (G3: công thức, N, α, lực, tham số có nguồn) hoặc N chốt ở G3 cho thiết kế không
+          tính theo lực; chưa có G3 ⇒ ô chờ;
+      (3) biện pháp kiểm soát từng nguồn sai lệch đã chốt ở thiết kế (`gate_params.G1.bias_controls`); chưa chốt sổ ⇒
+          ô chờ cho tác giả;
+      (4) độ đầy đủ dữ liệu đo trên tập dữ liệu phân tích (G6 `missing_data`) và cách xử lý dữ liệu thiếu theo SAP —
+          câu KHÔNG nói «dữ liệu/kế hoạch đã khoá» (khẳng định trần mà G7-AUTO-06 chặn khi G5/G4 chưa đạt); G6
+          chưa có số ⇒ không in (không phải điểm mạnh khi chưa đo).
+    Tính đại diện của quần thể là NHẬN ĐỊNH sau khi có dữ liệu — không phải dữ kiện đã chốt, không để ô chờ ở đây."""
+    if n_adjusted > 0:
+        hai = (f"*(2)* Cỡ mẫu được tính TRƯỚC (a priori) theo {formula_used or 'công thức thống kê phù hợp'}: "
+               f"{sample_size_detail}, {effect_text} — không phải cỡ mẫu tiện lợi (convenience sample).  ")
+    elif g3_n_chot:
+        hai = (f"*(2)* Cỡ mẫu chốt trước khi thu thập dữ liệu (G3): N = {g3_n_chot} người — "
+               f"{_N_THEO_THIET_KE.get(design_code, 'xem G3')}.  ")
+    else:
+        hai = "*(2)* [CẦN thêm điểm mạnh: cỡ mẫu đủ theo tính toán G3; tính đại diện; kiểm soát confounders...]  "
+    bien_phap = []
+    for x in bias_controls or []:
+        if not isinstance(x, dict):
+            continue
+        sl, bp = _gia_tri_chot(x.get("sai_lech")).rstrip(". "), _gia_tri_chot(x.get("bien_phap")).rstrip(". ")
+        if sl and bp:
+            # «nguồn: biện pháp» — dấu «;» trong lời khai biện pháp đổi thành «,» để «;» chỉ còn tách các nguồn
+            bien_phap.append(f"{_ha_chu_dau(sl.split(':')[0].strip())}: {_ha_chu_dau(bp).replace(';', ',')}")
+    ba = (f"*(3)* Mỗi nguồn sai lệch tiềm ẩn xác định ở thiết kế có biện pháp kiểm soát định trước (G1, xem §6b) — "
+          f"{'; '.join(bien_phap)}.  " if bien_phap else
+          "*(3)* [CẦN — điểm mạnh khác, vd kiểm soát nhiễu/thiết kế thu thập dữ liệu]  ")
+    ra = [hai, ba]
+    md = (tom_tat_g6 or {}).get("missing_data") if isinstance((tom_tat_g6 or {}).get("missing_data"), dict) else {}
+    if not md.get("error") and isinstance(md.get("n_complete_cases"), int) and isinstance(md.get("n_total"), int) \
+            and md["n_total"] > 0:
+        xu_ly = (sap_tom_tat or {}).get("du_lieu_thieu") if md["n_complete_cases"] < md["n_total"] else None
+        pct = f" ({_so_g6(md['pct_complete'])}%)" if isinstance(md.get("pct_complete"), (int, float)) else ""
+        ra.append(f"*(4)* Độ đầy đủ dữ liệu đo trên tập dữ liệu phân tích: {_so_g6(md['n_complete_cases'])}/"
+                  f"{_so_g6(md['n_total'])} người{pct} đủ dữ liệu mọi biến phân tích (G6)"
+                  + (f"; dữ liệu thiếu xử lý theo SAP: {xu_ly}" if xu_ly else "")
+                  + f". {NHAN_DOI_CHIEU_G6}  ")
+    return ra
+
+
 def _sap_tom_tat(out_dir: Path, study: str) -> dict:
     """Điều đã KHOÁ ở SAP mà bản thảo §6 cần (17/11/2026 — G7 từng để ô «Phân tích độ nhạy: [CẦN — từ SAP]», «Phần mềm:
     [CẦN …]», «Dữ liệu thiếu: [CẦN …]» dù SAP đã khoá đủ ba mục): §9 độ nhạy, §10 phần mềm, §6 chiến lược dữ liệu thiếu."""
@@ -4672,15 +4718,10 @@ def generate_manuscript(
                  "\"SAP khóa trước khi xem dữ liệu\" cho tới khi G4 thật sự LOCKED. "
                  f"Thiết kế {design_primary} vẫn là điểm mạnh dự kiến sau khi SAP khóa.]  "
         ),
-        (
-            f"*(2)* Cỡ mẫu được tính TRƯỚC (a priori) theo "
-            f"{formula_used or 'công thức thống kê phù hợp'}: {sample_size_detail}, {effect_text} "
-            "— không phải cỡ mẫu tiện lợi (convenience sample). "
-            "[CẦN bổ sung: tính đại diện quần thể nghiên cứu sau khi có dữ liệu thật]  "
-            if n_adjusted > 0 else
-            "*(2)* [CẦN thêm điểm mạnh: cỡ mẫu đủ theo tính toán G3; tính đại diện; kiểm soát confounders...]  "
-        ),
-        "*(3)* [CẦN — điểm mạnh khác, vd kiểm soát nhiễu/thiết kế thu thập dữ liệu]  ",
+        *diem_manh_tu_du_kien_g7(
+            n_adjusted=n_adjusted, formula_used=formula_used, sample_size_detail=sample_size_detail,
+            effect_text=effect_text, g3_n_chot=g3_n_chot, design_code=design_code, bias_controls=bias_controls,
+            tom_tat_g6=(kq6 or {}).get("tom_tat_g6"), sap_tom_tat=sap_tom_tat),
         "",
         "**§5 Hạn chế (Limitations):**  ",
         "[CẦN — liệt kê hạn chế cụ thể của thiết kế và thực hiện nghiên cứu này.  ",
@@ -5243,9 +5284,11 @@ def write_checkpoint(
     crf_blocks: Optional[dict] = None,
     design_drift_warning: Optional[str] = None,
     ket_qua_g6: Optional[dict] = None,
+    o_cho_co_du_kien_khi_sinh: Optional[list] = None,
 ) -> Path:
     """Ghi G7_checkpoint.json với đầy đủ metadata. `ket_qua_g6` (N16): kết quả dung_ket_qua_tu_g6 — ghi nguồn hoặc lý
-    do không dựng nháp Kết quả."""
+    do không dựng nháp Kết quả. `o_cho_co_du_kien_khi_sinh` (23/11/2026): ô chờ của BẢN VỪA SINH ở chỗ đã có dữ kiện
+    đã chốt (g7_quality_gate.o_cho_co_du_kien) — cổng G7 vẫn chặn khi người điền đã lấp ô đó sau này."""
     crf_blocks = crf_blocks or {}
     ket_qua_g6 = ket_qua_g6 or {}
     # SỬA: cùng lỗi has_crf=bool(crf_blocks) như trong generate_manuscript() —
@@ -5330,6 +5373,7 @@ def write_checkpoint(
         "pmids_used_as_seed":  pmids_used,
         "n_pmids":             len(pmids_used),
         "n_planned":           n_adjusted,
+        "o_cho_co_du_kien_khi_sinh": list(o_cho_co_du_kien_khi_sinh or []),
         "ket_qua_g6": {
             "da_dung_nhap": bool(ket_qua_g6.get("da_dung")),
             "nguon": ket_qua_g6.get("nguon"),
@@ -5764,6 +5808,7 @@ def main() -> None:
         crf_blocks=crf_blocks,
         design_drift_warning=design_drift_warning,
         ket_qua_g6=ket_qua_g6,
+        o_cho_co_du_kien_khi_sinh=G7Q.o_cho_co_du_kien(out_dir, study, artifact),
     )
     print(f"  → {cp_path}")
 
