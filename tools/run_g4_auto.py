@@ -716,8 +716,10 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "### §5 PHÂN TÍCH ĐA BIẾN",
             "",
             # «§N» trần bị bộ sinh đề cương nộp gỡ (còn câu cụt) ⇒ viết «SAP §N» (đổi thành «kế hoạch phân tích …»)
-            *(["- **Biến độc lập đưa vào:** các cấu trúc tiền tố theo mô hình cấu trúc của SAP §4 (mô hình lý thuyết chốt "
-               "trước khi thu thập — không chọn biến theo dữ liệu)  ",
+            # bản thảo G7 chép nguyên dòng này («Mô hình đa biến gồm các biến định trước: …») ⇒ câu tự đủ nghĩa, không «§»
+            *(["- **Biến độc lập đưa vào:** các cấu trúc tiền tố theo mô hình cấu trúc định trước; mỗi hệ số đường dẫn "
+               "hiệu chỉnh cho các tiền tố còn lại của cùng cấu trúc nội sinh; mô hình lý thuyết chốt trước khi thu thập, "
+               "không chọn biến theo dữ liệu  ",
                "- **Kiểm soát nhiễu:** mỗi hệ số đường dẫn được ước lượng đồng thời với các cấu trúc tiền tố còn lại của "
                "cùng cấu trúc nội sinh (hiệu chỉnh lẫn nhau theo mô hình lý thuyết); biến gây nhiễu ngoài mô hình không "
                "đưa vào mô hình chính — đặc điểm nền mô tả ở Bảng 1, nhóm nhỏ tiền định phân tích riêng  ",

@@ -1169,6 +1169,15 @@ def _pls_sem(cn: Dict[str, Any], vi: Callable[[str], str], tt: str, _ky_g2: Call
                     "tiêu: phân tích ảnh hưởng của giao tiếp, hiểu biết và niềm tin lên tuân thủ. Phương pháp: cắt "
                     "ngang, mô hình PLS-SEM (seminr, kiểm chéo cSEM)."),
         "pilot": "Thử bộ câu hỏi trên 15 người ngoài mẫu nghiên cứu",
-        "limitations": "Một cơ sở; một thời điểm đo; tuân thủ tự khai"}
+        "limitations": "Một cơ sở; một thời điểm đo; tuân thủ tự khai",
+        # bộ câu hỏi là thang đo ⇒ hệ không tự điền công cụ (quyet_dinh_da_chot) — chủ nhiệm khai ở G10
+        "instrument": {
+            "name": ("Bộ câu hỏi 12 câu Likert 1–5 đo bốn cấu trúc của mô hình: giao tiếp bác sĩ – người bệnh, hiểu "
+                     "biết về bệnh, niềm tin vào điều trị, tuân thủ điều trị"),
+            "source": ("nhóm nghiên cứu xây dựng theo khung mô hình niềm tin sức khoẻ; thử trên 15 người ngoài mẫu "
+                       "trước thu thập chính"),
+            "note": ("Độ tin cậy và giá trị đo lường đánh giá trên dữ liệu chính theo Hair và cộng sự 2019 (tải, "
+                     "Cronbach α, ρA, ρC, AVE, HTMT; chỉ báo cấu tạo: VIF, trọng số), ngưỡng định trước ở kế hoạch "
+                     "phân tích thống kê.")}}
     kb["ho_so_tron_vong"] = hs
     return kb

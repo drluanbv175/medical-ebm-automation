@@ -309,6 +309,81 @@ def test_de_cuong_nop_co_mau_va_gia_thuyet_pls(tmp_path):
     assert "Giả thuyết đối (H1)" in mt and "không kiểm định giả thuyết" not in mt, mt
 
 
+def test_ktc_fisher_va_bang_co_uoc_luong_tho_hieu_chinh():
+    """STROBE 16a: bảng mô hình cấu trúc có r thô (KTC Fisher z) cạnh β hiệu chỉnh (KTC bootstrap)."""
+    lo, hi = PLS.ktc_fisher(0.3, 203)
+    z = math.atanh(0.3)
+    h = 1.959963984540054 / math.sqrt(200)
+    assert abs(lo - math.tanh(z - h)) < 1e-9 and abs(hi - math.tanh(z + h)) < 1e-9
+    assert PLS.ktc_fisher(None, 203) is None and PLS.ktc_fisher(0.3, 3) is None and PLS.ktc_fisher(1.0, 50) is None
+    mh = PLS.doc_sap(_sap())
+    s = {"n_phan_tich": 203, "duong_dan": {"NT -> TT": {"he_so": 0.32, "f2": 0.09}},
+         "tuong_quan_tho": {"NT -> TT": 0.41},
+         "bootstrap": {"duong_dan": {"NT -> TT": {"sd": 0.07, "ktc": [0.17, 0.45]}}}}
+    dg = PLS.danh_gia(s, mh)
+    x = next(c for c in dg["cau_truc"] if c["duong_dan"] == "NT -> TT")
+    assert x["r_tho"] == 0.41 and x["ktc_r_tho"] == PLS.ktc_fisher(0.41, 203)
+    md = "\n".join(PLS.trinh_bay_ket_qua(dg, None, {"trang_thai": "KHOP", "dem": {}}))
+    assert "r thô (KTC 95%)" in md and "β hiệu chỉnh (KTC 95%)" in md and "| NT → TT | 0,410 (" in md
+    assert "tuong_quan_tho" in PLS.DAI_LUONG  # so tất định với cSEM (Construct_VCV)
+
+
+def test_hinh_g6_pls_ve_cot_diem_trung_binh(tmp_path, monkeypatch):
+    """Cắt ngang PLS-SEM: hình cột điểm trung bình cấu trúc Mode A + KTC 95% (hình bắt buộc cot-ktc của STROBE)."""
+    import random
+
+    import cau_noi_spss as CN
+    import hinh_g6 as H
+    import pandas as pd
+
+    (tmp_path / "G4_A5_SAP_FINAL_ZZ.md").write_text(_sap(), encoding="utf-8", newline="\n")
+    monkeypatch.setattr(CN, "thu_muc_de_tai", lambda _s: tmp_path)
+    rng = random.Random(3)
+    cot = [m for c in KHOI["cau_truc"] for m in c["muc"]]
+    df = pd.DataFrame([{m: str(rng.randint(1, 5)) for m in cot} for _ in range(60)])
+    df.loc[0, "gt_3"] = "BTR"  # mã thiếu dự án ⇒ bỏ dòng đó khỏi trung bình của GT
+
+    def nap(_study, can, _loc):
+        assert set(can) == {m for c in KHOI["cau_truc"] if c["mode"] == "A" for m in c["muc"]}  # không lấy Mode B
+        return df
+
+    tm = tmp_path / "bieu-bang"
+    tm.mkdir()
+    ra = H.hinh_cua_phan_tich("ZZ", {"id": "MT1", "vai": "chinh", "tham_so": {"pls_sem": "pls_pm"}}, tm, nap)
+    assert [h["loai"] for h in ra] == ["cot-ktc"] and (tm / Path(ra[0]["tep"]).name).is_file()
+
+
+def test_he_tu_lap_yeu_to_nhieu_pls_tu_sap_5():
+    """Đề cương G10: yếu tố nhiễu của cắt ngang PLS-SEM lấy đúng dòng «Kiểm soát nhiễu» SAP §5 đã khoá (không để
+    «[CẦN BỔ SUNG]»); SAP không khai PLS-SEM ⇒ không lấp."""
+    import quyet_dinh_da_chot as QD
+
+    sap = _sap().replace("### §5 PHÂN TÍCH ĐA BIẾN\n\n- x", "### §5 PHÂN TÍCH ĐA BIẾN\n\n- **Kiểm soát nhiễu:** mỗi hệ "
+                                                          "số đường dẫn hiệu chỉnh cho các tiền tố còn lại  ")
+    assert QD._kiem_soat_nhieu_pls(sap) == "mỗi hệ số đường dẫn hiệu chỉnh cho các tiền tố còn lại"
+    assert QD._kiem_soat_nhieu_pls(sap.replace("**Mô hình đo lường (PLS-SEM):**", "**Mô hình đo lường:**")) == ""
+
+
+def test_plspredict_chi_so_cung_dinh_nghia_mot_lan_lap():
+    """seminr lấy trung bình DỰ BÁO qua r lần lặp rồi tính RMSE/MAE; cSEM tính chỉ số từng lần lặp rồi lấy trung bình ⇒
+    với r > 1 chỉ so lượt r = 1 (luot_doi_chieu). Đo 23/11/2026: so lượt r = 10 từng báo LECH chập chờn (MAE tt_2
+    0,6829 so với 0,6850) — khác định nghĩa, không phải lỗi tính."""
+    mh = PLS.doc_sap(_sap())
+    l_ = {"rmse_pls": {"tt_1": 1.0}, "mae_pls": {"tt_1": 0.8}}
+    lc = {"rmse_pls": {"tt_1": 1.003}, "mae_pls": {"tt_1": 0.803}}
+    s = {"plspredict": {"lap": 10, "muc": ["tt_1"], "luot": [l_, l_]}}
+    c = {"plspredict": {"lap": 10, "muc": ["tt_1"], "luot": [lc, lc]}}
+    kc = PLS.doi_chieu({"seminr": s, "csem": c}, mh)
+    dong = [x for x in kc["dong"] if x["ten"] == "tt_1 · mae_pls"]
+    assert dong and dong[0]["ket"] == "KHONG_SO" and "1 lần lặp" in dong[0]["ly_do"]
+    s["plspredict"]["luot_doi_chieu"] = [{"rmse_pls": {"tt_1": 1.0}, "mae_pls": {"tt_1": 0.8}},
+                                         {"rmse_pls": {"tt_1": 1.01}, "mae_pls": {"tt_1": 0.81}}]
+    c["plspredict"]["luot_doi_chieu"] = [{"rmse_pls": {"tt_1": 1.005}, "mae_pls": {"tt_1": 0.805}},
+                                         {"rmse_pls": {"tt_1": 1.002}, "mae_pls": {"tt_1": 0.802}}]
+    kc = PLS.doi_chieu({"seminr": s, "csem": c}, mh)
+    assert next(x for x in kc["dong"] if x["ten"] == "tt_1 · mae_pls")["ket"] == "KHOP"
+
+
 def test_g7_nhan_phan_tich_chinh_pls():
     assert G7._phan_tich_chinh_g6({"pls_sem": {}}, {"pls_sem": "pls_pm"}) == "pls_sem"
 

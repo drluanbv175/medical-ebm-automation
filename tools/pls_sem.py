@@ -144,7 +144,8 @@ DUNG_SAI_TAT_DINH = 1e-5
 #: ít nhất một lệch giả). Mốc chuẩn chương 6 có đại lượng lệch 3,8 sai số Monte Carlo ở z cố định (đo 23/11/2026).
 ALPHA_HO = 0.01
 Z_MC = 3.29  # z(1 − 0,001/2) — chỉ dùng cho so một số đơn lẻ với sách (doi_chieu_sach)
-DAI_LUONG = ("tai", "trong_so", "tin_cay", "htmt", "vif_muc", "vif_cau_truc", "duong_dan", "r2", "hieu_ung_tong")
+DAI_LUONG = ("tai", "trong_so", "tin_cay", "htmt", "vif_muc", "vif_cau_truc", "duong_dan", "r2", "hieu_ung_tong",
+             "tuong_quan_tho")
 
 
 # ───────────────────────────── khối G1 → khuôn SAP §4 (run_g4_auto) ─────────────────────────────
@@ -802,14 +803,21 @@ def doi_chieu(kq: dict, mh: dict) -> dict:
     ps_, pc_ = s.get("plspredict") or {}, c.get("plspredict") or {}
     pp_mc: list[dict] = []
     if ps_ or pc_:
+        # cùng định nghĩa: lượt r = 1 (luot_doi_chieu); không có thì chỉ dùng «luot» khi SAP đặt 1 lần lặp
+        def _luot(p_: dict) -> list:
+            if p_.get("luot_doi_chieu"):
+                return p_["luot_doi_chieu"]
+            return (p_.get("luot") or []) if int(_so(p_.get("lap")) or 1) == 1 else []
+
         for chi_so in ("rmse_pls", "mae_pls"):
             for m in (ps_.get("muc") or pc_.get("muc") or []):
-                va = [_so((l_.get(chi_so) or {}).get(m)) for l_ in ps_.get("luot") or []]
-                vb = [_so((l_.get(chi_so) or {}).get(m)) for l_ in pc_.get("luot") or []]
+                va = [_so((l_.get(chi_so) or {}).get(m)) for l_ in _luot(ps_)]
+                vb = [_so((l_.get(chi_so) or {}).get(m)) for l_ in _luot(pc_)]
                 va, vb = [x for x in va if x is not None], [x for x in vb if x is not None]
                 if len(va) < 2 or len(vb) < 2:
                     dong.append({"nhom": "plspredict", "ten": f"{m} · {chi_so}", "ket": "KHONG_SO",
-                                 "ly_do": "cần ≥ 2 lượt độc lập mỗi gói để ước lượng sai số Monte Carlo"})
+                                 "ly_do": "cần ≥ 2 lượt độc lập CÙNG định nghĩa (1 lần lặp) mỗi gói để ước lượng sai "
+                                          "số Monte Carlo — " + KHAC_DINH_NGHIA_LAP})
                     continue
                 ma_, mb_ = sum(va) / len(va), sum(vb) / len(vb)
                 sa = math.sqrt(sum((x - ma_) ** 2 for x in va) / (len(va) - 1))
@@ -834,6 +842,9 @@ def doi_chieu(kq: dict, mh: dict) -> dict:
 KHAC_DINH_NGHIA_LM = ("khác định nghĩa — seminr hồi quy mỗi chỉ báo của cấu trúc đích trên chỉ báo của các cấu trúc "
                       "TIỀN TỐ TRỰC TIẾP (predict_DA, ?seminr::predict_pls); cSEM benchmark «lm» hồi quy trên chỉ báo "
                       "của MỌI cấu trúc ngoại sinh (?cSEM::predict) — hai mô hình chuẩn khác nhau, không so số")
+KHAC_DINH_NGHIA_LAP = ("khi lặp r > 1, seminr lấy trung bình DỰ BÁO qua các lần lặp rồi tính RMSE/MAE (mean_over_reps "
+                       "trong seminr::predict_pls), cSEM tính chỉ số từng lần lặp rồi lấy trung bình (cSEM::predict) — "
+                       "chỉ so được ở 1 lần lặp")
 KHAC_DINH_NGHIA_Q2 = ("chỉ cSEM tính Q²predict theo định nghĩa Shmueli 2019 (so với trung bình mẫu huấn luyện); seminr "
                       "2.6.0 không tính đại lượng này — không có bản thứ hai để so")
 
@@ -860,6 +871,16 @@ def _muc_f2(v: float | None) -> str | None:
         return None
     nho, tb, lon = NGUONG["f2"]
     return "lon" if v >= lon else ("trung_binh" if v >= tb else ("nho" if v >= nho else "khong_dang_ke"))
+
+
+def ktc_fisher(r: float | None, n, muc: float = 0.95) -> list | None:
+    """KTC của hệ số tương quan theo biến đổi Fisher z: tanh(atanh r ± z₁₋α/₂/√(n − 3)); None khi thiếu r/n hoặc
+    |r| ≥ 1 hoặc n ≤ 3."""
+    n = _so(n)
+    if r is None or n is None or n <= 3 or abs(r) >= 1:
+        return None
+    h = _z(1 - (1 - muc) / 2) / math.sqrt(n - 3)
+    return [math.tanh(math.atanh(r) - h), math.tanh(math.atanh(r) + h)]
 
 
 def danh_gia(s: dict, mh: dict) -> dict:
@@ -919,7 +940,9 @@ def danh_gia(s: dict, mh: dict) -> dict:
             ktc = bd.get("ktc")
             vif = _so(((s.get("vif_cau_truc") or {}).get(y) or {}).get(a))
             f2 = _so(((s.get("duong_dan") or {}).get(k) or {}).get("f2"))
-            cau_truc.append({"duong_dan": k, "he_so": _so(((s.get("duong_dan") or {}).get(k) or {}).get("he_so")),
+            r_tho = _so((s.get("tuong_quan_tho") or {}).get(k))
+            cau_truc.append({"duong_dan": k, "r_tho": r_tho, "ktc_r_tho": ktc_fisher(r_tho, s.get("n_phan_tich")),
+                             "he_so": _so(((s.get("duong_dan") or {}).get(k) or {}).get("he_so")),
                              "sd": _so(bd.get("sd")), "t": _so(bd.get("t")), "ktc": ktc,
                              "y_nghia": None if not ktc or None in ktc else not (ktc[0] <= 0 <= ktc[1]),
                              "f2": f2, "muc_f2": pl(_muc_f2(f2)), "vif": vif, "muc_vif": pl(_muc_vif(vif)),
@@ -1057,9 +1080,12 @@ def trinh_bay_ket_qua(dg: dict | None, q2: dict | None, kc: dict) -> list[str]:
         L += [f"| {x['cau_truc']} | {x['chi_bao']} | {so3(x['vif'])} | {so3(x['trong_so'])} ({ktc3(x['ktc'])}) | "
               f"{so3(x['tai'])} |" for x in dg["do_luong_cau_tao"]]
         L.append("")
-    L += ["**Mô hình cấu trúc**", "", "| Đường dẫn | β (KTC 95%) | f² | VIF |", "|---|---|---|---|"]
-    L += [f"| {x['duong_dan'].replace(' -> ', ' → ')} | {so3(x['he_so'])} ({ktc3(x['ktc'])}) | {so3(x['f2'])} | "
-          f"{so3(x['vif'])} |" for x in dg["cau_truc"]]
+    L += ["**Mô hình cấu trúc** — β: hệ số đường dẫn, ước lượng hiệu chỉnh cho các cấu trúc tiền tố còn lại của cùng "
+          "cấu trúc nội sinh (KTC 95% bootstrap phân vị); r: tương quan thô, chưa hiệu chỉnh, giữa điểm hai cấu trúc "
+          "(KTC 95% theo biến đổi Fisher z)", "",
+          "| Đường dẫn | r thô (KTC 95%) | β hiệu chỉnh (KTC 95%) | f² | VIF |", "|---|---|---|---|---|"]
+    L += [f"| {x['duong_dan'].replace(' -> ', ' → ')} | {so3(x.get('r_tho'))} ({ktc3(x.get('ktc_r_tho'))}) | "
+          f"{so3(x['he_so'])} ({ktc3(x['ktc'])}) | {so3(x['f2'])} | {so3(x['vif'])} |" for x in dg["cau_truc"]]
     L += ["", "| Cấu trúc nội sinh | R² | R² hiệu chỉnh |", "|---|---|---|"]
     da = set()
     for x in dg["cau_truc"]:
@@ -1130,8 +1156,12 @@ def md_bao_cao(tom: dict, kc: dict) -> str:
               f"{'có' if x['y_nghia'] else ('không' if x['y_nghia'] is False else '—')} | {so3(x['tai'])} | "
               f"{_co(x['giu'])} |" for x in dg["do_luong_cau_tao"]]
     L += ["", "## 3. Mô hình cấu trúc", "",
-          "| Đường dẫn | β | SD bootstrap | KTC 95% | Có ý nghĩa | f² | VIF |", "|---|---|---|---|---|---|---|"]
-    L += [f"| {x['duong_dan'].replace(' -> ', ' → ')} | {so3(x['he_so'])} | {so3(x['sd'])} | {ktc3(x['ktc'])} | "
+          "β: hệ số đường dẫn (hiệu chỉnh cho các cấu trúc tiền tố còn lại của cùng cấu trúc nội sinh); r thô: tương "
+          "quan chưa hiệu chỉnh giữa điểm hai cấu trúc, KTC 95% theo biến đổi Fisher z.", "",
+          "| Đường dẫn | r thô (KTC 95%) | β | SD bootstrap | KTC 95% | Có ý nghĩa | f² | VIF |",
+          "|---|---|---|---|---|---|---|---|"]
+    L += [f"| {x['duong_dan'].replace(' -> ', ' → ')} | {so3(x.get('r_tho'))} ({ktc3(x.get('ktc_r_tho'))}) | "
+          f"{so3(x['he_so'])} | {so3(x['sd'])} | {ktc3(x['ktc'])} | "
           f"{'có' if x['y_nghia'] else ('không' if x['y_nghia'] is False else '—')} | {so3(x['f2'])}"
           f"{' (' + NHAN_F2[x['muc_f2']] + ')' if x.get('muc_f2') else ''} | {so3(x['vif'])} |" for x in dg["cau_truc"]]
     da = set()

@@ -255,6 +255,26 @@ def hinh_cua_phan_tich(study: str, pt: Dict[str, Any], thu_muc: Path, nap: Calla
             SC.ve_loglog(t, e, nhom, _them("loglog", "log(−log S) — giả định nguy cơ tỷ lệ"), ngon_ngu=ngon_ngu)
         return ra
 
+    if ts.get("pls_sem"):
+        # 23/11/2026 (PLS-SEM — cắt ngang STROBE: hình cột trung bình + KTC 95% bắt buộc): điểm trung bình từng cấu trúc
+        # đo lường KẾT QUẢ (Mode A — trung bình các chỉ báo trên thang gốc) kèm KTC 95%; mô hình đọc từ SAP đã khoá.
+        # Mode B là chỉ số gộp có trọng số nên không lấy trung bình cộng chỉ báo.
+        import bieu_do_mo_ta as MT  # noqa: PLC0415
+        import cau_noi_spss as CN  # noqa: PLC0415
+        import pandas as pd  # noqa: PLC0415
+        import pls_sem as PLS  # noqa: PLC0415
+
+        mh = PLS.doc_sap((CN.thu_muc_de_tai(study) / f"G4_A5_SAP_FINAL_{study}.md").read_text(encoding="utf-8"))
+        ct = [c for c in mh["cau_truc"] if c["mode"] == "A"]
+        df = nap(study, [m for c in ct for m in c["muc"]], loc)
+        dai = [{"cau_truc": c["ma"], "diem": repr(float(v))} for c in ct
+               for v in df[c["muc"]].apply(pd.to_numeric, errors="coerce").dropna().mean(axis=1).tolist()]
+        if dai:
+            MT.ve_cot_ktc(dai, "diem", _them("cot-ktc", "Điểm trung bình các cấu trúc đo lường kết quả"),
+                          cot_nhom="cau_truc", trung_binh=True, ngon_ngu=ngon_ngu,
+                          nhan_bien="Điểm trung bình chỉ báo" if ngon_ngu == "vi" else "Mean indicator score")
+        return ra
+
     if ts.get("ty_le") and not ts.get("outcome"):
         import bieu_do_mo_ta as MT  # noqa: PLC0415
 

@@ -129,7 +129,11 @@ là họ khác ⇒ CHẶN; SAP không khai mà lượt chạy là PLS-SEM ⇒ CH
   (`.user_funs`) trên CHÍNH mẫu lặp của cSEM với công thức đúng định nghĩa seminr, và ghi số mẫu lặp có tương quan ≤ 0
   (`htmt_mau_tuong_quan_am`).
 - **PLSpredict**: chia phần ngẫu nhiên ⇒ J lượt độc lập mỗi gói (mặc định 5), so trung bình RMSE/MAE của PLS theo t họ
-  Bonferroni. Mô hình tuyến tính chuẩn (LM) KHÁC định nghĩa (seminr: chỉ báo tiền tố trực tiếp; cSEM «lm»: mọi chỉ báo
+  Bonferroni. Khi lặp r > 1 hai gói KHÁC định nghĩa: seminr lấy trung bình DỰ BÁO qua các lần lặp rồi tính RMSE/MAE
+  (`mean_over_reps` trong `seminr::predict_pls`), cSEM tính chỉ số TỪNG lần lặp rồi lấy trung bình (`cSEM::predict`)
+  ⇒ phép kiểm chéo dùng J lượt r = 1 ở cả hai gói (`luot_doi_chieu`); số báo cáo vẫn là lượt đúng r của SAP. Đo
+  23/11/2026: so lượt r = 10 từng báo LỆCH chập chờn (MAE tt_2 0,6829 so với 0,6850). seminr chạy `cores = 1` vì chia phần
+  song song không tái lập theo `set.seed`. Mô hình tuyến tính chuẩn (LM) KHÁC định nghĩa (seminr: chỉ báo tiền tố trực tiếp; cSEM «lm»: mọi chỉ báo
   ngoại sinh) ⇒ «không so». Q²predict chỉ cSEM tính (định nghĩa Shmueli 2019) ⇒ «không so», báo cáo kèm nhãn nguồn.
 - **f²**: seminr (`seminr:::fSquared`) ước lượng LẠI PLS-PM không có đường dẫn; `cSEM::calculatef2` dùng điểm cấu trúc
   của mô hình đầy đủ — hai định nghĩa khác nhau (đo: CUSA → CUSL 0,403 so với 0,412). Hệ kiểm chéo ĐÚNG định nghĩa
@@ -154,8 +158,9 @@ Ba giá trị khác: sách 1,228 / 1,312 / 1,380; seminr 2.6.0 1,205 / 1,254 / 1
 `predict_pls(reps = k)` «repeated the cross-validation on the same folds» — kết quả đổi với mọi lệnh reps > 1; sách chạy
 bản cũ, không đặt hạt giống. RMSE của PLS vẫn khớp (1,193 / 1,239 / 1,312 so với 1,192 / 1,239 / 1,312).
 
-Kiểm chéo seminr ↔ cSEM trên dữ liệu đủ: mô hình đơn giản 136 khớp, 0 lệch, 5 không so; mô hình mở rộng 384 khớp, 0 lệch,
-15 không so (LM, Q²predict, tải bootstrap của cấu trúc một chỉ báo…).
+Kiểm chéo seminr ↔ cSEM trên dữ liệu đủ (đo lại 23/11/2026 sau khi thêm r thô, HTMT bootstrap cùng định nghĩa và
+PLSpredict 1 lần lặp): mô hình đơn giản 141 khớp, 0 lệch, 5 không so; mô hình mở rộng 397 khớp, 0 lệch, 15 không so (LM,
+Q²predict, tải bootstrap của cấu trúc một chỉ báo…). Mốc chuẩn sách không đổi: 53 khớp, 3 khác phiên bản.
 
 Giả lập `cross_sectional_pls_sem` (dữ liệu mô phỏng, bootstrap 5.000, hạt giống SAP): phân tích chính 203 ca, nhóm nam
 144 ca, nhóm nữ 59 ca — mỗi lượt 144 khớp, 0 lệch, 7 không so sau hai lần sửa ở trên (trước khi sửa: chính 1 lệch HTMT, nam
@@ -164,7 +169,11 @@ Giả lập `cross_sectional_pls_sem` (dữ liệu mô phỏng, bootstrap 5.000,
 ## 8. G7
 
 `run_g7_auto.py` chép NGUYÊN VĂN các dòng `pls_sem.trinh_bay_md` mà G6 dựng (thứ tự Hair 2019: đo lường trước, cấu trúc
-sau; số kiểu Việt, ba chữ số) — phép tự kiểm số của G7 đối chiếu chuỗi số với tệp tóm tắt. Kiểm chéo cSEM không khớp ⇒ ô
+sau; số kiểu Việt ba chữ số, dấu trừ «−», KTC có cận âm viết «a đến b») — phép tự kiểm số của G7 đối chiếu chuỗi số với
+tệp tóm tắt. Bảng mô hình cấu trúc có cả r thô (tương quan chưa hiệu chỉnh giữa điểm hai cấu trúc, KTC 95% Fisher z,
+kiểm chéo tất định với `Construct_VCV` của cSEM) và β hiệu chỉnh — STROBE 16a. G6 tự sinh hình cột điểm trung bình các
+cấu trúc Mode A kèm KTC 95% (`hinh_g6`, hình bắt buộc của cắt ngang). Đề cương G10: yếu tố nhiễu lấy từ dòng «Kiểm soát
+nhiễu» SAP §5 (`quyet_dinh_da_chot`). Kiểm chéo cSEM không khớp ⇒ ô
 [CẦN THỐNG KÊ VIÊN]; seminr lỗi ⇒ ô [CẦN THỐNG KÊ VIÊN] thay bảng.
 
 ## 9. Ghi chú cho đề tài thật C1a (hai-long-benh-nhan-C1a-BVQY175) — KHÔNG áp dụng tự động

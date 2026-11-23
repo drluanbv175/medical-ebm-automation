@@ -3519,7 +3519,7 @@ kq$seminr <- tryCatch(withCallingHandlers({
                                                              stopCriterion = 7,
                                                              missing = seminr::mean_replacement, missing_value = NA)))
   s <- summary(m)
-  ra <- list(so_vong_lap = so(s$iterations))
+  ra <- list(so_vong_lap = so(s$iterations), n_phan_tich = nrow(D))
   ra$tai <- theo_cau_truc(function(t) as.list(stats::setNames(as.numeric(m$outer_loadings[MUC[[t]], t]), MUC[[t]])))
   ra$trong_so <- theo_cau_truc(function(t) as.list(stats::setNames(as.numeric(m$outer_weights[MUC[[t]], t]),
                                                                    MUC[[t]])))
@@ -3547,6 +3547,11 @@ kq$seminr <- tryCatch(withCallingHandlers({
   ra$hieu_ung_tong <- list()
   for (x in TEN) for (y in TEN)
     if (x != y && abs(so(te[x, y])) > 0) ra$hieu_ung_tong[[paste(x, "->", y)]] <- so(te[x, y])
+  # Tương quan THÔ (chưa hiệu chỉnh) giữa điểm hai cấu trúc của mỗi đường dẫn — STROBE 16a: ước lượng thô bên cạnh hệ số
+  # đường dẫn (đã hiệu chỉnh cho các tiền tố còn lại của cùng cấu trúc nội sinh)
+  CS <- m$construct_scores
+  ra$tuong_quan_tho <- stats::setNames(lapply(DD, function(p) so(stats::cor(CS[, p[1]], CS[, p[2]]))),
+                                       vapply(DD, TEN_DD, ""))
   # Bootstrap — KTC phân vị (1 − α) cho đường dẫn/trọng số/tải; HTMT KTC 90% hai phía (= một phía 95%, Hair 2021 ch.4)
   set.seed(SEED)
   invisible(utils::capture.output(b <- seminr::bootstrap_model(seminr_model = m, nboot = B, cores = 1, seed = SEED)))
@@ -3576,21 +3581,25 @@ kq$seminr <- tryCatch(withCallingHandlers({
                        tai = bang(sb$bootstrapped_loadings), hieu_ung_tong = bang(sb$bootstrapped_total_paths),
                        htmt_ktc90 = bang(sb10$bootstrapped_HTMT))
   # PLSpredict (Shmueli 2019): k phần × r lần lặp, cách tiếp cận tiền tố trực tiếp (predict_DA); J lượt độc lập để
-  # ước lượng sai số Monte Carlo cho phép kiểm chéo
+  # ước lượng sai số Monte Carlo. cores = 1: song song làm phép chia phần không tái lập theo set.seed.
+  # Khi r > 1 seminr lấy TRUNG BÌNH DỰ BÁO qua các lần lặp rồi mới tính RMSE/MAE (mean_over_reps), cSEM tính chỉ số TỪNG
+  # lần lặp rồi lấy trung bình — khác định nghĩa ⇒ kiểm chéo dùng thêm J lượt r = 1 (cùng định nghĩa) ở cả hai gói
   pp <- CH$plspredict
   if (!is.null(pp)) {
     dich <- unlist(pp$dich); muc_dich <- unlist(MUC[dich])
-    luot <- lapply(seq_len(as.integer(pp$luot_mc)), function(j) {
+    du_doan <- function(j, lap) {
       set.seed(SEED + j - 1L)
       invisible(utils::capture.output(p <- seminr::predict_pls(m, technique = seminr::predict_DA,
-                                                                noFolds = as.integer(pp$k), reps = as.integer(pp$lap))))
+                                                                noFolds = as.integer(pp$k), reps = lap, cores = 1)))
       sp <- summary(p)
       lay <- function(bg, hang) as.list(stats::setNames(as.numeric(bg[hang, muc_dich]), muc_dich))
       list(rmse_pls = lay(sp$PLS_out_of_sample, "RMSE"), mae_pls = lay(sp$PLS_out_of_sample, "MAE"),
            rmse_lm = lay(sp$LM_out_of_sample, "RMSE"), mae_lm = lay(sp$LM_out_of_sample, "MAE"))
-    })
+    }
+    J <- seq_len(as.integer(pp$luot_mc))
     ra$plspredict <- list(k = as.integer(pp$k), lap = as.integer(pp$lap), cach = "predict_DA", dich = dich,
-                          muc = muc_dich, luot = luot)
+                          muc = muc_dich, luot = lapply(J, du_doan, lap = as.integer(pp$lap)),
+                          luot_doi_chieu = lapply(J, du_doan, lap = 1L))
   }
   ra
 }, warning = canh("seminr")), error = function(e) { kq$loi$seminr <<- conditionMessage(e); NULL })
@@ -3658,6 +3667,8 @@ if (isTRUE(CH$kiem_cheo)) kq$csem <- tryCatch(withCallingHandlers({
   te <- a$Effects$Total_effect
   ra$hieu_ung_tong <- stats::setNames(as.list(te$Estimate),
     vapply(strsplit(te$Name, " ~ "), function(x) paste(x[2], "->", x[1]), ""))
+  CV <- r$Estimates$Construct_VCV  # tương quan giữa điểm cấu trúc (thành phần, .disattenuate = FALSE)
+  ra$tuong_quan_tho <- stats::setNames(lapply(DD, function(p) so(CV[p[1], p[2]])), vapply(DD, TEN_DD, ""))
   # Bootstrap độc lập (bộ sinh số của cSEM): sai số chuẩn + KTC phân vị (1 − α); HTMT KTC 90% hai phía
   # HTMT bootstrap: seminr lấy TRỊ TUYỆT ĐỐI TỪNG tương quan (seminr:::HTMT); cSEM (calculateHTMT) dùng tương quan CÓ
   # DẤU rồi lấy trị tuyệt đối của HTMT — trùng nhau khi mọi tương quan dương (đo: HTMT gốc khớp 10⁻⁸), khác nhau ở mẫu
@@ -3720,17 +3731,19 @@ if (isTRUE(CH$kiem_cheo)) kq$csem <- tryCatch(withCallingHandlers({
   pp <- CH$plspredict
   if (!is.null(pp)) {
     dich <- unlist(pp$dich); muc_dich <- unlist(MUC[dich])
-    luot <- lapply(seq_len(as.integer(pp$luot_mc)), function(j) {
+    du_doan <- function(j, lap) {
       set.seed(SEED + j - 1L)  # cSEM chỉ nhận .seed khi .r = 1 ⇒ đặt hạt giống cho bộ sinh số mặc định của R
-      pr <- cSEM::predict(r, .benchmark = "lm", .cv_folds = as.integer(pp$k), .r = as.integer(pp$lap),
+      pr <- cSEM::predict(r, .benchmark = "lm", .cv_folds = as.integer(pp$k), .r = lap,
                           .approach_predict = "direct")
       pm <- pr$Prediction_metrics; pm <- pm[pm$Name %in% muc_dich, , drop = FALSE]
       lay <- function(cot) as.list(stats::setNames(as.numeric(pm[[cot]]), pm$Name))
       list(rmse_pls = lay("RMSE_target"), mae_pls = lay("MAE_target"), rmse_lm = lay("RMSE_benchmark"),
            mae_lm = lay("MAE_benchmark"), q2_predict = lay("Q2_predict"))
-    })
+    }
+    # một lượt đúng số lần lặp SAP để báo Q²predict; J lượt r = 1 để so với seminr cùng định nghĩa
     ra$plspredict <- list(k = as.integer(pp$k), lap = as.integer(pp$lap), cach = "direct", dich = dich,
-                          muc = muc_dich, luot = luot)
+                          muc = muc_dich, luot = list(du_doan(1L, as.integer(pp$lap))),
+                          luot_doi_chieu = lapply(seq_len(as.integer(pp$luot_mc)), du_doan, lap = 1L))
   }
   ra
 }, warning = canh("csem")), error = function(e) { kq$loi$csem <<- conditionMessage(e); NULL })

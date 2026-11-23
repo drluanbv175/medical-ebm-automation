@@ -240,6 +240,15 @@ def _dong_sap_co(sap: str, cac_muc: Tuple[int, ...], mau: str) -> str:
     return ""
 
 
+def _kiem_soat_nhieu_pls(sap: str) -> str:
+    """Dòng «Kiểm soát nhiễu» của SAP §5 khi SAP khai PLS-SEM (khối máy đọc §4) — '' khi không có."""
+    import pls_sem as PLS  # noqa: PLC0415
+
+    if not PLS.la_pls_sap(sap):
+        return ""
+    return re.sub(r"^Kiểm soát nhiễu:\s*", "", _dong_sap_co(sap, (5,), r"Kiểm soát nhiễu"))
+
+
 def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], sap: str,
                    dat: Any) -> None:
     """Quyết định ĐẶC THÙ thiết kế đã chốt ở G1/G4 ⇒ khoá StudySpec đòi (X01 · S01 · Q01/Q02 · M01 · D10 · D13) và dòng
@@ -258,6 +267,9 @@ def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], sap: str,
                 "ma trận mục tiêu–biến G3 (yếu tố dự báo)")
     elif ma in KHONG_NHIEU:
         dat("confounders", [KHONG_NHIEU[ma]], f"thiết kế {ma} (sự thật cấu trúc)")
+    elif ma == "cross_sectional" and _kiem_soat_nhieu_pls(sap):
+        # 23/11/2026 (PLS-SEM): cách kiểm soát nhiễu đã chốt ở SAP §5 (G4) — đề cương G10 không để «[CẦN BỔ SUNG]»
+        dat("confounders", [_kiem_soat_nhieu_pls(sap)], "SAP §5 (PLS-SEM — kiểm soát nhiễu, đã chốt ở G4)")
     elif ma == "cross_sectional" and GC.sap_declares_proportion(out_dir, study):
         dat("confounders", ["Không áp dụng — mục tiêu mô tả tỷ lệ (SAP §4), không so sánh nhóm"],
             "SAP §4 (ước lượng tỷ lệ — cắt ngang mô tả)")
