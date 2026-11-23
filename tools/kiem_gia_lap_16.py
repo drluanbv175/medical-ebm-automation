@@ -27,6 +27,8 @@ KICH_BAN = {
     "qualitative": "dinh_tinh", "rct_ni": "rct_khong_kem", "rct_cum": "rct_cum", "cohort_cox": "thuan_tap_song_con",
     "cohort_mi": "thuan_tap_mi", "rct_rut_bai": "rct_rut_bai", "cohort_vong_sua": "thuan_tap_vong_sua",
     "rct_kinh_te": "rct_kinh_te", "rct_hon_hop": "rct_hon_hop", "case_control_ghep_cap": "benh_chung_ghep_cap",
+    "case_control_ghep_cap_thieu": "benh_chung_ghep_cap_thieu",
+    "case_control_ghep_cap_hiem": "benh_chung_ghep_cap_hiem",
 }
 # 17/11/2026 — kịch bản CHÂN THỰC (gia_lap_chan_thuc): cùng cổng phán + ước lượng chính phải tìm lại tham số thật.
 CHAN_THUC = {f"{t}_chan_thuc": f"{t}_chan_thuc" for t in ("rct", "cross_sectional", "cohort", "case_control",

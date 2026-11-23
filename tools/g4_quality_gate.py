@@ -307,12 +307,34 @@ NHAN_BIEN_CO_HIEM = "Biến cố hiếm (số biến cố dưới 10 lần số 
 BIEN_CO_HIEM = {
     "mo_ta_chinh_xac": ("mô tả số biến cố từng nhóm + KTC chính xác Clopper–Pearson + p chính xác Fisher", True),
     "firth": ("hồi quy logistic Firth (logistf)", True),  # G6 tự chạy từ 23/11/2026 (run_stats_analysis Firth)
+    # 23/11/2026 (chiều): bệnh–chứng ghép cặp CÁ THỂ — hai phương pháp trên là KHÔNG điều kiện (bỏ qua bộ ghép) ⇒ bản
+    # có điều kiện (Heinze & Puhr 2010, PMID 20213709); G6 chạy firth_conditional_logit_model, R đối chiếu
+    "firth_dk": ("hồi quy logistic có điều kiện có phạt Firth theo bộ ghép (Heinze–Puhr 2010)", True),
 }
+#: phương pháp hợp với thiết kế KHÔNG ghép cặp cá thể / ghép cặp cá thể
+BIEN_CO_HIEM_KHONG_DK = ("mo_ta_chinh_xac", "firth")
+BIEN_CO_HIEM_DK = ("firth_dk",)
 _THIET_KE_BIEN_CO_HIEM = ("rct", "cohort", "case_control", "cross_sectional")
 #: dòng khuôn SAP §5 (run_g4_auto in nguyên văn) — thống kê viên thay ô bằng MỘT phương pháp
-O_BIEN_CO_HIEM = ("[CẦN THỐNG KÊ VIÊN CHỌN — " + " | ".join(v[0] for v in BIEN_CO_HIEM.values())
+O_BIEN_CO_HIEM = ("[CẦN THỐNG KÊ VIÊN CHỌN — " + " | ".join(BIEN_CO_HIEM[k][0] for k in BIEN_CO_HIEM_KHONG_DK)
                   + "; áp cho mọi phân tích nhị phân của SAP, kể cả tổn hại]")
 DONG_KHUON_BIEN_CO_HIEM = f"- **{NHAN_BIEN_CO_HIEM}:** {O_BIEN_CO_HIEM}  "
+#: 23/11/2026 — dòng khuôn cho bệnh–chứng ghép cặp CÁ THỂ: chỉ phương pháp CÓ ĐIỀU KIỆN
+DONG_KHUON_BIEN_CO_HIEM_DK = (f"- **{NHAN_BIEN_CO_HIEM}:** [CẦN THỐNG KÊ VIÊN CHỌN — "
+                              + " | ".join(BIEN_CO_HIEM[k][0] for k in BIEN_CO_HIEM_DK)
+                              + "; thiết kế ghép cặp cá thể — phương pháp KHÔNG điều kiện bỏ qua bộ ghép]  ")
+
+
+def dong_khuon_bien_co_hiem(kieu_ghep: Any = None) -> str:
+    """Dòng khuôn SAP §5 theo KIỂU GHÉP G1 đã chốt (khung_de_tai.kieu_ghep_benh_chung): ghép cặp cá thể ⇒ chỉ phương
+    pháp có điều kiện; còn lại ⇒ phương pháp không điều kiện."""
+    return DONG_KHUON_BIEN_CO_HIEM_DK if kieu_ghep == "ca_the" else DONG_KHUON_BIEN_CO_HIEM
+
+
+def la_sap_co_dieu_kien(sap4: str) -> bool:
+    """SAP §4 khoá hồi quy logistic CÓ ĐIỀU KIỆN (bệnh–chứng ghép cặp cá thể)."""
+    bd = _bo_dau_thuong(sap4)
+    return bool(re.search(r"logistic\s+co\s+dieu\s+kien|conditional\s+logistic|\bclogit\b", bd))
 
 
 def ap_dung_bien_co_hiem(design_code: Any, sap4: str = "") -> bool:
@@ -331,7 +353,9 @@ def phuong_phap_bien_co_hiem_sap(sap5: str) -> dict:
     o_trong = "[can" in bd
     pp = None
     if not o_trong:
-        if "firth" in bd:
+        if "firth" in bd and re.search(r"co\s+dieu\s+kien|conditional", bd):
+            pp = "firth_dk"
+        elif "firth" in bd:
             pp = "firth"
         elif "clopper" in bd or ("chinh xac" in bd and "fisher" in bd):
             pp = "mo_ta_chinh_xac"
@@ -897,6 +921,16 @@ def evaluate_g4_quality(
                     epv_status = "REVIEW"
             else:
                 epv_evidence += f"; biến cố hiếm: {BIEN_CO_HIEM[bch['phuong_phap']][0]}"
+                # 23/11/2026: phương pháp phải CÙNG KIỂU với thiết kế — ghép cặp cá thể (§4 có điều kiện) ⇔ firth_dk
+                dk = la_sap_co_dieu_kien(_section_body(artifact_text, "§4"))
+                if dk != (bch["phuong_phap"] in BIEN_CO_HIEM_DK):
+                    epv_evidence += ("; phương pháp biến cố hiếm KHÔNG điều kiện cho thiết kế ghép cặp cá thể (bỏ qua "
+                                     "bộ ghép) — khai firth_dk" if dk else
+                                     "; phương pháp có điều kiện (firth_dk) cho thiết kế không ghép cặp cá thể")
+                    if ledger_signed:
+                        epv_evidence += " (SAP đã ký trước luật này — chỉ hiển thị; SAP sửa đổi phải sửa)"
+                    else:
+                        epv_status = "REVIEW"
     automatic.append(_criterion(
         "G4-AUTO-04",
         "§5 phân tích đa biến có nhắc EPV/EPP/pmsampsize/VIF khi áp dụng",

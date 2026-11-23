@@ -411,6 +411,13 @@
    ],
    "source": "pubmed"
   },
+  "3233252": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "32853471": {
    "status": "ok",
    "sources_tried": [
@@ -1261,7 +1268,19 @@
    "authors": "Laporte JR, Carné X, Vidal X, Moreno V, Juan J",
    "journal": "Lancet (London, England)",
    "year": "1991",
-   "doi": "10.1016/0140-6736(91)90744-a"
+   "doi": "10.1016/0140-6736(91)90744-a",
+   "n_authors": 5,
+   "authors_6": [
+    "Laporte JR",
+    "Carné X",
+    "Vidal X",
+    "Moreno V",
+    "Juan J"
+   ],
+   "journal_abbr": "Lancet",
+   "volume": "337",
+   "issue": "8733",
+   "pages": "85-9"
   },
   "16918879": {
    "status": "resolved",
@@ -1269,7 +1288,19 @@
    "authors": "Laine L, Smith R, Min K, Chen C, Dubois RW",
    "journal": "Alimentary pharmacology & therapeutics",
    "year": "2006",
-   "doi": "10.1111/j.1365-2036.2006.03043.x"
+   "doi": "10.1111/j.1365-2036.2006.03043.x",
+   "n_authors": 5,
+   "authors_6": [
+    "Laine L",
+    "Smith R",
+    "Min K",
+    "Chen C",
+    "Dubois RW"
+   ],
+   "journal_abbr": "Aliment Pharmacol Ther",
+   "volume": "24",
+   "issue": "5",
+   "pages": "751-67"
   },
   "17872937": {
    "status": "resolved",
@@ -1356,7 +1387,20 @@
    "authors": "Fletcher EH, Johnston DE, Fisher CR, Koerner RJ, Newton JL",
    "journal": "Alimentary pharmacology & therapeutics",
    "year": "2010",
-   "doi": "10.1111/j.1365-2036.2010.04415.x"
+   "doi": "10.1111/j.1365-2036.2010.04415.x",
+   "n_authors": 6,
+   "authors_6": [
+    "Fletcher EH",
+    "Johnston DE",
+    "Fisher CR",
+    "Koerner RJ",
+    "Newton JL",
+    "Gray CS"
+   ],
+   "journal_abbr": "Aliment Pharmacol Ther",
+   "volume": "32",
+   "issue": "7",
+   "pages": "831-9"
   },
   "21365461": {
    "status": "resolved",
@@ -1471,7 +1515,24 @@
    "authors": "Castellsague J, Riera-Guardia N, Calingaert B, Varas-Lorenzo C, Fourrier-Reglat A",
    "journal": "Drug safety",
    "year": "2012",
-   "doi": "10.2165/11633470-000000000-00000"
+   "doi": "10.2165/11633470-000000000-00000",
+   "n_authors": 8,
+   "authors_6": [
+    "Castellsague J",
+    "Riera-Guardia N",
+    "Calingaert B",
+    "Varas-Lorenzo C",
+    "Fourrier-Reglat A",
+    "Nicotra F"
+   ],
+   "nhom_tac_gia": [
+    "Safety of Non-Steroidal Anti-Inflammatory Drugs (SOS) Project"
+   ],
+   "journal_abbr": "Drug Saf",
+   "volume": "35",
+   "issue": "12",
+   "pages": "1127-46",
+   "pmcid": "PMC3714137"
   },
   "23268269": {
    "status": "resolved",
@@ -1526,7 +1587,20 @@
    "authors": "Yuhara H, Corley DA, Nakahara F, Nakajima T, Koike J",
    "journal": "Journal of gastroenterology",
    "year": "2014",
-   "doi": "10.1007/s00535-013-0905-z"
+   "doi": "10.1007/s00535-013-0905-z",
+   "n_authors": 8,
+   "authors_6": [
+    "Yuhara H",
+    "Corley DA",
+    "Nakahara F",
+    "Nakajima T",
+    "Koike J",
+    "Igarashi M"
+   ],
+   "journal_abbr": "J Gastroenterol",
+   "volume": "49",
+   "issue": "6",
+   "pages": "992-1000"
   },
   "24777151": {
    "status": "resolved",
@@ -1534,7 +1608,20 @@
    "authors": "Anglin R, Yuan Y, Moayyedi P, Tse F, Armstrong D",
    "journal": "The American journal of gastroenterology",
    "year": "2014",
-   "doi": "10.1038/ajg.2014.82"
+   "doi": "10.1038/ajg.2014.82",
+   "n_authors": 6,
+   "authors_6": [
+    "Anglin R",
+    "Yuan Y",
+    "Moayyedi P",
+    "Tse F",
+    "Armstrong D",
+    "Leontiadis GI"
+   ],
+   "journal_abbr": "Am J Gastroenterol",
+   "volume": "109",
+   "issue": "6",
+   "pages": "811-9"
   },
   "24825180": {
    "status": "resolved",
@@ -1571,7 +1658,20 @@
    "authors": "Masclee GM, Valkhoff VE, Coloma PM, de Ridder M, Romio S",
    "journal": "Gastroenterology",
    "year": "2014",
-   "doi": "10.1053/j.gastro.2014.06.007"
+   "doi": "10.1053/j.gastro.2014.06.007",
+   "n_authors": 15,
+   "authors_6": [
+    "Masclee GM",
+    "Valkhoff VE",
+    "Coloma PM",
+    "de Ridder M",
+    "Romio S",
+    "Schuemie MJ"
+   ],
+   "journal_abbr": "Gastroenterology",
+   "volume": "147",
+   "issue": "4",
+   "pages": "784-792.e9; quiz e13-4"
   },
   "25194294": {
    "status": "resolved",
@@ -1898,6 +1998,22 @@
    "volume": "368",
    "pages": "m441"
   },
+  "3233252": {
+   "status": "resolved",
+   "title": "Power calculations for matched case-control studies.",
+   "authors": "Dupont WD",
+   "journal": "Biometrics",
+   "year": "1988",
+   "doi": null,
+   "n_authors": 1,
+   "authors_6": [
+    "Dupont WD"
+   ],
+   "journal_abbr": "Biometrics",
+   "volume": "44",
+   "issue": "4",
+   "pages": "1157-68"
+  },
   "32853471": {
    "status": "resolved",
    "title": "Mortality risk in dilated cardiomyopathy: the accuracy of heart failure prognostic models and dilated cardiomyopathy-tailored prognostic model.",
@@ -2160,7 +2276,20 @@
    "authors": "Alam SM, Qasswal M, Ahsan MJ, Walters RW, Chandra S",
    "journal": "Scientific reports",
    "year": "2022",
-   "doi": "10.1038/s41598-022-18654-2"
+   "doi": "10.1038/s41598-022-18654-2",
+   "n_authors": 5,
+   "authors_6": [
+    "Alam SM",
+    "Qasswal M",
+    "Ahsan MJ",
+    "Walters RW",
+    "Chandra S"
+   ],
+   "journal_abbr": "Sci Rep",
+   "volume": "12",
+   "issue": "1",
+   "pages": "14452",
+   "pmcid": "PMC9402708"
   },
   "36089508": {
    "status": "resolved",
@@ -2205,7 +2334,19 @@
    "authors": "Haghbin H, Zakirkhodjaev N, Husain FF, Lee-Smith W, Aziz M",
    "journal": "Digestive diseases and sciences",
    "year": "2023",
-   "doi": "10.1007/s10620-022-07788-y"
+   "doi": "10.1007/s10620-022-07788-y",
+   "n_authors": 5,
+   "authors_6": [
+    "Haghbin H",
+    "Zakirkhodjaev N",
+    "Husain FF",
+    "Lee-Smith W",
+    "Aziz M"
+   ],
+   "journal_abbr": "Dig Dis Sci",
+   "volume": "68",
+   "issue": "5",
+   "pages": "1975-1982"
   },
   "36828607": {
    "status": "resolved",
@@ -2378,7 +2519,20 @@
    "authors": "Yamate S, Ishiguro C, Fukuda H, Hamai S, Nakashima Y",
    "journal": "PloS one",
    "year": "2024",
-   "doi": "10.1371/journal.pone.0305320"
+   "doi": "10.1371/journal.pone.0305320",
+   "n_authors": 5,
+   "authors_6": [
+    "Yamate S",
+    "Ishiguro C",
+    "Fukuda H",
+    "Hamai S",
+    "Nakashima Y"
+   ],
+   "journal_abbr": "PLoS One",
+   "volume": "19",
+   "issue": "6",
+   "pages": "e0305320",
+   "pmcid": "PMC11166339"
   },
   "38924296": {
    "status": "resolved",
@@ -2801,7 +2955,20 @@
    "authors": "Mpakogiannis K, Fousekis FS, Moshou P, Katsanos KH, Christodoulou DK",
    "journal": "Acta gastro-enterologica Belgica",
    "year": "2025",
-   "doi": "10.51821/88.3.13990"
+   "doi": "10.51821/88.3.13990",
+   "n_authors": 6,
+   "authors_6": [
+    "Mpakogiannis K",
+    "Fousekis FS",
+    "Moshou P",
+    "Katsanos KH",
+    "Christodoulou DK",
+    "Mitselos IV"
+   ],
+   "journal_abbr": "Acta Gastroenterol Belg",
+   "volume": "88",
+   "issue": "3",
+   "pages": "223-227"
   },
   "41101281": {
    "status": "resolved",

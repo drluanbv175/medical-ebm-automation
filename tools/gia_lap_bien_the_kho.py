@@ -466,6 +466,8 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                           "checklist": "CONSORT 2025 + GRAMMS (PMID 18416914) + COREQ (PMID 17872937)"}
     kb["rct_hon_hop"] = hh
     kb["benh_chung_ghep_cap"] = _ghep_cap(GL.KICH_BAN["benh_chung"], _ky_g2, _tra_loi_sap)
+    kb["benh_chung_ghep_cap_thieu"] = _ghep_cap_thieu(kb["benh_chung_ghep_cap"])
+    kb["benh_chung_ghep_cap_hiem"] = _ghep_cap_hiem(kb["benh_chung_ghep_cap"])
     return kb
 
 
@@ -475,7 +477,9 @@ def _ghep_cap(bc: Dict[str, Any], _ky_g2: Callable, _tra_loi_sap: Callable) -> D
 
     Kế thừa kịch bản bệnh–chứng ghép tần suất; khác ở chỗ PI chốt matching_type individual ⇒ SAP §4 hồi quy logistic CÓ
     ĐIỀU KIỆN theo bộ ghép ⇒ G6 chạy statsmodels ConditionalLogit theo `ma_bo_ghep`, R survival::clogit, SPSS COXREG
-    phân tầng. Giới, tuổi là biến ghép (hằng/gần hằng trong bộ) ⇒ vai trò mô tả, không vào mô hình có điều kiện."""
+    phân tầng. Giới, tuổi là BIẾN GHÉP (vai trò bien_ghep — hằng/gần hằng trong bộ) ⇒ không vào mô hình có điều kiện,
+    nhưng vào mô hình gán đa trị. 23/11/2026 (chiều): cỡ mẫu theo Dupont 1988 (M = 2, φ), biến cố hiếm theo Firth có
+    điều kiện (firth_dk)."""
     # GIỮ mã đề tài + chủ đề của kịch bản gốc (G0 trùng hệt) ⇒ đọc thẳng nền G0 đã lưu của gốc (`nen_g0_tu`, như kịch
     # bản chân thực); khác ở thiết kế chọn chứng (G1) trở đi
     gc = _sao(bc, id_test="case_control_ghep_cap", goc="benh_chung", nen_g0_tu="benh_chung",
@@ -485,9 +489,10 @@ def _ghep_cap(bc: Dict[str, Any], _ky_g2: Callable, _tra_loi_sap: Callable) -> D
     bs["bo_bien"] = list(bs["bo_bien"]) + [("ma_bo_ghep", "text", "Mã bộ ghép (một ca và 2 chứng ghép cặp với ca đó)",
                                             "", "integer", "1", "9999")]
     bs["ma_tran"] = [d for d in bs["ma_tran"] if d[3] not in ("tuoi", "gioi")] + [
-        ("1", "Tuổi (biến ghép cặp cá thể, chênh ≤ 2 năm trong bộ)", "mo_ta", "tuoi", "lien_tuc", "HB2",
-         "Phỏng vấn + hồ sơ", "§3"),
-        ("1", "Giới (biến ghép cặp cá thể, trùng trong bộ)", "mo_ta", "gioi", "nhi_phan", "HB3", "Phỏng vấn", "§3"),
+        ("1", "Tuổi (biến ghép cặp cá thể, chênh ≤ 2 năm trong bộ)", "bien_ghep", "tuoi", "lien_tuc", "HB2",
+         "Phỏng vấn + hồ sơ", "§6"),
+        ("1", "Giới (biến ghép cặp cá thể, trùng trong bộ)", "bien_ghep", "gioi", "nhi_phan", "HB3", "Phỏng vấn",
+         "§6"),
         ("1", "Bộ ghép (một ca cùng 2 chứng ghép cặp theo giới và tuổi ± 2 năm)", "bo_ghep", "ma_bo_ghep", "lien_tuc",
          "BG1", "Sổ tuyển chọn chứng", "§4")]
     g1 = gc["pi"]["G1"]
@@ -509,10 +514,20 @@ def _ghep_cap(bc: Dict[str, Any], _ky_g2: Callable, _tra_loi_sap: Callable) -> D
              "bien_phap": ("Thu thập và hiệu chỉnh trong hồi quy logistic có điều kiện theo bộ ghép; giới và tuổi đã "
                            "được kiểm soát bằng ghép cặp cá thể")}]})
     g1["estimand"] = {**g1["estimand"], "population_summary_measure": "Tỷ số chênh (OR) có điều kiện hiệu chỉnh"}
+    # 23/11/2026 (chiều): cỡ mẫu bệnh–chứng ghép cặp cá thể theo Dupont 1988 (G3 run_g3_auto, không còn công thức hai tỷ
+    # lệ không ghép) — M = số chứng mỗi ca, φ = tương quan phơi nhiễm giữa ca và chứng cùng bộ
+    gc["pi"]["G3"].update({
+        "so_chung_moi_ca": 2, "phi": 0.2,
+        "phi_source": ("Giả định φ = 0,2 (tương quan phơi nhiễm vừa giữa ca và chứng cùng giới, cùng tuổi) — chưa có "
+                       "số liệu tại cơ sở; lực giảm khi φ tăng (Dupont 1988, PMID 3233252)"),
+        "software": "run_g3_auto.py (bệnh–chứng ghép cặp cá thể — Dupont 1988)"})
     hs = gc["ho_so_tron_vong"]
     hs["G2"] = {**hs["G2"], "public_title": "NSAID và xuất huyết tiêu hoá trên ở người cao tuổi (ghép cặp cá thể)"}
     hs["ky_G2"] = _ky_g2(TIEN_CUU, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999983")
-    hs["tra_loi_G4"] = _tra_loi_sap(
+    # thống kê viên chọn phương pháp biến cố hiếm CÓ ĐIỀU KIỆN cho thiết kế ghép (khuôn G4 chỉ đưa lựa chọn này)
+    from gia_lap_kich_ban_them import TRA_LOI_FIRTH_DK  # noqa: PLC0415
+
+    hs["tra_loi_G4"] = [(r"bien co hiem", TRA_LOI_FIRTH_DK)] + _tra_loi_sap(
         "Không áp dụng — nghiên cứu bệnh–chứng, không có can thiệp", "thuốc chống đông/chống kết tập và tiền sử loét "
         "liên quan cả việc dùng NSAID lẫn xuất huyết (gây nhiễu); giới và tuổi đã được kiểm soát bằng ghép cặp cá thể "
         "(hằng trong bộ ghép) nên không đưa vào mô hình logistic có điều kiện", "VIF < 5 cho các hiệp biến",
@@ -538,6 +553,111 @@ def _ghep_cap(bc: Dict[str, Any], _ky_g2: Callable, _tra_loi_sap: Callable) -> D
                                     "cá thể, hồi quy logistic có điều kiện theo bộ ghép ước lượng OR hiệu chỉnh.")}
     hs["phan_bien_G8"] = {**hs["phan_bien_G8"], "thiet_ke": "Bệnh–chứng ghép cặp cá thể"}
     return gc
+
+
+def _ghep_cap_thieu(gc: Dict[str, Any]) -> Dict[str, Any]:
+    """BỆNH–CHỨNG GHÉP CẶP CÁ THỂ CÓ GIÁ TRỊ THIẾU (23/11/2026 chiều — điều phối giao: «biến thể có giá trị thiếu»):
+    hiệp biến chống đông, tiền sử loét thiếu 15 % theo MAR (phụ thuộc tuổi). Phân tích chính: gán đa trị m = 20 giữ cấu
+    trúc ghép (mô hình gán gồm ca/chứng + biến ghép — Seaman & Keogh 2015, PMID 26237003), hồi quy logistic có điều
+    kiện trong từng bộ, gộp Rubin; ca đầy đủ báo song song. Đối chiếu R mice + clogit + gộp Rubin."""
+    k = _sao(gc, id_test="case_control_ghep_cap_thieu",
+             mo_ta="Bệnh–chứng ghép cặp cá thể 1:2, hiệp biến thiếu 15% theo MAR (gán đa trị giữ cấu trúc ghép)")
+    k["bien_the"] = {**k["bien_the"], "thieu": {"cot": ["chong_dong", "tien_su_loet"], "ty_le": 0.15,
+                                                "phu_thuoc": "tuoi", "ma": "KDD",
+                                                "nhan": "Không có dữ liệu — hồ sơ và phỏng vấn không xác định được"}}
+    k["pi"]["G1"].update({"critical_to_quality": ("Hồ sơ và phỏng vấn có thể thiếu thông tin thuốc chống đông/tiền sử "
+                                                  "loét ~15% — kế hoạch gán đa trị giữ cấu trúc ghép định trước ở SAP "
+                                                  "§6"),
+                          "monitoring_plan": "Báo cáo tỷ lệ thiếu từng biến sau mỗi 50 bộ ghép"})
+    hs = k["ho_so_tron_vong"]
+    hs["ky_G2"] = {**hs["ky_G2"]}
+    hs["g6"][0] = {**hs["g6"][0], "mo_ta": ("NSAID 30 ngày và xuất huyết tiêu hoá trên: OR có điều kiện theo bộ ghép "
+                                            "sau gán đa trị (m = 20)"),
+                   "tham_so": {**hs["g6"][0]["tham_so"], "n_imputations": 20}}
+    dg = copy.deepcopy(hs["dien_giai"])
+    dg["bang"] = [
+        _dong("Xuất huyết tiêu hoá trên", "OR có điều kiện hiệu chỉnh sau gán đa trị (m = 20)", "pr_mi", "G6",
+              "Phân tích chính theo SAP §6 ({pct_thieu}% số dòng thiếu ≥ 1 hiệp biến)"),
+        _dong("Xuất huyết tiêu hoá trên", "OR có điều kiện hiệu chỉnh — ca đầy đủ", "or_hieu_chinh", "G6",
+              "Đối chiếu: ca đầy đủ có thể lệch nếu thiếu không hoàn toàn ngẫu nhiên")]
+    dg["muc_2"] = ("Sau gán đa trị 20 bộ dữ liệu giữ cấu trúc ghép ({pct_thieu}% số dòng thiếu ít nhất một hiệp biến), "
+                   "dùng NSAID trong 30 ngày trước đi kèm odds xuất huyết tiêu hoá trên cao hơn: OR có điều kiện hiệu "
+                   "chỉnh {pr_mi} (KTC 95% {pr_mi_duoi}–{pr_mi_tren}); phân tích ca đầy đủ cho OR {or_hieu_chinh} "
+                   "({or_hieu_chinh_duoi}–{or_hieu_chinh_tren}). Về ý nghĩa lâm sàng, thiết kế bệnh–chứng không ước "
+                   "lượng được nguy cơ tuyệt đối.")
+    dg["muc_4"] = (dg["muc_4"] + " Gán đa trị đúng khi thiếu ngẫu nhiên có điều kiện (MAR), không kiểm chứng được từ "
+                   "dữ liệu; nếu thiếu phụ thuộc chính giá trị bị thiếu (MNAR) thì cả hai cách đều có thể sai lệch, "
+                   "nên kết quả ca đầy đủ được báo song song.")
+    hs["dien_giai"] = dg
+    tl = dict(hs["tra_loi_G7"])
+    tl.update({r"khong dien truoc khi phan tich": ("Trong {n} người ({pct_thieu}% số dòng thiếu ≥ 1 hiệp biến), sau "
+                                                   "gán đa trị giữ cấu trúc ghép (m = 20), dùng NSAID 30 ngày đi kèm "
+                                                   "odds xuất huyết tiêu hoá trên cao hơn: OR có điều kiện hiệu chỉnh "
+                                                   "{pr_mi} (KTC 95% {pr_mi_duoi}–{pr_mi_tren})."),
+               r"khong chay gan da tri": ("Hiệp biến thiếu được gán đa trị m = 20 (mô hình gán gồm tình trạng ca/chứng "
+                                          "và các biến ghép, giả định MAR), phân tích có điều kiện trong từng bộ, gộp "
+                                          "Rubin; phân tích ca đầy đủ báo song song (SAP §6)")})
+    hs["tra_loi_G7"] = list(tl.items())
+    hs["phan_bien_G8"] = {**hs["phan_bien_G8"],
+                          "ly_do": ("Gán đa trị giữ cấu trúc ghép theo SAP, OR có điều kiện sau gán {pr_mi} (KTC 95% "
+                                    "{pr_mi_duoi}–{pr_mi_tren}) và ca đầy đủ báo song song; cần thảo luận giả định "
+                                    "MAR.")}
+    return k
+
+
+def _ghep_cap_hiem(gc: Dict[str, Any]) -> Dict[str, Any]:
+    """BỆNH–CHỨNG GHÉP CẶP CÁ THỂ ÍT CA — BIẾN CỐ HIẾM (23/11/2026 chiều — điều phối giao: «biến thể biến cố hiếm»):
+    1 ca : 4 chứng, OR giả định 4,3 (NSAID không chọn lọc đơn trị, Masclee 2014, PMID 24937265) ⇒ Dupont 1988 cho ~27
+    bộ ⇒ số ca dưới 10 × số tham số ⇒ rào EPV chặn hồi quy có điều kiện ⇒ G6 chạy phương pháp SAP §5 khai: hồi quy
+    logistic có điều kiện có phạt Firth (Heinze & Puhr 2010, PMID 20213709); R đối chiếu, SPSS ghi không đối chiếu
+    được."""
+    k = _sao(gc, id_test="case_control_ghep_cap_hiem",
+             mo_ta="Bệnh–chứng ghép cặp cá thể 1:4 ít ca (biến cố hiếm — Firth có điều kiện)")
+    k["bien_the"] = {"ghep_cap": {**k["bien_the"]["ghep_cap"], "so_chung": 4}}
+    bs = k["bien_so"]
+    bs["bo_bien"] = [(b[0], b[1], "Mã bộ ghép (một ca và 4 chứng ghép cặp với ca đó)", *b[3:]) if b[0] == "ma_bo_ghep"
+                     else b for b in bs["bo_bien"]]
+    bs["ma_tran"] = [(*d[:1], "Bộ ghép (một ca cùng 4 chứng ghép cặp theo giới và tuổi ± 2 năm)", *d[2:])
+                     if d[3] == "ma_bo_ghep" else d for d in bs["ma_tran"]]
+    g1 = k["pi"]["G1"]
+    g1.update({
+        "control_source": g1["control_source"].replace("với 2 chứng (2 chứng cho mỗi ca; mỗi ca cùng 2 chứng",
+                                                       "với 4 chứng (4 chứng cho mỗi ca; mỗi ca cùng 4 chứng"),
+        "study_schema_timeline": g1["study_schema_timeline"].replace("chọn 2 chứng", "chọn 4 chứng"),
+        "bias_controls": [dict(g1["bias_controls"][0]),
+                          {**g1["bias_controls"][1],
+                           "bien_phap": g1["bias_controls"][1]["bien_phap"].replace("2 chứng : 1 ca",
+                                                                                    "4 chứng : 1 ca")},
+                          dict(g1["bias_controls"][2])]})
+    g3 = k["pi"]["G3"]
+    g3.update({"effect_size": 4.3, "so_chung_moi_ca": 4,
+               "effect_source": ("PMID: 24937265 (Masclee 2014, Gastroenterology) — đơn trị NSAID không chọn lọc làm "
+                                 "tăng nguy cơ xuất huyết tiêu hoá trên (IRR 4,3, phân tích chuỗi ca); dùng làm OR giả "
+                                 "định cho phơi nhiễm NSAID không chọn lọc")})
+    from gia_lap_kich_ban_them import TRA_LOI_FIRTH_DK  # noqa: PLC0415
+
+    hs = k["ho_so_tron_vong"]
+    hs["tra_loi_G4"] = [(r"bien co hiem", TRA_LOI_FIRTH_DK)] + [x for x in hs["tra_loi_G4"] if x[0] != r"bien co hiem"]
+    dg = copy.deepcopy(hs["dien_giai"])
+    dg["bang"] = [_dong("Xuất huyết tiêu hoá trên", "OR có điều kiện có phạt Firth (biến cố hiếm)", "or_firth", "G6",
+                        "Số ca dưới 10 lần số tham số — thay hồi quy có điều kiện theo SAP §5")]
+    dg["muc_2"] = ("Với số ca ít so với số tham số của mô hình, hồi quy logistic có điều kiện có phạt Firth theo bộ "
+                   "ghép (khai trước ở SAP §5) cho OR {or_firth} (KTC 95% hợp lý phạt hồ sơ {or_firth_duoi}–"
+                   "{or_firth_tren}; p = {or_firth_p}). Về ý nghĩa lâm sàng, thiết kế bệnh–chứng không ước lượng được "
+                   "nguy cơ tuyệt đối; khoảng tin cậy rộng phản ánh số ca ít.")
+    dg["muc_4"] = (dg["muc_4"] + " Số ca ít nên ước lượng không chắc chắn; phương pháp có phạt Firth giảm lệch của ước "
+                   "lượng khi dữ liệu thưa nhưng không thay được cỡ mẫu lớn hơn.")
+    hs["dien_giai"] = dg
+    tl = dict(hs["tra_loi_G7"])
+    tl.update({r"khong dien truoc khi phan tich": ("Trong {n} người, hồi quy logistic có điều kiện có phạt Firth theo "
+                                                   "bộ ghép cho OR {or_firth} (KTC 95% {or_firth_duoi}–"
+                                                   "{or_firth_tren}).")})
+    hs["tra_loi_G7"] = list(tl.items())
+    hs["phan_bien_G8"] = {**hs["phan_bien_G8"],
+                          "ly_do": ("Số ca ít; phương pháp biến cố hiếm định trước (Firth có điều kiện) cho OR "
+                                    "{or_firth} (KTC 95% {or_firth_duoi}–{or_firth_tren}); cần thảo luận độ chắc chắn "
+                                    "của ước lượng.")}
+    return k
 
 
 def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_loi_sap) -> None:  # noqa: PLR0913

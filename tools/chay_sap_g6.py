@@ -100,6 +100,9 @@ THAM_SO = {
     # `kiem`: SAP §4 họ «logistic có điều kiện» ⇒ phân tích cùng kết cục chính phải khai; SAP không khai họ đó mà đặc
     # tả khai ⇒ LỖI (lượt chạy sẽ lệch họ SAP).
     "bo_ghep": ("--bo-ghep", "s"),
+    # 23/11/2026: biến DÙNG ĐỂ GHÉP (vai trò bien_ghep của ma trận G3) — vào mô hình gán đa trị cùng ca/chứng (Seaman &
+    # Keogh 2015); `kiem` đòi khi phân tích khai bo_ghep
+    "bien_ghep": ("--bien-ghep", "ds"),
     # 16/11/2026 (giả lập 8 thiết kế): phân tích ĐẶC THÙ — chẩn đoán · dự báo · tổng quan–gộp · định tính — chạy bằng
     # phan_tich_thiet_ke_dac_thu.py (run_stats_analysis chưa có đường); cùng nhật ký/tóm tắt/kiểm chéo SPSS–R.
     "loai_dac_thu": ("--loai", "loai"),
@@ -482,6 +485,12 @@ def kiem_bien_co_hiem_sap(ds: list, sap_text: str) -> list[str]:
             loi.append(f"{pt.get('id')}: SAP §5 khai biến cố hiếm «{pp}» nhưng đặc tả "
                        f"{'khai «' + str(ts['bien_co_hiem']) + '»' if ts.get('bien_co_hiem') else 'không khai'}"
                        " bien_co_hiem — rào EPV chặn thì bảng sẽ trống")
+        elif (pp == "firth_dk") != bool(ts.get("bo_ghep")):
+            # 23/11/2026: phương pháp biến cố hiếm phải cùng kiểu với thiết kế — có điều kiện ⇔ có bộ ghép
+            ly = ("không khai bo_ghep — firth_dk cần mã bộ ghép" if pp == "firth_dk" else
+                  "có bo_ghep (ghép cặp cá thể) — phương pháp KHÔNG điều kiện bỏ qua bộ ghép; SAP thiết kế ghép phải "
+                  "khai firth_dk")
+            loi.append(f"{pt.get('id')}: SAP §5 khai biến cố hiếm «{pp}» nhưng phân tích {ly}")
         elif pp == "firth" and ts.get("cot_cum"):
             loi.append(f"{pt.get('id')}: SAP §5 khai Firth cho biến cố hiếm nhưng phân tích có cột cụm "
                        f"«{ts['cot_cum']}» — hồi quy Firth không có sai số chuẩn theo cụm; SAP thiết kế cụm cần "
@@ -507,6 +516,10 @@ def kiem_bo_ghep_sap(ds: list, sap_text: str) -> list[str]:
                                                                  "bang_chung")):
             continue
         cung_kc = pt.get("vai") == "chinh" or (ts_chinh.get("outcome") and ts.get("outcome") == ts_chinh["outcome"])
+        if ts.get("bo_ghep") and not ts.get("bien_ghep"):
+            loi.append(f"{pt.get('id')}: khai bo_ghep nhưng thiếu bien_ghep (biến dùng để ghép) — gán đa trị cho dữ "
+                       "liệu ghép cặp phải đưa tình trạng ca/chứng và các biến ghép vào mô hình gán (Seaman & Keogh "
+                       "2015, PMID 26237003)")
         if co_dk and cung_kc and not ts.get("bo_ghep"):
             loi.append(f"{pt.get('id')}: SAP §4 khoá hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép nhưng đặc tả không "
                        "khai bo_ghep (cột mã bộ ghép) — engine sẽ chạy logistic không điều kiện, lệch SAP")

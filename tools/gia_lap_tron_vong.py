@@ -429,8 +429,13 @@ def _ap_bien_the(rows: List[Dict[str, Any]], bien_the: Mapping[str, Any], kc: Op
     gc = bien_the.get("ghep_cap")
     if gc and kc:
         k = int(gc.get("so_chung") or 2) + 1
+        odds0 = p0 / (1 - p0)
         for i, r in enumerate(rows):
             r[gc["cot"]] = i // k + 1
+            # 23/11/2026: 1 ca : M chứng — đặt lại ca/chứng theo M, sinh phơi nhiễm đúng giả định G3 (như sinh_du_lieu)
+            r[kc] = 1 if i % k == 0 else 0
+            if pn:
+                r[pn] = _bern(rng, (odds0 * eff) / (1 + odds0 * eff) if r[kc] else p0)
             ca = rows[i - i % k]
             if i % k == 0:
                 continue
@@ -1649,14 +1654,17 @@ class TronVong:
         if bch_sap and G4Q.BIEN_CO_HIEM[bch_sap][1] and ts_chinh.get("outcome") and not ts_chinh.get("loai_dac_thu"):
             ts_chinh.setdefault("bien_co_hiem", bch_sap)
         # 23/11/2026: SAP §4 khoá hồi quy logistic CÓ ĐIỀU KIỆN (bệnh–chứng ghép cặp cá thể) ⇒ thống kê viên khai cột mã
-        # bộ ghép theo vai trò bo_ghep của ma trận G3 (cùng hàm chay_sap_g6 `kiem` dùng); phân tích kế thừa nhận theo
+        # bộ ghép theo vai trò bo_ghep của ma trận G3 (cùng hàm chay_sap_g6 `kiem` dùng); phân tích kế thừa nhận theo.
+        # Biến dùng để ghép (vai trò bien_ghep) vào mô hình gán đa trị (Seaman & Keogh 2015).
         if (ts_chinh.get("outcome") and not ts_chinh.get("loai_dac_thu")
                 and "logistic_dk" in G6Q._ho_mo_hinh_sap(G6Q._sec(text, 4))):
             import ma_tran_muc_tieu_bien as MT0  # noqa: PLC0415
 
-            bo_ghep = MT0.vai_tro_tu_dong(MT0.doc_ma_tran(self.out)[0] or []).get("bo_ghep")
-            if bo_ghep:
-                ts_chinh.setdefault("bo_ghep", bo_ghep)
+            vt0 = MT0.vai_tro_tu_dong(MT0.doc_ma_tran(self.out)[0] or [])
+            if vt0.get("bo_ghep"):
+                ts_chinh.setdefault("bo_ghep", vt0["bo_ghep"])
+            if vt0.get("bien_ghep"):
+                ts_chinh.setdefault("bien_ghep", list(vt0["bien_ghep"]))
         ds: List[Dict[str, Any]] = []
         for x in mau:
             if x.get("tu_ma_tran"):  # 22/11/2026: dựng từ ma trận G3 + SAP §9 ở dưới, không từ hồ sơ
@@ -1953,7 +1961,7 @@ class TronVong:
     # engine ghi và dẫn ĐÚNG tệp kết quả chứa số đó (bản diễn giải đối chiếu số với tệp nguồn).
     THUOC_DO = ("pr_hieu_chinh", "pr_tho", "hieu_so_nguy_co", "or_hieu_chinh", "or_tho", "ty_le", "auc", "do_nhay",
                 "do_dac_hieu", "ppv", "npv", "c_statistic", "rr_gop", "rr_gop_co_dinh", "chu_de_1", "hr_hieu_chinh",
-                "hr_tho", "pr_mi", "or_tho_dk")
+                "hr_tho", "pr_mi", "or_tho_dk", "or_firth")
 
     def _uoc_luong(self, lay: str, gate: str) -> Optional[Dict[str, Any]]:
         tom = _doc_json(self.out / f"{gate}_analysis_summary.json")
@@ -1990,6 +1998,9 @@ class TronVong:
         if lay == "or_hieu_chinh":
             r = theo_bien((tom.get("multivariate") or {}).get("results"), "OR_adj")
             return r and kq(r["OR_adj"], r.get("CI_95"), r.get("p"), f"{gate}_table4_multivariate.txt", 2)
+        if lay == "or_firth":  # 23/11/2026: OR Firth (có điều kiện hoặc không) thay mô hình bị rào EPV chặn
+            r = theo_bien((tom.get("bien_co_hiem") or {}).get("results"), "OR_adj")
+            return r and kq(r["OR_adj"], r.get("CI_95"), r.get("p"), f"{gate}_table4b_bien_co_hiem.txt", 2)
         if lay == "or_tho_dk":  # 23/11/2026: OR thô CÓ ĐIỀU KIỆN theo bộ ghép (hồi quy logistic có điều kiện)
             r = theo_bien((tom.get("multivariate") or {}).get("crude"), "OR_adj")
             return r and kq(r["OR_adj"], r.get("CI_95"), r.get("p"), f"{gate}_table4_multivariate.txt", 2)

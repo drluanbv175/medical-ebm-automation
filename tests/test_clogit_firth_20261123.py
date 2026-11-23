@@ -175,6 +175,10 @@ def test_kiem_bo_ghep_sap_hai_chieu():
     assert [x.split(":")[0] for x in loi] == ["MT1", "NC"], loi  # kết cục khác không bắt buộc
     for pt in ds[:2]:
         pt["tham_so"]["bo_ghep"] = "bo"
+    # 23/11/2026 (chiều): khai bo_ghep thì phải khai biến dùng để ghép (mô hình gán đa trị — Seaman & Keogh 2015)
+    assert [x.split(":")[0] for x in CS6.kiem_bo_ghep_sap(ds, SAP_DK)] == ["MT1", "NC"]
+    for pt in ds[:2]:
+        pt["tham_so"]["bien_ghep"] = ["gioi"]
     assert CS6.kiem_bo_ghep_sap(ds, SAP_DK) == []
     loi = CS6.kiem_bo_ghep_sap(ds, SAP_KDK)
     assert len(loi) == 2 and all("không khoá hồi quy" in x for x in loi), loi
@@ -354,7 +358,7 @@ def test_gia_lap_ghep_cap_sinh_bo_ghep_that():
     assert (nhom["nhom_ca"].sum() == 1).all() and (nhom.size() == 3).all()
     assert (nhom["gioi"].nunique() == 1).all() and ((nhom["tuoi"].max() - nhom["tuoi"].min()) <= 4).all()
     vai = {d[3]: d[2] for d in kb["bien_so"]["ma_tran"]}
-    assert vai["ma_bo_ghep"] == "bo_ghep" and vai["gioi"] == vai["tuoi"] == "mo_ta"
+    assert vai["ma_bo_ghep"] == "bo_ghep" and vai["gioi"] == vai["tuoi"] == "bien_ghep"  # 23/11 chiều: vai biến ghép
     for pt in kb["ho_so_tron_vong"]["g6"]:
         assert not {"tuoi", "gioi"} & set((pt.get("tham_so") or {}).get("covariates") or [])
     # kịch bản gốc (ghép tần suất) KHÔNG đổi
@@ -438,7 +442,8 @@ def test_that_bo_ghep_co_du_lieu_thieu_khong_gan_da_tri_sai_ho(tmp_path, monkeyp
     df.loc[df.index % 17 == 5, "z"] = np.nan
     d = _khung(tmp_path, monkeypatch, "DK-MI", df, TS_DK)
     tom = json.loads((d / "G6_analysis_summary.json").read_text(encoding="utf-8"))
-    assert tom["multiple_imputation"]["error"] == RSA.LOI_MI_GHEP_CA_THE
+    # 23/11/2026 (chiều): gán đa trị ghép cặp đã có đường — thiếu biến ghép thì báo lỗi, không gán thiếu cấu trúc ghép
+    assert tom["multiple_imputation"]["error"] == RSA.LOI_MI_THIEU_BIEN_GHEP
     assert tom["multivariate"]["model"] == "logistic_dk" and tom["multivariate"]["n"] < 270
 
 

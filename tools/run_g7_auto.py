@@ -1428,7 +1428,7 @@ def _bang_bien_co_hiem_g6(b: Any, tien_to: str) -> list[str]:
     tieu_de = f"Biến cố hiếm — {_mot_dong(b.get('ten') or '?')} (G6, `{tien_to}_table4b_bien_co_hiem.txt`)"
     if b.get("error"):
         return [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(b['error'])}]  ", ""]
-    if b.get("phuong_phap") == "firth":
+    if b.get("phuong_phap") in ("firth", "firth_dk"):  # 23/11/2026: firth_dk = Firth có điều kiện (ghép cặp)
         return _bang_firth_g6(b, tieu_de)
     # «95% CI» là cụm cố định bộ tự kiểm số bỏ qua (kiem_so_trich_g6) — viết «KTC 95%» sẽ bị coi là số chép sai
     dong = [f"*{tieu_de}* {NHAN_DOI_CHIEU_G6}  ", "", "| Nhóm | Biến cố/n | Tỷ lệ | 95% CI chính xác |", "|---|---|---|---|"]
