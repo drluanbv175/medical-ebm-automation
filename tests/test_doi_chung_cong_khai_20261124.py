@@ -26,6 +26,10 @@ GOC = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(GOC / "tools"))
 import cau_noi_spss as C  # noqa: E402
 
+# 24/11/2026: test chạy R thật cần GÓI của cầu nối (ordinal, jsonlite…), không chỉ Rscript — máy CI Windows có R
+# nhưng thiếu gói ⇒ trượt thay vì «không đo được». Dùng đúng điều kiện CAN_R của tệp test cầu nối.
+from tests.test_cau_noi_r_ty_le_20261122 import CAN_R  # noqa: E402, I001
+
 FX_RSPL = GOC / "tests" / "fixtures" / "spss_oxml" / "rspl"
 FX_MR = GOC / "tests" / "fixtures" / "spss_oxml" / "mo_rong"
 RSCRIPT = C.tim_rscript()
@@ -50,13 +54,13 @@ def _chay_r(ma: str, tmp: Path) -> list[float]:
 # ───────────────────────────── (⚪ a) RSPL ↔ GENLINMIXED ─────────────────────────────
 
 
-@pytest.mark.skipif(not RSCRIPT, reason="máy không có Rscript")
+@CAN_R
 @pytest.mark.parametrize("loai", ["thu_bac", "nhi_phan"])
 def test_that_rspl_r_trung_spss_genlinmixed_da_do(loai, tmp_path):
     """R RSPL trên CÙNG dữ liệu giả ⇒ hệ số, SE, phương sai, p (t bậc tự do phần dư) trùng SPSS 31.0.1 đã đo."""
     sp = _j(FX_RSPL / "spss_genlinmixed.json")[loai]
     y = "d$g1" if loai == "thu_bac" else "as.integer(d$g1 >= 4)"
-    ma = ('source("pl.R"); d <- read.csv("' + str(FX_RSPL / "du_lieu_gia_cum.csv") + '"); '
+    ma = ('source("pl.R"); d <- read.csv("' + (FX_RSPL / "du_lieu_gia_cum.csv").as_posix() + '"); '
           f'f <- pl_rspl({y}, cbind(nhom = d$nhom, tuoi = d$tuoi), d$cum); stopifnot(f$hoi_tu); '
           'cat(format(c(f$beta, f$se, f$s2, f$df, 2 * pt(-abs(f$beta / f$se), f$df)), digits = 15))')
     b1, b2, s1, s2, var, df, p1, p2 = _chay_r(ma, tmp_path)
@@ -66,13 +70,14 @@ def test_that_rspl_r_trung_spss_genlinmixed_da_do(loai, tmp_path):
     assert (p1, p2) == pytest.approx((sp["nhom"]["p"], sp["tuoi"]["p"]), rel=1e-5)
 
 
-@pytest.mark.skipif(not RSCRIPT, reason="máy không có Rscript")
+@CAN_R
 def test_that_rspl_khac_laplace_va_khac_ml(tmp_path):
     """Đột biến phương pháp phải lộ: Laplace (clmm) và giả khả dĩ CỰC ĐẠI (MSPL — bỏ số hạng REML) KHÔNG trùng SPSS."""
     sp = _j(FX_RSPL / "spss_genlinmixed.json")["thu_bac"]
     ma = ('source("pl.R"); pl_ml <- eval(parse(text = sub("as.numeric(determinant(G$XVX)$modulus)", "0", '
           'paste(deparse(pl_rspl), collapse = "\\n"), fixed = TRUE))); d <- read.csv("'
-          + str(FX_RSPL / "du_lieu_gia_cum.csv") + '"); f <- pl_ml(d$g1, cbind(nhom = d$nhom, tuoi = d$tuoi), d$cum); '
+          + (FX_RSPL / "du_lieu_gia_cum.csv").as_posix() + '"); '
+          'f <- pl_ml(d$g1, cbind(nhom = d$nhom, tuoi = d$tuoi), d$cum); '
           'm <- ordinal::clmm(factor(g1, ordered = TRUE) ~ nhom + tuoi + (1 | cum), data = d); '
           'cat(format(c(f$beta[1], f$s2, coef(m)[["nhom"]]), digits = 15))')
     b_ml, var_ml, b_lap = _chay_r(ma, tmp_path)
@@ -86,10 +91,10 @@ def test_that_r_tham_chieu_mo_rong_trung_spss_va_laplace_giu_nguyen(tmp_path):
     """chay_r_tham_chieu thật trên .sav dựng lại từ fixture mo_rong: RSPL trùng r_kq (đã khớp SPSS OXML thật); Laplace
     trùng r_kq cũ (kiểm .sav dựng lại đúng)."""
     sav = tmp_path / "fx.sav"
-    ma = ('d <- read.csv("' + str(FX_MR / "du_lieu_gia.csv") + '", colClasses = "character"); '
+    ma = ('d <- read.csv("' + (FX_MR / "du_lieu_gia.csv").as_posix() + '", colClasses = "character"); '
           'o <- data.frame(record_id = d$record_id, HL_Chung = suppressWarnings(as.numeric(d$g1)), '
           'thoigian_cho = as.numeric(d$thoigian_cho), tuoi = as.numeric(d$tuoi), gioitinh = as.numeric(d$gioitinh), '
-          'ma_ban_kham = d$ma_ban_kham); haven::write_sav(o, "' + str(sav) + '")')
+          'ma_ban_kham = d$ma_ban_kham); haven::write_sav(o, "' + sav.as_posix() + '")')
     kq = subprocess.run([RSCRIPT, "--vanilla", "-e", ma], capture_output=True, text=True, timeout=300)
     if kq.returncode != 0:
         pytest.skip("thiếu gói haven")
@@ -318,7 +323,7 @@ THAM_SO_DA_BIEN = ["--outcome", "qft_duong", "--group", "cung_nha", "--covariate
                    "--bien-co-hiem", "firth"]
 
 
-@pytest.mark.skipif(not RSCRIPT, reason="máy không có Rscript")
+@CAN_R
 def test_that_r_khop_engine_tren_du_lieu_that(tmp_path, monkeypatch):
     """Cầu nối R (glm + logistf) trên CÙNG dữ liệu thật: đơn biến và mô hình Firth của SAP đều KHỚP engine."""
     from tests.test_cau_noi_r_ty_le_20261122 import _chay_cau_noi
