@@ -88,6 +88,9 @@ THAM_SO = {
     "time": ("--time", "s"),
     "event": ("--event", "s"),
     "n_imputations": ("--n-imputations", "nguyen"),
+    # 24/11/2026: hạt giống của bộ gán đa trị (BoGanPMM) — SAP khai «Random seed» thì đặc tả ghi đúng số đó để chạy lại
+    # cho cùng kết quả trên mọi máy; vắng ⇒ HAT_GIONG_MI của engine (ghi trong đầu ra).
+    "hat_giong": ("--hat-giong", "nguyen"),
     "loc": ("--loc", "bt"),
     # 23/11/2026 (G7 phát hiện G6 lệch SAP — thử nghiệm không kém hơn): phương pháp KTC hiệu số nguy cơ ĐÚNG như SAP §4
     # khai (newcombe | wald). `kiem` từ chối đặc tả lệch SAP và SAP khai phương pháp G6 chưa tính (không tự lùi Wald).
@@ -198,7 +201,7 @@ def doc_dac_ta(d: Path) -> dict:
 
 #: Khoảng hợp lệ của tham số số nguyên (mặc định 0–200: số bộ gán đa trị). Bootstrap hiệu chỉnh lạc quan (22/11/2026):
 #: SAP thường khai 200–2.000 lần; trần 5.000 giữ thời gian chạy hữu hạn (mỗi lần khớp lại mô hình ở Python và R).
-KHOANG_NGUYEN = {"bootstrap": (0, 5000)}
+KHOANG_NGUYEN = {"bootstrap": (0, 5000), "hat_giong": (0, 2**31 - 1)}
 
 
 def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
