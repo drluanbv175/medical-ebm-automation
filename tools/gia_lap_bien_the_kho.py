@@ -592,6 +592,12 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
     # thống kê viên chọn cách tính cấu trúc cụm ở SAP §4 (khớp G6: Poisson sai số chuẩn theo cụm phòng khám)
     hs["tra_loi_G4"] = [(r"cau truc cum", "Hồi quy Poisson với sai số chuẩn theo cụm (cluster-robust), phòng khám là "
                                           "cụm")] + list(hs.get("tra_loi_G4") or [])
+    # 23/11/2026: thống kê viên xét cảnh báo SỐ CỤM mà G6 gắn dưới mọi ước lượng theo cụm (§3 và từng phân tích độ nhạy
+    # ở §5) — một quyết định, khớp cách tính cấu trúc cụm đã chốt ở SAP §4; trước đây ô này rơi về «chưa có thông tin»
+    hs["tra_loi_G7"] = [(r"g6 canh bao gan voi so o tren: so cum",
+                         "Thống kê viên đã xét cảnh báo số cụm của G6: giữ sai số chuẩn hiệu chỉnh cụm có hiệu "
+                         "chỉnh cỡ mẫu nhỏ và suy luận theo phân phối t với số bậc tự do bằng số cụm trừ một, đúng "
+                         "cách tính cấu trúc cụm đã chốt ở SAP")] + list(hs.get("tra_loi_G7") or [])
     kb["rct_cum"]["ho_so_tron_vong"] = hs
 
     # ── 3. sống còn
