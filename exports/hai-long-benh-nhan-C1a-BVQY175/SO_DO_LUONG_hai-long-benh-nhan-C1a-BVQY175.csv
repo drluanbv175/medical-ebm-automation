@@ -1,0 +1,14 @@
+buoc,n,loai,nhanh,ly_do
+Lượt lấy số tại Khoa C1a trong các ngày thu thập (HIS),,chinh,,
+Không thuộc danh sách số được chọn,,loai,,
+Số thứ tự được chọn theo danh sách lập trước,,chinh,,
+Không vào buồng khám,,loai,,"Bỏ về trước khi khám, ngoài khung mẫu: "
+Hoàn thành lượt khám,,chinh,,
+Không được mời,,loai,,"Không đủ tiêu chuẩn, kể cả chuyển nhập viện hoặc cấp cứu: ; Không gặp được để mời: "
+Được mời tham gia,,chinh,,
+Từ chối tham gia,,loai,,
+Đồng ý tham gia,,chinh,,
+Không nộp phiếu,,loai,,
+Nộp phiếu khảo sát,,chinh,,
+Phiếu bị loại khỏi phân tích,,loai,,Không trả lời câu G1: ; Bỏ trống từ 7/30 câu Phần 2 trở lên: ; Bỏ trống toàn bộ một lĩnh vực A–E: 
+Phiếu hợp lệ đưa vào phân tích,,chinh,,

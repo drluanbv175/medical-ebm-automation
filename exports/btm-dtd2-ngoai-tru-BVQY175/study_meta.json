@@ -491,5 +491,322 @@
     "backup": "hằng tuần, 2 bản độc lập",
     "breach_procedure": "theo qui định của đơn vị",
     "sharing_choice": "theo_yeu_cau"
+  },
+  "ho_so_don_vi": {
+    "hdd": {
+      "meta": {
+        "quy_trinh": "ca_hai"
+      },
+      "don_mau4": {
+        "ho_so_kem_theo": {
+          "bang_kiem_rut_gon": true,
+          "phieu_day_du": true
+        }
+      },
+      "phu_luc_10": {
+        "phan_ba": {
+          "A": {
+            "A1": {
+              "giai_thich": "Không — không thử nghiệm thuốc."
+            },
+            "A2": {
+              "giai_thich": "Không — không thử nghiệm chế phẩm sinh học."
+            },
+            "A3": {
+              "giai_thich": "Không — không có can thiệp điều trị."
+            },
+            "A4": {
+              "giai_thich": "Không — không thử nghiệm thiết bị y tế."
+            },
+            "A5": {
+              "giai_thich": "Không — không dùng xạ trị, siêu âm."
+            },
+            "A6": {
+              "giai_thich": "Không — không có thủ thuật, phẫu thuật."
+            },
+            "A7": {
+              "gia_tri": false,
+              "giai_thich": "Không — không thực hiện trong bối cảnh giáo dục."
+            },
+            "A8": {
+              "gia_tri": false,
+              "giai_thich": "Không — không dùng bộ câu hỏi, phỏng vấn hay quan sát; không tiếp xúc người bệnh."
+            },
+            "A9": {
+              "giai_thich": "Có — đề tài chỉ dùng dữ liệu sẵn có trong hồ sơ bệnh án điện tử eHospital của Bệnh viện (lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú năm 2026), được ghi nhận cho mục đích khám chữa bệnh; không thu thập mới, không lấy bệnh phẩm."
+            },
+            "A10": {
+              "gia_tri": false,
+              "giai_thich": "Không."
+            }
+          },
+          "B": {
+            "B1": {
+              "giai_thich": "Có — dữ liệu được GIẢ DANH HOÁ, chưa ẩn danh hoàn toàn: (1) hai tệp có mã người bệnh — danh sách khung mẫu xuất từ eHospital và bảng nối mã nghiên cứu ↔ mã người bệnh — chỉ nằm trong thư mục mã hoá trên máy của chủ nhiệm (dự phòng trên một ổ USB mã hoá cất có khoá), không lưu trên OneDrive hay thư mục đồng bộ đám mây, chỉ chủ nhiệm giữ, và được huỷ có biên bản sau khi khoá dữ liệu; (2) phiếu và cơ sở dữ liệu chỉ mang mã nghiên cứu nhưng còn ngày lượt khám, ngày xét nghiệm, tuổi, giới, nhóm đối tượng khám — trước khi chia sẻ, ngày được đổi thành «ngày thứ mấy trong năm 2026»; (3) kết quả chỉ công bố ở dạng tổng hợp."
+            },
+            "B2": {
+              "gia_tri": false,
+              "giai_thich": "Không chủ định đưa vào. Mẫu là hồ sơ người lớn chọn ngẫu nhiên, không sàng lọc theo năng lực hành vi, nên có thể gồm hồ sơ của người suy giảm nhận thức; vì đề nghị miễn đồng thuận cho mọi hồ sơ, các hồ sơ này được xử lý và bảo mật như mọi hồ sơ khác."
+            },
+            "B3": {
+              "gia_tri": false,
+              "giai_thich": "Không — chỉ người từ 18 tuổi trở lên."
+            },
+            "B4": {
+              "gia_tri": true,
+              "giai_thich": "Có (cần lưu ý) — mẫu có thể gồm quân nhân (nhóm đối tượng khám được ghi nhận trong phiếu) và người bệnh đang được chính Khoa Khám bệnh — nơi chủ nhiệm công tác — theo dõi. Nghiên cứu không tiếp xúc, không mời, không yêu cầu người bệnh làm gì nên không phát sinh áp lực tham gia; vì xin miễn đồng thuận, người bệnh cũng không có cơ hội từ chối — điểm này được cân nhắc trong đơn đề nghị miễn đồng thuận. Phiếu không ghi đơn vị, cấp bậc; kết quả theo nhóm đối tượng chỉ trình bày tổng hợp."
+            },
+            "B5": {
+              "gia_tri": false,
+              "giai_thich": "Không."
+            },
+            "B6": {
+              "gia_tri": false,
+              "giai_thich": "Không — không tiếp xúc người bệnh."
+            },
+            "B7": {
+              "gia_tri": false,
+              "giai_thich": "Không — không tiếp xúc, không chi trả."
+            },
+            "B8": {
+              "gia_tri": true,
+              "giai_thich": "Có — dữ liệu sức khoẻ (mã chẩn đoán gồm bệnh thận mạn, tăng huyết áp, lọc máu hoặc ghép thận, có thai — dùng để loại trừ; kết quả xét nghiệm; đơn thuốc) là thông tin nhạy cảm; được giả danh hoá và bảo mật như mục B1."
+            },
+            "B9": {
+              "gia_tri": true,
+              "giai_thich": "Có — chủ nhiệm (toàn bộ hồ sơ được mở) và người trích lại (39 hồ sơ kiểm chứng và 10 hồ sơ tập) tiếp cận hồ sơ bệnh án điện tử có định danh trên eHospital ngoài mục đích điều trị. Chỉ trích các trường cần cho mục tiêu; không chụp màn hình, không in danh sách có mã người bệnh, đăng xuất khi rời máy. Truy cập chỉ bắt đầu khi có văn bản của Ban Giám đốc cho phép truy cập eHospital vì mục đích nghiên cứu (nộp kèm hồ sơ)."
+            },
+            "B10": {
+              "gia_tri": false,
+              "giai_thich": "Không — không thu thông tin về hành vi vi phạm pháp luật; phiếu không ghi mã bác sĩ điều trị và kết quả không báo cáo theo cá nhân bác sĩ (chỉ theo phòng khám nội tiết / nội chung)."
+            },
+            "B11": {
+              "gia_tri": false,
+              "giai_thich": "Không — không chọn có chủ đích người dân tộc thiểu số; phiếu không ghi dân tộc."
+            }
+          }
+        },
+        "phan_bon": {
+          "C1_huy_dong_chon_nguoi_tham_gia": "Không tuyển người tham gia và không tiếp xúc người bệnh; «người tham gia» là hồ sơ bệnh án điện tử.\nTiêu chuẩn chọn: từ 18 tuổi trở lên tại lượt khám đầu tiên trong năm 2026; có mã ICD-10 E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh trong cửa sổ 01/01/2026–31/12/2026; có ít nhất 2 lượt khám ngoại trú tại Khoa trong cùng cửa sổ. Loại trừ: đang lọc máu hoặc đã ghép thận; có thai trong cửa sổ; có mã E10, E12 hoặc E13; người chỉ có mã E14 không vào mẫu và được đếm trong sơ đồ chọn.\nSố lượng: 385 hồ sơ đủ tiêu chuẩn (ước lượng một tỷ lệ, p = 0,5; d = 0,05; độ tin cậy 95%).\nCác bước: (1) lập khung mẫu là danh sách người bệnh có mã E11 khám ngoại trú tại Khoa năm 2026, lấy từ eHospital, gộp các lượt khám của cùng một người; (2) xếp danh sách theo thứ tự ngẫu nhiên do máy tính sinh, ghi hạt giống trước khi xếp; (3) mở lần lượt từng hồ sơ theo đúng thứ tự, kiểm tiêu chuẩn chọn và loại trừ; hồ sơ không đủ tiêu chuẩn ghi lý do và chuyển sang hồ sơ kế tiếp cho tới khi đủ 385 hồ sơ. Trước hồ sơ chính thức đầu tiên, chủ nhiệm và người trích lại tập trích 10 hồ sơ ở 10 vị trí cuối danh sách; hồ sơ tập không đưa vào phân tích. Sơ đồ chọn báo số người trong khung mẫu, số hồ sơ đã mở, số bị loại theo từng lý do và số đưa vào phân tích.",
+          "C2_thu_thap_so_lieu": "Người thu thập: chủ nhiệm đề tài; một người thứ hai, khác chủ nhiệm, trích lại độc lập 10% hồ sơ (39 hồ sơ, hai đợt) để đo độ chính xác.\nĐịa điểm: tại Bệnh viện Quân y 175, trên phần mềm eHospital.\nNội dung: lượt khám, mã ICD-10, kết quả xét nghiệm (creatinin, UACR, các dạng albumin niệu khác, HbA1c), đơn thuốc ngoại trú và thông tin cho các biến giải thích (tuổi, giới, nhóm đối tượng khám, thời gian mắc ĐTĐ, tăng huyết áp, BMI, bệnh tim mạch, số lượt khám, phòng khám theo dõi chính) — theo phiếu thu thập (Phụ lục C đề cương).\nCác bước: chỉ bắt đầu khi Hội đồng Khoa học và Hội đồng Đạo đức đã duyệt, kế hoạch phân tích thống kê đã khoá, cửa sổ dữ liệu đã khép và bảng ánh xạ tên xét nghiệm đã được hai người duyệt; phiếu được hội đồng chuyên gia thẩm định độ giá trị nội dung và trích thử trên 10 hồ sơ tập ngoài mẫu trước khi khoá; trích theo quy tắc viết trước (quy trình trích hồ sơ); nhập vào REDCap chỉ mang mã nghiên cứu; kiểm dữ liệu hằng tuần; người trích lại không xem bản trích của chủ nhiệm, ngưỡng đồng thuận kết cục chính từ 95%, bất đồng giải quyết bằng mở lại hồ sơ gốc có biên bản; khoá dữ liệu rồi huỷ danh sách khung mẫu và bảng nối mã có biên bản. Thời gian dự kiến 16/02–02/04/2027 (gồm trích thử phiếu 16–19/02/2027).",
+          "C3_xin_chap_thuan_tu_nguyen": "Đề nghị Hội đồng miễn thủ tục đồng thuận (xem Đơn đề nghị miễn thủ tục đồng thuận kèm theo). Lý do: nghiên cứu chỉ đọc lại hồ sơ của năm 2026 đã có, mẫu chỉ được chọn sau khi cửa sổ khép, không tiếp xúc người bệnh; xin đồng ý từng người là không khả thi và sẽ làm sai lệch kết cục chính; nghiên cứu có giá trị xã hội cho cải tiến chăm sóc thận; nguy cơ không vượt mức tối thiểu nhờ giả danh hoá và các biện pháp bảo mật (CIOMS 2016, Hướng dẫn 10 và 12; Tuyên bố Helsinki 2024, §32; TT 43/2024/TT-BYT, Điều 7 khoản 1 điểm b)."
+        },
+        "phan_nam": {
+          "C4_thu_nghiem_thuoc_can_thiep": {
+            "giai_thich": "Không — không có thuốc hay thủ thuật thử nghiệm; dữ liệu là hồ sơ chăm sóc thường quy, có thông tin sức khoẻ (đã khai ở B8) được giả danh hoá."
+          },
+          "C5_nguy_co_toi_thieu_de_quan_ly": {
+            "gia_tri": true,
+            "giai_thich": "Có — không tiếp xúc, không can thiệp, chăm sóc không thay đổi; nguy cơ duy nhất là lộ thông tin, được quản lý bằng giả danh hoá, giới hạn người tiếp cận, lưu tệp có mã người bệnh trong thư mục mã hoá và huỷ sau khoá dữ liệu. Thuộc loại «nghiên cứu dùng hồ sơ bệnh án được thu thập cho mục đích không nghiên cứu (điều trị, chẩn đoán)» trong danh mục nguy cơ tối thiểu của hướng dẫn Phụ lục 10."
+          },
+          "C6_nhieu_co_quan": {
+            "gia_tri": false,
+            "giai_thich": "Không — chỉ thực hiện tại Bệnh viện Quân y 175."
+          }
+        },
+        "thoi_gian": {
+          "thu_nghiem": {
+            "tu": "Không áp dụng (không có thử nghiệm)",
+            "den": "Không áp dụng"
+          },
+          "thu_thap": {
+            "tu": "16/02/2027 (dự kiến, sau khi được chấp thuận)",
+            "den": "02/04/2027 (dự kiến)"
+          }
+        },
+        "nghien_cuu_vien_khac": "Theo phân công của chủ nhiệm (một người có thể kiêm nhiều vai, riêng người trích lại phải khác chủ nhiệm): nhà phương pháp/thống kê; quản lý dữ liệu; người trích lại (trích lại độc lập 10% hồ sơ); người duyệt thứ hai của bảng ánh xạ tên xét nghiệm. Họ tên và thông tin từng người: [DỮ KIỆN CẦN NHẬP: họ tên, chức danh và đơn vị của từng nghiên cứu viên khác — có khi chủ nhiệm phân công nhân sự]."
+      },
+      "phu_luc_11": {
+        "tinh_chat": {
+          "xin_phep_tap_the": false,
+          "hoc_vien_sau_dai_hoc": false,
+          "sinh_vien_dai_hoc": false,
+          "khong_thuoc_nhom_nao_tren": true
+        },
+        "quy_che_dac_biet": {
+          "tre_em_vi_thanh_nien": false,
+          "ton_thuong_than_kinh_thieu_nang_tri_tue": false,
+          "can_cham_soc_y_te_thuong_xuyen": true,
+          "quan_he_le_thuoc_khong_binh_dang": true,
+          "tap_the_nhom_nguoi": false,
+          "dan_toc_thieu_so": false,
+          "phong_xa_chat_ion_hoa": false,
+          "cong_nghe_sinh_san_co_tro_giup": false,
+          "thu_nghiem_lam_sang": false,
+          "phac_do_dieu_tri_thu_thuat_moi": false,
+          "nghien_cuu_dich_te_hoc": true,
+          "gien_nguoi": false
+        },
+        "thong_tin_sinh_vien": "Không áp dụng — đề tài cấp cơ sở do chủ nhiệm đề tài chủ trì (hồ sơ đăng ký chủ trì đề tài cấp Bệnh viện), không phải đề tài của học viên.",
+        "muc": {
+          "1a": "Bệnh thận mạn hay gặp ở người đái tháo đường típ 2 và thường không có triệu chứng ở giai đoạn sớm. Để phát hiện sớm, người bệnh cần được làm hai xét nghiệm ít nhất mỗi năm: creatinin máu (để tính mức lọc cầu thận) và tỷ số albumin/creatinin trong nước tiểu (UACR); người đã có bệnh thận mạn nên được dùng các thuốc bảo vệ thận đã được khuyến cáo. Nghiên cứu xem lại hồ sơ bệnh án điện tử trên phần mềm eHospital của 385 người bệnh đái tháo đường típ 2 khám ngoại trú tại Khoa Khám bệnh, Bệnh viện Quân y 175 trong năm 2026, được chọn ngẫu nhiên, để biết: bao nhiêu người được làm đủ hai xét nghiệm; bao nhiêu người có bệnh thận mạn và bao nhiêu người trong số đó chưa được ghi chẩn đoán; bao nhiêu người đủ chỉ định đang được dùng thuốc bảo vệ thận; và yếu tố nào liên quan với việc không được xét nghiệm đủ. Người bệnh không phải làm gì: không được liên lạc, không phỏng vấn, không khám thêm, không lấy mẫu, việc chăm sóc không thay đổi. Chủ nhiệm đề tài mở từng hồ sơ được chọn và chép các thông tin cần thiết vào phiếu chỉ mang mã nghiên cứu, không ghi họ tên hay địa chỉ. Kết quả chỉ công bố ở dạng tổng hợp, dùng để cải tiến chăm sóc thận tại Khoa.",
+          "1b": "Thiết kế cắt ngang mô tả có phân tích trên dữ liệu y tế thu thập thường quy. Trình tự: (1) chỉ bắt đầu khi Hội đồng Khoa học và Hội đồng Đạo đức đã duyệt, kế hoạch phân tích thống kê đã khoá, cửa sổ dữ liệu 2026 đã khép và bảng ánh xạ tên xét nghiệm đã được hai người duyệt; (2) lập khung mẫu từ eHospital (người có mã E11 khám ngoại trú tại Khoa năm 2026, gộp lượt khám trùng), xếp ngẫu nhiên với hạt giống ghi trước; (3) tập trích 10 hồ sơ ở cuối danh sách (không đưa vào phân tích); (4) mở hồ sơ theo thứ tự, sàng lọc và trích đến khi đủ 385 hồ sơ đủ tiêu chuẩn; (5) người thứ hai trích lại độc lập 39 hồ sơ chọn ngẫu nhiên, hai đợt; (6) nhập REDCap chỉ mang mã nghiên cứu, kiểm dữ liệu hằng tuần, khoá dữ liệu, rồi huỷ danh sách khung mẫu và bảng nối mã có biên bản; (7) phân tích theo kế hoạch đã khoá.\nLý do chọn: câu hỏi nghiên cứu là đo thực trạng chăm sóc (xét nghiệm, ghi nhận chẩn đoán, kê đơn) nên dữ liệu có sẵn trong hồ sơ là nguồn phù hợp nhất và không đòi hỏi người bệnh làm gì; phỏng vấn hay khám mới không đo được hành vi xét nghiệm, kê đơn thực tế; vì dữ liệu được trích tay từng hồ sơ nên dùng mẫu ngẫu nhiên đủ cỡ thay cho toàn bộ quần thể; chuẩn báo cáo STROBE kèm RECORD.",
+          "1d": "Không. Nghiên cứu không chọn có chủ đích người dân tộc thiểu số và không thu thập thông tin dân tộc.",
+          "1e": "Tại Bệnh viện Quân y 175: dữ liệu là hồ sơ bệnh án điện tử của người bệnh khám ngoại trú tại Khoa Khám bệnh, trích trên phần mềm eHospital của Bệnh viện. Không thực hiện ở cơ sở nào khác.",
+          "1f": "Có. Dữ liệu là hồ sơ của người bệnh khám tại Khoa Khám bệnh, nơi chủ nhiệm đề tài công tác (chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá). Đây là xung đột lợi ích phi tài chính và là nguồn sai lệch người trích. Biện pháp: quy tắc trích và định nghĩa biến viết trước; chỉ ghi dữ kiện khách quan có trong hồ sơ (kết quả xét nghiệm, mã, đơn thuốc), không diễn giải; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên và báo mức đồng thuận (kappa) ở từng biến chính; kế hoạch phân tích thống kê khoá trước khi trích.",
+          "2a": "Không có nguy cơ thể chất, đau đớn hay gánh nặng thời gian cho người bệnh vì không tiếp xúc người bệnh. Nguy cơ chính là lộ thông tin sức khoẻ (chẩn đoán, kết quả xét nghiệm, đơn thuốc) nếu tệp có mã người bệnh hoặc dữ liệu bị tiết lộ; điều này có thể gây phiền hà hoặc ảnh hưởng đến uy tín, công việc của người bệnh. Nguy cơ đối với nhóm nghiên cứu và cộng đồng: không đáng kể. Kết quả có thể cho thấy khoảng trống chăm sóc tại Khoa — đây là mục đích cải tiến chất lượng; kết quả không báo cáo theo cá nhân bác sĩ.",
+          "2b": "Không cao hơn mức sinh hoạt hằng ngày hay chăm sóc thường quy: người bệnh không trải qua thêm thủ thuật, xét nghiệm hay cuộc tiếp xúc nào; nguy cơ lộ thông tin tương tự nguy cơ khi hồ sơ được nhân viên y tế tiếp cận trong chăm sóc thường quy và được giảm bằng các biện pháp ở mục 2c.",
+          "2c": "(1) Phiếu và cơ sở dữ liệu REDCap chỉ mang mã nghiên cứu, không ghi trường định danh; mỗi người dùng có tài khoản riêng, người trích lại không có quyền xem dự án chính; (2) hai tệp có mã người bệnh (khung mẫu, bảng nối mã) chỉ nằm trong thư mục mã hoá trên máy của chủ nhiệm, dự phòng trên USB mã hoá cất có khoá, không lưu trên đám mây, chỉ chủ nhiệm giữ; (3) mã người bệnh của hồ sơ kiểm chứng được bàn giao trực tiếp cho người trích lại, không gửi qua tin nhắn hay thư điện tử; (4) không chụp màn hình eHospital, không in danh sách có mã người bệnh, đăng xuất khi rời máy; (5) trước khi chia sẻ, ngày đổi thành «ngày thứ mấy trong năm 2026»; (6) sau khi khoá dữ liệu, huỷ danh sách khung mẫu và bảng nối mã có biên bản; (7) dữ liệu lưu 2 năm sau khi kết thúc nghiên cứu rồi xoá an toàn, phiếu giấy (nếu có) huỷ bằng máy huỷ tài liệu, có biên bản; (8) chỉ công bố số liệu tổng hợp.",
+          "2d": "Nếu xảy ra sự cố lộ thông tin (ví dụ tệp có mã người bệnh bị gửi đi hay đồng bộ lên đám mây): huỷ tệp lỗi, ghi biên bản, báo Hội đồng Đạo đức và thực hiện thông báo vi phạm dữ liệu cá nhân theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, theo đầu mối của Bệnh viện. Mọi thay đổi đề cương sau khi được duyệt được báo Hội đồng trước khi áp dụng.",
+          "2e": "Không — không có thủ thuật, thiết bị hay tiếp xúc với người bệnh.",
+          "2f": "Không — không lấy hay sử dụng máu, dịch hay mô người.",
+          "2g": "Không.",
+          "3a": "Người bệnh có hồ sơ trong mẫu không nhận lợi ích trực tiếp. Lợi ích cho cộng đồng: số liệu nền về mức độ được xét nghiệm, ghi nhận và điều trị bệnh thận mạn ở người đái tháo đường típ 2 tại Khoa Khám bệnh, làm căn cứ cải tiến chất lượng chăm sóc (ví dụ nhắc xét nghiệm UACR trong hệ thống thông tin bệnh viện — cảnh báo điện tử đã làm tăng chỉ định UACR trong thử nghiệm CKD-DETECT, PMID 42031191) và cho nghiên cứu can thiệp tiếp nối.",
+          "3b": "Người bệnh đái tháo đường típ 2 khám tại Khoa Khám bệnh sau này (kể cả những người có hồ sơ trong mẫu), Khoa và Bệnh viện (căn cứ cải tiến chất lượng), và y văn trong nước.",
+          "3c": "Mở rộng bối cảnh: ở Việt Nam chưa thấy nghiên cứu đo đồng thời cả chuỗi xét nghiệm → phát hiện → ghi nhận → điều trị ở người đái tháo đường típ 2 ngoại trú tại bệnh viện quân đội (phạm vi tra: PubMed và Crossref). Y văn nước ngoài cho thấy khoảng trống lớn: chỉ 24,9% người đái tháo đường típ 2 được làm đủ creatinin và UACR (PMID 38922613) và 43,3% được làm UACR (PMID 33722396). Định nghĩa và chỉ định theo KDIGO 2024 (PMID 38490803), KDIGO 2022 (PMID 36272764) và ADA 2026 (PMID 41358881).",
+          "3d": "Nguy cơ ở mức tối thiểu (chỉ là nguy cơ lộ thông tin) và được kiểm soát bằng giả danh hoá, giới hạn người tiếp cận, lưu trữ mã hoá và huỷ tệp có mã người bệnh sau khoá dữ liệu; lợi ích là số liệu nền để cải tiến việc phát hiện và điều trị bệnh thận cho chính nhóm người bệnh này. Lợi ích dự kiến vượt trội nguy cơ.",
+          "4a": "385 hồ sơ đủ tiêu chuẩn của người bệnh từ 18 tuổi, đái tháo đường típ 2 (mã E11), khám ngoại trú tại Khoa Khám bệnh BVQY175 ít nhất 2 lượt trong năm 2026, không lọc máu, chưa ghép thận, không có thai. Ngoài ra: các hồ sơ được mở nhưng không đủ tiêu chuẩn (số lượng chưa biết trước, được báo trong sơ đồ chọn) và 10 hồ sơ tập; danh sách khung mẫu chứa mã người bệnh của toàn bộ người có mã E11 khám ngoại trú tại Khoa năm 2026.",
+          "4b": "Xác định qua danh sách khung mẫu lấy từ eHospital; không tiếp cận, không liên lạc và không tuyển người bệnh; việc «tuyển chọn» là chọn ngẫu nhiên hồ sơ và sàng lọc tiêu chuẩn trên hồ sơ (xem Phụ lục 10, mục C.1).",
+          "5": "Đề nghị miễn thủ tục đồng thuận (đơn đề nghị kèm theo). Đơn lập luận riêng cho ba điều kiện của CIOMS 2016 (Hướng dẫn 10 và 12): (i) không khả thi nếu không miễn; (ii) giá trị xã hội quan trọng; (iii) nguy cơ không vượt mức tối thiểu đối với người bệnh và nhóm của họ; đồng thời trình bày các phương án sửa đổi đã xem xét (xin đồng ý khi tái khám; thủ tục thông báo và cho từ chối) và lý do không chọn. Căn cứ: Tuyên bố Helsinki 2024 §32; TT 43/2024/TT-BYT Điều 7 khoản 1 điểm b.",
+          "6a": "Không thu thập trực tiếp từ người bệnh. Chủ nhiệm trích từ hồ sơ eHospital vào phiếu thu thập số liệu (Phụ lục C đề cương, kèm theo hồ sơ) theo quy tắc trích viết trước (quy trình trích hồ sơ); phiếu được hội đồng chuyên gia thẩm định độ giá trị nội dung và trích thử trước khi khoá; người thứ hai trích lại 10% hồ sơ và sàng lọc lại 10 hồ sơ bị loại.",
+          "6b": "Có — hồ sơ bệnh án điện tử do Bệnh viện Quân y 175 quản lý trên eHospital. Chủng loại: thông tin xác định được (mã người bệnh trong danh sách khung mẫu và bảng nối mã) và thông tin có thể xác định lại (dữ liệu mang mã nghiên cứu, còn ngày khám, ngày xét nghiệm). Phê chuẩn: Hội đồng Đạo đức BVQY175 và văn bản của Ban Giám đốc cho phép truy cập eHospital vì mục đích nghiên cứu (nộp kèm hồ sơ). Cách truy cập: chủ nhiệm (có quyền truy cập eHospital) mở từng hồ sơ; người trích lại mở 39 hồ sơ kiểm chứng và 10 hồ sơ tập; quản lý dữ liệu và nhà thống kê chỉ thấy mã nghiên cứu.",
+          "6c": "Có mã hoá: phiếu và REDCap chỉ mang mã nghiên cứu; mã người bệnh chỉ nằm trong bảng nối mã lưu riêng, chỉ chủ nhiệm giữ và huỷ sau khi khoá dữ liệu.",
+          "6d": "Có — dữ liệu sức khoẻ (chẩn đoán, kết quả xét nghiệm, đơn thuốc). Việc tiếp cận, sử dụng và lưu trữ chỉ thực hiện sau khi Hội đồng Đạo đức chấp thuận đề cương và đề nghị miễn đồng thuận; chỉ trích các trường cần cho mục tiêu; công bố ở dạng tổng hợp.",
+          "6e": "Trong khi nghiên cứu: các biện pháp ở mục 2c (giả danh hoá, phân quyền REDCap, tệp có mã người bệnh trong thư mục mã hoá, không chụp màn hình, không in danh sách). Khi công bố: chỉ trình bày số liệu tổng hợp; tệp chia sẻ (nếu có) đã đổi ngày thành ngày thứ mấy trong năm 2026.",
+          "6g": "Có — nghiên cứu thu thập thông tin cá nhân từ hồ sơ bệnh án của Bệnh viện.",
+          "7a": "Không áp dụng — không có giai đoạn thử nghiệm.",
+          "7b": "Từ 16/02/2027 đến 02/04/2027 (dự kiến; chỉ bắt đầu sau khi Hội đồng Đạo đức chấp thuận)",
+          "9": "Tôn trọng con người: đề nghị miễn đồng thuận được lập luận theo đủ ba điều kiện của CIOMS 2016 và có xem xét phương án thông báo, cho từ chối (đơn kèm theo). Lợi ích: số liệu phục vụ trực tiếp cải tiến chăm sóc cho nhóm người bệnh này. Công bằng: chọn mẫu ngẫu nhiên ở cấp người bệnh, không loại nhóm nào ngoài tiêu chuẩn đã nêu; kết quả không dùng để đánh giá cá nhân bác sĩ. Tính pháp lý: Thông tư 43/2024/TT-BYT; Luật Khám bệnh, chữa bệnh 15/2023/QH15 (bảo mật thông tin hồ sơ bệnh án); Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và Nghị định 356/2025/NĐ-CP. Đăng ký: nghiên cứu quan sát hồi cứu không bắt buộc đăng ký và không đăng ký trên hệ thống đăng ký công khai. Khai báo: hồ sơ được soạn nháp với sự hỗ trợ của công cụ trí tuệ nhân tạo (Claude); chủ nhiệm đề tài kiểm chứng và chịu trách nhiệm toàn bộ nội dung.",
+          "10": "Tổng quan tài liệu (đầy đủ ở Quyển 1, mục 3): bệnh thận mạn thường gặp ở người đái tháo đường típ 2; phát hiện sớm cần cả eGFR và UACR — ADA 2026 khuyến cáo đánh giá UACR và eGFR ít nhất mỗi năm (PMID 41358881); KDIGO 2024 định nghĩa và phân loại bệnh thận mạn (PMID 38490803); KDIGO 2022 nêu chỉ định ACEi/ARB và SGLT2i (PMID 36272764). Ở các hệ thống có dữ liệu thường quy, chuỗi chăm sóc hụt ở mọi bước: chỉ 24,9% được làm cả creatinin lẫn UACR (PMID 38922613); UACR 43,3% trong khi creatinin 84,8% (PMID 33722396); 54% bệnh thận mạn theo xét nghiệm chưa được chẩn đoán (PMID 41741270); khoảng trống kê SGLT2i 80,3% và RAASi 42,0% ở bệnh thận do đái tháo đường (PMID 36352203). Trong nước, các nghiên cứu tìm được chủ yếu đo tỷ lệ bệnh thận mạn hoặc mô tả kê đơn ở người đã có bệnh thận mạn; chưa thấy nghiên cứu đo trọn chuỗi tại bệnh viện quân đội (phạm vi tra: PubMed, Crossref).\nKế hoạch và phương pháp (đầy đủ ở Quyển 1, mục 4): cắt ngang mô tả có phân tích trên dữ liệu thường quy; 385 hồ sơ chọn ngẫu nhiên đơn ở cấp người bệnh từ khung mẫu eHospital (người có mã E11 khám ngoại trú tại Khoa Khám bệnh năm 2026, từ 2 lượt khám); kết cục chính là được xét nghiệm đủ UACR và creatinin trong 12 tháng; kết cục phụ: tỷ lệ bệnh thận mạn theo KDIGO 2024, bệnh thận mạn chưa được ghi nhận, điều trị bảo vệ thận ở người đủ chỉ định theo KDIGO 2022, yếu tố liên quan với việc không được xét nghiệm đủ (hồi quy Poisson phương sai vững, tỷ số tỷ lệ hiện mắc); tỷ lệ báo kèm KTC 95% Wilson; kế hoạch phân tích thống kê khoá trước khi trích hồ sơ; báo cáo theo STROBE và RECORD.\nPhạm vi và hạn chế: một bệnh viện quân đội tuyến cuối; chỉ người có từ 2 lượt khám năm 2026; xét nghiệm và thuốc ngoài Bệnh viện có thể không có trong eHospital (phân tích độ nhạy); chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá (trích lại độc lập 10%); thiết kế cắt ngang không cho phép suy luận nhân quả.",
+          "4c": "Không — chỉ người từ 18 tuổi trở lên.",
+          "4d": "Không chủ định đưa vào; mẫu ngẫu nhiên có thể gồm hồ sơ của người suy giảm nhận thức. Vì không tiếp xúc và đề nghị miễn đồng thuận cho mọi hồ sơ, không cần thu xếp riêng; các hồ sơ này được bảo mật như mọi hồ sơ khác.",
+          "4e": "Không có người bị giam giữ. Mẫu có thể gồm quân nhân và người bệnh mạn tính thường xuyên được Khoa chăm sóc — các nhóm có quan hệ lệ thuộc/không bình đẳng theo hướng dẫn của Hội đồng. Vì không tiếp xúc nên không có ép buộc tham gia. Biện pháp: phiếu chỉ ghi nhóm đối tượng khám (quân nhân / bảo hiểm y tế / dịch vụ / khác), không ghi đơn vị, cấp bậc; dữ liệu giả danh hoá; kết quả theo nhóm đối tượng chỉ trình bày tổng hợp.",
+          "4f": "Có. Chủ nhiệm là bác sĩ của Khoa Khám bệnh, nên mẫu có thể gồm hồ sơ của người bệnh do chính chủ nhiệm khám. Không tiếp xúc, không tuyển chọn; sai lệch người trích được kiểm soát như mục 1f.",
+          "4g": "Không áp dụng — không tiếp xúc người bệnh.",
+          "4h": "Có — sàng lọc trên hồ sơ theo tiêu chuẩn chọn (từ 18 tuổi; mã E11 ở ít nhất một lượt khám ngoại trú tại Khoa năm 2026; từ 2 lượt khám) và loại trừ (lọc máu hoặc ghép thận; có thai; mã E10, E12, E13; người chỉ có E14 được đếm riêng); lý do loại được ghi cho từng hồ sơ.",
+          "4i": "Không — nghiên cứu không thay đổi điều trị của bất kỳ ai.",
+          "4j": "Không.",
+          "4k": "Không.",
+          "4l": "Không — không tiếp xúc, không chi trả.",
+          "4m": "Không thông báo kết quả cho từng người bệnh (không liên lạc; dữ liệu giả danh hoá và bảng nối mã bị huỷ sau khoá dữ liệu). Kết quả tổng hợp được gửi đăng Tạp chí Y Dược Thực hành 175 và dùng cho cải tiến chất lượng chăm sóc tại Khoa Khám bệnh.",
+          "4n": "Không áp dụng — không tiếp xúc người bệnh và không che giấu mục đích nghiên cứu.",
+          "6f_i_kiem_soat": "Tài khoản riêng từng người, phân quyền theo vai trò trên REDCap; tệp có mã người bệnh trong thư mục mã hoá, không đồng bộ đám mây; nhật ký truy vấn và chỉnh sửa dữ liệu.",
+          "6f_ii_dia_diem": "Bài báo trên Tạp chí Y Dược Thực hành 175; báo cáo đề tài lưu theo quy định của Bệnh viện",
+          "6f_ii_ai_tiep_can": "Công khai — chỉ chứa số liệu tổng hợp",
+          "6f_ii_kiem_soat": "Không chứa dữ liệu cá nhân; không trình bày theo cá nhân người bệnh hay cá nhân bác sĩ",
+          "6g_i": "Bệnh viện Quân y 175 — hồ sơ bệnh án điện tử trên phần mềm eHospital",
+          "6g_ii": "385 hồ sơ đủ tiêu chuẩn, cộng các hồ sơ được mở nhưng không đủ tiêu chuẩn (chưa biết trước) và 10 hồ sơ tập",
+          "6g_iii": "Có tiếp cận hồ sơ không có sự đồng ý trước của người bệnh, vì vậy đề nghị Hội đồng miễn thủ tục đồng thuận. Lý do: dữ liệu chỉ có trong hồ sơ, xin đồng ý từng người không khả thi và gây sai lệch kết cục chính; lợi ích công cộng là cải tiến việc phát hiện và điều trị bệnh thận cho người đái tháo đường tại Khoa; quyền riêng tư được bảo vệ bằng giả danh hoá, chỉ trích trường cần thiết, giới hạn người tiếp cận và huỷ tệp có mã người bệnh sau khoá dữ liệu (xem đơn đề nghị miễn thủ tục đồng thuận)."
+        },
+        "nguy_co_xay_ra_voi": {
+          "nhom_nghien_cuu": false,
+          "nguoi_tham_gia": true,
+          "cong_dong_cua_truong": false,
+          "cong_dong_lon_hon": false
+        },
+        "chap_thuan_bo_mon_luu_tru": {
+          "i": "[GÓI KÝ: xác nhận của lãnh đạo khoa nơi lưu trữ dữ liệu thu thập — ô «chấp thuận của bộ môn» mục 6(f)i Phụ lục 11]",
+          "ii": "[GÓI KÝ: xác nhận của lãnh đạo khoa nơi lưu trữ báo cáo công bố — ô «chấp thuận của bộ môn» mục 6(f)ii Phụ lục 11]"
+        }
+      },
+      "mien_icf": {
+        "tom_tat": "Nghiên cứu cắt ngang mô tả có phân tích, hồi cứu hồ sơ bệnh án điện tử eHospital của 385 người bệnh đái tháo đường típ 2 khám ngoại trú tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026, chọn ngẫu nhiên; không tiếp xúc người bệnh, không can thiệp, không thay đổi chăm sóc. Chủ nhiệm trích dữ liệu vào phiếu chỉ mang mã nghiên cứu; trích hồ sơ dự kiến 16/02–02/04/2027 (gồm trích thử phiếu 16–19/02/2027), chỉ sau khi Hội đồng chấp thuận.",
+        "phuong_an_sua_doi_da_xem_xet": {
+          "xin_dong_y_khi_tai_kham": "Không chọn: mẫu chỉ được chọn sau khi cửa sổ 2026 khép; người không tái khám trong thời gian trích sẽ bị loại, gây sai lệch kết cục chính (xem điều kiện i).",
+          "thong_bao_va_cho_tu_choi": "CIOMS 2016 Hướng dẫn 12 nêu khi dùng dữ liệu thu thập trong chăm sóc thường quy, thủ tục từ chối có thông tin (informed opt-out) là cách mặc định, với bốn điều kiện: người bệnh biết thủ tục tồn tại; được cung cấp đủ thông tin; được biết có thể rút dữ liệu; có khả năng thật sự để phản đối. Nhóm nghiên cứu đã xem xét: một thông báo niêm yết tại Khoa Khám bệnh trong thời gian trích chỉ đến được người còn tái khám, không đến được người đã ngừng khám, chuyển nơi khác hoặc tử vong, nên không bảo đảm điều kiện «người bệnh biết thủ tục tồn tại» cho toàn bộ mẫu; gửi thông báo riêng cho từng người được chọn lại đòi hỏi dùng thông tin liên lạc trong hồ sơ (xem điều kiện i-b). Vì vậy nhóm nghiên cứu đề nghị miễn đồng thuận.",
+          "quyet_dinh_bo_sung": "Không bổ sung biện pháp thông báo công khai và cho người bệnh chủ động từ chối, vì thông báo niêm yết tại Khoa Khám bệnh chỉ đến được người còn tái khám, không bảo đảm điều kiện «người bệnh biết thủ tục tồn tại» cho toàn bộ mẫu (mục b). Nhóm nghiên cứu thực hiện mọi điều kiện Hội đồng kèm theo quyết định."
+        },
+        "co_do_giai_thich": "Có dữ liệu xác định được (mã người bệnh trong khung mẫu và bảng nối mã) cho tới khi khoá dữ liệu — tức dữ liệu giả danh hoá, không ẩn danh. Theo CIOMS 2016 Hướng dẫn 10, ba điều kiện miễn vẫn áp dụng trong trường hợp này; đây không phải lý do tự động buộc lấy đồng thuận, nhưng làm tăng yêu cầu bảo mật đã nêu ở trên. Không có tiếp xúc người bệnh."
+      },
+      "goi_ky": [
+        "[GÓI KÝ: văn bản của Ban Giám đốc Bệnh viện Quân y 175 cho phép truy cập hồ sơ bệnh án điện tử eHospital vì mục đích nghiên cứu — nộp kèm hồ sơ]"
+      ]
+    },
+    "dtcs": {
+      "thuyet_minh": {
+        "m6_loai_de_tai": "Độc lập.",
+        "m11_don_vi_phoi_hop": "Không.",
+        "m14_tinh_trang": "Mới.",
+        "m18_phoi_hop_trong_nuoc": "Không — đề tài do Khoa Khám bệnh thực hiện; không phối hợp với cơ sở sản xuất.",
+        "m19_hop_tac_quoc_te": "Không — đề tài không có đối tác nước ngoài.",
+        "m20_thue_chuyen_gia": "Không thuê chuyên gia trong và ngoài nước. Hội đồng 5 chuyên gia chấm độ giá trị nội dung của phiếu trích theo phân công của chủ nhiệm (mục 2.6.1, Phụ lục F).",
+        "m22_san_pham": "Dạng I: 01 bài báo khoa học trên Tạp chí Y Dược Thực hành 175 (số liệu tổng hợp).\nDạng II: 01 báo cáo tổng hợp kết quả về thực trạng phát hiện và điều trị bảo vệ thận ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Khoa Khám bệnh.",
+        "m22_1_dao_tao_sau_dai_hoc": "Không.",
+        "m22_2_trinh_do_khoa_hoc": "Bài báo đạt yêu cầu của Tạp chí Y Dược Thực hành 175; báo cáo theo chuẩn STROBE và RECORD cho nghiên cứu cắt ngang dùng dữ liệu hồ sơ bệnh án.",
+        "m22_3_muc_chat_luong": "Không — đề tài không có sản phẩm Dạng III.",
+        "m23_ung_dung_chuyen_giao": {
+          "23.1": "Không áp dụng — kết quả là số liệu nền phục vụ cải tiến chất lượng khám chữa bệnh tại Bệnh viện, không phải sản phẩm đưa ra thị trường.",
+          "23.2": "Không áp dụng — không có sản phẩm sản xuất kinh doanh.",
+          "23.3": "Không áp dụng — không liên doanh, liên kết với doanh nghiệp.",
+          "23.4": "Chuyển giao kết quả cho Bệnh viện bằng báo cáo kết quả và trình bày tại hội nghị khoa học của Bệnh viện; không chuyển giao công nghệ."
+        },
+        "m25_tac_dong": {
+          "25.1": "Cung cấp số liệu nền về phát hiện bệnh thận mạn và điều trị bảo vệ thận ở người bệnh đái tháo đường típ 2 điều trị ngoại trú, làm căn cứ cải tiến chất lượng chăm sóc tại Bệnh viện Quân y 175."
+        },
+        "m26_tai_san": {
+          "26.1a": "Bố trí trong số thiết bị máy móc hiện có của đơn vị chủ trì (máy tính, phần mềm thống kê R miễn phí); không cần trang bị thêm.",
+          "26.1b": "Không.",
+          "26.1c": "Không.",
+          "26.1d": "Không — đề tài tự túc kinh phí, không mua sắm tài sản.",
+          "26.2": "Không hình thành tài sản phải xử lý."
+        }
+      },
+      "m21_hang": [
+        {
+          "dau": "Chốt đề cương, cỡ mẫu và bộ biến số",
+          "chu_tri": "Chủ nhiệm đề tài",
+          "ket_qua": "Đề cương, cỡ mẫu và bộ biến số đã chốt"
+        },
+        {
+          "dau": "Hội đồng 5 chuyên gia chấm độ giá trị nội dung",
+          "chu_tri": "Chủ nhiệm đề tài",
+          "ket_qua": "Biên bản chấm độ giá trị nội dung (I-CVI), phiếu trích đã sửa"
+        },
+        {
+          "dau": "Hồ sơ đạo đức và kế hoạch phân tích thống kê sẵn sàng",
+          "chu_tri": "Chủ nhiệm đề tài",
+          "ket_qua": "Hồ sơ đạo đức; kế hoạch phân tích thống kê"
+        },
+        {
+          "dau": "Nộp Hội đồng Khoa học, Đạo đức",
+          "chu_tri": "Chủ nhiệm đề tài",
+          "ket_qua": "Quyết định phê duyệt của Hội đồng Đạo đức (T0); văn bản Bệnh viện đồng ý cho sử dụng hồ sơ bệnh án"
+        },
+        {
+          "dau": "Khoá kế hoạch phân tích thống kê",
+          "chu_tri": "Chủ nhiệm đề tài (nhà phương pháp/thống kê thực hiện)",
+          "ket_qua": "Kế hoạch phân tích thống kê đã khoá",
+          "thoi_gian": "Trước 16/02/2027 (trước khi trích hồ sơ)"
+        },
+        {
+          "dau": "Cửa sổ dữ liệu khép",
+          "chu_tri": "Chủ nhiệm đề tài",
+          "ket_qua": "Cửa sổ dữ liệu 2026 đã khép"
+        },
+        {
+          "dau": "Sau T0: lập khung mẫu",
+          "chu_tri": "Chủ nhiệm đề tài",
+          "ket_qua": "Khung mẫu; phiên bản phiếu và quy trình trích hồ sơ đã khoá"
+        },
+        {
+          "dau": "Chủ nhiệm trích hồ sơ trên eHospital",
+          "chu_tri": "Chủ nhiệm đề tài",
+          "ket_qua": "Cơ sở dữ liệu đã khoá; kết quả đồng thuận giữa hai người trích"
+        },
+        {
+          "dau": "Phân tích",
+          "chu_tri": "Chủ nhiệm đề tài (nhà phương pháp/thống kê thực hiện)",
+          "ket_qua": "Kết quả phân tích"
+        },
+        {
+          "dau": "Bản thảo",
+          "chu_tri": "Chủ nhiệm đề tài",
+          "ket_qua": "Bản thảo bài báo"
+        },
+        {
+          "dau": "Bình duyệt và liêm chính",
+          "chu_tri": "Chủ nhiệm đề tài",
+          "ket_qua": "Biên bản bình duyệt; khai báo liêm chính tác giả"
+        },
+        {
+          "dau": "Nộp Tạp chí Y Dược Thực hành 175",
+          "chu_tri": "Chủ nhiệm đề tài",
+          "ket_qua": "Bài báo nộp Tạp chí Y Dược Thực hành 175"
+        }
+      ],
+      "phieu_de_xuat": {
+        "don_vi_ung_dung": "Khoa Khám bệnh, Bệnh viện Quân y 175"
+      }
+    }
   }
 }

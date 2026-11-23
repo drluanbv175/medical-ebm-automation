@@ -1,6 +1,6 @@
 # BÁO CÁO CHẤT LƯỢNG G1 — hai-long-benh-nhan-C1a-BVQY175
 
-**Trạng thái:** `PASS_G1_CONFIRMED`
+**Trạng thái:** `DRAFT_READY_NEEDS_HUMAN_REVIEW`
 
 ## Kiểm tra tự động
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
@@ -30,16 +30,16 @@
 | G1-HUMAN-05 | Estimand đủ 5 thuộc tính khi là RCT | PASS | N/A cho thiết kế không phải RCT |
 | G1-HUMAN-06 | Đề cương lõi, kiểm soát sai lệch và tính khả thi được xác nhận | PASS | protocol_core_confirmed=True; bias_controls_confirmed=True; feasibility_confirmed=True |
 | G1-HUMAN-07 | Khoảng trống và nội dung trích dẫn đã được người thật đọc lại | PASS | evidence_review_confirmed=True; identifiers=57 |
-| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | PASS | reviewed_by_role=pi; reviewed_at=2026-11-15T18:45:10+07:00; xác nhận gắn đúng nội dung hiện tại |
+| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | REVIEW | reviewed_by_role=pi; reviewed_at=2026-11-15T18:45:10+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận a1092035d7005539 ≠ hiện tại bc3d57b0d6e08644) — chủ nhiệm đọc lại rồi xác nhận lại |
 
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A2 | /Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `4c103d664dbf0ffb5fe4db60cc826f79dd959d8180d1cfd011a348b0c1bf1e94` |
-| A1b | /Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `18c1b210f3aab8753b6d47edd679e6a2a8599d722696955d0176dfeaafc5c506` |
-| A2b | /Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `643ff508043b3baa9af7bd6e102889ea034961e62f24a27362fbbe5351cb76d8` |
-| A13 | /Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `b5447450de68773cb6885835d25b55247f24293ae6b1caf21890f6d667e99b9d` |
-| A13b | /Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `ded3d82b9b4d6c7d68bfa57f703efcf29488998be89529fb247c0426afeee4ef` |
+| A1b | /Users/nguyenluan/.ebm-worktrees/hdkh-du-lieu-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `db4615e07ab2b5a58bbb27562e0deb83cfea4d7ac3d76927f1c45fc04f8ea8dd` |
+| A2 | /Users/nguyenluan/.ebm-worktrees/hdkh-du-lieu-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `4c103d664dbf0ffb5fe4db60cc826f79dd959d8180d1cfd011a348b0c1bf1e94` |
+| A2b | /Users/nguyenluan/.ebm-worktrees/hdkh-du-lieu-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `643ff508043b3baa9af7bd6e102889ea034961e62f24a27362fbbe5351cb76d8` |
+| A13 | /Users/nguyenluan/.ebm-worktrees/hdkh-du-lieu-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `b5447450de68773cb6885835d25b55247f24293ae6b1caf21890f6d667e99b9d` |
+| A13b | /Users/nguyenluan/.ebm-worktrees/hdkh-du-lieu-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `233a0584ae77bccb1a2ca20550f07dbb9084da631cb6b44b99f74a135100f2bb` |
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |
