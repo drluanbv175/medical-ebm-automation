@@ -96,6 +96,14 @@
    "cu": "               and x.get(\"kiem_cheo\") in (\"LECH\", \"LOI\", \"TU_CHOI\")]",
    "moi": "               and x.get(\"kiem_cheo\") in (\"LOI\", \"TU_CHOI\")]",
    "test": "tests/test_gia_lap_ci_20261117.py::test_cong_phan_do_khi_kiem_cheo_khong_khop_20261123"
+  },
+  {
+   "ma": "PPTX-EMU-TRON-LEN",
+   "chot": "hàng bảng trình chiếu không thấp hơn chiều cao chữ đo được (inch → EMU làm tròn lên)",
+   "tep": "tools/goi_bao_ve_hoi_dong.py",
+   "cu": "    return int(math.ceil(inch * 914400 - 1e-6))",
+   "moi": "    return int(inch * 914400)",
+   "test": "tests/test_goi_bao_ve_pptx_20261122.py"
   }
  ]
 }

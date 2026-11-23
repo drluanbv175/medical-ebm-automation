@@ -53,6 +53,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import subprocess
@@ -1224,6 +1225,14 @@ def _duong_phong(dam: bool) -> str:
     return fm.findfont(fm.FontProperties(family="Times New Roman", weight="bold" if dam else "normal"))
 
 
+def _emu_tron_len(inch: float) -> int:
+    """Inch → EMU làm tròn LÊN (23/11/2026). `pptx.util.Inches` cắt phần lẻ: 0,92 inch tính ra 841 247,9999… EMU bị
+    ghi 841 247 — hàng bảng thấp hơn chiều cao đã đo 1 EMU (≈ 1,09·10⁻⁶ inch, vượt dung sai 10⁻⁶ của `kiem_pptx`).
+    Trên CI Linux (phông DejaVu) một hàng rơi đúng biên đó ⇒ 6 test đỏ. Làm tròn lên ⇒ khung không bao giờ thấp hơn
+    chữ đo được."""
+    return int(math.ceil(inch * 914400 - 1e-6))
+
+
 def _rong_pt(van: str, co: float, dam: bool) -> float:
     """Bề rộng (pt) của chuỗi ở cỡ `co` pt — đo bằng phông thật."""
     from PIL import ImageFont  # noqa: PLC0415
@@ -1532,13 +1541,13 @@ def ghi_pptx(trang: Sequence[TrangPptx], dich: Path) -> Path:
                         cot, hang = k[1]
                         ds = [cot] + list(hang)
                         gf = sl.shapes.add_table(len(ds), 2, Inches(LE), Inches(y), Inches(KHUNG_THAN[2]),
-                                                 Inches(cao))
+                                                 Emu(_emu_tron_len(cao)))
                         gf.name = "Bang"
                         bang = gf.table
                         bang.columns[0].width = Emu(int(Inches(KHUNG_THAN[2] * 0.4)))
                         bang.columns[1].width = Emu(int(Inches(KHUNG_THAN[2] * 0.6)))
                         for r, h in enumerate(ds):
-                            bang.rows[r].height = Emu(int(Inches(_cao_hang_bang(h, t.co, KHUNG_THAN[2], r == 0))))
+                            bang.rows[r].height = Emu(_emu_tron_len(_cao_hang_bang(h, t.co, KHUNG_THAN[2], r == 0)))
                             for c, v in enumerate(h):
                                 o = bang.cell(r, c)
                                 o.margin_left = o.margin_right = Inches(LE_TRONG[0])
