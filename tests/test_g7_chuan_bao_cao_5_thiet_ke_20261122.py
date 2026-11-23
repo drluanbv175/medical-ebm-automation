@@ -254,7 +254,7 @@ def test_prisma_a5_a7_7_11_16a_24b_24c_dat_16b_17_trung_thuc_thieu(tmp_path, mon
     tt = _tt(md, "sr_ma", "PRISMA 2020")
     assert {m: tt[m] for m in ("7", "11", "16a", "24b", "24c")} == {m: "dat" for m in ("7", "11", "16a", "24b",
                                                                                          "24c")}, tt
-    assert "**Included studies:** 15 nghiên cứu, 79845 người tham gia" in md
+    assert "**Included studies:** 15 nghiên cứu, 79.845 người tham gia" in md  # 23/11/2026: K11 nhóm nghìn
     assert "Xác định được 557 bản ghi qua tìm kiếm; 15 nghiên cứu được đưa vào tổng quan." in md
     assert "Đề cương tổng quan đã đăng ký tại CRD42099999999" in md
     # bảng trích xuất không có cột định danh bài báo, sổ sàng lọc chỉ có số đếm ⇒ ô [CẦN], K18 thiếu 16b, 17

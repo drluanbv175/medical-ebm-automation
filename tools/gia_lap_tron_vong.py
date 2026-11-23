@@ -2948,11 +2948,20 @@ Kết luận tổng thể: {ket_luan}
                                    r"G6_A7_ANALYSIS_SCRIPTS|\.bak-")
 
     def _soat_so_do(self) -> List[str]:
-        """«tệp: K11 dòng N: …» cho mọi lỗi trình bày số đo trong văn bản .md của đề tài (tối đa 200)."""
+        """«tệp: K11 dòng N: …» cho mọi lỗi trình bày số đo trong văn bản .md của đề tài (tối đa 200).
+
+        23/11/2026: bản thảo G7 và báo cáo tổng hợp nghiệm thu soát thêm luật K11 số nguyên từ 5 chữ số chưa nhóm
+        nghìn (bảng GRADE từng in «15 (79845)») — như đề cương nộp; báo cáo tổng hợp (dựng trong bộ nhớ) nay cũng
+        soát luật số đo như mọi văn bản .md."""
         import kiem_de_cuong_nop_hoi_dong as KDN  # noqa: PLC0415
 
         ra: List[str] = []
         out = getattr(self, "out", None)
+
+        def _loi(ten: str, md: str, so_lon: bool) -> List[str]:
+            return [f"{ten}: {x}" for x in KDN.loi_k11(md)
+                    if KDN.la_loi_so_do(x) or (so_lon and KDN.la_loi_so_lon(x))]
+
         for p in sorted(Path(out).rglob("*.md")) if out and Path(out).is_dir() else []:
             if "_dau_may_sinh" in p.parts or self._KHONG_SOAT_SO_DO.search(p.name):
                 continue
@@ -2960,7 +2969,12 @@ Kết luận tổng thể: {ket_luan}
                 md = p.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 continue
-            ra += [f"{p.relative_to(out)}: {x}" for x in KDN.loi_k11(md) if KDN.la_loi_so_do(x)]
+            ra += _loi(str(p.relative_to(out)), md, p.name.startswith("G7_A8_MANUSCRIPT_"))
+        if out and (Path(out) / f"G7_A8_MANUSCRIPT_{self.study}.md").is_file():
+            try:
+                ra += _loi(f"BAO_CAO_TONG_HOP_{self.study}", self._bao_cao_tong_hop_van(), True)
+            except Exception as exc:  # noqa: BLE001 — không dựng được báo cáo ⇒ một dòng lỗi (không đo được ≠ sạch)
+                ra.append(f"BAO_CAO_TONG_HOP_{self.study}: không soát được số đo — {type(exc).__name__}: {exc}"[:200])
         return ra[:200]
 
     def bao_cao(self) -> Dict[str, Any]:

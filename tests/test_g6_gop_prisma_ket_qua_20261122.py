@@ -398,7 +398,7 @@ def test_g7_khung_tom_tat_phat_hien_khong_xep_muc_grade():
     text = "\n".join(dong)
     hang = next(x for x in dong if x.startswith("| HbA1c sau 12 tháng |"))
     # 23/11/2026: số G6 qua tự kiểm nguyên văn rồi in theo quy ước tiếng Việt (`hien_so_g6`)
-    assert f"| {15} ({sum(_N1) + sum(_N0)}) |" in hang
+    assert f"| {15} ({G7.n_viet(sum(_N1) + sum(_N0))}) |" in hang  # 23/11/2026: K11 nhóm nghìn «79.845»
     assert G7.hien_so_g6(repr(tt["dac_thu"]["rr_gop_ngau_nhien"])) in hang
     assert "[CẦN XẾP MỨC CHẮC CHẮN GRADE" in hang and "Mức chắc chắn (GRADE)" in text
     assert "tác giả" not in hang.lower()  # bước điền của giả lập từng chép TÊN người vào ô có chữ «tác giả»

@@ -92,6 +92,18 @@ def bo_dau(s: Any) -> str:
 # ══════════════════════════════════════════════════════════ quy ước số dùng chung cho BỘ SINH
 #: số chữ số lẻ tối đa của số trong văn bản (Q3 báo từ 5 chữ số lẻ trở lên)
 LE_TOI_DA = 4
+#: K11 — số nguyên từ 5 chữ số chưa nhóm nghìn («79845» ⇒ «79.845»); NGUỒN DUY NHẤT cho luật K11 của
+#: kiem_de_cuong_nop_hoi_dong và bộ đổi `viet_hoa_so` (23/11/2026)
+SO_LON_RE = re.compile(r"(?<![\w.,/-])\d{5,}(?![\w.,/-])")
+#: số định danh, không phải số đếm («seed 20261115», «hạt giống 20261115», «mã 40062», «số 3869») — không nhóm nghìn
+NGU_CANH_MA_RE = re.compile(r"(?:seed|hạt giống|mã|ID|ISSN|NCT|số hiệu|số)\s*[:=]?\s*$", re.I)
+#: nhãn thông điệp K11 của luật số lớn (bộ giả lập lọc theo nhãn này)
+NHAN_SO_LON = "số từ 5 chữ số chưa nhóm nghìn — viết 10.000"
+
+
+def la_so_dinh_danh(truoc: str) -> bool:
+    """Chuỗi ngay trước một số lớn (≤ 25 ký tự) cho thấy đó là mã/hạt giống/số hiệu ⇒ không nhóm nghìn."""
+    return bool(NGU_CANH_MA_RE.search(truoc[-25:]))
 
 
 def viet_so(x: Any, le: Optional[int] = None) -> str:
@@ -127,7 +139,8 @@ _TLTK_RE = re.compile(r"TÀI LIỆU THAM KHẢO|REFERENCES|DANH MỤC TÀI LIỆ
 _TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.IGNORECASE)
 _URL_RE = re.compile(r"https?://\S+|www\.\S+|\b10\.\d{4,9}/\S+|doi:\s*\S+", re.IGNORECASE)
 _MA_RE = re.compile(r"`[^`\n]*`|\$[^$\n]+\$")
-_DINH_DANH_RE = re.compile(r"PMID:?\s*\d+|PMCID:?\s*PMC\d+|\bPMC\d+|\bNCT\d+|\bISSN\s*[\d-]+X?|\bISBN\s*[\d-]+",
+_DINH_DANH_RE = re.compile(r"PMIDs?:?\s*\d+(?:\s*(?:[,;]|và)\s*\d{5,9})*|PMCID:?\s*PMC\d+|\bPMC\d+|\bNCT\d+|"
+                           r"\bISSN\s*[\d-]+X?|\bISBN\s*[\d-]+",
                            re.IGNORECASE)
 _VIET_RE = re.compile(r"[ăâđêôơưàảãáạằẳẵắặầẩẫấậèẻẽéẹềểễếệìỉĩíịòỏõóọồổỗốộờởỡớợùủũúụừửữứựỳỷỹýỵ]", re.IGNORECASE)
 
@@ -367,9 +380,15 @@ def viet_hoa_so(van: str) -> str:
         doi_dai = [m for m in _THAP_PHAN_DAI_RE.finditer(s) if "," in m.group(0)
                    and not _la_tham_chieu(s[max(0, m.start() - 40):m.start()]) and not de_muc]
         mu = [] if de_muc or _la_dong_tieng_anh(d) else list(_SO_MU_RE.finditer(s))
-        for m in sorted(doi + doi_dai + mu, key=lambda x: x.start(), reverse=True):
+        # K11: số nguyên từ 5 chữ số của dữ liệu máy ⇒ nhóm nghìn («15 (79845)» ⇒ «15 (79.845)»), trừ mã/hạt giống
+        lon = [] if de_muc or _la_dong_tieng_anh(d) else [
+            m for m in SO_LON_RE.finditer(s) if not la_so_dinh_danh(s[:m.start()])]
+        for m in sorted(doi + doi_dai + mu + lon, key=lambda x: x.start(), reverse=True):
             if m.re is _SO_MU_RE:
                 d = d[:m.start()] + viet_so_mu(m.group(0)) + d[m.end():]
+                continue
+            if m.re is SO_LON_RE:
+                d = d[:m.start()] + viet_so(int(m.group(0))) + d[m.end():]
                 continue
             gt = float(m.group(0).replace(",", "."))
             le = min(len(re.split(r"[.,]", m.group(0))[1]), LE_TOI_DA)

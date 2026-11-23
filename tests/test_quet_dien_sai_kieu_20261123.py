@@ -240,3 +240,32 @@ def test_gia_lap_nhan_o_p_lam_tron_ve_0_khi_so_da_doi_dau_phay():
             "chuẩn tạp chí] |\n")
     o = GT.phan_loai_o(dong, "G7", "G7_A8_MANUSCRIPT_X.md", {}, {}, "rct", [], {})
     assert [x["dien"] for x in o] == ["< 0,001"] and o[0]["o"].startswith("0,0 [")
+
+
+# ── K11 số nguyên từ 5 chữ số (23/11/2026 — bảng GRADE từng in «15 (79845)») ───────────────────────────────────────
+def test_k11_so_lon_mot_nguon_va_day_pmid_la_dinh_danh():
+    assert KDN._SO_LON_MAY_RE is Q.SO_LON_RE and KDN._NGU_CANH_MA_RE is Q.NGU_CANH_MA_RE
+    assert any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11("Tổng 79845 người tham gia nghiên cứu."))
+    assert not any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11("Các tổng quan (PMID 36828607, 35014147) báo cáo."))
+    assert not any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11("Bootstrap với hạt giống 20261115 cố định."))
+
+
+def test_bo_doi_nhom_nghin_so_nguyen_tru_ma_va_tu_kiem_g7():
+    assert Q.viet_hoa_so("| Nhập viện | 15 (79845) | 0.6932 |") == "| Nhập viện | 15 (79.845) | 0,6932 |"
+    assert Q.viet_hoa_so("bootstrap 2000 lần lặp, hạt giống 20261115") == "bootstrap 2000 lần lặp, hạt giống 20261115"
+    assert G7A.n_viet(25462) == "25.462" and G7A.n_viet(218) == "218" and G7A.n_viet("[CẦN]") == "[CẦN]"
+    json_g6 = '{"k": 15, "nguoi": 79845, "rr": 0.6932469446923869}'
+    assert G7A.kiem_so_trich_g6(G7A.hien_so_g6("| 15 (79845) | 0.6932469446923869 |"), json_g6) == []
+    assert G7A.kiem_so_trich_g6("| 15 (79.846) |", json_g6) == ["79.846"], "số nhóm nghìn sai vẫn lộ"
+
+
+def test_gia_lap_soat_so_lon_o_ban_thao_g7_khong_o_sap(tmp_path, monkeypatch):
+    ma = next(m for m, kb in GT.GL.KICH_BAN.items() if kb["thiet_ke"] == "sr_ma")
+    tv = GT.TronVong(ma, tmp_path)
+    tv.out.mkdir(parents=True)
+    (tv.out / f"G7_A8_MANUSCRIPT_{tv.study}.md").write_text("| Nhập viện | 15 (79845) |\n", encoding="utf-8",
+                                                              newline="\n")
+    (tv.out / f"G4_A5_SAP_FINAL_{tv.study}.md").write_text("- **Cỡ mẫu:** N = 25462\n", encoding="utf-8", newline="\n")
+    monkeypatch.setattr(GT.TronVong, "_bao_cao_tong_hop_van", lambda self: "Tổng 60363 người tham gia.")
+    sai = tv._soat_so_do()
+    assert [x.split(":")[0] for x in sai] == [f"G7_A8_MANUSCRIPT_{tv.study}.md", f"BAO_CAO_TONG_HOP_{tv.study}"], sai

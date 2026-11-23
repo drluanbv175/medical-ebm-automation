@@ -102,6 +102,7 @@ if str(BASE / "tools") not in sys.path:
     sys.path.insert(0, str(BASE / "tools"))
 
 import g10_quality_gate as G10  # noqa: E402
+import quet_dien_sai_kieu as QDSK  # noqa: E402  (luật số lớn K11 + ngữ cảnh mã — nguồn chung, 23/11/2026)
 
 TEN = "DE_CUONG_NOP_HOI_DONG_{study}"
 # (nhãn hiển thị, các từ khoá — một đề mục bất kỳ chứa MỘT từ khoá là đạt; so không phân biệt hoa thường)
@@ -396,10 +397,10 @@ def loi_k16(out_dir: Path, md: str) -> List[str]:
 # viết tắt cùng nghĩa (SD và ĐLC), mục viết tắt không dùng, bảng viết tắt không theo vần, loại biến «Định danh/thứ bậc»,
 # tên bảng hai ngoặc liền «(…) (Mục tiêu 3)», «vs», chữ IN HOA nhấn mạnh trong câu («ước lượng CAO»).
 _SO_THAP_PHAN_MAY_RE = re.compile(r"(?<![\w.,])0\.\d+(?![\d.])")
-_SO_LON_MAY_RE = re.compile(r"(?<![\w.,/-])\d{5,}(?![\w.,/-])")
+_SO_LON_MAY_RE = QDSK.SO_LON_RE
 _NGAY_ISO_RE = re.compile(r"(?<![\w-])(?:19|20)\d{2}-[01]\d-[0-3]\d(?![\w-])")
 _NGOAC_KEP_RE = re.compile(r"[«»]|\"[^\"\n]{1,200}\"")
-_NGU_CANH_MA_RE = re.compile(r"(?:seed|hạt giống|mã|ID|ISSN|NCT|số hiệu|số)\s*[:=]?\s*$", re.I)
+_NGU_CANH_MA_RE = QDSK.NGU_CANH_MA_RE
 _VS_RE = re.compile(r"(?<![\wÀ-ỹ])vs\.?(?![\wÀ-ỹ])")
 _IN_HOA_NHAN_RE = re.compile(r"(?<![\wÀ-ỹ])(?:CAO|THẤP|KHÔNG|CHỈ|MỌI|PHẢI|LUÔN|TĂNG|GIẢM|ĐÚNG|SAI)(?![\wÀ-ỹ])")
 _TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.I)
@@ -464,6 +465,12 @@ TIEN_TO_LOI_SO_DO = ("số đo huyết áp", "số dính đơn vị", "ký hiệ
 
 def la_loi_so_do(thong_diep_k11: str) -> bool:
     return str(thong_diep_k11).split(": ", 1)[-1].startswith(TIEN_TO_LOI_SO_DO)
+
+
+def la_loi_so_lon(thong_diep_k11: str) -> bool:
+    """Thông điệp K11 của luật số nguyên từ 5 chữ số chưa nhóm nghìn (23/11/2026 — bộ giả lập soát bản thảo G7 và báo
+    cáo tổng hợp bằng luật này)."""
+    return str(thong_diep_k11).split(": ", 1)[-1].startswith(QDSK.NHAN_SO_LON)
 
 
 def loi_so_do(s: str) -> Optional[str]:
@@ -539,10 +546,11 @@ def loi_k11(md: str) -> List[str]:
         else:
             cot_nguyen_van = set()
         s = G10._DOI_URL_RE.sub(" ", re.sub(r"`[^`]*`", " ", d))
-        s = re.sub(r"PMID:?\s*\d+|\b10\.\d{4,9}/\S+", " ", s)
+        # 23/11/2026: cả DÃY PMID («PMID 36828607, 35014147») là định danh — trước đây PMID thứ hai bị đọc thành số lớn
+        s = re.sub(r"PMIDs?:?\s*\d+(?:\s*(?:[,;]|và)\s*\d{5,9})*|\b10\.\d{4,9}/\S+", " ", s)
         luat = (
             (_SO_THAP_PHAN_MAY_RE, "số thập phân dùng dấu chấm — viết dấu phẩy (0,1)"),
-            (_SO_LON_MAY_RE, "số từ 5 chữ số chưa nhóm nghìn — viết 10.000"),
+            (_SO_LON_MAY_RE, QDSK.NHAN_SO_LON),
             (_NGAY_ISO_RE, "ngày dạng ISO — viết dd/mm/yyyy"),
             (_NGOAC_KEP_RE, "ngoặc kép thẳng hoặc «» — dùng ngoặc kép tiếng Việt “…”"),
             (_VS_RE, "«vs» — viết «so với»"),

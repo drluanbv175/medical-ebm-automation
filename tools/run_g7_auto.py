@@ -1073,7 +1073,8 @@ def _dang_viet_so_g6(chuoi: str) -> str:
     if "e" in chuoi.lower():
         return QDSK.viet_so_mu(chuoi).lstrip("<> ")  # token số của «< 0,0001»
     if "." not in chuoi:
-        return chuoi
+        # số nguyên từ 5 chữ số in nhóm nghìn (K11, `viet_hoa_so`) — «79845» ⇒ «79.845»
+        return QDSK.viet_so(int(chuoi)) if re.fullmatch(r"-?\d{5,}", chuoi) else chuoi
     le = min(len(chuoi.split(".")[1]), QDSK.LE_TOI_DA)
     return QDSK.viet_so(round(float(chuoi), le), le)
 
@@ -2776,7 +2777,7 @@ def diem_manh_tu_du_kien_g7(*, n_adjusted: int, formula_used: str, sample_size_d
         hai = (f"*(2)* Cỡ mẫu được tính TRƯỚC (a priori) theo {formula_used or 'công thức thống kê phù hợp'}: "
                f"{sample_size_detail}, {effect_text} — không phải cỡ mẫu tiện lợi (convenience sample).  ")
     elif g3_n_chot:
-        hai = (f"*(2)* Cỡ mẫu chốt trước khi thu thập dữ liệu (G3): N = {g3_n_chot} người — "
+        hai = (f"*(2)* Cỡ mẫu chốt trước khi thu thập dữ liệu (G3): N = {n_viet(g3_n_chot)} người — "
                f"{_N_THEO_THIET_KE.get(design_code, 'xem G3')}.  ")
     else:
         hai = "*(2)* [CẦN thêm điểm mạnh: cỡ mẫu đủ theo tính toán G3; tính đại diện; kiểm soát confounders...]  "
@@ -2803,6 +2804,12 @@ def diem_manh_tu_du_kien_g7(*, n_adjusted: int, formula_used: str, sample_size_d
                   + (f"; dữ liệu thiếu xử lý theo SAP: {xu_ly}" if xu_ly else "")
                   + f". {NHAN_DOI_CHIEU_G6}  ")
     return ra
+
+
+def n_viet(x: Any) -> str:
+    """Số NGUYÊN (cỡ mẫu, số người) theo K11: từ 5 chữ số nhóm nghìn bằng dấu chấm («25462» ⇒ «25.462»); không phải số
+    nguyên ⇒ chuỗi nguyên văn (23/11/2026 — bảng GRADE/tóm tắt tổng quan từng in «79845»)."""
+    return QDSK.viet_so(x) if isinstance(x, int) and not isinstance(x, bool) else str(x)
 
 
 def so_viet(x: Any) -> str:
@@ -4288,7 +4295,8 @@ def khoi_chuan_bao_cao_g7(out_dir: Path, study: str, design_code: str, redcap_va
                                                                                  "sai lệch của từng nghiên cứu"))) + "  ",
                           ""]
         if isinstance(k, int) and isinstance(nguoi, int):
-            ra["tom_tat"] += [f"**Included studies:** {k} nghiên cứu, {nguoi} người tham gia. {NHAN_DOI_CHIEU_G6}  ",
+            ra["tom_tat"] += [f"**Included studies:** {k} nghiên cứu, {n_viet(nguoi)} người tham gia. "
+                              f"{NHAN_DOI_CHIEU_G6}  ",
                               ""]
         ra["tom_tat"] += ["**Limitations:** " + _o_can("hạn chế chính của bằng chứng được đưa vào") + "  ", ""]
         ra["phuong_phap_3"] += [x for d in (
@@ -4467,7 +4475,7 @@ def generate_manuscript(
     formula_used = re.sub(r",?\s*\balpha\s*=\s*\d+(?:[.,]\d+)?", "", formula_used or "")
     nguong_alpha = f"α = {so_viet(_a)} ({_phia}" + (f", khung {_khung_gt}" if _khung_gt else "") + ")"
     sample_size_detail = (
-        f"N = {n_adjusted} (bao gồm bù thất lạc {dropout_display}), "
+        f"N = {n_viet(n_adjusted)} (bao gồm bù thất lạc {dropout_display}), "
         f"α = {so_viet(_a)} ({_phia}), power = {int(power*100)}%"
     ) if n_adjusted > 0 else "N = [CẦN — từ G3]"
 
@@ -4626,7 +4634,7 @@ def generate_manuscript(
             # 22/11/2026: sổ sàng lọc đủ số + khớp số học ⇒ câu STROBE 13a–b / CONSORT 22a–b; không ⇒ ô chờ như cũ
             *(khoi_tuyen_chon or ["[CẦN KẾT QUẢ THẬT] Sàng lọc: N = ___; Đủ tiêu chí: N = ___.  "]),
             *kq6["s1"],
-            f"Cỡ mẫu kế hoạch (G3): N = {n_ke_hoach}.  ",
+            f"Cỡ mẫu kế hoạch (G3): N = {n_viet(n_ke_hoach)}.  ",
             *([] if khoi_tuyen_chon else ["*Lý do loại trừ chính:* [CẦN KẾT QUẢ THẬT — liệt kê số/lý do]  "]),
             f"*(Xem {flow_label} — sinh từ kết quả thật)*",
             "",
@@ -4668,9 +4676,9 @@ def generate_manuscript(
             "> Không được điền số liệu ước tính/giả định.  ",
             "",
             f"**§1 Tuyển chọn — {flow_label}:**  ",
-            *([*khoi_tuyen_chon, f"Cỡ mẫu kế hoạch (G3): N = {n_ke_hoach}.  "] if khoi_tuyen_chon else [
+            *([*khoi_tuyen_chon, f"Cỡ mẫu kế hoạch (G3): N = {n_viet(n_ke_hoach)}.  "] if khoi_tuyen_chon else [
                 f"[CẦN KẾT QUẢ THẬT] Sàng lọc: N = ___; Đủ tiêu chí: N = ___; "
-                f"Phân tích cuối: N = {n_ke_hoach} (kế hoạch).  ",
+                f"Phân tích cuối: N = {n_viet(n_ke_hoach)} (kế hoạch).  ",
                 "*Lý do loại trừ chính:* [CẦN KẾT QUẢ THẬT — liệt kê số/lý do]  "]),
             f"*(Xem {flow_label} — sinh từ kết quả thật)*",
             "",
@@ -4762,7 +4770,7 @@ def generate_manuscript(
         "",
         "**Setting:** [CẦN — đơn vị/bệnh viện, tỉnh/thành, thời gian nghiên cứu]  ",
         "",
-        "**Participants:** " + (f"N kế hoạch = {n_ke_hoach}; " if n_ke_hoach else "")
+        "**Participants:** " + (f"N kế hoạch = {n_viet(n_ke_hoach)}; " if n_ke_hoach else "")
         + "[CẦN tiêu chí nhận: …]; [CẦN tiêu chí loại: …]  ",
         "",
         *([f"**Intervention/Exposure:** {exposure_compact}  ", ""] if khung_dt["co_dong_can_thiep"] else []),
@@ -4859,7 +4867,7 @@ def generate_manuscript(
             # 16/11/2026: thiết kế KHÔNG tính N theo lực (tổng quan–gộp, định tính, dự báo) có N PI đã chốt ở G3.
             # 22/11/2026: N kèm ĐƠN VỊ «người» — K18 (TRIPOD+AI 10 «cỡ mẫu cuối cùng») đòi số kèm đơn vị; trước đó mục
             # chỉ «đạt» nhờ chữ «§2 Đối tượng» của dòng tên mục (K18 nay không nhận tên mục làm bằng chứng).
-            else (f"Cỡ mẫu đã chốt ở G3: N = {g3_n_chot} người — "
+            else (f"Cỡ mẫu đã chốt ở G3: N = {n_viet(g3_n_chot)} người — "
                   f"{_N_THEO_THIET_KE.get(design_code, 'xem G3')} (chi tiết xem G3 checkpoint).  ") if g3_n_chot
             else "[CẦN CỠ MẪU TỪ G3 — chưa có kết quả tính cỡ mẫu cho đề tài này. "
                  "KHÔNG viết 'cỡ mẫu được tính theo…' khi G3 chưa chạy; chạy "
