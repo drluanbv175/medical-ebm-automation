@@ -28,6 +28,7 @@ sys.path.insert(0, str(TOOLS))
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g3_quality_gate as G3Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G3)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import quet_dien_sai_kieu as QDSK  # noqa: E402  (quy ước số tiếng Việt — chốt «điền sai kiểu», 23/11/2026)
 import skill_standards as S  # noqa: E402  (bản đồ chuẩn báo cáo theo thiết kế)
 import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 
@@ -308,9 +309,11 @@ def apply_fpc_and_cluster_de(n_total, population_n=None, icc=None, cluster_size=
             "thay vì z, đối chiếu với thống kê viên (Donner & Klar 2000)."
             if num_clusters < 15 else ""
         )
-        cong_thuc = "1+(m-1)×ICC" if cluster_cv is None else f"1+((CV²+1)m-1)×ICC, CV={cluster_cv:g} — Eldridge 2006"
-        note += (f" Đã áp design effect cụm (DE={cong_thuc}={de:.2f}, m={cluster_size}, "
-                 f"ICC={icc}): n {n:.0f}→{math.ceil(n_cluster)} (~{num_clusters} cụm).{small_k_warning}")
+        # 23/11/2026 (chốt «điền sai kiểu» Q4): câu này nối vào công thức G3 ⇒ đề cương/bản thảo — số kiểu Việt
+        cong_thuc = ("1+(m-1)×ICC" if cluster_cv is None
+                     else f"1+((CV²+1)m-1)×ICC, CV={_v(cluster_cv)} — Eldridge 2006")
+        note += (f" Đã áp design effect cụm (DE={cong_thuc}={_v(de, 2)}, m={_v(cluster_size)}, "
+                 f"ICC={_v(icc)}): n {n:.0f}→{math.ceil(n_cluster)} (~{num_clusters} cụm).{small_k_warning}")
         n = n_cluster
     return math.ceil(n), note
 
@@ -426,6 +429,12 @@ def tinh_ris(p_chung, giam_tuong_doi, alpha=0.05, power=0.80, d2=0.0):
     return math.ceil(4 * (z(alpha / 2) + z(1 - power)) ** 2 * p_tb * (1 - p_tb) / delta ** 2 / (1 - d2))
 
 
+def _v(x, le=None):
+    """Số trong câu CÔNG THỨC (vào A4, SAP, đề cương, bản thảo) theo quy ước tiếng Việt — dấu phẩy thập phân (chốt
+    «điền sai kiểu» Q4, 23/11/2026; trước đây «p=0.50, d=0.05, alpha=0.05» chép nguyên sang đề cương thống nhất)."""
+    return QDSK.viet_so(float(x), le) if isinstance(x, (int, float)) and not isinstance(x, bool) else str(x)
+
+
 def _so_vn(x, thap_phan=0):
     """Số kiểu Việt Nam: dấu chấm phân cách hàng nghìn, dấu phẩy thập phân."""
     s = f"{x:,.{thap_phan}f}"
@@ -528,9 +537,9 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
         _chieu = ("tỷ lệ CAO là tốt — đáp ứng" if outcome_direction == "higher_better"
                   else "tỷ lệ THẤP là tốt — biến cố bất lợi")
         kq["formula"] = (
-            f"Non-inferiority two-proportion (one-sided, Wald): p_test={effect_val:.2f}, "
-            f"p_control={p0:.2f}, margin={margin:.2f}, chiều kết cục={outcome_direction} ({_chieu}), "
-            f"zα(một phía)={z(alpha):.3f}. [CẦN — --margin PHẢI có biện minh lâm sàng "
+            f"Non-inferiority two-proportion (one-sided, Wald): p_test={_v(effect_val, 2)}, "
+            f"p_control={_v(p0, 2)}, margin={_v(margin, 2)}, chiều kết cục={outcome_direction} ({_chieu}), "
+            f"zα(một phía)={_v(z(alpha), 3)}. [CẦN — --margin PHẢI có biện minh lâm sàng "
             "(không phải giá trị thống kê thuận tiện) và được Hội đồng/thống kê viên "
             "xác nhận TRƯỚC khi khóa SAP.]"
         )
@@ -559,8 +568,8 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
         kq.update(n_per_group=n, n_total=n * 2)
         _g = "phơi nhiễm" if design_code == "cohort" else "can thiệp"
         _g0 = "không phơi nhiễm" if design_code == "cohort" else "chứng/không can thiệp"
-        kq["formula"] = (f"Two-proportion ({design_code}, {effect_type}={effect_val:.2f} → "
-                         f"tỷ lệ biến cố {_g}≈{p1:.2f} vs {_g0}={p0:.2f})."
+        kq["formula"] = (f"Two-proportion ({design_code}, {effect_type}={_v(effect_val, 2)} → "
+                         f"tỷ lệ biến cố {_g}≈{_v(p1, 2)} vs {_g0}={_v(p0, 2)})."
                          + (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)." if fleiss else "")
                          + f" [CẦN — --p0 ở đây là TỶ LỆ BIẾN CỐ NỀN của nhóm {_g0}; nếu đề tài "
                          "thật sự có dữ liệu thời gian-đến-biến-cố và effect size là HR "
@@ -576,8 +585,8 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
             return kq
         n = math.ceil(n_ghep_cap_dupont(p0, effect_val, m_, phi, alpha, power))
         kq.update(n_per_group=n, n_total=n * (1 + int(m_)))
-        kq["formula"] = (f"Bệnh–chứng ghép cặp cá thể 1:{int(m_)} — {NGUON_DUPONT}: {effect_type}={effect_val:.2f}, "
-                         f"p0 (phơi nhiễm ở chứng)={p0:.2f}, φ={phi:.2f} ⇒ {n} bộ ghép ({n} ca + {n * int(m_)} chứng). "
+        kq["formula"] = (f"Bệnh–chứng ghép cặp cá thể 1:{int(m_)} — {NGUON_DUPONT}: {effect_type}={_v(effect_val, 2)}, "
+                         f"p0 (phơi nhiễm ở chứng)={_v(p0, 2)}, φ={_v(phi, 2)} ⇒ {n} bộ ghép ({n} ca + {n * int(m_)} chứng). "
                          "[CẦN — φ là tương quan phơi nhiễm trong bộ ghép, phải có nguồn; φ lớn hơn ⇒ cần nhiều bộ "
                          "hơn.]")
     elif design_code == "case_control" and effect_type in ("OR", "RR", "HR"):
@@ -585,16 +594,16 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
         p1 = odds1 / (1 + odds1)
         n, fleiss = n_two_proportion_auto(p1, p0, alpha, power)
         kq.update(n_per_group=n, n_total=n * 2)
-        kq["formula"] = (f"Two-proportion (case-control, {effect_type}={effect_val:.2f} → "
-                         f"tỷ lệ phơi nhiễm ca≈{p1:.2f} vs chứng={p0:.2f})."
+        kq["formula"] = (f"Two-proportion (case-control, {effect_type}={_v(effect_val, 2)} → "
+                         f"tỷ lệ phơi nhiễm ca≈{_v(p1, 2)} vs chứng={_v(p0, 2)})."
                          + (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)." if fleiss else "")
                          + " [CẦN — --p0 ở đây được diễn giải là TỶ LỆ PHƠI NHIỄM NỀN của "
                          "nhóm chứng (không phải tỷ lệ biến cố như ở cohort/RCT); bác sĩ "
-                         "xác nhận con số này đúng với đề tài, mặc định 0.30 chỉ là khởi tạo.]")
+                         "xác nhận con số này đúng với đề tài, mặc định 0,30 chỉ là khởi tạo.]")
     elif design_code in ("rct", "cohort") and effect_type == "MD":
         if sd is None or sd <= 0:
             kq["missing_sd"] = True
-            kq["formula"] = (f"[CẦN — có MD={effect_val:.2f} (kết cục liên tục) nhưng THIẾU SD "
+            kq["formula"] = (f"[CẦN — có MD={_v(effect_val, 2)} (kết cục liên tục) nhưng THIẾU SD "
                              "(độ lệch chuẩn) để tính cỡ mẫu. Bác sĩ/thống kê viên cấp qua "
                              "--sd <giá_trị> (lấy từ pilot/y văn cùng kết cục, ghi rõ nguồn "
                              "PMID/DOI) — hệ KHÔNG bịa SD.]")
@@ -602,7 +611,7 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
         n = n_continuous_md(effect_val, sd, alpha, power)
         kq.update(n_per_group=n, n_total=n * 2)
         kq["formula"] = (f"Two-sample continuous (Machin/Campbell/Fayers): "
-                         f"n=2×(SD/MD)²×(zα/2+zβ)² với MD={effect_val:.2f}, SD={sd:.2f}")
+                         f"n=2×(SD/MD)²×(zα/2+zβ)² với MD={_v(effect_val, 2)}, SD={_v(sd, 2)}")
     elif design_code in ("rct", "cohort", "case_control") and effect_type == "ARR%":
         p1, p2 = p0, p0 - effect_val / 100
         # VÁ 04/10/2026 (G3-10): ARR% làm p2 ≤ 0 từng bị kẹp im lặng về 0,05 (ARR hiệu dụng khác hẳn yêu cầu).
@@ -611,7 +620,7 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
                 f"ARR%={effect_val} với p0={p0:.2f} cho p2={p2:.3f} ngoài (0,1) — kiểm lại ARR%/p0.")
         n, fleiss = n_two_proportion_auto(p1, p2, alpha, power)
         kq.update(n_per_group=n, n_total=n * 2)
-        kq["formula"] = (f"Two-proportion z-test: p1={p1:.2f}, p2={p2:.2f}"
+        kq["formula"] = (f"Two-proportion z-test: p1={_v(p1, 2)}, p2={_v(p2, 2)}"
                          + (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)." if fleiss else ""))
     elif design_code == "cross_sectional":
         if not (0 < effect_val < 1):
@@ -621,8 +630,8 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
         kq.update(n_per_group=n, n_total=n)
         _p_label = "tỷ lệ hiện mắc ước lượng" if effect_type == "PREVALENCE" else "tỷ lệ"
         kq["formula"] = (f"Cỡ mẫu ước lượng một tỷ lệ theo độ chính xác "
-                         f"(Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): {_p_label} p={effect_val:.2f}, "
-                         f"sai số cho phép d={precision}, alpha={alpha}")
+                         f"(Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): {_p_label} p={_v(effect_val, 2)}, "
+                         f"sai số cho phép d={_v(precision)}, alpha={_v(alpha)}")
     elif design_code == "diagnostic":
         if effect_type != "AUC":
             raise InvalidEffectSizeError(
@@ -633,9 +642,9 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
                 "bệnh ra tổng N — hệ KHÔNG mặc định.")
         n_benh, n_khong = n_auc_hanley_mcneil(effect_val, alpha, power, kappa=(1 - prevalence) / prevalence)
         kq.update(n_per_group=n_benh + n_khong, n_total=n_benh + n_khong, n_benh=n_benh, n_khong_benh=n_khong)
-        kq["formula"] = (f"Hanley–McNeil 1982 (PMID 7063747): kiểm định AUC={effect_val:.2f} so với 0,5 (hai phía) — "
-                         f"{n_benh} ca bệnh + {n_khong} ca không bệnh (tỷ lệ hiện mắc p={prevalence:.2f}, "
-                         f"κ=(1−p)/p={(1 - prevalence) / prevalence:.2f}). [CẦN — phần mềm khác (PASS/MedCalc/pROC) có "
+        kq["formula"] = (f"Hanley–McNeil 1982 (PMID 7063747): kiểm định AUC={_v(effect_val, 2)} so với 0,5 (hai phía) — "
+                         f"{n_benh} ca bệnh + {n_khong} ca không bệnh (tỷ lệ hiện mắc p={_v(prevalence, 2)}, "
+                         f"κ=(1−p)/p={_v((1 - prevalence) / prevalence, 2)}). [CẦN — phần mềm khác (PASS/MedCalc/pROC) có "
                          "thể cho N hơi khác do giả định phương sai khác; nếu cỡ mẫu phụ thuộc chủ yếu vào con số này, "
                          "nhờ thống kê viên đối chiếu.]")
     else:
@@ -734,13 +743,14 @@ def dong_luc_muc_tieu_phu(kq):
     lo, hi = kq["khoang_or_hieu_dung"]
     g_lo, g_hi = kq["khoang_or_chieu_giam_hieu_dung"]
     dn_lo, dn_hi = kq["khoang_or_danh_nghia"]
-    buoc = f"{kq['buoc']:g} {kq['don_vi']}"
-    return (f"{kq['muc_tieu']} ({kq['phan_tich']}): với N = {kq['n_danh_nghia']}, α = {kq['alpha']:g} hai phía, "
+    # 23/11/2026 (chốt «điền sai kiểu» Q4): dòng này vào SAP §12 và A4 — số theo quy ước tiếng Việt (C1a: «α = 0.05»)
+    buoc = f"{_v(kq['buoc'])} {kq['don_vi']}"
+    return (f"{kq['muc_tieu']} ({kq['phan_tich']}): với N = {kq['n_danh_nghia']}, α = {_v(kq['alpha'])} hai phía, "
             f"lực {round(kq['power'] * 100)}%, OR nhỏ nhất phát hiện được cho mỗi {buoc} {kq['phoi_nhiem']} là "
-            f"{lo:.2f}–{hi:.2f} (chiều giảm {g_lo:.2f}–{g_hi:.2f}) ở n hiệu dụng ≈ {kq['n_hieu_dung']:.0f} "
-            f"(sau {kq['n_danh_nghia'] - kq['n_phan_tich']} phiếu dự phòng hỏng, ÷ DE {kq['design_effect']:.2f}); "
-            f"chưa gom cụm {dn_lo:.2f}–{dn_hi:.2f}. Giả định phân bố kết cục, ĐLC phơi nhiễm và R² tính lại khi có "
-            "số liệu khảo sát thử và HIS")
+            f"{_v(lo, 2)}–{_v(hi, 2)} (chiều giảm {_v(g_lo, 2)}–{_v(g_hi, 2)}) ở n hiệu dụng ≈ "
+            f"{_v(kq['n_hieu_dung'], 0)} (sau {kq['n_danh_nghia'] - kq['n_phan_tich']} phiếu dự phòng hỏng, ÷ DE "
+            f"{_v(kq['design_effect'], 2)}); chưa gom cụm {_v(dn_lo, 2)}–{_v(dn_hi, 2)}. Giả định phân bố kết cục, ĐLC "
+            "phơi nhiễm và R² tính lại khi có số liệu khảo sát thử và HIS")
 
 
 def ap_fpc_cum(n_total, design_code, population_n=None, icc=None, cluster_size=None, cluster_cv=None, so_nhom=2):

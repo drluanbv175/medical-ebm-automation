@@ -51,9 +51,9 @@ class TestMarginDisclosure:
     def test_margin_appears_in_section_12_and_lock_certificate(self):
         sap = _sap(hypothesis_type="non_inferiority", margin=0.10)
         assert "Loại giả thuyết:** non_inferiority" in sap
-        assert "Biên (margin, Δ):** 0.1" in sap
+        assert "Biên (margin, Δ):** 0,1" in sap  # 23/11/2026: dấu phẩy thập phân (chốt «điền sai kiểu»)
         assert "Giả thuyết: non_inferiority" in sap  # Lock Certificate box
-        assert "Margin (Δ): 0.1" in sap  # Lock Certificate box
+        assert "Margin (Δ): 0,1" in sap  # Lock Certificate box
 
     def test_missing_margin_flagged_not_silently_omitted(self):
         sap = _sap(hypothesis_type="non_inferiority", margin=None)

@@ -104,16 +104,16 @@ def test_moi_phan_tich_do_nhay_cua_dac_ta_vao_muc_5_kem_so_g6(tmp_path):
         "DN_theo_de_cuong", "DN_theo_doi_12t", "DN_ca_day_du", "DN_dinh_nghia_moi"]
     pp = _khoi(text, "DN_theo_de_cuong")
     assert "`G6_DN_theo_de_cuong_analysis_summary.json`, n = 749" in pp
-    assert "RD = -0.0299 (95% CI -0.1011–0.0413)" in pp
+    assert "RD = -0,0299 (95% CI -0,1011–0,0413)" in pp
     # mục có gán đa trị: ước lượng là bảng gán đa trị của CHÍNH mục đó, không phải Poisson ca đầy đủ đi kèm
     mi = _khoi(text, "DN_theo_doi_12t")
     assert ("*Ước lượng của phân tích độ nhạy này — Gán đa trị (G6, "
             "`G6_DN_theo_doi_12t_table5_multiple_imputation.txt`)") in mi
-    assert "| `nhom` | 1.3808 | 1.1304–1.6867 | 0.0016 |" in mi and "1.4512" not in mi
+    assert "| `nhom` | 1,3808 | 1,1304–1,6867 | 0,0016 |" in mi and "1,4512" not in mi
     # mục ca đầy đủ: mô hình không gán đa trị; lỗi gán đa trị m = 0 của G6 KHÔNG thành ô chờ
     cdd = _khoi(text, "DN_ca_day_du")
     assert "*Ước lượng của phân tích độ nhạy này — Mô hình đa biến Poisson sai số robust" in cdd
-    assert "| `nhom` | 1.4512 | 1.1501–1.8311 | 0.0017 |" in cdd and "cannot access" not in cdd
+    assert "| `nhom` | 1,4512 | 1,1501–1,8311 | 0,0017 |" in cdd and "cannot access" not in cdd
     # mục SAP cam kết mà G6 chưa có kết quả ⇒ ô chờ, không bỏ im
     assert ("**`DN_dinh_nghia_moi`** (SAP §9) — Định nghĩa thay thế: [CẦN THỐNG KÊ VIÊN — SAP cam kết phân tích độ "
             "nhạy này") in text
@@ -272,7 +272,7 @@ def test_dien_giai_khong_kem_hon_khong_nhan_ban_o_cho_moi_muc_do_nhay(tmp_path):
     tt["hypothesis_interpretation"] = {"hypothesis_type": "non_inferiority", "note": "NẾU nhóm 1 là thử nghiệm …"}
     _ghi(p, json.dumps(tt, ensure_ascii=False))
     pp = _khoi("\n".join(G7.dung_do_nhay_g6(out)), "DN_theo_de_cuong")
-    assert "RD = -0.0299 (95% CI -0.1011–0.0413)" in pp and "diễn giải non_inferiority" not in pp
+    assert "RD = -0,0299 (95% CI -0,1011–0,0413)" in pp and "diễn giải non_inferiority" not in pp
 
 
 def test_gia_lap_cum_co_cau_tra_loi_cho_canh_bao_so_cum_cua_g6():

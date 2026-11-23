@@ -279,14 +279,14 @@ def test_g7_ton_hai_tach_khoi_ket_cuc_phu_va_mang_ten_nhom(tmp_path):
     th = G7A.dung_ket_cuc_phu_g6(out, ton_hai=True)
     text = "\n".join(th)
     assert text.startswith("*Tác hại theo nhóm") and "TH_bien_co" in text and "KCP2" not in text
-    assert "Nhóm `0`: 7/118 (5.9%); nhóm `1`: 11/100 (11.0%)" in text      # số chép đúng tóm tắt (trước khi gắn tên)
+    assert "Nhóm `0`: 7/118 (5,9%); nhóm `1`: 11/100 (11,0%)" in text      # số chép đúng tóm tắt (trước khi gắn tên)
     ten = "\n".join(G7A.gan_ten_nhom(th, {"0": "Chứng", "1": "Can thiệp"}))
-    assert "Nhóm chứng: 7/118 (5.9%); nhóm can thiệp: 11/100 (11.0%)" in ten and "`0`" not in ten
+    assert "Nhóm chứng: 7/118 (5,9%); nhóm can thiệp: 11/100 (11,0%)" in ten and "`0`" not in ten
     md = _sinh(ket_qua_g6={"da_dung": True, "nguon": "G6_analysis_summary.json", "n_total_txt": "218",
                            "n_theo_nhom": None, "bien_bang1": [], "s1": [], "s2": [], "s3": [], "s5": [],
                            "ton_hai": G7A.gan_ten_nhom(th, {"0": "Chứng", "1": "Can thiệp"})})
     assert "**§4b Tác hại theo nhóm — biến cố bất lợi (CONSORT 2025 mục 27):**" in md
-    assert "Nhóm chứng: 7/118 (5.9%); nhóm can thiệp: 11/100 (11.0%)" in md
+    assert "Nhóm chứng: 7/118 (5,9%); nhóm can thiệp: 11/100 (11,0%)" in md
     # RCT chưa có phân tích tổn hại ⇒ ô chờ nêu đúng điều chuẩn đòi; thiết kế khác ⇒ không có mục §4b
     assert "[CẦN KẾT QUẢ THẬT — số và tỷ lệ người có biến cố bất lợi" in _sinh()
     assert "§4b Tác hại" not in _sinh(design_code="cross_sectional", reporting_std="STROBE")
@@ -404,7 +404,7 @@ def test_g7_ket_qua_chinh_co_pr_hieu_chinh_poisson_va_dat_strobe_16a(tmp_path):
     s3 = "\n".join(kq["s3"])
     assert "Mô hình đa biến Poisson sai số robust — PR hiệu chỉnh theo các biến trong bảng" in s3
     assert "124 biến cố" in s3
-    assert "| `nhom` | 1.3894 | 1.1031–1.7501 | 0.0052 |" in s3                       # số chép nguyên văn G6
+    assert "| `nhom` | 1,3894 | 1,1031–1,7501 | 0,0052 |" in s3                       # số chép nguyên văn G6
     assert "*Hàng `nhom`: nhóm can thiệp so với nhóm chứng.*" in s3                   # nhóm mang tên
     md = _sinh(ket_qua_g6={**kq, "s4": []}, design_code="cohort", design_primary="Nghiên cứu thuần tập (Cohort)",
                reporting_std="STROBE")

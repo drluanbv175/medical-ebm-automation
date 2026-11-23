@@ -131,11 +131,13 @@ def _so(gia_tri, mac_dinh="[CẦN từ G3]"):
     """Số tham số in ĐÚNG giá trị G3 (định dạng :g) — None ⇒ nhãn chờ G3.
 
     VÁ 04/10/2026 (soát từng cổng, G4-06/G4-08): bản cũ in effect size bằng :.2f (0,855 ⇒ «0.85») — văn bản KÝ phải ghi
-    đúng tham số đã dùng để tính N; alpha/power vắng từng rơi về 0,05/80% im lặng (CHUNG-F)."""
+    đúng tham số đã dùng để tính N; alpha/power vắng từng rơi về 0,05/80% im lặng (CHUNG-F).
+    23/11/2026 (chốt «điền sai kiểu» Q4): SAP là văn bản tiếng Việt ⇒ dấu phẩy thập phân («0,05», «0,855») — bộ chấm
+    `g4_quality_gate.parse_signed_numbers` đọc cả hai dấu (SAP đã ký trước ngày này ghi dấu chấm)."""
     if gia_tri is None or gia_tri == "":
         return mac_dinh
     try:
-        return f"{float(gia_tri):g}"
+        return f"{float(gia_tri):g}".replace(".", ",")
     except (TypeError, ValueError):
         return str(gia_tri)
 
@@ -589,6 +591,10 @@ def generate(study, topic, design_code, design_primary, reporting_std,
     else:
         dong_muc4.append(f"- **Quần thể:** {analysis_pop}  ")
     icc, cluster_size, design_effect = g3.get("icc"), g3.get("cluster_size"), g3.get("design_effect")
+    # 23/11/2026 (chốt «điền sai kiểu» Q3): DE là số TÍNH RA (C1a: 1.38784) — in 4 chữ số lẻ, nằm trong dung sai 1e-4
+    # của G4-AUTO-03; tham số NHẬP (ICC, m, α…) giữ đúng chữ số người khai
+    if isinstance(design_effect, (int, float)) and not isinstance(design_effect, bool):
+        design_effect = round(float(design_effect), 4)
     co_cum = icc is not None and cluster_size is not None
     if co_cum:
         dong_muc4.append(

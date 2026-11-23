@@ -57,6 +57,7 @@ import g10_quality_gate as G10Q  # noqa: E402
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — 4 mã thoát)
 import hon_hop as HH  # noqa: E402  (thiết kế hỗn hợp — hàng ma trận của cấu phần định tính, 17/11/2026)
 import kiem_a12_khop_bien_nhan as KA12  # noqa: E402  (mô tả A12 ↔ biên nhận — 12/11/2026)
+import quet_dien_sai_kieu as QDSK  # noqa: E402  (quy ước số tiếng Việt — chốt «điền sai kiểu», 23/11/2026)
 import research_study_spec as RS  # noqa: E402
 import skill_standards as S  # noqa: E402
 
@@ -507,7 +508,7 @@ def sec_cauhoi(cps, meta) -> str:
         if RS.is_present(_gtp):
             lines.append(f"**Giả thuyết mục tiêu phụ (định trước, chốt ở G0):** {' '.join(str(_gtp).split())}\n")
     elif hypothesis_type in ("non_inferiority", "equivalence"):
-        margin_text = margin if margin is not None else TAG_BS
+        margin_text = QDSK.viet_so(margin) if margin is not None else TAG_BS  # 23/11/2026: «Δ = 0,1» (Q4)
         nguon_bien = _gp(meta, "G3").get("margin_source")
         if (meta.get("_g10") or {}).get("g3_song_pass") and RS.is_present(nguon_bien):
             # 05/10/2026: G3 chấm sống ĐÃ xác nhận (thống kê viên chốt biên + nguồn) — in biện minh, không còn ô trống.
@@ -834,7 +835,7 @@ def sec_comau(cps, meta) -> str:
     return (
         f"{S.de_cuong_heading('comau')}\n\n"
         f"**Công thức áp dụng (tự động từ G3):** {formula}.\n\n"
-        f"- Mức ý nghĩa α = {alpha}; lực mẫu (power) = {power}.\n"
+        f"- Mức ý nghĩa α = {QDSK.viet_so(alpha)}; lực mẫu (power) = {QDSK.viet_so(power)}.\n"
         f"- Cỡ mẫu tối thiểu tính được: **{n_total}**{per_group}.\n"
         f"- Dự phòng bỏ cuộc {dropout_pct} → cỡ mẫu cần thu: **{n_adj}**.\n"
         f"{confirmed_block}\n"

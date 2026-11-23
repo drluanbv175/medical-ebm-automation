@@ -182,7 +182,7 @@ def test_stard_muc_3_11_12a_12b_21a_dat_21b_trung_thuc_thieu(tmp_path, monkeypat
                                                                           ("3", "11", "12a", "12b", "21a", "29")}, tt
     # 21b: chưa có phân tích chẩn đoán khác trên dữ liệu đã khoá ⇒ ô [CẦN], K18 báo thiếu (không dựng số)
     assert tt["21b"] == "thieu"
-    assert ("*Phân bố mức độ bệnh ở người có bệnh đích (Độ đàn hồi gan (kPa), `lsm_kpa`):* 16.06 ± 2.87 (n = 17) "
+    assert ("*Phân bố mức độ bệnh ở người có bệnh đích (Độ đàn hồi gan (kPa), `lsm_kpa`):* 16,06 ± 2,87 (n = 17) "
             + G7.NHAN_DOI_CHIEU_G6) in md
 
 
@@ -217,7 +217,7 @@ def test_tripod_13_muc_dat_khi_co_ho_so(tmp_path, monkeypatch):
     md = _ban_thao(d, "prediction", "Nghiên cứu phát triển mô hình dự báo", "TRIPOD+AI")
     tt = _tt(md, "prediction", "TRIPOD+AI 2024")
     assert {m: tt[m] for m in MUC_TRIPOD} == {m: "dat" for m in MUC_TRIPOD}, tt
-    assert f"*Hệ số hồi quy đầy đủ của mô hình (β):* hằng số = -4.28; `tuoi` = 0.0384 {G7.NHAN_DOI_CHIEU_G6}" in md
+    assert f"*Hệ số hồi quy đầy đủ của mô hình (β):* hằng số = -4,28; `tuoi` = 0,0384 {G7.NHAN_DOI_CHIEU_G6}" in md
 
 
 def test_tripod_vang_ho_so_thi_o_can_va_thieu(tmp_path, monkeypatch):

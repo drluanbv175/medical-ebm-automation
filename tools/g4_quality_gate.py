@@ -413,29 +413,37 @@ def _than_muc(text: str, section_num: str) -> str:
     return "\n".join(body.splitlines()[1:]).strip() if body else ""
 
 
+def _so_thuc(chuoi: str) -> float:
+    """Số thập phân đã ký — dấu chấm (SAP ký trước 23/11/2026) hoặc dấu phẩy (quy ước tiếng Việt, chốt Q4)."""
+    return float(chuoi.replace(",", "."))
+
+
+#: một số thập phân viết dấu chấm HOẶC dấu phẩy (không nuốt dấu phẩy ngắt câu «0,05, độ tin cậy»)
+_SO_KY = r"(\d+(?:[.,]\d+)?)"
+
 # Bộ đọc số liệu đã ký: (khoá, mẫu, kiểu). Nhãn khớp ĐÚNG dòng run_g4_auto.generate() in ở §12.
 _MAU_SO_MUC12: tuple[tuple[str, str, Any], ...] = (
-    ("alpha", r"\*\*Alpha \([^)]*\):\*\*\s*([\d.]+)", float),
+    ("alpha", r"\*\*Alpha \([^)]*\):\*\*\s*" + _SO_KY, _so_thuc),
     ("power_pct", r"\*\*Power:\*\*\s*(\d+)%", int),
     ("n", r"\*\*Cỡ mẫu:\*\*\s*N\s*=\s*(\d+)", int),
     ("hypothesis_type", r"\*\*Loại giả thuyết:\*\*\s*(\S+)", str),
-    ("margin", r"\*\*Biên \(margin, Δ\):\*\*\s*([\d.]+)", float),
-    ("sd", r"\*\*Độ lệch chuẩn \(SD\) kết cục:\*\*\s*([\d.]+)", float),
+    ("margin", r"\*\*Biên \(margin, Δ\):\*\*\s*" + _SO_KY, _so_thuc),
+    ("sd", r"\*\*Độ lệch chuẩn \(SD\) kết cục:\*\*\s*" + _SO_KY, _so_thuc),
     # VÁ 04/10/2026 (soát từng cổng, G4-06/G4-08): tham số QUYẾT ĐỊNH N mà SAP ký từng không ghi (sai số d của thiết
     # kế theo độ chính xác, p0, bỏ cuộc, chiều kết cục NI, cụm, chẩn đoán, FPC) — nay in ở §12 và đối chiếu G3.
-    ("precision", r"\*\*Sai số tuyệt đối cho phép \(d\):\*\*\s*±?\s*([\d.]+)", float),
-    ("p_uoc_luong", r"\*\*Tỷ lệ ước lượng \(p\):\*\*\s*([\d.]+)", float),
-    ("p0", r"\*\*Tỷ lệ biến cố nhóm chứng \(p0\):\*\*\s*([\d.]+)", float),
-    ("p_event", r"\*\*Tỷ lệ biến cố \(log-rank, p_event\):\*\*\s*([\d.]+)", float),
-    ("dropout", r"\*\*Tỷ lệ bỏ cuộc dự kiến:\*\*\s*([\d.]+)", float),
+    ("precision", r"\*\*Sai số tuyệt đối cho phép \(d\):\*\*\s*±?\s*" + _SO_KY, _so_thuc),
+    ("p_uoc_luong", r"\*\*Tỷ lệ ước lượng \(p\):\*\*\s*" + _SO_KY, _so_thuc),
+    ("p0", r"\*\*Tỷ lệ biến cố nhóm chứng \(p0\):\*\*\s*" + _SO_KY, _so_thuc),
+    ("p_event", r"\*\*Tỷ lệ biến cố \(log-rank, p_event\):\*\*\s*" + _SO_KY, _so_thuc),
+    ("dropout", r"\*\*Tỷ lệ bỏ cuộc dự kiến:\*\*\s*" + _SO_KY, _so_thuc),
     ("outcome_direction", r"\*\*Chiều kết cục:\*\*\s*(higher_better|lower_better)", str),
-    ("design_effect", r"\*\*Hiệu ứng thiết kế \(DE\):\*\*\s*([\d.]+)", float),
-    ("icc", r"\*\*ICC:\*\*\s*([\d.]+)", float),
-    ("cluster_size", r"\*\*Cỡ cụm trung bình \(m\):\*\*\s*([\d.]+)", float),
+    ("design_effect", r"\*\*Hiệu ứng thiết kế \(DE\):\*\*\s*" + _SO_KY, _so_thuc),
+    ("icc", r"\*\*ICC:\*\*\s*" + _SO_KY, _so_thuc),
+    ("cluster_size", r"\*\*Cỡ cụm trung bình \(m\):\*\*\s*" + _SO_KY, _so_thuc),
     ("n_clusters", r"\*\*Số cụm:\*\*\s*(\d+)", int),
     ("n_benh", r"\*\*Số ca bệnh cần:\*\*\s*(\d+)", int),
     ("n_khong_benh", r"\*\*Số ca không bệnh cần:\*\*\s*(\d+)", int),
-    ("prevalence", r"\*\*Tỷ lệ hiện mắc dự kiến:\*\*\s*([\d.]+)", float),
+    ("prevalence", r"\*\*Tỷ lệ hiện mắc dự kiến:\*\*\s*" + _SO_KY, _so_thuc),
     ("population_n", r"\*\*Quần thể hữu hạn \(FPC\):\*\*\s*N\s*=\s*(\d+)", int),
 )
 
@@ -458,10 +466,10 @@ def parse_signed_numbers(artifact_text: str) -> dict[str, Any]:
             m = re.search(mau, section)
             if m:
                 result[khoa] = kieu(m.group(1))
-        m = re.search(r"\*\*Effect size dự kiến:\*\*\s*(\S+)\s*=\s*([\d.]+)", section)
+        m = re.search(r"\*\*Effect size dự kiến:\*\*\s*(\S+)\s*=\s*" + _SO_KY, section)
         if m:
             result["effect_type"] = m.group(1)
-            result["effect_val"] = float(m.group(2))
+            result["effect_val"] = _so_thuc(m.group(2))
         result["alpha_khong_ap_dung"] = bool(re.search(r"\*\*Alpha[^*\n]*:\*\*\s*KHÔNG ÁP DỤNG", section))
         result["power_khong_ap_dung"] = bool(re.search(r"\*\*Power:\*\*\s*KHÔNG ÁP DỤNG", section))
     m1 = re.search(r"\*\*Cỡ mẫu cuối:\*\*\s*N\s*=\s*(\d+)", _section_body(artifact_text, "§1"))

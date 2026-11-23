@@ -373,7 +373,7 @@ def test_g7_bang1_tong_quan_la_dac_diem_tung_nghien_cuu(de_tai_gop, tmp_path):
     s2 = "\n".join(kq["s2"])
     assert ("| Mã thử nghiệm (tác giả–năm) | Thuốc ức chế SGLT2 | Số người nhánh SGLT2 | Số người nhánh chứng | "
             "Thời gian theo dõi (tháng) | RoB 2 — đánh giá chung |") in s2
-    assert "| TN01 | Dapagliflozin | 3264 | 3217 | 40.3 | Thấp |" in s2
+    assert "| TN01 | Dapagliflozin | 3264 | 3217 | 40,3 | Thấp |" in s2
     text = _sinh(ket_qua_g6=kq, table1_shell="*ghi chú*", design_code="sr_ma", reporting_std="PRISMA 2020")
     assert "*Bảng 1. Đặc điểm các nghiên cứu được đưa vào tổng hợp (k = 15 — G6)*" in text
     assert "Đặc điểm nền người tham gia" not in text and "**§2 Đặc điểm các nghiên cứu — Bảng 1:**" in text
@@ -397,7 +397,9 @@ def test_g7_khung_tom_tat_phat_hien_khong_xep_muc_grade():
     dong = G7.khoi_tom_tat_phat_hien_g6(kq6, "HbA1c sau 12 tháng")  # tên kết cục có số: không vào tự kiểm
     text = "\n".join(dong)
     hang = next(x for x in dong if x.startswith("| HbA1c sau 12 tháng |"))
-    assert f"| {15} ({sum(_N1) + sum(_N0)}) |" in hang and repr(tt["dac_thu"]["rr_gop_ngau_nhien"]) in hang
+    # 23/11/2026: số G6 qua tự kiểm nguyên văn rồi in theo quy ước tiếng Việt (`hien_so_g6`)
+    assert f"| {15} ({sum(_N1) + sum(_N0)}) |" in hang
+    assert G7.hien_so_g6(repr(tt["dac_thu"]["rr_gop_ngau_nhien"])) in hang
     assert "[CẦN XẾP MỨC CHẮC CHẮN GRADE" in hang and "Mức chắc chắn (GRADE)" in text
     assert "tác giả" not in hang.lower()  # bước điền của giả lập từng chép TÊN người vào ô có chữ «tác giả»
     import re
@@ -439,8 +441,9 @@ def test_g7_phan_nhom_tu_chi_muc_sap_chep_nguyen_van(tmp_path):
     text = "\n".join(dong)
     pn = json.loads(_vb(tt))["dac_thu"]["phan_nhom"]
     assert dong[0] == "**§3b Phân nhóm tiền định (SAP):**  " and "**`NC_thuoc`** (SAP §7)" in text
-    assert f"| Empagliflozin | 5 | {pn['nhom'][0]['rr']!r} |" in text
-    assert f"Khác biệt giữa các phân nhóm: Q = {pn['q_giua_nhom']!r}, df = 3, p = {pn['p_giua_nhom']!r}" in text
+    assert f"| Empagliflozin | 5 | {G7.hien_so_g6(repr(pn['nhom'][0]['rr']))} |" in text
+    assert (f"Khác biệt giữa các phân nhóm: Q = {G7.hien_so_g6(repr(pn['q_giua_nhom']))}, df = 3, "
+            f"p = {G7.hien_so_g6(repr(pn['p_giua_nhom']))}") in text
     khoi = text.split("`G6_NC_thuoc_analysis_summary.json`, n = 15")[1]
     assert G7.kiem_so_trich_g6(khoi, _vb(tt)) == []
     assert "TN01" in text and "77/3264" not in text  # chỉ khối phân nhóm — không lặp bảng từng nghiên cứu

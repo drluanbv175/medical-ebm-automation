@@ -72,6 +72,10 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       vị `so_doc_de_cuong.py`. Đề cương ở trạng thái TRÌNH (có G10_checkpoint.json và G10 chấm sống READY/PASS) mà sổ
       phủ < 100% đơn vị của bản hiện hành (bản ghi mang băm cũ = chưa đọc) hoặc còn đơn vị «sua» chưa xử lý ⇒ CHẶN.
       Chưa tới trạng thái trình ⇒ chỉ báo tỷ lệ phủ (cảnh báo), không chặn.
+  K22 (23/11/2026; bác sĩ duyệt đề xuất «bộ quét điền sai kiểu»): chốt chung `quet_dien_sai_kieu.py` — số đứng lẻ
+      thành câu (Q1), ô hỏi người/vai trò điền mã số (Q2), số thập phân chưa làm tròn (Q3), dấu chấm thập phân trong câu
+      tiếng Việt (Q4 — trừ số hiệu tham chiếu, phiên bản, mã, công thức, PMID/DOI), ký hiệu nội bộ của khuôn (Q5).
+      Sửa ở bộ sinh, không sửa tay.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -1025,6 +1029,13 @@ def canh_bao_k20_k21(out_dir: Path, study: str) -> List[str]:
     return TNT.canh_bao_k20(out_dir, study) + SDD.canh_bao_k21(out_dir, study)
 
 
+def loi_k22(md: str) -> List[str]:
+    """K22 — điền sai kiểu (chốt chung `quet_dien_sai_kieu.quet`, dùng cho đề cương nộp lẫn bản thảo tạp chí)."""
+    import quet_dien_sai_kieu as QDSK  # noqa: PLC0415
+
+    return [f"K22 {x}" for x in QDSK.quet(md)]
+
+
 def kiem(out_dir: Path, study: str) -> List[str]:
     """Danh sách lỗi của bản đề cương nộp Hội đồng (rỗng = đạt). Thiếu tệp `.md` ⇒ một lỗi K1."""
     out_dir = Path(out_dir)
@@ -1136,6 +1147,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     except (OSError, ValueError):
         dv = ""
     loi.extend(loi_k19(md, dv))
+    loi.extend(loi_k22(md))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     loi.extend(loi_k21(out_dir, study) + loi_k20(out_dir, study, loi))
