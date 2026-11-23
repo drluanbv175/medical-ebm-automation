@@ -2174,7 +2174,9 @@ class TronVong:
         for k in ("k", "epv", "n_ban_go_bang", "so_chu_de"):
             if dt.get(k) is not None:  # số lẻ (EPV 45,5) viết dấu phẩy thập phân như mọi số khác của lời văn
                 v = dt[k]
-                gt[k] = self._so_vn(v, 1) if isinstance(v, float) and not v.is_integer() else v
+                # 23/11/2026 (chốt «điền sai kiểu» Q4): số thực nguyên («41.0») in dạng số nguyên «41»
+                gt[k] = (self._so_vn(v, 1) if isinstance(v, float) and not v.is_integer()
+                         else int(v) if isinstance(v, float) else v)
         for i, cd in enumerate(dt.get("chu_de") or [], 1):
             gt[f"chu_de_{i}_ten"] = cd.get("chu_de")
             gt[f"chu_de_{i}_n"] = cd.get("n")
