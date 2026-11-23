@@ -64,6 +64,22 @@
    "cu": "    g1 = {k: v for k, v in _g1_meta(meta).items() if k not in _KHOA_XAC_NHAN_G1}",
    "moi": "    g1 = {k: v for k, v in _g1_meta(meta).items() if k not in _KHOA_XAC_NHAN_G1 and k != \"objectives\"}",
    "test": "tests/test_ho_so_don_vi_dau_cong_20261123.py::test_doi_quyet_dinh_g1_van_doi_dau"
+  },
+  {
+   "ma": "KIEM-CHEO-KHONG-DO-DUOC",
+   "chot": "kiểm chéo SPSS/R không đo được (máy không có R/SPSS) không biến phân tích thiết kế đặc thù thành LỖI",
+   "tep": "tools/phan_tich_thiet_ke_dac_thu.py",
+   "cu": "kc.get(\"trang_thai\") in (\"LECH\", \"LOI\")) else 0",
+   "moi": "kc.get(\"trang_thai\") != \"KHOP\") else 0",
+   "test": "tests/test_ma_thoat_kiem_cheo_dac_thu_20261123.py"
+  },
+  {
+   "ma": "CI-G6-PHAN-TICH-LOI",
+   "chot": "cổng CI giả lập đỏ khi G6 có phân tích SAP chạy LỖI",
+   "tep": "tools/kiem_gia_lap_16.py",
+   "cu": "and x.get(\"trang_thai\") == \"LOI\"]",
+   "moi": "and x.get(\"trang_thai\") == \"LOI_KHAC\"]",
+   "test": "tests/test_gia_lap_ci_20261117.py::test_cong_phan_do_khi_g6_co_phan_tich_loi_20261123"
   }
  ]
 }

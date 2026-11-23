@@ -74,8 +74,12 @@ def test_ung_vien_rscript_windows_chon_ban_moi_nhat(tmp_path, monkeypatch):
         (goc / ban / "bin" / "Rscript.exe").write_text("", encoding="utf-8", newline="\n")
     ds = R.ung_vien_rscript(he="nt", goc_cai=[goc])
     assert [p.parent.parent.name for p in ds] == ["R-4.10.0", "R-4.6.2", "R-4.4.1"]  # so số, không so chữ
-    monkeypatch.setenv("EBM_RSCRIPT", "/khac/Rscript")
-    assert R.ung_vien_rscript(he="nt", goc_cai=[goc]) == [Path("/khac/Rscript")]
+    # biến môi trường thắng mọi dò tìm — tệp phải có thật (23/11/2026: trỏ tệp không có ⇒ «không tìm thấy R»)
+    khac = tmp_path / "khac" / "Rscript"
+    khac.parent.mkdir()
+    khac.write_text("", encoding="utf-8", newline="\n")
+    monkeypatch.setenv("EBM_RSCRIPT", str(khac))
+    assert R.ung_vien_rscript(he="nt", goc_cai=[goc]) == [khac]
 
 
 def test_kiem_khong_co_r_la_khong_do_duoc(monkeypatch):

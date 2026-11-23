@@ -146,7 +146,9 @@ def ung_vien_rscript(he: str | None = None, goc_cai: list[Path] | None = None) -
     """Mọi Rscript chạy được, ưu tiên: EBM_RSCRIPT › PATH › chỗ cài mặc định (Mac / Windows). Không trùng lặp."""
     env = os.environ.get("EBM_RSCRIPT", "").strip()
     if env:
-        return [Path(env)]
+        # 23/11/2026: biến trỏ tệp KHÔNG có ⇒ «không tìm thấy R» (KhongDoDuoc) như máy không cài — cùng luật với
+        # EBM_SPSS_PYTHON (17/11/2026), không đưa đường hỏng cho subprocess.
+        return [Path(env)] if Path(env).is_file() else []
     he = he or ("nt" if os.name == "nt" else sys.platform)
     ra: list[Path] = []
     w = shutil.which("Rscript")
