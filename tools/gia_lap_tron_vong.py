@@ -65,8 +65,26 @@ NHAN_MO_PHONG = "DỮ LIỆU MÔ PHỎNG — không dùng lâm sàng (giả lậ
 NHOM_KHOA = ("IRB", "STATISTICIAN", "PI", "DATA_MANAGER", "INDEPENDENT_PEER_REVIEWER", "METHODOLOGIST",
              "DATA_GOVERNANCE", "PI_PROJECT_OWNER")
 O_RE = re.compile(r"\[(?:CẦN|CẦN|TO BE COMPLETED)[^\]\n]*\]")
-LOAI_O = ("hoi_lai_da_chot", "hoi_lap", "khong_ap_dung", "moi_dung_vai", "chua_co_ho_so")
-LOAI_O_LOI_MAY = ("hoi_lai_da_chot", "hoi_lap")
+LOAI_O = ("hoi_lai_da_chot", "hoi_lap", "khong_ap_dung", "moi_dung_vai", "chua_co_ho_so", "dien_sai_kieu")
+#: 23/11/2026: «dien_sai_kieu» — câu trả lời của hồ sơ sai KIỂU với điều ô hỏi (ô hỏi người/vai trò mà giá trị là một mã
+#: số đơn lẻ — ô «ai thực hiện can thiệp» của RCT từng bị điền «6» vì quy tắc khớp đuôi nhãn bị cắt) ⇒ lỗi máy
+LOAI_O_LOI_MAY = ("hoi_lai_da_chot", "hoi_lap", "dien_sai_kieu")
+
+
+def hoi_nguoi_vai_tro(nhan_khong_dau: str) -> bool:
+    """Ô hỏi NGƯỜI hoặc VAI TRÒ (ai thực hiện, người phụ trách, chức danh, thành viên…) — không phải ô hỏi số lượng
+    («số người», «bao nhiêu người»). Nhãn đã bỏ dấu (`bo_dau`)."""
+    k = str(nhan_khong_dau or "")
+    if re.search(r"\bso\b|bao nhieu|\bty le\b", k):
+        return False
+    return bool(re.search(r"\bai (thuc hien|phu trach|chiu trach nhiem|danh gia|phong van|nhap|kiem tra|giu)|"
+                          r"\bnguoi (thuc hien|phu trach|chiu trach nhiem|danh gia|phong van|kiem tra|giu)|"
+                          r"vai tro|chuc danh|chuc vu|thanh vien|ho ten", k))
+
+
+def la_ma_so_don_le(gia_tri: Any) -> bool:
+    """Giá trị chỉ là một con số (vd «6», «2,5») — không phải câu trả lời cho ô hỏi người/vai trò."""
+    return bool(re.fullmatch(r"\s*\d+(?:[.,]\d+)?\s*", str(gia_tri or "")))
 #: Bảng trích xuất cấp nghiên cứu của tổng quan (G5-T2) — PHẢI trùng `hoi_dong_cong.TEP_TRICH_XUAT_SR` (test khoá).
 TEP_TRICH_XUAT_SR = "06_phan_tich_R/study_level_extraction.csv"
 
@@ -345,7 +363,10 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
         elif k and k in da_hoi and nhan_truoc and nhan_co_nghia(k):
             o.update(loai="hoi_lap", dien=da_hoi[k])
         elif tl is not None:
-            o.update(loai="moi_dung_vai", dien=tl)
+            # 23/11/2026: ô hỏi người/vai trò mà câu trả lời là mã số đơn lẻ ⇒ quy tắc khớp nhầm (lỗi máy), không phải
+            # nội dung đúng vai
+            sai_kieu = la_ma_so_don_le(tl) and hoi_nguoi_vai_tro(f"{k} {trong_o}")
+            o.update(loai="dien_sai_kieu" if sai_kieu else "moi_dung_vai", dien=tl)
         elif re.fullmatch(r"_{3,}(?:\s*/\s*_{2,}\s*/\s*_{2,})?", o_txt.strip()) and "/" in o_txt:
             o.update(loai="moi_dung_vai", dien=date.today().strftime("%d/%m/%Y"))
         else:
@@ -3173,7 +3194,9 @@ TRA_LOI_CHUNG: Tuple[Tuple[str, str], ...] = (
     (r"^tinh$|tinh/thanh|tinh thanh|province", "TP. Hồ Chí Minh"),
     (r"noi luu|luu tai|may chu", "Máy chủ nội bộ có mã hoá, phân quyền theo vai trò"),
     (r"sao luu|backup", "Sao lưu hằng ngày, 2 bản độc lập"),
-    (r"thoi gian luu|nam\]?$|xoa/an danh", "2"),
+    # 23/11/2026: neo vào CÂU HỎI (thời gian lưu, số năm, xoá/ẩn danh) — không khớp mọi nhãn chỉ vì đuôi bị cắt ở
+    # «… năm»/«Việt Nam» (nhãn dài bị cắt 80 ký tự)
+    (r"thoi gian luu|(?:so|bao nhieu)\s+nam\]?$|xoa/an danh", "2"),
     (r"ten tac gia|tac gia", "ThS. Trần Thị B"),
     (r"phan mem", "R 4.6 (phân tích chính); kiểm chéo SPSS 31"),
     (r"packages", "stats, sandwich, lmtest, mice"),
@@ -3182,7 +3205,10 @@ TRA_LOI_CHUNG: Tuple[Tuple[str, str], ...] = (
     (r"nguoi kiem tra dau ra", TEN_CHU_NHIEM),
     (r"so ban nop", "3"),
     (r"thoi gian luu", "2"),
-    (r"xoa/huy|huy vat ly|trong\s*$", "6"),
+    # 23/11/2026: bỏ nhánh «trong\s*$» — nhãn ô «ai thực hiện can thiệp … không có trong REDCap dictionary» bị cắt ở
+    # 80 ký tự kết thúc «… không có trong» nên bị điền «6»; dòng thật («xóa/hủy vật lý trong ___ tháng») đã khớp
+    # «xoa/huy|huy vat ly»
+    (r"xoa/huy|huy vat ly", "6"),
     (r"ten don vi", "Khoa Khám bệnh, bệnh viện chủ trì"),
 )
 

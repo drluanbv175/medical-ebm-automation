@@ -340,6 +340,11 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
         "tháng không gồm biến cố tim mạch dài hạn mà kiểm soát huyết áp phòng được.")
     hs["dien_giai"] = dg
     hs["phan_bien_G8"] = {**hs["phan_bien_G8"], "checklist": "CONSORT 2025 + CHEERS 2022 (PMID 35017145)"}
+    # 23/11/2026: ô §3 «ai thực hiện can thiệp» — cùng chương trình tin nhắn, kèm ghi nguồn lực làm dữ liệu chi phí
+    hs["tra_loi_G7"] = [(r"ai thuc hien can thiep", (
+        "Điều dưỡng phụ trách chương trình tin nhắn (không tham gia đo huyết áp) cài lịch gửi tự động và kiểm nhật ký "
+        "gửi tin hằng tuần; tuân thủ đo bằng tỷ lệ tin nhắn gửi thành công; giờ công điều dưỡng và cước tin nhắn của "
+        "chương trình được ghi hằng tháng làm dữ liệu chi phí")), *hs["tra_loi_G7"]]
     kb["rct_kinh_te"] = kt
 
     # ══ 8. HỖN HỢP GIẢI THÍCH TUẦN TỰ — RCT gốc + phỏng vấn sâu giải thích kết quả (GRAMMS, PMID 18416914) ═════════
@@ -464,6 +469,11 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     hs["dien_giai"] = dg
     hs["phan_bien_G8"] = {**hs["phan_bien_G8"],
                           "checklist": "CONSORT 2025 + GRAMMS (PMID 18416914) + COREQ (PMID 17872937)"}
+    # 23/11/2026: ô §3 «ai thực hiện can thiệp» — người gửi tin tách khỏi người đo huyết áp và người phỏng vấn sâu
+    hs["tra_loi_G7"] = [(r"ai thuc hien can thiep", (
+        "Điều dưỡng phụ trách chương trình tin nhắn (không tham gia đo huyết áp, không phỏng vấn sâu ở cấu phần định "
+        "tính) cài lịch gửi tự động và kiểm nhật ký gửi tin hằng tuần; tuân thủ đo bằng tỷ lệ tin nhắn gửi thành "
+        "công")), *hs["tra_loi_G7"]]
     kb["rct_hon_hop"] = hh
     return kb
 
@@ -527,6 +537,11 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                r"phan tich so sanh khi co ket qua": ("Đối chiếu tỷ lệ nền với TEXT4BP (PMID 35342691); tác giả "
                                                      "chưa đọc toàn văn bài này"),
                r"mesh terms": "Hypertension; Telemedicine; Equivalence Trial; Blood Pressure",
+               # 23/11/2026: ô §3 «ai thực hiện can thiệp» — can thiệp của kịch bản này là TÁI KHÁM QUA ĐIỆN THOẠI
+               r"ai thuc hien can thiep": ("Hai điều dưỡng phòng khám được tập huấn gọi tái khám hằng tháng theo "
+                                           "kịch bản chuẩn; chủ nhiệm rà phiếu ghi cuộc gọi của ngẫu nhiên 10% số lần "
+                                           "gọi để kiểm soát chất lượng; tuân thủ đo bằng số lần gọi thành công trên "
+                                           "6 lần theo kế hoạch"),
                # thống kê viên viết lại đoạn diễn giải NI của G6 (chiều nhóm là quyết định người — engine không đoán)
                r"dien giai non.?inferiority": ("Nhóm 1 (tái khám qua điện thoại) là nhóm THỬ NGHIỆM, nhóm 0 (tái khám "
                                                "trực tiếp) là CHỨNG. Hiệu số tỷ lệ kiểm soát (thử − chứng) "
@@ -594,7 +609,11 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                                           "cụm")] + list(hs.get("tra_loi_G4") or [])
     # 23/11/2026: thống kê viên xét cảnh báo SỐ CỤM mà G6 gắn dưới mọi ước lượng theo cụm (§3 và từng phân tích độ nhạy
     # ở §5) — một quyết định, khớp cách tính cấu trúc cụm đã chốt ở SAP §4; trước đây ô này rơi về «chưa có thông tin»
-    hs["tra_loi_G7"] = [(r"g6 canh bao gan voi so o tren: so cum",
+    hs["tra_loi_G7"] = [(r"ai thuc hien can thiep",  # 23/11/2026: tin nhắn triển khai theo PHÒNG KHÁM (cụm)
+                         "Điều dưỡng đầu mối tại mỗi phòng khám thuộc nhánh can thiệp cài lịch gửi tin tự động cho "
+                         "người bệnh của phòng khám mình và kiểm nhật ký gửi tin hằng tuần; nhóm nghiên cứu đối chiếu "
+                         "tỷ lệ tin gửi thành công theo từng phòng khám hằng tháng"),
+                        (r"g6 canh bao gan voi so o tren: so cum",
                          "Thống kê viên đã xét cảnh báo số cụm của G6: giữ sai số chuẩn hiệu chỉnh cụm có hiệu "
                          "chỉnh cỡ mẫu nhỏ và suy luận theo phân phối t với số bậc tự do bằng số cụm trừ một, đúng "
                          "cách tính cấu trúc cụm đã chốt ở SAP")] + list(hs.get("tra_loi_G7") or [])

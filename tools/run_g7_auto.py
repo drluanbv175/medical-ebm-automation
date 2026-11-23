@@ -2627,6 +2627,10 @@ def lap_o_da_chot_g7(van: str, out_dir: Path, study: str) -> tuple[str, list[str
     cap = [
         ("tieu_de", "[CẦN — tiêu đề ngắn gọn ≤ 120 ký tự, chứa thiết kế + dân số + kết cục chính]",
          ds(meta.get("title"))),
+        # 23/11/2026: bối cảnh/gánh nặng vấn đề PI đã chốt ở G1 (background_problem) — ô từng rơi vào quy tắc giả lập khớp
+        # đuôi nhãn «… Việt Nam» và bị điền «2» ở mọi bản thảo
+        ("boi_canh", "[CẦN bổ sung: dịch tễ học/tỷ lệ mắc/gánh nặng kinh tế tại Việt Nam]",
+         ds(g1.get("background_problem")).rstrip(". ")),
         ("muc_tieu", "[CẦN — câu hỏi PICO chính một câu]", muc_tieu),
         ("co_so", "[CẦN — đơn vị/bệnh viện, tỉnh/thành, thời gian nghiên cứu]",
          "; ".join(x for x in (co_so, thoi_gian) if x)),

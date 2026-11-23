@@ -154,6 +154,13 @@ def _rct(goc: Dict[str, Any]) -> Dict[str, Any]:
     ], meta)
     kb["du_lieu_redcap"] = {"hinh_mau": HINH_MAU_RCT, "so_ho_so_he_so": 2.5, "dung_khi": [DU, "N_G3"]}
     _ap_loc(kb, "du_tieu_chuan == 1")
+    # 23/11/2026: ô §3 «ai thực hiện can thiệp» của bản thảo — tin nhắn bắt đầu từ ngày ngẫu nhiên hoá trên phiếu
+    # sàng lọc/ngẫu nhiên hoá; người gửi tin tách khỏi người đo huyết áp (cách làm mù đã chốt)
+    hs = kb["ho_so_tron_vong"]
+    hs["tra_loi_G7"] = [(r"ai thuc hien can thiep", (
+        "Điều dưỡng phụ trách chương trình tin nhắn (không tham gia đo huyết áp) cài lịch gửi tự động từ ngày "
+        "ngẫu nhiên hoá, kiểm nhật ký gửi tin hằng tuần và gửi lại tin bị lỗi; tuân thủ đo bằng tỷ lệ tin nhắn gửi "
+        "thành công trong 6 tháng")), *hs["tra_loi_G7"]]
     return kb
 
 
