@@ -28,7 +28,10 @@ tính trên đó) để bác sĩ tự chạy lại trong RStudio/SPSS.
 Dùng (thường qua chay_sap_g6 — đặc tả có `loai_dac_thu`):
   python3 tools/phan_tich_thiet_ke_dac_thu.py --study <mã> --gate G6 --loai chan_doan --tham-chieu xo_hoa --chi-so fib4
       --nguong 2.67 [--kiem-cheo]
-Mã thoát: 0 xong (kiểm chéo, nếu có, KHOP) · 1 lỗi/lệch · 2 tham số sai/chưa khoá. Cần bác sĩ kiểm chứng.
+Mã thoát: 0 xong (kiểm chéo, nếu có, KHOP hoặc KHONG_DO_DUOC — máy không có R/SPSS) · 1 lỗi/lệch
+(kiểm chéo LECH/LOI) · 2 tham số sai/chưa khoá. Trạng thái kiểm chéo luôn ghi ở `<gate>_kiem_cheo.json`
+(chay_sap_g6 chép vào chỉ mục).
+Cần bác sĩ kiểm chứng.
 """
 from __future__ import annotations
 
@@ -1152,6 +1155,16 @@ def md_ket_qua(study: str, gate: str, loai: str, kq: Dict[str, Any], kc: Optiona
     return "\n".join(dl + ["", CAN_KIEM, ""])
 
 
+def ma_thoat_kiem_cheo(kc: Optional[Dict[str, Any]]) -> int:
+    """Mã thoát của một lượt theo kết quả kiểm chéo: LECH/LOI ⇒ 1; KHOP, KHONG_DO_DUOC hoặc không kiểm ⇒ 0.
+
+    23/11/2026: «không đo được» (máy không có R/SPSS — CI) KHÔNG phải lỗi phân tích. Trước đây mã 1 ⇒ chay_sap_g6
+    xếp cả phân tích là LỖI ⇒ G7 bỏ kết quả (CI: CHEERS 2022 mục 22 thiếu ở rct_kinh_te; chẩn đoán/dự báo/gộp có
+    phân tích chính LỖI mà vẫn xanh). Cùng quy ước kiểm chéo tư vấn của run_stats_analysis; trạng thái kiểm chéo
+    vẫn ghi ở `<gate>_kiem_cheo.json` và chỉ mục chay_sap_g6 (không bao giờ đọc thành «khớp»)."""
+    return 1 if (kc is not None and kc.get("trang_thai") in ("LECH", "LOI")) else 0
+
+
 def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bool) -> int:
     if loai not in LOAI:
         raise TuChoi(f"--loai phải thuộc {sorted(LOAI)}")
@@ -1209,7 +1222,7 @@ def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bo
         print(f"✓ Kiểm chéo SPSS/R: {kc['trang_thai']} — "
               + "; ".join(f"{k} {v['trang_thai']}" for k, v in kc["phan_mem"].items()))
     print(f"✓ {d / f'{gate}_ket_qua.md'}\n{CAN_KIEM}")
-    return 0 if (kc is None or kc["trang_thai"] == "KHOP") else 1
+    return ma_thoat_kiem_cheo(kc)
 
 
 def main(argv: Optional[List[str]] = None) -> int:

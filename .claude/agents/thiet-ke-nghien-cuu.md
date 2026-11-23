@@ -564,6 +564,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/run_g6_auto.py` (kiểm) — đầu ra của `phan-tich-thong-ke`: G6: sinh script phân tích theo SAP đã khoá; chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: khách quan · tái lập.
 - Công cụ `tools/run_stats_analysis.py` (kiểm) — đầu ra của `phan-tich-thong-ke`: phân tích thống kê từ dữ liệu thật đã khoá; chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: tái lập · khách quan.
 - Công cụ `tools/g1_quality_gate.py` (dùng phụ) — bộ chấm cổng G1 đo đầu ra nhiệm vụ G1-T1 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g1`); nguyên tắc: đạt chuẩn định trước · phương pháp phù hợp.
+- Công cụ `tools/goi_ra_khuon_sap.py` (chủ) — gói rà khuôn SAP cho thống kê viên: mỗi thiết kế (8 mã + biến thể cụm/không kém hơn/ghép cặp) một trang chép nguyên văn SAP đã điền từ giả lập, sáu hạng mục rà (họ mô hình, KTC, dữ liệu thiếu, biến cố hiếm, độ nhạy, căn cứ PMID), cột «☐ Đồng ý / ☐ Sửa» để trống cho người rà; chốt kiểm `tests/test_goi_ra_khuon_sap_20261123.py`; nguyên tắc: khách quan · khoa học.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 

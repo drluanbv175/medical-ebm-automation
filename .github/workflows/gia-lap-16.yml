@@ -27,6 +27,10 @@ on:
       - "requirements.lock.txt"
       - ".github/workflows/gia-lap-16.yml"
   workflow_dispatch:
+  # 23/11/2026 (bác sĩ duyệt CI hai làn): chạy đủ ma trận mỗi đêm 02:00 giờ Việt Nam — bắt lỗi phụ thuộc ngày giờ
+  # (vd lượt qua nửa đêm làm G2 bị từ chối ký) và lệch phụ thuộc mà PR không đụng tới.
+  schedule:
+    - cron: "0 19 * * *"
 
 permissions:
   contents: read

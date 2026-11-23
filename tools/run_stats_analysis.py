@@ -897,7 +897,10 @@ def kc_hieu_so(e1: int, n1: int, e0: int, n0: int, phuong_phap: str) -> tuple[fl
         return kc_hieu_so_newcombe(e1, n1, e0, n0)
     p1, p0 = e1 / n1, e0 / n0
     se = math.sqrt(p0 * (1 - p0) / n0 + p1 * (1 - p1) / n1)
-    return p1 - p0 - 1.96 * se, p1 - p0 + 1.96 * se
+    # 23/11/2026: phân vị chuẩn CHÍNH XÁC (như Newcombe, SPSS, R) — z = 1,96 làm tròn làm nửa độ rộng lớn hơn
+    # ≈ 0,0018 %, đủ đẩy cận KTC (làm tròn 4 chữ số) qua ngưỡng ⇒ kiểm chéo SPSS báo LỆCH giả (rct_chan_thuc,
+    # rct_kinh_te).
+    return p1 - p0 - _Z_975 * se, p1 - p0 + _Z_975 * se
 
 
 def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
@@ -975,8 +978,8 @@ def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
         if p0 > 0 and p1 > 0 and p0 < 1 and p1 < 1:
             or_crude = (e1 / (n1 - e1)) / (e0 / (n0 - e0))
             se_log = np.sqrt(1/e0 + 1/(n0-e0) + 1/e1 + 1/(n1-e1))
-            ci = (round(np.exp(np.log(or_crude) - 1.96 * se_log), 3),
-                  round(np.exp(np.log(or_crude) + 1.96 * se_log), 3))
+            ci = (round(np.exp(np.log(or_crude) - _Z_975 * se_log), 3),  # phân vị chính xác (23/11/2026)
+                  round(np.exp(np.log(or_crude) + _Z_975 * se_log), 3))
             result["or_crude"] = round(or_crude, 3)
             result["ci_95"] = ci
         # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện
