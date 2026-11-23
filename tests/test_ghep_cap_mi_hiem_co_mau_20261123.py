@@ -312,27 +312,26 @@ def _df_ghep_thieu(seed: int = 5) -> "pd.DataFrame":
 
 
 def test_mi_ghep_cap_mo_hinh_gan_co_bien_ghep_va_phan_tich_co_dieu_kien(monkeypatch):
-    from statsmodels.imputation.mice import MICEData
+    du_bao, so_lan = {}, {"clogit": 0}
+    goc_fit = RSA._fit_clogit
 
-    cong_thuc, so_lan = {}, {"clogit": 0}
-    goc_set, goc_fit = MICEData.set_imputer, RSA._fit_clogit
-
-    def ghi(self, name, formula=None, **kw):
-        cong_thuc[name] = formula
-        return goc_set(self, name, formula=formula, **kw)
+    class BatBoGan(RSA.BoGanPMM):  # 24/11/2026: bộ gán BoGanPMM thay MICEData — ghi biến dự báo của từng cột
+        def __init__(self, *a, **k):
+            super().__init__(*a, **k)
+            du_bao.update(self.du_bao)
 
     def dem(*a, **k):
         so_lan["clogit"] += 1
         return goc_fit(*a, **k)
 
-    monkeypatch.setattr(MICEData, "set_imputer", ghi)
+    monkeypatch.setattr(RSA, "BoGanPMM", BatBoGan)
     monkeypatch.setattr(RSA, "_fit_clogit", dem)
     d = _df_ghep_thieu()
     mi = RSA.multiple_imputation_model(d, "y", "x", ["z", "a"], "binary", 12, bo_ghep="bo", bien_ghep=["gioi", "tuoi"])
     assert mi["model"] == "logistic_dk_mi" and mi["bo_may"] == "ghep_cap" and so_lan["clogit"] == 12
     assert mi["bien_mo_hinh_gan"] == ["y", "x", "z", "a", "gioi", "tuoi"]
-    # cột z (v2) được gán theo ca/chứng (v0), phơi nhiễm, hiệp biến VÀ hai biến ghép — mã bộ ghép không vào mô hình gán
-    assert set(cong_thuc["v2"].split(" + ")) == {"v0", "v1", "v3", "v4", "v5"}
+    # cột z được gán theo ca/chứng, phơi nhiễm, hiệp biến VÀ hai biến ghép — mã bộ ghép không vào mô hình gán
+    assert set(du_bao["z"]) == {"y", "x", "a", "gioi", "tuoi"}
     assert [r["variable"] for r in mi["results"]] == ["x", "z", "a"] and all(r["mcse"] >= 0 for r in mi["results"])
     cc = RSA.conditional_logit_model(d.dropna(), "y", "x", ["z", "a"], "bo")["results"][0]
     assert abs(np.log(mi["results"][0]["OR_adj"]) - np.log(cc["OR_adj"])) < 0.3  # cùng đại lượng, không lệch họ
@@ -340,21 +339,21 @@ def test_mi_ghep_cap_mo_hinh_gan_co_bien_ghep_va_phan_tich_co_dieu_kien(monkeypa
 
 
 def test_mi_ghep_cap_gan_dung_gia_tri_goc_bang_mo_hinh_co_dieu_kien(monkeypatch):
-    """Bộ gán trả đúng giá trị thật (MICEData bị thay) ⇒ mọi bộ trùng dữ liệu đủ ⇒ ước lượng gộp PHẢI bằng hồi quy có
-    điều kiện trên dữ liệu đủ (B = 0): phân tích trong từng bộ đúng là có điều kiện theo bộ ghép, không phải
+    """Bộ gán trả đúng giá trị thật (BoGanPMM.mot_bo bị thay) ⇒ mọi bộ trùng dữ liệu đủ ⇒ ước lượng gộp PHẢI bằng hồi
+    quy có điều kiện trên dữ liệu đủ (B = 0): phân tích trong từng bộ đúng là có điều kiện theo bộ ghép, không phải
     logistic thường."""
-    from statsmodels.imputation.mice import MICEData
-
     goc = _df_ghep_thieu()
     that = goc.copy()
     that["z"] = np.random.default_rng(1).binomial(1, 0.4, len(goc)).astype(float)
     thieu = that.copy()
     thieu.loc[goc["z"].isna(), "z"] = np.nan
 
-    def that_hoa(self, n_iter=1):
-        self.data["v2"] = that["z"].to_numpy()
+    def that_hoa(self):
+        bo = pd.DataFrame(self.goc.copy(), columns=self.cot)
+        bo["z"] = that["z"].to_numpy()
+        return bo
 
-    monkeypatch.setattr(MICEData, "update_all", that_hoa)
+    monkeypatch.setattr(RSA.BoGanPMM, "mot_bo", that_hoa)
     mi = RSA.multiple_imputation_model(thieu, "y", "x", ["z", "a"], "binary", 5, bo_ghep="bo", bien_ghep=["gioi"])
     du_lieu_du = RSA.conditional_logit_model(that, "y", "x", ["z", "a"], "bo")["results"]
     assert [(r["OR_adj"], r["CI_95"], r["p"]) for r in mi["results"]] == [

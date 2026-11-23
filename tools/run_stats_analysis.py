@@ -29,7 +29,8 @@ Kiểm chéo tư vấn (E4, 14/11/2026): thêm `--kiem-cheo` ⇒ sau khi ghi G6_
 thiếu SPSS/R hay kiểm chéo lỗi chỉ in ra.
 
 Multiple imputation (vá 2026-07-15): khi biến outcome/group/covariates có dữ liệu thiếu, script
-TỰ CHẠY MI thật (statsmodels MICEData/MICE, m=20 mặc định, --n-imputations để đổi) song song với
+TỰ CHẠY MI thật (m=20 mặc định, --n-imputations để đổi; từ 24/11/2026 bộ gán PMM kiểu 1 tham số bootstrap
+`BoGanPMM` thay MICEData của statsmodels) song song với
 complete-case — trước đây "MI" trong sensitivity_analysis.py (template do run_g6_auto.py sinh)
 chỉ là mean-impute tự khai không phải MI thật.
 
@@ -1596,16 +1597,40 @@ LOI_MI_THIEU_BIEN_GHEP = ("dữ liệu ghép cặp cá thể có giá trị thi�
                           "Keogh 2015, PMID 26237003); không gán thiếu cấu trúc ghép")
 
 
+#: 24/11/2026 — BỘ GÁN PMM của MỌI đường gán đa trị (`_mi_tu_lap`, `_mi_ghep_cap`, `multiple_imputation_model`). Thay
+#: `statsmodels.imputation.mice.MICEData.impute_pmm` sau khi đo được ba lỗi phương pháp của nó: (1) `np.argsort` KHÔNG
+#: ổn định trên trung bình dự đoán trùng hàng loạt (biến dự báo rời rạc ⇒ vài mức) — numpy dùng bản sắp xếp SIMD theo
+#: CPU nên thứ tự trong nhóm trùng, và do đó người cho mẫu, khác nhau theo máy (λ_x1 = 0,15 / 0,29 / 0,59 trên SkylakeX
+#: / Accelerate / Haswell, cùng dữ liệu, cùng hạt giống); (2) cửa sổ `searchsorted ± k` giống nhau cho mọi ca thiếu cùng
+#: trung bình dự đoán ⇒ cả ô dùng chung một nhóm nhỏ người cho; (3) so khớp kiểu 2 (cả hai phía dùng tham số đã nhiễu).
+#: Cách mới — PMM kiểu 1 với tham số BOOTSTRAP:
+#:   • mỗi lần gán một biến: rút mẫu bootstrap các ca quan sát, ước lượng hồi quy trên mẫu đó (β*) — bất định tham số;
+#:   • người cho = các ca của mẫu bootstrap; trung bình dự đoán của người cho VÀ người nhận cùng tính bằng β*;
+#:   • với TỪNG ca thiếu: k người cho gần nhất, phá thế trùng NGẪU NHIÊN riêng cho ca đó (chọn đều trong toàn bộ nhóm
+#:     trùng ở khoảng cách thứ k), rồi lấy một người trong k — k = 10 theo Morris, White & Royston 2014 (PMID 24903709,
+#:     doi:10.1186/1471-2288-14-75: tránh một người cho, khuyên khoảng 10);
+#:   • biến dự báo rời rạc ⇒ quy về gán nóng Bayes xấp xỉ (ABB) theo ô — đúng lý thuyết khi thiếu ngẫu nhiên (Rubin &
+#:     Schenker, JASA 1986, doi:10.1080/01621459.1986.10478280); biến dự báo phân loại vào mô hình gán dạng biến giả;
+#:   • mỗi bộ gán là MỘT chuỗi độc lập (khởi tạo bằng rút ngẫu nhiên từ giá trị quan sát, SO_VONG_GAN vòng) — không lấy
+#:     các bộ liền nhau của cùng một chuỗi.
+#: Tất định theo hạt giống (numpy PCG64), không phụ thuộc CPU: sắp xếp ổn định, trung bình dự đoán làm tròn 10 chữ số
+#: theo đơn vị độ lệch chuẩn trước khi so (sai khác bit cuối của BLAS không đổi nhóm trùng).
+K_NGUOI_CHO_PMM = 10
+SO_VONG_GAN = 10
+HAT_GIONG_MI = 20261124
+NGUON_PMM = ("PMM kiểu 1 tham số bootstrap, k = 10 người cho chọn riêng từng ca, phá thế trùng ngẫu nhiên — Morris, "
+             "White & Royston 2014 (PMID 24903709); dự báo rời rạc ⇒ ABB theo ô (Rubin & Schenker 1986, "
+             "doi:10.1080/01621459.1986.10478280)")
+
+
 def _mi_ghep_cap(df: pd.DataFrame, outcome_col: str, predictors: list, bo_ghep: str, bien_ghep: list,
-                 n_imputations: int, bien_gia: dict | None = None) -> dict:
+                 n_imputations: int, bien_gia: dict | None = None, hat_giong: int = HAT_GIONG_MI) -> dict:
     """Gán đa trị cho bệnh–chứng GHÉP CẶP CÁ THỂ (23/11/2026; Seaman & Keogh 2015, PMID 26237003 — cách thứ nhất, hiệu
-    quả nhất trong mô phỏng của bài): mô hình gán theo phương trình nối tiếp (MICEData: hồi quy + so khớp trung bình dự
-    đoán) cho từng biến thiếu, biến dự báo = tình trạng ca/chứng, phơi nhiễm, hiệp biến VÀ các biến dùng để ghép (giữ
-    cấu trúc ghép — biến ghép không vào mô hình phân tích); 10 vòng chạy nóng, mỗi bộ thêm 4 vòng (như `_mi_tu_lap`).
+    quả nhất trong mô phỏng của bài): mô hình gán theo phương trình nối tiếp (`BoGanPMM`, 24/11/2026: PMM kiểu 1 tham số
+    bootstrap) cho từng biến thiếu, biến dự báo = tình trạng ca/chứng, phơi nhiễm, hiệp biến VÀ các biến dùng để ghép
+    (giữ cấu trúc ghép — biến ghép không vào mô hình phân tích); mỗi bộ một chuỗi độc lập (như `_mi_tu_lap`).
     Trong mỗi bộ gán: hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép (cùng hàm `_fit_clogit` của mô hình chính) trên bộ mang
     thông tin; gộp luật Rubin (`_gop_rubin`), KTC/p theo z. Mã bộ ghép không vào mô hình gán."""
-    from statsmodels.imputation.mice import MICEData  # noqa: PLC0415
-
     bien_gia = bien_gia or {}
     cot_gan = [outcome_col] + predictors + [b for b in bien_ghep if b not in predictors and b != outcome_col]
     data = df[df[bo_ghep].notna()].reset_index(drop=True)
@@ -1614,22 +1639,13 @@ def _mi_ghep_cap(df: pd.DataFrame, outcome_col: str, predictors: list, bo_ghep: 
         raise LoiGanDaTri("tình trạng ca/chứng thiếu ở một số hàng — không gán biến định nghĩa bộ ghép")
     if khung.isna().all().any():
         raise LoiGanDaTri("cột không có giá trị quan sát nào: " + ", ".join(khung.columns[khung.isna().all()]))
-    an_toan = {c: f"v{i}" for i, c in enumerate(cot_gan)}
-    imp = MICEData(khung.rename(columns=an_toan))
-    for c in cot_gan:
-        ve_phai = [an_toan[x] for x in cot_gan if x != c]
-        imp.set_imputer(an_toan[c], formula=" + ".join(ve_phai))
-    imp.update_all(10)
+    imp = BoGanPMM(khung, None, [c for c in cot_gan if c in bien_gia], rng=np.random.default_rng(hat_giong))
     muc_y = sorted(khung[outcome_col].unique())
     y = pd.Series((khung[outcome_col] == muc_y[-1]).astype(float).to_numpy())
     bo = data[bo_ghep]
     thong_tin = y.groupby(bo).transform(lambda t: t.nunique() > 1).astype(bool).to_numpy()
-    rev = {v: k for k, v in an_toan.items()}
     he_so, hiep_ps, canh_bao, ten = [], [], [], None
-    bo_da_gan = []
-    for _ in range(n_imputations):
-        imp.update_all(4)
-        bo_da_gan.append(imp.data.rename(columns=rev).reset_index(drop=True))
+    bo_da_gan = [imp.mot_bo() for _ in range(n_imputations)]  # mỗi bộ một chuỗi độc lập
     muc = {c: sorted({float(x) for b in bo_da_gan for x in b[c].unique()}) for c in predictors if c in bien_gia}
     for b in bo_da_gan:
         X = pd.DataFrame(index=b.index)
@@ -1665,6 +1681,7 @@ def _mi_ghep_cap(df: pd.DataFrame, outcome_col: str, predictors: list, bo_ghep: 
     out = {"bo_may": "ghep_cap", "bo_ghep": bo_ghep, "bien_ghep": list(bien_ghep),
            "bien_mo_hinh_gan": list(cot_gan), "so_bo_thong_tin": int(pd.Series(bo[thong_tin]).nunique()),
            "phuong_phap_gop": f"luật Rubin (Q̄, Ū + (1 + 1/m)·B) — {NGUON_MI_GHEP_CAP}",
+           "phuong_phap_gan": NGUON_PMM, "hat_giong": int(hat_giong),
            "ty_le_thong_tin_thieu": {str(t): round(float(lam[i]), 3) for i, t in enumerate(ten)
                                      if np.isfinite(lam[i])},
            "results": results}
@@ -1676,6 +1693,96 @@ def _mi_ghep_cap(df: pd.DataFrame, outcome_col: str, predictors: list, bo_ghep: 
 
 class LoiGanDaTri(ValueError):
     """Bộ gán đa trị tự lập không chạy được với lý do kỹ thuật cụ thể (trả thành {"error"}, không đoán)."""
+
+
+def _chon_nguoi_cho(du_doan_cho: np.ndarray, gia_tri_cho: np.ndarray, du_doan_nhan: np.ndarray, k: int,
+                    rng: np.random.Generator) -> np.ndarray:
+    """Giá trị gán cho từng ca nhận: một người trong k người cho gần nhất theo |trung bình dự đoán|, phá thế trùng
+    ngẫu nhiên RIÊNG cho từng ca (tương đương chọn đều trong tập k gồm mọi người gần hơn khoảng cách thứ k cộng một tập
+    con ngẫu nhiên của nhóm trùng ở đúng khoảng cách đó). Vector hoá; không phụ thuộc thứ tự hàng ngoài dãy ngẫu
+    nhiên."""
+    n = len(du_doan_cho)
+    k = max(1, min(int(k), n))
+    thu_tu = np.argsort(du_doan_cho, kind="stable")
+    s, v = du_doan_cho[thu_tu], gia_tri_cho[thu_tu]
+    r = np.asarray(du_doan_nhan, dtype=float)
+    nr = len(r)
+    if nr == 0:
+        return np.empty(0, dtype=float)
+    pos = np.searchsorted(s, r)
+    w = pos[:, None] + np.arange(-k, k)[None, :]
+    hop_le = (w >= 0) & (w < n)
+    wc = np.clip(w, 0, n - 1)
+    d = np.where(hop_le, np.abs(s[wc] - r[:, None]), np.inf)
+    dk = np.partition(d, k - 1, axis=1)[:, k - 1]  # khoảng cách thứ k (k người gần nhất nằm trong cửa sổ ±k)
+    gan_hon = d < dk[:, None]  # người gần hơn hẳn: < k người, liền khối trong mảng đã sắp
+    n_lt = gan_hon.sum(axis=1)
+    gia_bang = np.where(d == dk[:, None], s[wc], np.nan)
+    v_trai, v_phai = np.nanmin(gia_bang, axis=1), np.nanmax(gia_bang, axis=1)
+    dau_t, cuoi_t = np.searchsorted(s, v_trai, "left"), np.searchsorted(s, v_trai, "right")
+    dau_p, cuoi_p = np.searchsorted(s, v_phai, "left"), np.searchsorted(s, v_phai, "right")
+    so_t = cuoi_t - dau_t
+    so_p = np.where(v_phai != v_trai, cuoi_p - dau_p, 0)  # nhóm trùng ở hai phía (tối đa hai giá trị)
+    u = rng.random((nr, 2))
+    chon_gan = u[:, 0] * k < n_lt  # P(chọn người gần hơn) = n_lt / k
+    dau_gan = np.argmax(gan_hon, axis=1)
+    j = np.minimum((u[:, 1] * np.maximum(n_lt, 1)).astype(np.int64), np.maximum(n_lt - 1, 0))
+    idx_gan = wc[np.arange(nr), np.minimum(dau_gan + j, 2 * k - 1)]
+    t = np.minimum((u[:, 1] * (so_t + so_p)).astype(np.int64), so_t + so_p - 1)
+    idx_bang = np.where(t < so_t, dau_t + t, dau_p + (t - so_t))
+    return v[np.where(chon_gan, idx_gan, idx_bang)]
+
+
+class BoGanPMM:
+    """Gán theo phương trình nối tiếp bằng PMM kiểu 1 tham số bootstrap (xem chú thích `K_NGUOI_CHO_PMM`).
+
+    `khung`: các cột số cần đưa vào mô hình gán (NaN = thiếu). `du_bao`: {cột: [cột dự báo]} — mặc định mọi cột khác.
+    `phan_loai`: cột phân loại ⇒ vào mô hình gán của cột khác dưới dạng biến giả (mức tham chiếu nhỏ nhất). Mỗi lần gọi
+    `mot_bo()` chạy MỘT chuỗi độc lập và trả DataFrame đã gán (cùng chỉ mục, cùng cột)."""
+
+    def __init__(self, khung: pd.DataFrame, du_bao: dict | None = None, phan_loai=(), *, k: int = K_NGUOI_CHO_PMM,
+                 so_vong: int = SO_VONG_GAN, rng: np.random.Generator | None = None):
+        self.cot = list(khung.columns)
+        self.goc = khung.apply(pd.to_numeric, errors="coerce").to_numpy(dtype=float)
+        self.thieu = np.isnan(self.goc)
+        if (self.thieu.all(axis=0) & self.thieu.any(axis=0)).any():
+            raise LoiGanDaTri("cột không có giá trị quan sát nào: "
+                              + ", ".join(c for c, t in zip(self.cot, self.thieu.all(axis=0)) if t))
+        mac_dinh = {c: [y for y in self.cot if y != c] for c in self.cot}
+        self.du_bao = {c: [x for x in (du_bao or {}).get(c, mac_dinh[c]) if x in self.cot and x != c] for c in self.cot}
+        self.phan_loai = {c for c in phan_loai if c in self.cot}
+        self.muc = {c: np.unique(self.goc[~self.thieu[:, i], i]) for i, c in enumerate(self.cot) if c in self.phan_loai}
+        self.k, self.so_vong = int(k), int(so_vong)
+        self.rng = rng if rng is not None else np.random.default_rng(HAT_GIONG_MI)
+        self.can_gan = [i for i in range(len(self.cot)) if self.thieu[:, i].any()]
+
+    def _thiet_ke(self, x: np.ndarray, i: int) -> np.ndarray:
+        cot = [np.ones(len(x))]
+        for c in self.du_bao[self.cot[i]]:
+            j = self.cot.index(c)
+            if c in self.phan_loai:
+                cot += [(x[:, j] == m).astype(float) for m in self.muc[c][1:]]
+            else:
+                cot.append(x[:, j])
+        return np.column_stack(cot)
+
+    def mot_bo(self) -> pd.DataFrame:
+        rng, x = self.rng, self.goc.copy()
+        for i in self.can_gan:  # khởi tạo: rút ngẫu nhiên từ giá trị quan sát của chính cột
+            t = self.thieu[:, i]
+            x[t, i] = rng.choice(self.goc[~t, i], size=int(t.sum()), replace=True)
+        for _ in range(self.so_vong):
+            for i in self.can_gan:
+                t = self.thieu[:, i]
+                quan_sat = np.flatnonzero(~t)
+                X = self._thiet_ke(x, i)
+                b = quan_sat[rng.integers(0, len(quan_sat), len(quan_sat))]  # mẫu bootstrap của người cho
+                beta = np.linalg.lstsq(X[b], self.goc[b, i], rcond=None)[0]
+                thang = float(np.std(self.goc[quan_sat, i])) or 1.0
+                du_cho = np.round(X[b] @ beta / thang, 10)
+                du_nhan = np.round(X[t] @ beta / thang, 10)
+                x[t, i] = _chon_nguoi_cho(du_cho, self.goc[b, i], du_nhan, self.k, rng)
+        return pd.DataFrame(x, columns=self.cot)
 
 
 def _gia_tri_logic(v) -> str:
@@ -1724,7 +1831,8 @@ def _gop_rubin(ds_he_so: list, ds_hiep_phuong_sai: list) -> tuple:
 
 
 def _mi_tu_lap(df: pd.DataFrame, outcome_col: str, predictors: list, outcome_type: str, poisson: bool,
-               bien_gia: dict, cluster_col: str | None, n_imputations: int, gan_thu_dong) -> dict:
+               bien_gia: dict, cluster_col: str | None, n_imputations: int, gan_thu_dong,
+               hat_giong: int = HAT_GIONG_MI) -> dict:
     """Bộ gán đa trị TỰ LẬP (22/11/2026) — dùng khi bộ MICE dựng sẵn của statsmodels không làm đúng được:
 
     (a) GÁN THEO NHÁNH: biến phân tích là biến phái sinh có cột nguồn chỉ áp cho nhóm con (Branching Logic REDCap,
@@ -1734,10 +1842,10 @@ def _mi_tu_lap(df: pd.DataFrame, outcome_col: str, predictors: list, outcome_typ
         nghĩa). Nhánh luôn thoả trong quần thể phân tích (vd «[du_tieu_chuan] = '1'» sau lọc) coi như không nhánh.
     (b) POISSON VỮNG THEO CỤM: mỗi bộ khớp GLM Poisson liên kết log với sai số chuẩn sandwich theo cụm (CR1), gộp Rubin;
         suy luận t(G−1) như mọi bảng hiệu chỉnh cụm khác (N11).
-    Gán: MICEData (hồi quy tuyến tính + so khớp trung bình dự đoán pmm, rút giá trị có thật), 10 vòng chạy nóng rồi
-    mỗi bộ thêm 4 vòng — như MICE dựng sẵn (n_skip = 3). Gộp: luật Rubin (`_gop_rubin`; nguồn `NGUON_MI_TU_LAP`)."""
+    (c) 24/11/2026: MỌI gán đa trị không ghép cặp đi qua bộ này (MICE dựng sẵn của statsmodels đã bỏ).
+    Gán: `BoGanPMM` (PMM kiểu 1 tham số bootstrap, k = 10 người cho chọn riêng từng ca, mỗi bộ một chuỗi độc lập —
+    chú thích `K_NGUOI_CHO_PMM`). Gộp: luật Rubin (`_gop_rubin`; nguồn `NGUON_MI_TU_LAP`)."""
     import statsmodels.formula.api as smf  # noqa: PLC0415
-    from statsmodels.imputation.mice import MICEData  # noqa: PLC0415
 
     analysis_cols = [outcome_col] + predictors
     data = df.reset_index(drop=True)
@@ -1774,21 +1882,14 @@ def _mi_tu_lap(df: pd.DataFrame, outcome_col: str, predictors: list, outcome_typ
         khung.loc[an, c] = np.nan
     if khung.isna().all().any():
         raise LoiGanDaTri("cột không có giá trị quan sát nào: " + ", ".join(khung.columns[khung.isna().all()]))
-    an_toan = {c: f"v{i}" for i, c in enumerate(khung_cot)}
-    khung_at = khung.rename(columns=an_toan)
-    imp = MICEData(khung_at)
-    loai_khoi_du_bao = {an_toan[c] for c in nhanh_khung}
-    for c in khung_cot:
-        ve_phai = [an_toan[x] for x in khung_cot if x != c and an_toan[x] not in loai_khoi_du_bao]
-        imp.set_imputer(an_toan[c], formula=" + ".join(ve_phai) if ve_phai else "1")
-    imp.update_all(10)
+    # cột nguồn có nhánh không làm biến dự báo cho cột khác (ngoài nhóm con nó không có nghĩa)
+    du_bao = {c: [x for x in khung_cot if x != c and x not in nhanh_khung] for c in khung_cot}
+    imp = BoGanPMM(khung.reset_index(drop=True), du_bao, [c for c in khung_cot if c in bien_gia],
+                   rng=np.random.default_rng(hat_giong))
     cac_bo = []
     for _ in range(n_imputations):
-        # 22/11/2026: 4 vòng giữa hai bộ (= n_skip 3 của MICE dựng sẵn) — bộ liền kề bớt tương quan, nên B và sai số
-        # Monte Carlo √(B/m) không bị ước lượng thấp (đo khi đối chiếu R: 1 vòng ⇒ |Δ|/MCSE phân tán 1,3 thay vì 1)
-        imp.update_all(4)
         bo = data.copy()
-        da_gan = imp.data.rename(columns={v: k for k, v in an_toan.items()}).reset_index(drop=True)
+        da_gan = imp.mot_bo()  # mỗi bộ một chuỗi độc lập (không lấy bộ liền nhau của cùng chuỗi)
         for c in khung_cot:
             bo[c] = da_gan[c].to_numpy()
         for c in nhanh_khung:
@@ -1883,6 +1984,7 @@ def _mi_tu_lap(df: pd.DataFrame, outcome_col: str, predictors: list, outcome_typ
             results.append({"variable": ten_goc(t), "beta": round(est, 4), "CI_95": [round(lo, 4), round(hi, 4)],
                             "p": p, **mc})
     out = {"bo_may": "tu_lap", "phuong_phap_gop": f"luật Rubin (Q̄, Ū + (1 + 1/m)·B) — {NGUON_MI_TU_LAP}",
+           "phuong_phap_gan": NGUON_PMM, "hat_giong": int(hat_giong),
            "ty_le_thong_tin_thieu": {ten_goc(t): round(float(lam[i]), 3) for i, t in enumerate(ten_tham_so)
                                      if t != "Intercept" and np.isfinite(lam[i])},
            "results": results}
@@ -1899,9 +2001,11 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
                                covariates: list, outcome_type: str = "auto",
                                n_imputations: int = 20, cluster_col: str | None = None,
                                bien_gia: dict | None = None, gan_thu_dong=None, bo_ghep: str | None = None,
-                               bien_ghep: list | None = None) -> dict:
-    """Multiple imputation THẬT (statsmodels MICEData+MICE, m=n_imputations mặc
-    định 20, pooling theo luật Rubin qua MICEResults) — vá 2026-07-15. Trước đây
+                               bien_ghep: list | None = None, hat_giong: int = HAT_GIONG_MI) -> dict:
+    """Multiple imputation THẬT (m=n_imputations mặc định 20, gộp theo luật Rubin) — vá 2026-07-15. 24/11/2026: bộ gán
+    là `BoGanPMM` (PMM kiểu 1 tham số bootstrap, chú thích `K_NGUOI_CHO_PMM`) qua `_mi_tu_lap`/`_mi_ghep_cap`; hạt giống
+    `hat_giong` (mặc định HAT_GIONG_MI) ⇒ chạy lại cho đúng cùng kết quả trên mọi máy. Các đoạn dưới nhắc MICEData/MICE
+    là lịch sử của bản trước. Trước đây
     "MI" trong exports/<study>/sensitivity_analysis.py (template do run_g6_auto.py
     sinh ra) chỉ là mean-impute tự khai KHÔNG PHẢI MI thật ("MI-demo (mean-impute;
     R mice m=20 for real)") — MI thật (mice m=20, method pmm) CHỈ tồn tại trong R
@@ -1932,7 +2036,6 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
             "error": "statsmodels chưa cài. Chạy: pip install statsmodels",
             "note": "[CẦN BỔ SUNG — multiple imputation cần statsmodels]",
         }
-    from statsmodels.imputation.mice import MICE, MICEData
 
     bien_gia = bien_gia or {}
     poisson = outcome_type == "poisson_pr"
@@ -1980,7 +2083,8 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
         if not bien_ghep:
             return {"error": LOI_MI_THIEU_BIEN_GHEP, "n_imputations": n_imputations}
         try:
-            kq_dk = _mi_ghep_cap(df, outcome_col, predictors, bo_ghep, list(bien_ghep), int(n_imputations), bien_gia)
+            kq_dk = _mi_ghep_cap(df, outcome_col, predictors, bo_ghep, list(bien_ghep), int(n_imputations), bien_gia,
+                                 hat_giong)
         except LoiGanDaTri as e:
             return {"error": f"gán đa trị cho dữ liệu ghép cặp không chạy được: {e}"}
         except Exception as e:  # noqa: BLE001 — lỗi khớp mô hình ⇒ báo, không sập lượt phân tích
@@ -1989,135 +2093,31 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
                 "n_complete_case": n_complete, "n_missing_rows": n_missing_rows,
                 "pct_missing_rows": round(n_missing_rows / n_total * 100, 1), **kq_dk}
 
-    # 22/11/2026: bộ máy TỰ LẬP khi (a) biến phái sinh có cột nguồn chỉ áp cho nhóm con (gán theo nhánh) hoặc
-    # (b) Poisson vững theo cụm — MICE dựng sẵn gán thẳng biến phái sinh và không hỗ trợ (b). Còn lại giữ MICE.
-    nguon_cua_td = getattr(gan_thu_dong, "nguon_cua", {}) if gan_thu_dong else {}
-    can_tu_lap = bool(poisson and cluster_col) or any(
-        v in nguon_cua_td and sub[v].isna().any() for v in analysis_cols)
-    if can_tu_lap:
-        so_cum_tl = int(df[cluster_col].nunique()) if cluster_col else 0
-        if cluster_col and so_cum_tl < 2:
-            return {"error": f"Cột cụm «{cluster_col}» chỉ có {so_cum_tl} giá trị — không hiệu chỉnh cụm được.",
-                    "note": "[CẦN THỐNG KÊ VIÊN]"}
-        try:
-            kq_tl = _mi_tu_lap(df, outcome_col, predictors, outcome_type, poisson, bien_gia, cluster_col,
-                               n_imputations, gan_thu_dong)
-        except LoiGanDaTri as e:
-            return {"error": f"gán đa trị tự lập không chạy được: {e}"}
-        except Exception as e:  # noqa: BLE001 — lỗi khớp mô hình ⇒ báo, không sập lượt phân tích
-            return {"error": f"{type(e).__name__}: {e}", "note": "[CẦN BIOSTATISTICIAN — MI không hội tụ]"}
-        ten_mo_hinh = ("poisson_cluster_mi" if cluster_col else "poisson_hc0_mi") if poisson else (
-            "logistic_mi" if outcome_type == "binary" else "linear_mi")
-        out_tl = {"model": ten_mo_hinh, "n_imputations": n_imputations, "n_total": n_total,
-                  "n_complete_case": n_complete, "n_missing_rows": n_missing_rows,
-                  "pct_missing_rows": round(n_missing_rows / n_total * 100, 1), **kq_tl}
-        if cluster_col:
-            out_tl.update(cov_type="cluster", cluster={"cot": cluster_col, "so_cum": so_cum_tl},
-                          canh_bao=[_ghi_chu_so_cum(so_cum_tl)])
-            if loai_thieu_cum:
-                out_tl["loai_thieu_ma_cum"] = loai_thieu_cum
-        return out_tl
-
-    safe_map = {c: f"v{i}" for i, c in enumerate(analysis_cols)}
-    rev_map = {v: k for k, v in safe_map.items()}
-    sub_safe = sub.rename(columns=safe_map)
-    formula = f"{safe_map[outcome_col]} ~ " + " + ".join(
-        f"C({safe_map[p]})" if p in bien_gia else safe_map[p] for p in predictors)
-    init_kwds = None
-    if poisson:
-        model_class, init_kwds, fit_kwds = sm.GLM, {"family": sm.families.Poisson()}, {"cov_type": "HC0"}
-        sub_safe = sub_safe.apply(pd.to_numeric, errors="coerce")
-    else:
-        model_class = sm.Logit if outcome_type == "binary" else sm.OLS
-        fit_kwds = {"disp": 0} if outcome_type == "binary" else None
-    if cluster_col:
-        so_cum = int(df[cluster_col].nunique())
-        if so_cum < 2:
-            return {"error": f"Cột cụm «{cluster_col}» chỉ có {so_cum} giá trị — không hiệu chỉnh cụm được.",
-                    "note": "[CẦN THỐNG KÊ VIÊN]"}
-        fit_kwds = dict(fit_kwds or {}, cov_type="cluster",
-                        cov_kwds={"groups": pd.factorize(df[cluster_col])[0]})
-
+    # 24/11/2026: MỌI gán đa trị không ghép cặp đi qua bộ máy TỰ LẬP (`_mi_tu_lap`, bộ gán `BoGanPMM`) — gán theo
+    # nhánh, Poisson theo cụm và mọi trường hợp còn lại. MICE dựng sẵn của statsmodels (impute_pmm) đã bỏ vì kết quả
+    # phụ thuộc CPU và thứ tự hàng (chú thích `K_NGUOI_CHO_PMM`).
+    so_cum_tl = int(df[cluster_col].nunique()) if cluster_col else 0
+    if cluster_col and so_cum_tl < 2:
+        return {"error": f"Cột cụm «{cluster_col}» chỉ có {so_cum_tl} giá trị — không hiệu chỉnh cụm được.",
+                "note": "[CẦN THỐNG KÊ VIÊN]"}
     try:
-        imp = MICEData(sub_safe)
-        mice = MICE(formula, model_class, imp, init_kwds=init_kwds, fit_kwds=fit_kwds)
-        res, caught = _chay_fit_bat_canh_bao(
-            lambda: mice.fit(n_imputations=n_imputations, n_burnin=10))
-    except Exception as e:
-        return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — MI không hội tụ]"}
-
-    ci = res.conf_int()
-    bse = getattr(res, "bse", None)
-    pvals = res.pvalues
+        kq_tl = _mi_tu_lap(df, outcome_col, predictors, outcome_type, poisson, bien_gia, cluster_col,
+                           n_imputations, gan_thu_dong, hat_giong)
+    except LoiGanDaTri as e:
+        return {"error": f"gán đa trị tự lập không chạy được: {e}"}
+    except Exception as e:  # noqa: BLE001 — lỗi khớp mô hình ⇒ báo, không sập lượt phân tích
+        return {"error": f"{type(e).__name__}: {e}", "note": "[CẦN BIOSTATISTICIAN — MI không hội tụ]"}
+    ten_mo_hinh = ("poisson_cluster_mi" if cluster_col else "poisson_hc0_mi") if poisson else (
+        "logistic_mi" if outcome_type == "binary" else "linear_mi")
+    out_tl = {"model": ten_mo_hinh, "n_imputations": n_imputations, "n_total": n_total,
+              "n_complete_case": n_complete, "n_missing_rows": n_missing_rows,
+              "pct_missing_rows": round(n_missing_rows / n_total * 100, 1), **kq_tl}
     if cluster_col:
-        # MICE gộp Rubin bỏ qua use_t (luôn dùng z) ⇒ tự tính KTC/p theo t(G−1) từ hệ số + SE đã gộp,
-        # cùng quy ước với các bảng hiệu chỉnh cụm khác (N11).
-        ci, pvals = _suy_luan_t_cum(res.params, bse, so_cum)
-    # Kiểm hội tụ chỉ áp cho nhánh logistic (thang log-odds); OLS không có vấn đề
-    # tách hoàn toàn. Lý do cấp mô hình (cảnh báo trong bất kỳ lần fit MI nào,
-    # hệ số vô nghĩa ở bất kỳ tham số nào) ⇒ mọi ước lượng gộp không tin cậy.
-    def ten_goc(safe_name: str) -> str:
-        m = re.fullmatch(r"C\((v\d+)\)\[T\.([^\]]+)\]", safe_name)  # biến giả patsy ⇒ <cột>_<mã>
-        if m:
-            return f"{rev_map[m.group(1)]}_{int(float(m.group(2)))}"
-        return rev_map.get(safe_name, safe_name)
-
-    ly_do_mo_hinh = []
-    if outcome_type == "binary" or poisson:
-        ly_do_mo_hinh = _ly_do_tu_canh_bao(caught)
-        for i, safe_name in enumerate(res.model.exog_names):
-            ten = ten_goc(safe_name)
-            se_i = float(bse[i]) if bse is not None else None
-            ly_do_mo_hinh.extend(_ly_do_tu_uoc_luong(
-                str(ten), float(res.params[i]), se_i, float(ci[i][0]), float(ci[i][1]),
-                kiem_do_lon=(safe_name != "Intercept")))
-    # 22/11/2026: sai số Monte Carlo của ước lượng gộp mcse = √(B/m), B = phương sai giữa các bộ (từng lần fit
-    # của MICE) — cho đối chiếu R (cau_noi_r) đặt dung sai theo sai số Monte Carlo thay vì ngưỡng đoán.
-    ds_he_so = np.asarray([np.asarray(r_i.params, dtype=float) for r_i in getattr(mice, "results_list", [])])
-    b_giua = (np.var(ds_he_so, axis=0, ddof=1) if len(ds_he_so) > 1
-              else np.zeros(len(res.model.exog_names)))
-    results = []
-    for i, safe_name in enumerate(res.model.exog_names):
-        if safe_name == "Intercept":
-            continue
-        var = ten_goc(safe_name)
-        est = float(res.params[i])
-        lo, hi = float(ci[i][0]), float(ci[i][1])
-        p = round(float(pvals[i]), 4)
-        mc = {"b": round(est, 6), "se": round(float(bse[i]), 6) if bse is not None else None,
-              "mcse": round(float(np.sqrt(b_giua[i] / max(n_imputations, 1))), 6)}
-        if poisson:
-            results.append(_gan_co_khong_hoi_tu(
-                {"variable": var, "PR_adj": round(float(np.exp(est)), 4),
-                 "CI_95": [round(float(np.exp(lo)), 4), round(float(np.exp(hi)), 4)], "p": p, **mc},
-                ly_do_mo_hinh, ("PR_adj", "CI_95", "p", "b", "se", "mcse")))
-        elif outcome_type == "binary":
-            results.append(_gan_co_khong_hoi_tu(
-                {"variable": var, "OR_adj": round(float(np.exp(est)), 3),
-                 "CI_95": [round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)],
-                 "p": p, **mc},
-                ly_do_mo_hinh, ("OR_adj", "CI_95", "p", "b", "se", "mcse")))
-        else:
-            results.append({"variable": var, "beta": round(est, 4),
-                             "CI_95": [round(lo, 4), round(hi, 4)], "p": p, **mc})
-
-    out_mi = {
-        "model": "poisson_hc0_mi" if poisson else ("logistic_mi" if outcome_type == "binary" else "linear_mi"),
-        "n_imputations": n_imputations,
-        "n_total": n_total, "n_complete_case": n_complete,
-        "n_missing_rows": n_missing_rows,
-        "pct_missing_rows": round(n_missing_rows / n_total * 100, 1),
-        "results": results,
-    }
-    if ly_do_mo_hinh:
-        out_mi["khong_hoi_tu"] = True
-        out_mi["ly_do"] = ly_do_mo_hinh
-    if cluster_col:
-        out_mi.update(cov_type="cluster", cluster={"cot": cluster_col, "so_cum": so_cum},
-                      canh_bao=[_ghi_chu_so_cum(so_cum)])
+        out_tl.update(cov_type="cluster", cluster={"cot": cluster_col, "so_cum": so_cum_tl},
+                      canh_bao=[_ghi_chu_so_cum(so_cum_tl)])
         if loai_thieu_cum:
-            out_mi["loai_thieu_ma_cum"] = loai_thieu_cum
-    return out_mi
+            out_tl["loai_thieu_ma_cum"] = loai_thieu_cum
+    return out_tl
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -3125,9 +3125,10 @@ def format_mi_text(mi: dict, mv: dict = None) -> str:
         star = "*" if p < 0.05 else " "
         lines.append(f"  {r['variable'][:20]:<22} {est:>14}  {ci[0]}–{ci[1]:<10}  {p:>6}{star}   {cc_str}")
     lines.append("\n* p < 0.05 (MI). So sánh với complete-case để đánh giá độ nhạy với giả định thiếu dữ liệu.")
-    lines.append("Phương pháp: " + (f"gán đa trị tự lập (statsmodels MICEData, pmm) — {mi['phuong_phap_gop']}"
+    gan = mi.get("phuong_phap_gan") or "PMM"
+    lines.append("Phương pháp: " + (f"gán đa trị tự lập ({gan}) — {mi['phuong_phap_gop']}"
                                      if mi.get("bo_may") == "tu_lap"
-                                     else (f"gán đa trị ghép cặp (MICEData; biến dự báo của mô hình gán: "
+                                     else (f"gán đa trị ghép cặp ({gan}; biến dự báo của mô hình gán: "
                                            f"{', '.join(mi.get('bien_mo_hinh_gan') or [])}; hồi quy logistic có điều "
                                            f"kiện theo bộ ghép «{mi.get('bo_ghep')}» trong từng bộ) — "
                                            f"{mi.get('phuong_phap_gop')}")
@@ -3523,6 +3524,9 @@ def main():
     parser.add_argument("--n-imputations", type=int, default=20,
                         help="Số bộ dữ liệu impute (m) cho multiple imputation khi biến phân "
                              "tích có dữ liệu thiếu — mặc định 20 (vá 2026-07-15)")
+    parser.add_argument("--hat-giong", type=int, default=HAT_GIONG_MI,
+                        help="Hạt giống của bộ gán đa trị (PMM kiểu 1 tham số bootstrap) — đúng «Random seed» SAP "
+                             f"khai; mặc định {HAT_GIONG_MI}. Cùng hạt giống ⇒ cùng kết quả trên mọi máy (24/11/2026)")
     parser.add_argument("--outcome-type", default="auto",
                         choices=["auto", "binary", "continuous", "ordinal", "poisson_pr"],
                         help="Loại kết cục (mặc định: tự phát hiện). 'ordinal' = logistic thứ tự "
@@ -4149,7 +4153,7 @@ def main():
                                  "trực tiếp")
         mi = multiple_imputation_model(df, args.outcome, args.group, covariates,
                                         args.outcome_type, args.n_imputations, cot_cum, bien_gia, gan_thu_dong,
-                                        bo_ghep=bo_ghep, bien_ghep=bien_ghep)
+                                        bo_ghep=bo_ghep, bien_ghep=bien_ghep, hat_giong=args.hat_giong)
         if ly_do_khong_nhanh and not mi.get("skipped"):
             mi.setdefault("canh_bao", []).append(ly_do_khong_nhanh)
         summary["multiple_imputation"] = mi

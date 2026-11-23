@@ -229,8 +229,9 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # doi_chung_cong_khai.py), co-mau-nghien-cuu (Dupont với OR có điều kiện), thiet-ke-nghien-cuu (cắt ngang có mục tiêu
 # phụ ⇒ dòng biến cố hiếm), dieu-phoi-nghien-cuu (dòng công cụ gia_lap_doi_chung.py), tong-quan-y-van (thông báo
 # biên tập luôn «khong» khi sàng lọc G0-T3) — vẫn 64.
+# 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "2334a3ce59d499342ccc29461babf2b6aacba33640750b0f52512400320e39fa"
+    "ad039b8dfc61adb0223ae685d45bfde239a3523fdc21dc141a691f8a92ab40f9"
 )
 
 MINIMUM_AGENT_COUNT = 64
