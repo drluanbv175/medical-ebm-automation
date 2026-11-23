@@ -510,15 +510,22 @@ def _khoa_van_viet(k: str) -> str:
 
 def loi_k11(md: str) -> List[str]:
     """K11 — chuẩn trình bày tiếng Việt của văn bản nộp (đề cương, bản thảo). Bỏ qua: danh mục tài liệu tham khảo (giữ
-    nguyên văn), mã trong `…`, dòng chuỗi tìm kiếm ([tiab]/[Mesh]…), DOI/URL, PMID, dòng hình. Mỗi dòng báo một lỗi."""
+    nguyên văn), mã trong `…` và khối mã ```…``` (23/11/2026 — khối JSON kiểm toán ký của hồ sơ G2 «"g3_n": 25462»
+    là dữ liệu máy, không phải văn xuôi), dòng chuỗi tìm kiếm ([tiab]/[Mesh]…), DOI/URL, PMID, dòng hình. Mỗi dòng
+    báo một lỗi."""
     loi: List[str] = []
     dong = md.splitlines()
-    trong_tltk = trong_vt = phu_luc = False
+    trong_tltk = trong_vt = phu_luc = trong_ma = False
     vt: Dict[str, str] = {}
     vt_dong: List[int] = []
     cot_nguyen_van: set = set()
     dong_than: List[Tuple[int, str]] = []  # dòng thân bài (ngoài danh mục viết tắt, TLTK, mã)
     for so, d in enumerate(dong, 1):
+        if d.strip().startswith("```"):
+            trong_ma = not trong_ma
+            continue
+        if trong_ma:
+            continue
         m = _DE_MUC_RE.match(d)
         if m:
             ten = m.group(2).upper()

@@ -247,6 +247,20 @@ def test_bao_cao_gia_lap_tinh_loi_kieu_la_o_loi_may(tmp_path):
     assert GT.TronVong(ma, tmp_path).bao_cao()["so_o_loi_may"] == 0
 
 
+def test_g2_n_nhom_nghin_van_ban_viet_va_phieu_tieng_anh():
+    import run_g2_auto as G2A
+
+    assert G2A._icf_en({}, "rct", "25462").get("participants") == "about 25,462"
+    assert G2A._icf_en({}, "rct", "").get("participants") is None
+    goi = G2A.generate_g2_full_package(
+        topic="Tổng quan thuốc ức chế SGLT2", study_name="TEST-N", design_code="sr_ma",
+        design_primary="Tổng quan hệ thống", reporting_std="PRISMA 2020", n_sr=0, n_rct=0, evidence_level="",
+        registry=None, risk=G2A.get_risk_profile("sr_ma", "Tổng quan hệ thống"), run_date="2026-11-23T10:00:00",
+        n_adjusted=25462)
+    assert "Cỡ mẫu dự kiến: 25.462" in goi and "Cỡ mẫu dự kiến: 25462" not in goi
+    assert not any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11(goi)), [x for x in KDN.loi_k11(goi) if "5 chữ số" in x]
+
+
 def test_g10_co_mau_in_alpha_luc_mau_dau_phay():
     import run_g10_assemble as G10A
 
@@ -275,6 +289,9 @@ def test_k11_so_lon_mot_nguon_va_day_pmid_la_dinh_danh():
     assert not any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11("Các tổng quan (PMID 36828607, 35014147) báo cáo."))
     assert not any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11("Bootstrap với hạt giống 20261115 cố định."))
     assert not any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11("- **Random seed:** 20261028"))
+    khoi_json = 'Hồ sơ.\n```json\n{\n  "g3_n": 25462\n}\n```\nCỡ mẫu dự kiến: 25462\n'
+    assert [x.split(":")[0] for x in KDN.loi_k11(khoi_json) if KDN.la_loi_so_lon(x)] == ["K11 dòng 7"], \
+        "khối mã ```…``` là dữ liệu máy, chỉ dòng văn xuôi bị bắt"
     # phân số: tử/mẫu số từ 5 chữ số cũng nhóm nghìn; dấu phẩy ngắt câu không che số; dấu phẩy thập phân thì có
     assert [m.group(0) for m in Q.SO_LON_RE.finditer("can thiệp 1001/39887, chứng 1447/39958")] == ["39887", "39958"]
     assert [m.group(0) for m in Q.SO_LON_RE.finditer("tổng 12345, trong đó")] == ["12345"]
