@@ -501,6 +501,69 @@ def doi_chieu_ket_qua_g6(study: str, out_dir: Path, manuscript_text: str,
     return {"status": "PASS", "evidence": "; ".join(k["evidence"] for k in ket)}
 
 
+TEP_DAC_TA_G6 = "G6_DAC_TA_SAP.json"   # đặc tả SAP G6 (tools/chay_sap_g6.py) — danh sách phân tích SAP cam kết
+#: nhãn đối chiếu bộ sinh G7 gắn vào mỗi dòng chép số G6 (run_g7_auto.NHAN_DOI_CHIEU_G6 — giữ trùng nguyên văn)
+NHAN_DOI_CHIEU_G6 = "[CẦN KẾT QUẢ THẬT — đối chiếu G6]"
+
+
+def muc_do_nhay_ban_thao(text: str) -> Optional[str]:
+    """Thân khối «§5 Phân tích nhạy cảm» trong mục III. KẾT QUẢ của bản thảo — tới tiêu đề in đậm kế tiếp không phải
+    tiêu đề một phân tích («**`mã`**»), «---» hoặc tiêu đề mục. None ⇒ bản thảo không có khối này."""
+    kq = _section(text or "", "III. KẾT QUẢ", "IV. BÀN LUẬN")
+    m = re.search(r"^\*\*§\s*5\s+Phân tích nhạy cảm[^\n]*\n(.*?)(?=^\*\*(?!`)|^---|^##\s|\Z)", kq,
+                  re.MULTILINE | re.DOTALL)
+    return m.group(1) if m else None
+
+
+def doi_chieu_do_nhay_g6(out_dir: Path, manuscript_text: str) -> Optional[Dict[str, str]]:
+    """{status, evidence} — §5 bản thảo có ĐÚNG và ĐỦ mọi phân tích độ nhạy SAP cam kết (G7-AUTO-08, 23/11/2026).
+
+    Danh sách chuẩn: các mục vai «do_nhay» của đặc tả SAP G6 (`G6_DAC_TA_SAP.json`). Mỗi phân tích ở §5 là một tiêu đề
+    «**`mã`**» (bộ sinh G7 — `dung_do_nhay_g6`/`khoi_do_nhay_khung`). Thiếu mã, thừa mã hoặc lặp mã ⇒ CHẶN (báo cáo
+    chọn lọc so với SAP); đủ mã nhưng còn mục chờ kết quả («[CẦN» trên dòng tiêu đề) ⇒ REVIEW; đặc tả không đọc được
+    hoặc soạn trước khi SAP đổi ⇒ REVIEW (không đo được — không bao giờ đạt). Không có tệp đặc tả ⇒ None: đề tài chưa
+    lập danh sách máy đọc (đường R/chạy tay) — tiêu chí không áp dụng, không có dòng chấm."""
+    out_dir = Path(out_dir)
+    p = out_dir / TEP_DAC_TA_G6
+    if not p.is_file():
+        return None
+    dt = _read_json(p)
+    ds = dt.get("phan_tich") if isinstance(dt, dict) else None
+    if not isinstance(ds, list):
+        return {"status": "REVIEW", "evidence": f"{TEP_DAC_TA_G6} không đọc được danh sách phân tích — không đo được"}
+    sap = out_dir / str(dt.get("nguon_sap") or "")
+    if dt.get("nguon_sap") and sap.is_file() and dt.get("sha256_sap") and \
+            hashlib.sha256(sap.read_bytes()).hexdigest() != dt["sha256_sap"]:
+        return {"status": "REVIEW",
+                "evidence": f"SAP đã ĐỔI sau khi soạn {TEP_DAC_TA_G6} — danh sách phân tích độ nhạy chưa đối chiếu "
+                            "được; soạn lại đặc tả, chạy lại chay_sap_g6"}
+    can = [str(x["id"]) for x in ds if isinstance(x, dict) and x.get("vai") == "do_nhay" and x.get("id")]
+    s5 = muc_do_nhay_ban_thao(manuscript_text)
+    if s5 is None:
+        return {"status": "BLOCK" if can else "PASS",
+                "evidence": (f"bản thảo không có khối §5 Phân tích nhạy cảm trong mục Kết quả — SAP cam kết {len(can)} "
+                             f"phân tích độ nhạy: {', '.join(can)}") if can else
+                            "đặc tả G6 không cam kết phân tích độ nhạy nào"}
+    tieu_de = re.findall(r"^\*\*`([^`]+)`\*\*([^\n]*)$", s5, re.MULTILINE)
+    co = [ma for ma, _ in tieu_de]
+    thieu = [ma for ma in can if ma not in co]
+    thua = [ma for ma in dict.fromkeys(co) if ma not in can]
+    lap = [ma for ma in dict.fromkeys(co) if co.count(ma) > 1]
+    if thieu or thua or lap:
+        return {"status": "BLOCK",
+                "evidence": f"§5 có {len(co)} phân tích, đặc tả G6 cam kết {len(can)}"
+                            + (f"; thiếu: {', '.join(thieu)}" if thieu else "")
+                            + (f"; ngoài đặc tả: {', '.join(thua)}" if thua else "")
+                            + (f"; lặp: {', '.join(lap)}" if lap else "")}
+    # nhãn đối chiếu số G6 trên dòng tiêu đề (tác giả đối chiếu xong thì gỡ) không phải «mục chờ kết quả»
+    cho = [ma for ma, duoi in tieu_de if "[CẦN" in duoi.replace(NHAN_DOI_CHIEU_G6, "").upper()]
+    if cho:
+        return {"status": "REVIEW", "evidence": f"§5 đủ {len(can)}/{len(can)} phân tích độ nhạy của đặc tả G6; còn chờ "
+                                                f"kết quả: {', '.join(cho)}"}
+    return {"status": "PASS", "evidence": f"§5 đủ {len(can)}/{len(can)} phân tích độ nhạy của đặc tả G6"
+                                          + (f": {', '.join(can)}" if can else "")}
+
+
 def evaluate_g7_quality(
     *,
     manuscript_text: str,
@@ -513,12 +576,15 @@ def evaluate_g7_quality(
     tien_de: Optional[Mapping[str, Mapping[str, str]]] = None,
     ket_qua_g6: Optional[Mapping[str, str]] = None,
     citation_detail: str = "",
+    do_nhay_g6: Optional[Mapping[str, str]] = None,
 ) -> Dict[str, Any]:
     """Chấm G7 theo hai tầng: máy kiểm được vs người thật phải chốt.
 
     `checkpoints` là dict {"G0": {...}, "G1": {...}, …, "G7": {...}}.
     `tien_de` (04/10/2026, G7-01): trạng thái SỐNG G0–G6 do evaluate_study tính (tien_de_song); vắng ⇒ «không đo được»
     — KHÔNG BAO GIỜ đạt. `ket_qua_g6` (G7-05): kết quả doi_chieu_ket_qua_g6; vắng ⇒ không đạt.
+    `do_nhay_g6` (23/11/2026): kết quả doi_chieu_do_nhay_g6 — có ⇒ thêm G7-AUTO-08; None ⇒ đề tài không có đặc tả G6
+    (tiêu chí không áp dụng).
     """
     artifact_paths = artifact_paths or {}
     automatic: List[Dict[str, str]] = []
@@ -666,6 +732,15 @@ def evaluate_g7_quality(
         "Chạy agent `kiem-chung-trich-dan` + tools/check_citation_retraction.py --study <mã>, ghi kết quả vào "
         "A12_CITATION_VERIFICATION_<study>.md — run_g10_assemble.py sẽ CHẶN nếu thiếu.",
     ))
+
+    # ── §5 đủ phân tích độ nhạy SAP cam kết (23/11/2026) ─────────────────────
+    if do_nhay_g6 is not None:
+        automatic.append(_criterion(
+            "G7-AUTO-08", "§5 có đủ mọi phân tích độ nhạy SAP cam kết (đặc tả G6 vai «do_nhay»)",
+            str(do_nhay_g6.get("status") or "REVIEW"), str(do_nhay_g6.get("evidence") or ""),
+            "Chạy `chay_sap_g6.py chay` đủ đặc tả trên dữ liệu đã khoá rồi sinh lại bản thảo (run_g7_auto.py) — §5 "
+            "phải có mọi mục vai «do_nhay», không bỏ mục nào, không thêm mục ngoài đặc tả.",
+        ))
 
     # ── Tầng HUMAN — giá trị phải là NỘI DUNG THẬT (G7-06) ──────────────────
     g7 = _g7_meta(meta)
@@ -930,6 +1005,7 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True,
         tien_de=tien_de,
         ket_qua_g6=ket_qua_g6,
         citation_detail=citation_detail,
+        do_nhay_g6=doi_chieu_do_nhay_g6(out_dir, text),
     )
     if write:
         write_quality_report(study, out_dir, report)
