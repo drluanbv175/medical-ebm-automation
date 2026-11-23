@@ -31,7 +31,9 @@ concurrency:
 jobs:
   offline-hermetic-tests:
     name: offline-hermetic-tests (${{ matrix.os }})   # tên ngắn, ổn định — không kèm các khoá phụ của ma trận
-    timeout-minutes: 60      # đo: ubuntu TB 11 phút, windows TB 22 phút (tối đa ~38 kể cả hàng đợi)
+    # 23/11/2026: bộ test ~13.400 ⇒ đo lại: ubuntu ~20 phút, windows 45–55 phút (feat 22/11) và chạm đúng 60 phút ở
+    # mọi lượt hôm nay (job bị huỷ ⇒ ci-ok đỏ dù không test nào trượt) — nâng thời hạn, giữ dư ~1,5 lần
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
