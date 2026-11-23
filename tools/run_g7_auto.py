@@ -801,11 +801,28 @@ def build_table1_shell(redcap_vars: list[dict], exposure_hint: str = "", *, ly_d
 
 
 def build_bias_control_block(bias_controls: list) -> str:
-    """STROBE mục 9 (Bias) — dựng đoạn văn + bảng Methods §6b từ bias_controls đã tính ở
-    G1 (BIAS_CONTROLS theo design_code, run_g1_auto.py). Rỗng → [CẦN] như cũ (không có gì
-    để tự điền, vd checkpoint G1 cũ chưa có trường này)."""
+    """STROBE mục 9 (Bias) — dựng đoạn văn + bảng Methods §6b.
+
+    Hai nguồn, ưu tiên quyết định ĐÃ CHỐT:
+    - sổ sai lệch nhóm nghiên cứu chốt ở thiết kế (`gate_params.G1.bias_controls`, mỗi mục {sai_lech, bien_phap,
+      chieu} — `bang_sai_lech_chot_g7`) ⇒ bảng ba cột nguồn sai lệch · biện pháp kiểm soát · chiều tác động có thể có
+      (23/11/2026: trước đây bản thảo luôn in bảng khuôn chung theo thiết kế dù đề tài đã chốt sổ — «Selection bias |
+      Chọn mẫu đại diện…» không phải sai lệch của đề tài; ô vắng của một mục ⇒ [CẦN] nói rõ thiếu gì);
+    - chưa chốt sổ ⇒ khuôn theo thiết kế của checkpoint G1 (BIAS_CONTROLS theo design_code, run_g1_auto.py), như cũ.
+    Rỗng → [CẦN] như cũ."""
     if not bias_controls:
         return "[CẦN — liệt kê nguồn sai lệch tiềm ẩn theo thiết kế + biện pháp kiểm soát tương ứng]"
+    if all(isinstance(x, dict) for x in bias_controls):
+        def o(x: dict, k: str, viec: str) -> str:
+            return _gia_tri_chot(x.get(k)).rstrip(". ").replace("|", "/") or _o_can(viec)
+
+        hang = "\n".join(f"| {o(x, 'sai_lech', 'tên nguồn sai lệch')} | {o(x, 'bien_phap', 'biện pháp kiểm soát')} | "
+                         f"{o(x, 'chieu', 'chiều tác động có thể có lên ước lượng')} |" for x in bias_controls)
+        return ("Các nguồn sai lệch tiềm ẩn nhóm nghiên cứu đã xác định ở thiết kế, biện pháp kiểm soát từng nguồn và "
+                "chiều tác động có thể có lên ước lượng:  \n\n"
+                "| Nguồn sai lệch | Biện pháp kiểm soát | Chiều tác động có thể có |\n"
+                "|---|---|---|\n"
+                f"{hang}")
     rows = "\n".join(f"| {bias} | {control} |" for bias, control in bias_controls)
     return (
         "Các nguồn sai lệch tiềm ẩn theo thiết kế và biện pháp kiểm soát tương ứng "
@@ -814,6 +831,16 @@ def build_bias_control_block(bias_controls: list) -> str:
         "|---|---|\n"
         f"{rows}"
     )
+
+
+def bang_sai_lech_chot_g7(out_dir: Path) -> list:
+    """Sổ sai lệch đã chốt ở thiết kế (`gate_params.G1.bias_controls`; vắng thì khoá phẳng `bias_controls` của
+    study_meta): chỉ các mục dạng {sai_lech, …} có tên nguồn sai lệch. Không có ⇒ [] (bộ sinh dùng khuôn theo thiết kế)."""
+    meta = _doc_meta_g7(Path(out_dir))
+    g1 = ((meta.get("gate_params") or {}).get("G1") or {}) if isinstance(meta.get("gate_params"), dict) else {}
+    ds = g1.get("bias_controls") if isinstance(g1, dict) and isinstance(g1.get("bias_controls"), list) \
+        else meta.get("bias_controls")
+    return [x for x in ds if isinstance(x, dict) and _gia_tri_chot(x.get("sai_lech"))] if isinstance(ds, list) else []
 
 
 def _var_line(v: dict) -> str:
@@ -1338,16 +1365,20 @@ def _bang_mo_hinh_g6(tieu_de: str, mh: Any) -> list[str]:
     return dong
 
 
-def _khoi_cum_g6(cu: dict, g0: str, g1: str, nhi_phan: bool) -> list[str]:
+def _khoi_cum_g6(cu: dict, g0: str, g1: str, nhi_phan: bool, la_chinh: bool = True) -> list[str]:
     """Ước lượng thô hiệu chỉnh cụm của G6 (`primary_outcome.cum` — SE sandwich theo cụm, N7) chép NGUYÊN VĂN làm
-    dòng CHÍNH của thiết kế cụm. Chiều đúng như G6 tính (`_so_sanh_hai_nhom_cum`: biến nhóm = 1 ở `g1`): OR = `g1` so
+    dòng CHÍNH của thiết kế cụm — trừ khi SAP chốt mô hình hồi quy theo cụm làm phân tích chính (`la_chinh=False`,
+    23/11/2026): khi đó dòng này mang nhãn ước lượng thô có hiệu chỉnh cụm. Chiều đúng như G6 tính (`_so_sanh_hai_nhom_cum`: biến nhóm = 1 ở `g1`): OR = `g1` so
     với `g0`, RD/MD = `g1` − `g0`. Không hội tụ / lỗi / ghi chú ⇒ ô [CẦN THỐNG KÊ VIÊN]; `canh_bao` ⇒ ô cảnh báo."""
     N = NHAN_DOI_CHIEU_G6
     cot = _mot_dong(cu.get("cot", "?"))
     if cu.get("error"):
         return [f"[CẦN THỐNG KÊ VIÊN — G6 KHÔNG hiệu chỉnh cụm «{cot}» được ({_trong_o(cu['error'])}); thiết kế gom "
                 "cụm cần ước lượng hiệu chỉnh cụm làm kết quả chính — chưa có thì chưa báo cáo được kết cục chính]  "]
-    dong = [f"Ước lượng CHÍNH theo thiết kế cụm — G6 hiệu chỉnh cụm «{cot}» (SE sandwich theo cụm; "
+    # 23/11/2026: SAP chốt mô hình hồi quy có sai số chuẩn theo cụm làm phân tích chính (`la_chinh=False`) ⇒ so sánh hai
+    # nhóm hiệu chỉnh cụm này là ước lượng THÔ, không mang nhãn «CHÍNH» (trước đây nhãn đặt sai chỗ so với SAP)
+    nhan = "Ước lượng CHÍNH theo thiết kế cụm" if la_chinh else "Ước lượng thô có hiệu chỉnh cụm (chưa hiệu chỉnh hiệp biến)"
+    dong = [f"{nhan} — G6 hiệu chỉnh cụm «{cot}» (SE sandwich theo cụm; "
             f"{_so_g6(cu.get('so_cum'))} cụm; n phân tích = {_so_g6(cu.get('n'))}) {N}  "]
     if cu.get("loai_thieu_ma_cum"):
         dong.append(f"G6 loại {_so_g6(cu['loai_thieu_ma_cum'])} hàng thiếu mã cụm {N}  ")
@@ -1375,7 +1406,7 @@ def _khoi_cum_g6(cu: dict, g0: str, g1: str, nhi_phan: bool) -> list[str]:
     return dong + _dong_canh_bao_g6(cu.get("canh_bao"))
 
 
-def _khoi_ket_cuc_chinh_g6(po: dict) -> list[str]:
+def _khoi_ket_cuc_chinh_g6(po: dict, mo_hinh_cum_chinh: bool = False, rd_chinh: bool = False) -> list[str]:
     """Kết cục chính (compare_primary_outcome của G6): nhị phân ⇒ biến cố/n, OR thô, RD thô; liên tục ⇒ trung bình (SD),
     MD thô, ước lượng của phép kiểm; p + tên phép kiểm.
 
@@ -1404,8 +1435,12 @@ def _khoi_ket_cuc_chinh_g6(po: dict) -> list[str]:
                     f"{_so_g6(b.get('mean'))} (SD {_so_g6(b.get('sd'))}) {N}  ")
     doc_lap = ""
     if cu is not None:
-        dong += _khoi_cum_g6(cu, g0, g1, nhi_phan)
-        dong.append("[CẦN THỐNG KÊ VIÊN — các ước lượng thô và p dưới đây GIẢ ĐỊNH QUAN SÁT ĐỘC LẬP (G6 dán nhãn như "
+        dong += _khoi_cum_g6(cu, g0, g1, nhi_phan, la_chinh=not mo_hinh_cum_chinh)
+        # 23/11/2026: SAP đã chốt mô hình theo cụm làm phân tích chính ⇒ vai của các số «độc lập» đã rõ theo SAP (chỉ
+        # đối chiếu), không còn là câu hỏi cho thống kê viên
+        dong.append("Các ước lượng thô và p dưới đây giả định quan sát độc lập (không tính cấu trúc cụm) — chỉ để đối "
+                    "chiếu, không phải phân tích chính theo SAP.  " if mo_hinh_cum_chinh else
+                    "[CẦN THỐNG KÊ VIÊN — các ước lượng thô và p dưới đây GIẢ ĐỊNH QUAN SÁT ĐỘC LẬP (G6 dán nhãn như "
                     "vậy ở Bảng 2) — KHÔNG phải ước lượng chính của thiết kế cụm: KTC hẹp giả, p nhỏ giả; chỉ để đối "
                     "chiếu — giữ làm phụ hay bỏ theo SAP]  ")
         doc_lap = " — giả định quan sát ĐỘC LẬP"
@@ -1414,7 +1449,8 @@ def _khoi_ket_cuc_chinh_g6(po: dict) -> list[str]:
             dong.append(f"Ước lượng thô{doc_lap} (nhóm `{g1}` so với `{g0}`): OR = {_so_g6(po['or_crude'])} "
                         f"(95% CI {_ci_g6(po.get('ci_95'))}) {N}  ")
         if "risk_diff" in po:
-            dong.append(f"Hiệu số nguy cơ thô{doc_lap} (`{g1}` − `{g0}`): RD = {_so_g6(po['risk_diff'])} "
+            vai = " — phân tích chính theo SAP" if rd_chinh and not doc_lap else ""
+            dong.append(f"Hiệu số nguy cơ thô{doc_lap}{vai} (`{g1}` − `{g0}`): RD = {_so_g6(po['risk_diff'])} "
                         f"(95% CI {_ci_g6(po.get('risk_diff_ci_95'))}) {N}  ")
     else:
         if "md_crude" in po:
@@ -1615,7 +1651,7 @@ def chu_giai_bang1_g6(redcap_vars: list, bien_bang1: list, nhan_nhom: Optional[d
     return "\n".join(ra)
 
 
-def _khoi_dac_thu_g6(loai: Any, kq: Any, nguon: str) -> list[str]:
+def _khoi_dac_thu_g6(loai: Any, kq: Any, nguon: str, chinh: Optional[str] = None) -> list[str]:
     """Khối ƯỚC LƯỢNG của phân tích ĐẶC THÙ (phan_tich_thiet_ke_dac_thu.py — 17/11/2026): trước đây G7 không đọc
     `dac_thu` nên bản thảo định tính · dự báo · tổng quan–gộp · chẩn đoán chỉ có khung trống. Chỉ CHÉP số (`_so_g6`,
     `_ci_g6`, `_p_g6`) — bộ tự kiểm `kiem_so_trich_g6` bỏ cả bản nháp nếu một số không có nguyên văn trong tóm tắt."""
@@ -1649,9 +1685,13 @@ def _khoi_dac_thu_g6(loai: Any, kq: Any, nguon: str) -> list[str]:
         co_dem = bool(tung) and all(all(isinstance(t.get(x), (int, float)) and not isinstance(t.get(x), bool)
                                         for x in ("su_kien_can_thiep", "n_can_thiep", "su_kien_chung", "n_chung"))
                                     for t in tung)
-        ra += [f"Phân tích gộp (G6, `{nguon}`): k = {_so_g6(kq.get('k'))} nghiên cứu; RR gộp (hiệu ứng ngẫu nhiên) = "
-               f"{_so_g6(kq.get('rr_gop_ngau_nhien'))} (95% CI {_ci_g6(kq.get('ci_95'))}); RR gộp (hiệu ứng cố định) = "
-               f"{_so_g6(kq.get('rr_gop_co_dinh'))} (95% CI {_ci_g6(kq.get('ci_95_co_dinh'))}) {N}  ",
+        # 23/11/2026: SAP §4 «Mô hình gộp» chốt mô hình nào là CHÍNH, mô hình kia là độ nhạy — nhãn theo đúng SAP
+        # (trước đây hai RR đứng ngang nhau trong một câu, người đọc không biết đâu là phân tích chính)
+        vai = {"gop_ngau_nhien": (" — phân tích chính theo SAP", " — phân tích độ nhạy theo SAP"),
+               "gop_co_dinh": (" — phân tích độ nhạy theo SAP", " — phân tích chính theo SAP")}.get(chinh or "", ("", ""))
+        ra += [f"Phân tích gộp (G6, `{nguon}`): k = {_so_g6(kq.get('k'))} nghiên cứu; RR gộp (hiệu ứng ngẫu nhiên"
+               f"{vai[0]}) = {_so_g6(kq.get('rr_gop_ngau_nhien'))} (95% CI {_ci_g6(kq.get('ci_95'))}); RR gộp (hiệu ứng "
+               f"cố định{vai[1]}) = {_so_g6(kq.get('rr_gop_co_dinh'))} (95% CI {_ci_g6(kq.get('ci_95_co_dinh'))}) {N}  ",
                f"Không đồng nhất: Q = {_so_g6(kq.get('q'))} (df = {_so_g6(kq.get('df'))}), I² = "
                f"{_so_g6(kq.get('i2_pct'))}%, τ² = {_so_g6(kq.get('tau2'))} {N}  ", "",
                "| Nghiên cứu | RR | 95% CI |" + (" Biến cố/số người — nhánh can thiệp | Biến cố/số người — nhánh chứng |"
@@ -1870,32 +1910,159 @@ def khoi_tom_tat_phat_hien_g6(ket_qua_g6: dict, ten_ket_cuc: str, muc_grade: str
             ""]
 
 
-def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6") -> list[str]:
+def _ghi_chu_hang_nhom_g6(tt: dict, mh: Any) -> list[str]:
+    """Dòng chú thích chiều so sánh dưới bảng mô hình có hàng biến nhóm (`dac_ta_phan_tich.group`): nhóm `g1` so với
+    nhóm `g0` theo `primary_outcome.groups` của G6 — [] nếu không xác định được hai nhóm hoặc bảng không có hàng đó."""
+    po = tt.get("primary_outcome") if isinstance(tt.get("primary_outcome"), dict) else {}
+    nhom = str(((tt.get("dac_ta_phan_tich") or {}) if isinstance(tt.get("dac_ta_phan_tich"), dict) else {})
+               .get("group") or "")
+    g = [_mot_dong(x) for x in (po.get("groups") or [])]
+    if nhom and len(g) == 2 and isinstance(mh, dict) and any(
+            isinstance(r, dict) and r.get("variable") == nhom for r in mh.get("results") or []):
+        return [f"*Hàng `{_mot_dong(nhom)}`: nhóm `{g[1]}` so với nhóm `{g[0]}`.*  ", ""]
+    return []
+
+
+def _khoi_poisson_g6(tt: dict, tien_to: str = "G6", tien_to_tieu_de: str = "") -> list[str]:
+    """Bảng hồi quy Poisson sai số robust (PR/RR hiệu chỉnh) của G6 + chú thích hàng nhóm. `tien_to_tieu_de` nói VAI
+    của bảng theo SAP (phân tích chính, hay phân tích ca đầy đủ ở độ nhạy khi gán đa trị là chính — 23/11/2026)."""
+    pp = tt.get("poisson_pr")
+    if not isinstance(pp, dict):
+        return []
+    return (_bang_mo_hinh_g6(f"{tien_to_tieu_de}Mô hình đa biến Poisson sai số robust — PR hiệu chỉnh theo các biến "
+                             f"trong bảng (G6, `{tien_to}_table4_poisson_pr.txt`; {_so_g6(pp.get('n_bien_co'))} biến cố)",
+                             pp)
+            + _ghi_chu_hang_nhom_g6(tt, pp))
+
+
+def _khoi_mi_g6(tt: dict, tien_to_tieu_de: str = "") -> list[str]:
+    """Khối GÁN ĐA TRỊ của G6: dòng m + số hàng được gán, bảng mô hình gộp theo Rubin, chú thích hàng nhóm. G6 không chạy
+    (skipped) hoặc báo lỗi ⇒ ô chờ người thật kèm lý do G6 ghi. `tien_to_tieu_de` nói vai theo SAP (23/11/2026)."""
+    N = NHAN_DOI_CHIEU_G6
+    mi = tt.get("multiple_imputation")
+    if not isinstance(mi, dict):
+        return []
+    if mi.get("skipped"):
+        return [f"[CẦN KẾT QUẢ THẬT — G6 không chạy gán đa trị (MI): {_trong_o(mi.get('reason'))}]  "]
+    if mi.get("error"):
+        return [f"Gán đa trị (MI): [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(mi['error'])}]  "]
+    return ([f"Gán đa trị (G6): m = {_so_g6(mi.get('n_imputations'))}; {_so_g6(mi.get('n_missing_rows'))}/"
+             f"{_so_g6(mi.get('n_total'))} hàng có dữ liệu thiếu được gán {N}  ", ""]
+            + _bang_mo_hinh_g6(f"{tien_to_tieu_de}Gán đa trị (G6, `G6_table5_multiple_imputation.txt`)", mi)
+            + _ghi_chu_hang_nhom_g6(tt, mi))
+
+
+def _mo_hinh_gop_chinh(mo_ta: Any) -> Optional[str]:
+    """Mô hình gộp SAP chốt là CHÍNH (khoá «Mô hình gộp» của SAP khuôn tổng quan — vd «hiệu ứng ngẫu nhiên (REML hoặc
+    DerSimonian–Laird) là chính; hiệu ứng cố định ở độ nhạy») ⇒ «gop_ngau_nhien» | «gop_co_dinh»; không nói rõ ⇒ None
+    (không đoán — bản thảo giữ hai RR đứng cạnh như trước)."""
+    t = str(mo_ta or "").lower()
+    m = re.search(r"(ngẫu nhiên|random|cố định|fixed)[^;.]*?\blà\s+(?:mô hình\s+)?chính\b", t)
+    if not m:
+        return None
+    return "gop_ngau_nhien" if m.group(1) in ("ngẫu nhiên", "random") else "gop_co_dinh"
+
+
+def _dac_ta_chinh_g6(out_dir: Path) -> Optional[dict]:
+    """Tham số của phân tích vai «chinh» trong ĐẶC TẢ SAP G6 (`G6_DAC_TA_SAP.json`, do thống kê viên soạn từ SAP đã khoá)
+    — nguồn duy nhất cho biết ước lượng nào là PHÂN TÍCH CHÍNH theo SAP (23/11/2026: G7 từng đặt ước lượng ca đầy đủ ở
+    §3 còn gán đa trị — phân tích chính theo SAP — ở §5 độ nhạy: sai lệch báo cáo so với SAP). None khi chưa có/không đọc
+    được đặc tả hoặc SAP đã ĐỔI sau khi soạn đặc tả (đặc tả cũ không còn nói đúng SAP) ⇒ bản thảo giữ cách trình bày cũ."""
+    try:
+        import chay_sap_g6 as CSG  # noqa: PLC0415
+
+        dac_ta = CSG.doc_dac_ta(Path(out_dir))
+        kiem = CSG.kiem_dac_ta(Path(out_dir), dac_ta)
+    except Exception:  # noqa: BLE001 — chưa có đặc tả/đọc lỗi ⇒ không biết phân tích chính theo đặc tả
+        return None
+    if isinstance(kiem, dict) and kiem.get("sap_khop") is False:
+        return None
+    pt = next((x for x in (dac_ta.get("phan_tich") or []) if isinstance(x, dict) and x.get("vai") == "chinh"), None)
+    ts = pt.get("tham_so") if isinstance(pt, dict) else None
+    return dict(ts) if isinstance(ts, dict) else None
+
+
+def _ho_mo_hinh_khop_sap(model: Any, phuong_phap: Any) -> bool:
+    """Mô hình G6 đã chạy (`model` của khối G6) có cùng HỌ với phương pháp phân tích chính SAP §4 chốt không — chưa đọc
+    được SAP ⇒ True (đặc tả G6 là căn cứ). SAP nêu họ mô hình KHÁC (vd SAP «Conditional logistic regression» mà G6 chạy
+    `logistic` không điều kiện) hoặc họ máy không nhận ra ⇒ False: bản thảo không gắn nhãn «phân tích chính theo SAP»
+    cho một mô hình SAP không chốt."""
+    pp, m = str(phuong_phap or "").lower(), str(model or "").lower()
+    if not pp.strip():
+        return True
+    if re.search(r"conditional|có điều kiện", pp):
+        return bool(re.search(r"conditional|clogit", m))
+    if re.search(r"poisson|log-binomial", pp):
+        return bool(re.search(r"poisson|binomial", m))
+    if "logistic" in pp:
+        return bool(re.search(r"logistic|logit", m))
+    if re.search(r"tuyến tính|linear|ancova", pp):
+        return bool(re.search(r"ols|linear", m))
+    return False
+
+
+def _phan_tich_chinh_g6(tt: dict, dac_ta: Optional[dict], sap: Optional[dict] = None) -> Optional[str]:
+    """Ước lượng nào của tóm tắt G6 là PHÂN TÍCH CHÍNH theo SAP — từ tham số vai «chinh» của đặc tả G6 (`dac_ta`) và chữ
+    SAP đã khoá (`sap` = `_sap_tom_tat`): «mi» (gán đa trị, `n_imputations` > 0) · «cox» (sống còn) · «poisson_pr» ·
+    «rd» (SAP §4 chốt hiệu số nguy cơ — vd không kém hơn so với biên Δ) · «multivariate» (hồi quy hiệu chỉnh có hiệp biến)
+    · «gop_ngau_nhien»/«gop_co_dinh» (SAP chốt mô hình gộp chính). None ⇒ không có đặc tả, đặc tả lệch tóm tắt G6 (kết
+    cục/nhóm khác — tóm tắt không phải của lượt chính), hoặc không xác định được — bản thảo giữ cách trình bày cũ."""
+    if not isinstance(dac_ta, dict) or not isinstance(tt, dict):
+        return None
+    sap = sap or {}
+    dt_g6 = tt.get("dac_ta_phan_tich") if isinstance(tt.get("dac_ta_phan_tich"), dict) else {}
+    for k in ("outcome", "group", "time", "event"):
+        if dac_ta.get(k) and dt_g6.get(k) and str(dac_ta[k]) != str(dt_g6[k]):
+            return None
+    if dac_ta.get("loai_dac_thu") == "gop" or tt.get("loai_dac_thu") == "gop":
+        return _mo_hinh_gop_chinh(sap.get("mo_hinh_gop"))
+    if dac_ta.get("loai_dac_thu"):
+        return None
+    pp = str(sap.get("phuong_phap_chinh") or "")
+
+    def model(khoa: str) -> Any:
+        return tt[khoa].get("model") if isinstance(tt.get(khoa), dict) else None
+
+    n_mi = dac_ta.get("n_imputations")
+    if isinstance(n_mi, int) and not isinstance(n_mi, bool) and n_mi > 0:
+        # G6 không chạy được gán đa trị (không có mô hình) vẫn là «mi»: §3 hiện ô lỗi của phân tích chính, ước lượng ca
+        # đầy đủ không được đứng vào chỗ đó
+        return "mi" if model("multiple_imputation") is None or _ho_mo_hinh_khop_sap(model("multiple_imputation"), pp) \
+            else None
+    if dac_ta.get("time") and dac_ta.get("event"):
+        return "cox"
+    if dac_ta.get("outcome_type") == "poisson_pr":
+        return "poisson_pr" if _ho_mo_hinh_khop_sap(model("poisson_pr"), pp) else None
+    if dac_ta.get("outcome") and re.search(r"risk difference|hiệu tỷ lệ|hiệu số nguy cơ", pp.lower()):
+        return "rd"
+    if (dac_ta.get("outcome") and dac_ta.get("covariates") and isinstance(tt.get("multivariate"), dict)
+            and _ho_mo_hinh_khop_sap(model("multivariate"), pp)):
+        return "multivariate"
+    return None
+
+
+def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6", chinh: Optional[str] = None) -> list[str]:
     """Các khối ƯỚC LƯỢNG của MỘT tóm tắt G6 (kết cục chính/tỷ lệ/thứ tự/sống còn/KM/đa biến) — dùng cho §3 kết
-    cục chính và (15/11/2026, giả lập lần 3) cho từng kết cục PHỤ do chay_sap_g6 chạy. Chỉ CHÉP số (`_so_g6`)."""
+    cục chính và (15/11/2026, giả lập lần 3) cho từng kết cục PHỤ do chay_sap_g6 chạy. Chỉ CHÉP số (`_so_g6`).
+
+    `chinh` (23/11/2026, `_phan_tich_chinh_g6`): ước lượng nào là PHÂN TÍCH CHÍNH theo SAP/đặc tả G6 — khối đó mang nhãn
+    «phân tích chính theo SAP»; None ⇒ như cũ (không gắn nhãn)."""
     N = NHAN_DOI_CHIEU_G6
     s3: list[str] = []
+    pp_cum = isinstance(tt.get("poisson_pr"), dict) and tt["poisson_pr"].get("cov_type") == "cluster"
     mh = tt.get("mo_hinh_chinh")
     if isinstance(mh, dict) and mh.get("da_chay") is False:
         s3.append(f"[CẦN THỐNG KÊ VIÊN — G6: mô hình chính CHƯA chạy ({_trong_o(mh.get('ly_do'))})]  ")
     if isinstance(tt.get("primary_outcome"), dict):
-        s3 += _khoi_ket_cuc_chinh_g6(tt["primary_outcome"])
+        s3 += _khoi_ket_cuc_chinh_g6(tt["primary_outcome"], mo_hinh_cum_chinh=chinh == "poisson_pr" and pp_cum,
+                                     rd_chinh=chinh == "rd")
     # 22/11/2026 (CONSORT 2025 mục 26, STROBE 16a): PR/RR hiệu chỉnh của hồi quy Poisson sai số robust là ƯỚC LƯỢNG
     # CHÍNH theo SAP của thử nghiệm/thuần tập/cắt ngang phân tích — tóm tắt G6 có khối `poisson_pr` nhưng bản thảo
     # trước đây chỉ in ước lượng thô (RR hiệu chỉnh chỉ nằm ở chú thích hình).
-    pp = tt.get("poisson_pr")
-    if isinstance(pp, dict):
+    if isinstance(tt.get("poisson_pr"), dict):
         if s3:
             s3.append("")
-        s3 += _bang_mo_hinh_g6(f"Mô hình đa biến Poisson sai số robust — PR hiệu chỉnh theo các biến trong bảng (G6, "
-                               f"`{tien_to}_table4_poisson_pr.txt`; {_so_g6(pp.get('n_bien_co'))} biến cố)", pp)
-        po = tt.get("primary_outcome") if isinstance(tt.get("primary_outcome"), dict) else {}
-        nhom = str(((tt.get("dac_ta_phan_tich") or {}) if isinstance(tt.get("dac_ta_phan_tich"), dict) else {})
-                   .get("group") or "")
-        g = [_mot_dong(x) for x in (po.get("groups") or [])]
-        if nhom and len(g) == 2 and any(isinstance(r, dict) and r.get("variable") == nhom
-                                        for r in pp.get("results") or []):
-            s3 += [f"*Hàng `{_mot_dong(nhom)}`: nhóm `{g[1]}` so với nhóm `{g[0]}`.*  ", ""]
+        s3 += _khoi_poisson_g6(tt, tien_to, "Phân tích chính theo SAP — " if chinh == "poisson_pr" else "")
     hi = tt.get("hypothesis_interpretation")
     if isinstance(hi, dict) and hi.get("note"):
         # SỬA 15/11/2026 (thẩm định PR #261): bản trước chép ghi chú vào THÂN BÀI qua _mot_dong(…, 400) — ô người-thật
@@ -1949,8 +2116,10 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6") -> list[str]:
             # lượng đã hiệu chỉnh THEO những biến nào (STROBE 2007 16a — K18 báo thiếu «biến được hiệu chỉnh»).
             hb = (f" theo các hiệp biến {_mot_dong(', '.join(map(str, sv.get('adjusted_covariates') or [])))}"
                   if khoa == "adjusted" and sv.get("adjusted_covariates") else "")
-            s3.append(f"{ten}{hb}: HR = {_so_g6(c['HR'])} (95% CI {_ci_g6(c.get('CI_95'))}), p = {_p_g6(c.get('p'))} "
-                      f"{N}  ")
+            khoa_chinh = "adjusted" if isinstance(sv.get("adjusted"), dict) else "crude"
+            vai = " — phân tích chính theo SAP" if chinh == "cox" and khoa == khoa_chinh else ""
+            s3.append(f"{ten}{hb}{vai}: HR = {_so_g6(c['HR'])} (95% CI {_ci_g6(c.get('CI_95'))}), p = "
+                      f"{_p_g6(c.get('p'))} {N}  ")
         s3 += _dong_canh_bao_g6(sv.get("epv_warning"), nhan="G6 cảnh báo EPV của mô hình Cox ở trên")
         s3.append("")
     km = tt.get("kaplan_meier")
@@ -1967,20 +2136,27 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6") -> list[str]:
         if "logrank_p" in km:
             s3 += [f"Log-rank: p = {_p_g6(km['logrank_p'])} {N}  ", ""]
     if isinstance(tt.get("multivariate"), dict):
-        s3 += _bang_mo_hinh_g6(f"Mô hình đa biến (G6, `{tien_to}_table4_multivariate.txt`)", tt["multivariate"])
-    s3 += _khoi_dac_thu_g6(tt.get("loai_dac_thu"), tt.get("dac_thu"), nguon)
+        s3 += _bang_mo_hinh_g6(("Phân tích chính theo SAP — " if chinh == "multivariate" else "")
+                               + f"Mô hình đa biến (G6, `{tien_to}_table4_multivariate.txt`)", tt["multivariate"])
+    s3 += _khoi_dac_thu_g6(tt.get("loai_dac_thu"), tt.get("dac_thu"), nguon, chinh=chinh)
     if not any(k in tt for k in _KHOA_UOC_LUONG_G6):
         s3 = [f"[CẦN KẾT QUẢ THẬT — tóm tắt G6 ({nguon}) chỉ ghi N phân tích; ước lượng nằm ở bảng đầu ra của "
               "lượt phân tích (đường R: 06_phan_tich_R/output/) — chép số từ đó]  "]
     return s3
 
 
-def dung_ket_qua_tu_g6(g6: dict, tu_dien: Optional[list] = None) -> dict:
+def dung_ket_qua_tu_g6(g6: dict, tu_dien: Optional[list] = None, dac_ta_chinh: Optional[dict] = None,
+                       sap: Optional[dict] = None) -> dict:
     """NHÁP các khối mục Kết quả từ tóm tắt G6 hợp lệ (`doc_tom_tat_g6_hop_le`) — N16.
 
     Trả {da_dung: True, nguon, n_total_txt, n_theo_nhom, s1, s2, s3, s5} (mỗi s* là list dòng Markdown) hoặc
     {da_dung: False, ly_do}. Chỉ CHÉP số có trong tóm tắt (`_so_g6`); cuối cùng TỰ KIỂM mọi số của bản nháp có nguyên
-    văn trong tệp G6 (`kiem_so_trich_g6`) — lệch dù một số ⇒ bỏ cả bản nháp, giữ khung [CẦN…] (fail-closed)."""
+    văn trong tệp G6 (`kiem_so_trich_g6`) — lệch dù một số ⇒ bỏ cả bản nháp, giữ khung [CẦN…] (fail-closed).
+
+    23/11/2026 (sai lệch báo cáo so với SAP): `dac_ta_chinh` (`_dac_ta_chinh_g6`) + `sap` (`_sap_tom_tat`) cho biết
+    PHÂN TÍCH CHÍNH theo SAP (`_phan_tich_chinh_g6`) ⇒ §3 trình bày đúng ước lượng đó (mang nhãn «phân tích chính theo
+    SAP»), phiên bản ước lượng còn lại về §5 độ nhạy: gán đa trị là chính ⇒ bảng gán đa trị ở §3, mô hình ca đầy đủ cùng
+    loại ở §5. Không có đặc tả ⇒ như cũ."""
     if not (g6 or {}).get("hop_le"):
         return {"da_dung": False, "ly_do": (g6 or {}).get("ly_do") or "không có tóm tắt G6 hợp lệ"}
     tt, nguon, N = g6["tom_tat"], g6["nguon"], NHAN_DOI_CHIEU_G6
@@ -2042,19 +2218,27 @@ def dung_ket_qua_tu_g6(g6: dict, tu_dien: Optional[list] = None) -> dict:
         s2.append("[CẦN KẾT QUẢ THẬT — giá trị từng biến: chép từ G6_table1_descriptive.txt (cùng lượt G6); tóm tắt "
                   "JSON của G6 chưa mang giá trị từng biến nên máy không chép]  ")
 
-    s3 = _khoi_uoc_luong_g6(tt, nguon)
-
+    chinh = _phan_tich_chinh_g6(tt, dac_ta_chinh, sap)
     s5: list[str] = []
-    mi = tt.get("multiple_imputation")
-    if isinstance(mi, dict):
-        if mi.get("skipped"):
-            s5.append(f"[CẦN KẾT QUẢ THẬT — G6 không chạy gán đa trị (MI): {_trong_o(mi.get('reason'))}]  ")
-        elif mi.get("error"):
-            s5.append(f"Gán đa trị (MI): [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(mi['error'])}]  ")
-        else:
-            s5 += [f"Gán đa trị (G6): m = {_so_g6(mi.get('n_imputations'))}; {_so_g6(mi.get('n_missing_rows'))}/"
-                   f"{_so_g6(mi.get('n_total'))} hàng có dữ liệu thiếu được gán {N}  ", ""]
-            s5 += _bang_mo_hinh_g6("Gán đa trị (G6, `G6_table5_multiple_imputation.txt`)", mi)
+    if chinh == "mi":
+        # Gán đa trị là phân tích CHÍNH theo SAP ⇒ §3: ước lượng thô của kết cục chính + bảng gán đa trị; mô hình ca đầy
+        # đủ cùng loại với mô hình chính (Poisson/đa biến) chuyển về §5 làm độ nhạy — không để ước lượng ca đầy đủ
+        # đứng ở chỗ phân tích chính.
+        khoa_cdd = "poisson_pr" if (dac_ta_chinh or {}).get("outcome_type") == "poisson_pr" else "multivariate"
+        tt_loc = {k: v for k, v in tt.items() if k != khoa_cdd}
+        s3 = _khoi_uoc_luong_g6(tt_loc, nguon) if any(k in tt_loc for k in _KHOA_UOC_LUONG_G6) else []
+        if s3 and s3[-1] != "":
+            s3.append("")
+        s3 += _khoi_mi_g6(tt, "Phân tích chính theo SAP — ")
+        cdd = "Phân tích ca đầy đủ (không gán đa trị) — độ nhạy so với gán đa trị theo SAP: "
+        if khoa_cdd == "poisson_pr":
+            s5 += _khoi_poisson_g6(tt, "G6", cdd)
+        elif isinstance(tt.get("multivariate"), dict):
+            s5 += _bang_mo_hinh_g6(f"{cdd}Mô hình đa biến (G6, `G6_table4_multivariate.txt`)", tt["multivariate"])
+            s5 += _ghi_chu_hang_nhom_g6(tt, tt["multivariate"])
+    else:
+        s3 = _khoi_uoc_luong_g6(tt, nguon, chinh=chinh)
+        s5 += _khoi_mi_g6(tt)
     if isinstance(tt.get("sensitivity_linear"), dict):
         s5 += _bang_mo_hinh_g6("Nhạy cảm OLS (G6, `G6_table6_sensitivity_linear.txt`)", tt["sensitivity_linear"])
 
@@ -2394,7 +2578,10 @@ def _sap_tom_tat(out_dir: Path, study: str) -> dict:
                            ("phan_tich_ton_hai", 15, r"Cách phân tích tổn hại"),
                            ("tuan_thu", 15, r"Chiến lược cải thiện và theo dõi tuân thủ"),
                            # 22/11/2026 (CONSORT mở rộng cụm mục 12a): cách tính cấu trúc cụm thống kê viên chốt ở §4
-                           ("hieu_chinh_cum", 4, r"Hiệu chỉnh cụm")):
+                           ("hieu_chinh_cum", 4, r"Hiệu chỉnh cụm"),
+                           # 23/11/2026 (phân tích chính theo SAP — `_phan_tich_chinh_g6`): phương pháp phân tích chính
+                           # §4 và mô hình gộp chính/độ nhạy §5 của khuôn tổng quan
+                           ("phuong_phap_chinh", 4, r"Phương pháp"), ("mo_hinh_gop", 5, r"Mô hình gộp")):
         m = re.search(rf"\*\*{nhan}:\*\*\s*(.+)", muc(so))
         if m and "[CẦN" not in m.group(1).upper():
             ra[khoa] = sach(m.group(1))
@@ -5138,7 +5325,9 @@ def main() -> None:
     redcap_csv  = out_dir / f"G5_REDCap_dictionary_{study}.csv"
     redcap_vars, ly_do_tu_dien = doc_tu_dien_redcap(redcap_csv)
     # N16 (15/11/2026): tóm tắt G6 HỢP LỆ (đúng dataset khoá) ⇒ nháp Kết quả chép nguyên văn số G6; không ⇒ khung trống.
-    ket_qua_g6 = dung_ket_qua_tu_g6(doc_tom_tat_g6_hop_le(out_dir), tu_dien=redcap_vars)
+    # 23/11/2026: phân tích CHÍNH theo SAP (đặc tả G6 vai «chinh» + chữ SAP đã khoá) quyết định ước lượng nào đứng ở §3
+    ket_qua_g6 = dung_ket_qua_tu_g6(doc_tom_tat_g6_hop_le(out_dir), tu_dien=redcap_vars,
+                                    dac_ta_chinh=_dac_ta_chinh_g6(out_dir), sap=_sap_tom_tat(out_dir, study))
     if ket_qua_g6.get("da_dung"):
         # kết cục phụ của chay_sap_g6 (giả lập lần 3) và (22/11/2026) tác hại theo nhóm SAP §15 — tên nhóm gắn SAU tự kiểm
         ket_qua_g6["s4"] = gan_ten_nhom(dung_ket_cuc_phu_g6(out_dir), ket_qua_g6.get("nhan_nhom")) or None
@@ -5226,7 +5415,8 @@ def main() -> None:
     design_primary = design_info.get("primary") or g1.get("design_primary") or "Cohort tiến cứu"
     # STROBE mục 9 (Bias) — bảng kiểm soát sai lệch đã tính sẵn ở G1 (BIAS_CONTROLS theo
     # design_code), nay đọc lại từ checkpoint thay vì luôn để trống [CẦN].
-    bias_controls = design_info.get("bias_controls") or []
+    # 23/11/2026: sổ sai lệch ĐÃ CHỐT của đề tài (G1.bias_controls) thắng khuôn chung theo thiết kế
+    bias_controls = bang_sai_lech_chot_g7(out_dir) or design_info.get("bias_controls") or []
     # ★ VÁ 2026-07-28 — HAI NGUỒN SỰ THẬT KHÔNG ĐỐI CHIẾU NHAU.
     # Trước đây reporting_std lấy THẲNG từ trường G1 tự ghi — dựa trên design_code
     # CŨ của G1 (trước khi resolve_design_code() sửa lại theo G2). Hệ quả tái hiện
