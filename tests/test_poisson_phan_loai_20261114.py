@@ -4,19 +4,27 @@ Soát chuỗi SPSS/R theo yêu cầu bác sĩ: (1) SAP BTM mục tiêu 3 cam k�
 ước lượng PR — Python, SPSS, R đều chưa có; (2) cả ba phần mềm coi hiệp biến PHÂN LOẠI mã số (khung giờ 1–4, nhóm đối
 tượng 1–4…) là LIÊN TỤC — kiểm chéo vẫn «khớp» nhưng mô hình lệch SAP («biến phân loại k mức tính k−1»).
 
-Fixture `tests/fixtures/spss_oxml/poisson/` là đầu ra THẬT của SPSS 31.0.1 (OXML) và R 4.6.2 (G6_r_ket_qua.json) chạy
-14/11/2026 trên dữ liệu giả 600 ca (3 hiệp biến phân loại, có ô thiếu) — test chạy được khi máy không có SPSS/R.
-Không PII.
+Fixture `tests/fixtures/spss_oxml/poisson/` là đầu ra THẬT của pipeline hiện hành — `run_stats_analysis` (tóm tắt
+Python `tom_tat_python.json`), IBM SPSS Statistics 31.0.1 (`oms_*.xml`) và R 4.6.2 (`G6_r_ket_qua.json`) — trên dữ liệu
+GIẢ 600 ca `du_lieu_gia.csv` (3 hiệp biến phân loại, ô thiếu ngẫu nhiên; không PII); test chạy được khi máy không có
+SPSS/R. 24/11/2026: bản 14/11 sinh từ một CSV tạm đã mất (sha256 327854b6…) và từ script R cũ không có hiệu số nguy cơ
+⇒ dòng «Kết cục chính — hiệu số nguy cơ thô» không so được. Nay dữ liệu TÁI LẬP được: `du_lieu_fixture()` (hạt giống
+cố định, chỉ dùng `random.Random.random()`/`gauss()` — dãy số ổn định giữa các bản Python) sinh đúng từng byte của CSV;
+sinh lại cả bộ bằng `python -B tests/test_poisson_phan_loai_20261114.py --ghi` trên máy có SPSS + R
+(`sinh_lai_fixture`); `test_that_sinh_lai_fixture_trung_tep_da_luu` chạy lại pipeline thật, đối chiếu với tệp đã lưu.
 """
 
 from __future__ import annotations
 
 import contextlib
+import csv
 import hashlib
 import io
 import json
+import random
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -31,6 +39,107 @@ import cau_noi_spss as S  # noqa: E402
 import run_stats_analysis as RSA  # noqa: E402
 
 FX = Path(__file__).resolve().parent / "fixtures" / "spss_oxml" / "poisson"
+MA_FX = "F2-POISSON"
+HAT_GIONG = 20261124
+COT_FX = ("khong_xn_du", "insulin", "tuoi10", "doi_tuong", "hba1c3", "pk")
+# Cùng đặc tả phân tích với bản 14/11 (khoá dac_ta_phan_tich của tom_tat_python.json); n-imputations 0 = ca đầy đủ.
+LENH_FX = ["--outcome", "khong_xn_du", "--group", "insulin", "--covariates", "tuoi10,doi_tuong,hba1c3,pk",
+           "--outcome-type", "poisson_pr", "--hiep-bien-phan-loai", "doi_tuong,hba1c3,pk", "--n-imputations", "0"]
+
+
+def du_lieu_fixture() -> str:
+    """CSV giả 600 ca cho fixture Poisson — tất định từng byte (không PII).
+
+    Mô hình sinh (log-tuyến tính, nguy cơ chặn trên 0,95): insulin ~ Bernoulli(0,48); nhóm đối tượng 1–4
+    (40/30/20/10 %); HbA1c 3 mức 0–2; phân khoa 1–3; tuổi/10 ~ N(6,0; 1,0) làm tròn 0,1. Ô thiếu ngẫu nhiên hoàn toàn:
+    tuổi 2 %, mỗi biến phân loại 3 %. Chỉ dùng `random()`/`gauss()` của `random.Random` (ổn định giữa các bản
+    Python)."""
+    import math
+
+    rng = random.Random(HAT_GIONG)
+
+    def muc(xs: list[float]) -> int:  # chọn mức theo tỷ lệ tích luỹ, mã 1..k
+        u, tich = rng.random(), 0.0
+        for i, x in enumerate(xs, start=1):
+            tich += x
+            if u < tich:
+                return i
+        return len(xs)
+
+    dong = [",".join(COT_FX)]
+    for _ in range(600):
+        insulin = int(rng.random() < 0.48)
+        dt = muc([0.4, 0.3, 0.2, 0.1])
+        hb = muc([0.35, 0.35, 0.30]) - 1
+        pk = muc([0.4, 0.35, 0.25])
+        tuoi = round(rng.gauss(6.0, 1.0), 1)
+        lp = (math.log(0.25) + 0.45 * insulin + {1: 0.0, 2: 0.25, 3: 0.45, 4: 0.2}[dt] + {0: 0.0, 1: -0.15, 2: -0.3}[hb]
+              + {1: 0.0, 2: -0.1, 3: 0.0}[pk] - 0.02 * (tuoi - 6.0))
+        y = int(rng.random() < min(math.exp(lp), 0.95))
+        o = [str(y), str(insulin), f"{tuoi:.1f}", str(dt), str(hb), str(pk)]
+        for j, ti_le in ((2, 0.02), (3, 0.03), (4, 0.03), (5, 0.03)):
+            if rng.random() < ti_le:
+                o[j] = ""
+        dong.append(",".join(o))
+    return "\n".join(dong) + "\n"
+
+
+def sinh_lai_fixture(ra: Path) -> dict[str, Path]:
+    """Chạy pipeline HIỆN HÀNH trên `du_lieu_fixture()` trong thư mục tạm ⇒ chép tóm tắt Python, OXML của SPSS và kết
+    quả R vào `ra`. Cổng G4/G5 được giả lập đúng như `_main` (đề tài thử, không sổ cái thật); dữ liệu, cú pháp SPSS và
+    script R là đầu ra thật của cầu nối. Cần IBM SPSS Statistics + R trên máy."""
+    goc = Path(tempfile.mkdtemp(prefix="f2-dc-"))
+    d = goc / "exports" / MA_FX
+    (d / "05_clean_locked").mkdir(parents=True)
+    k = d / "05_clean_locked" / "k.csv"
+    k.write_text(du_lieu_fixture(), encoding="utf-8", newline="\n")
+    man = {"locked_dataset_path": "05_clean_locked/k.csv", "sha256": hashlib.sha256(k.read_bytes()).hexdigest(),
+           "status": "LOCKED_FOR_ANALYSIS", "analysis_allowed": True, "lock_date": "2026-11-24",
+           "approved_by": "đề tài thử của fixture", "sap_version": "1.0"}  # fmt: skip
+    (d / "DATA_LOCK_manifest.json").write_text(json.dumps(man, ensure_ascii=False, indent=2), encoding="utf-8",
+                                               newline="\n")
+    # Từ điển REDCap G5 tối thiểu (khuôn cột của REDCap) — xuat-sav lấy nhãn biến/giá trị từ đây.
+    td = [("khong_xn_du", "radio", "Không xét nghiệm đủ", "0, Không | 1, Có", ""),
+          ("insulin", "radio", "Điều trị insulin", "0, Không | 1, Có", ""),
+          ("tuoi10", "text", "Tuổi (chục năm)", "", "number"),
+          ("doi_tuong", "radio", "Nhóm đối tượng", "1, Nhóm 1 | 2, Nhóm 2 | 3, Nhóm 3 | 4, Nhóm 4", ""),
+          ("hba1c3", "radio", "HbA1c 3 mức", "0, Mức 0 | 1, Mức 1 | 2, Mức 2", ""),
+          ("pk", "radio", "Phân khoa", "1, Khoa 1 | 2, Khoa 2 | 3, Khoa 3", "")]
+    with open(d / f"G5_REDCap_dictionary_{MA_FX}.csv", "w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(["Variable / Field Name", "Form Name", "Field Type", "Field Label",
+                    "Choices, Calculations, OR Slider Labels", "Text Validation Type OR Show Slider Number",
+                    "Identifier?", "Field Annotation"])
+        w.writerows([ten, "phieu", loai, nhan, lc, kt, "", ""] for ten, loai, nhan, lc, kt in td)
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(RSA, "BASE", goc)
+        mp.setattr(RSA, "_load_checkpoint",
+                   lambda study, gate: {"g2_status": "LOCKED", "g4_status": "LOCKED", "g5_status": "LOCKED"})
+        mp.setattr(RSA, "_ledger_approved", lambda *a, **k: True)
+        mp.setattr(RSA, "_g4_khoa_song", lambda study: (True, "đề tài thử: G4 khoá sống"))
+        mp.setattr(RSA.GC, "g2_quality_contract_satisfied", lambda *a, **k: True)
+        mp.setattr(RSA.GC, "resolve_design_code", lambda *a, **k: ("cross_sectional", None))
+        mp.setattr(RSA.G5Q, "evaluate_study", lambda *a, **k: {"status": RSA.G5Q.STATUS_LOCKED})
+        mp.setattr(RSA, "_require_locked_analysis_dataset", lambda study, _d: man)
+        mp.setattr(sys, "argv", ["run_stats_analysis.py", "--data", str(k), "--study", MA_FX, "--gate", "G6", *LENH_FX])
+        with contextlib.redirect_stdout(io.StringIO()):
+            RSA.main()
+        mp.setattr(S, "EXPORTS", goc / "exports")
+        # E4 (nội dung biến ↔ mục tiêu đề tài) có test riêng ở test_dong_bo_xuyen_cong_20261115 — ngoài phạm vi số liệu
+        mp.setattr(S, "kiem_noi_dung_bien", lambda *a, **k: None)
+        for cau_noi, lenh in ((S, ["xuat-sav"]), (S, ["cu-phap"]), (S, ["chay", "--khong-r"]), (R, ["cu-phap"]),
+                              (R, ["chay"])):
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+                ma = cau_noi.main([lenh[0], "--study", MA_FX, *lenh[1:]])
+            assert ma == 0, (cau_noi.__name__, lenh, buf.getvalue()[-3000:])
+    ra.mkdir(parents=True, exist_ok=True)
+    tep = {"du_lieu_gia.csv": k, "tom_tat_python.json": d / "G6_analysis_summary.json",
+           "G6_r_ket_qua.json": d / "G6_r_ket_qua.json"}
+    tep.update({f.name: f for f in sorted((d / "spss" / "ket_qua").glob("oms_*.xml"))})
+    for ten, nguon in tep.items():
+        shutil.copyfile(nguon, ra / ten)
+    return {ten: ra / ten for ten in tep}
 
 
 # ───────────────────────── biến giả hiệp biến phân loại ─────────────────────────
@@ -282,3 +391,53 @@ def test_r_doi_chieu_bat_pr_lech():
     he["b"] = float(np.log(he["uoc_luong"]))
     dong = R.doi_chieu(tom, r)
     assert any(x["muc"].startswith("Poisson HC0 — PR hiệu chỉnh — insulin") and x["trang_thai"] == "lech" for x in dong)
+
+
+# ───────────────────────── nguồn gốc fixture: tái lập được ─────────────────────────
+
+
+def test_du_lieu_fixture_tai_lap_tu_bo_sinh():
+    """CSV đã lưu = đúng từng byte bộ sinh có hạt giống; tóm tắt Python và kết quả R đều đọc ĐÚNG tệp đó (SHA-256)."""
+    vb = du_lieu_fixture()
+    assert (FX / "du_lieu_gia.csv").read_text(encoding="utf-8") == vb
+    sha = hashlib.sha256(vb.encode("utf-8")).hexdigest()
+    tom = json.loads((FX / "tom_tat_python.json").read_text(encoding="utf-8"))
+    r = json.loads((FX / "G6_r_ket_qua.json").read_text(encoding="utf-8"))
+    assert tom["data_lock"]["sha256"] == sha == r["sha256_du_lieu"]
+    assert tom["n_total"] == r["so_ca_doc"] == 600
+    assert tom["dac_ta_phan_tich"]["hiep_bien_phan_loai"] == r["dac_ta"]["hiep_bien_phan_loai"]
+    assert "risk_diff_ci_95" in tom["primary_outcome"] and "rd_ci" in r["ket_qua"]["ket_cuc_chinh"]
+
+
+def _co_spss_va_r() -> bool:
+    try:
+        S.tim_spss()
+        R.tim_r()
+    except (S.KhongDoDuoc, R.KhongDoDuoc):
+        return False
+    return True
+
+
+@pytest.mark.skipif(not _co_spss_va_r(), reason="máy không có IBM SPSS Statistics và R")
+def test_that_sinh_lai_fixture_trung_tep_da_luu(tmp_path):
+    """Chạy lại pipeline thật (Python → SPSS → R) ⇒ đúng số đã lưu trong fixture: fixture không phải ảnh chụp mồ côi."""
+    moi = sinh_lai_fixture(tmp_path / "moi")
+    tom_cu = json.loads((FX / "tom_tat_python.json").read_text(encoding="utf-8"))
+    tom_moi = json.loads(moi["tom_tat_python.json"].read_text(encoding="utf-8"))
+    for k in ("primary_outcome", "poisson_pr", "dac_ta_phan_tich"):
+        assert tom_moi[k] == tom_cu[k], k
+    r_cu = json.loads((FX / "G6_r_ket_qua.json").read_text(encoding="utf-8"))["ket_qua"]
+    r_moi = json.loads(moi["G6_r_ket_qua.json"].read_text(encoding="utf-8"))["ket_qua"]
+    assert r_moi == r_cu
+    dt = {"outcome": "khong_xn_du", "group": "insulin", "outcome_type": "poisson_pr"}
+    assert S.doc_ket_qua(tmp_path / "moi", dt, {"bien": []}) == S.doc_ket_qua(FX, dt, {"bien": []})
+
+
+if __name__ == "__main__":
+    # Sinh lại fixture trên máy có SPSS + R: python -B tests/test_poisson_phan_loai_20261114.py --ghi
+    if "--ghi" not in sys.argv:
+        sys.exit("dùng --ghi để ghi đè fixture bằng đầu ra pipeline hiện hành")
+    for f in FX.glob("oms_*.xml"):
+        f.unlink()
+    for ten in sinh_lai_fixture(FX):
+        print("đã ghi", FX / ten)
