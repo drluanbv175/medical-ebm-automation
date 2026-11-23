@@ -1049,6 +1049,9 @@ class TronVong:
     #: cụm phương pháp (trong biện pháp G1) → các cách SAP có thể viết NGUYÊN VĂN cùng phương pháp đó
     _NEO_PHAN_TICH = (
         ("hồi quy logistic có điều kiện", ("hồi quy logistic có điều kiện", "conditional logistic")),
+        # 23/11/2026: bệnh–chứng ghép theo tần suất — biện pháp G1 «hồi quy logistic không điều kiện» (SAP §4 cùng chữ)
+        ("hồi quy logistic không điều kiện", ("hồi quy logistic không điều kiện", "logistic không điều kiện",
+                                              "unconditional logistic")),
         ("gán đa trị", ("gán đa trị", "Multiple Imputation", "MICE")),
         ("hồi quy logistic", ("hồi quy logistic", "logistic")),
         ("hồi quy Cox", ("hồi quy Cox", "Cox")),
@@ -1616,6 +1619,14 @@ class TronVong:
         ts_chinh = dict(chinh["tham_so"])
         if ts_chinh.get("outcome") and "outcome_type" not in ts_chinh and not ts_chinh.get("loai_dac_thu"):
             ts_chinh["outcome_type"] = loai_kc_tu_sap(text)
+        # 23/11/2026 (G7 phát hiện G6 lệch SAP — thử nghiệm không kém hơn): thống kê viên đọc phương pháp KTC hiệu số
+        # nguy cơ SAP §4 khai (cùng hàm chay_sap_g6 `kiem` và cổng G6-AUTO-09 dùng) và truyền vào đặc tả; phân tích kế
+        # thừa (nhóm con, độ nhạy) nhận cùng phương pháp. SAP khai phương pháp G6 chưa tính ⇒ `kiem` từ chối đặc tả.
+        import g6_quality_gate as G6Q  # noqa: PLC0415
+
+        kc_sap = G6Q.phuong_phap_kc_hieu_so_sap(G6Q._sec(text, 4))["phuong_phap"]
+        if kc_sap and ts_chinh.get("outcome") and not ts_chinh.get("loai_dac_thu"):
+            ts_chinh.setdefault("kc_hieu_so", kc_sap)
         ds: List[Dict[str, Any]] = []
         for x in mau:
             if x.get("tu_ma_tran"):  # 22/11/2026: dựng từ ma trận G3 + SAP §9 ở dưới, không từ hồ sơ

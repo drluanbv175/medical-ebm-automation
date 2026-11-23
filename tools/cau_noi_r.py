@@ -72,7 +72,8 @@ BASE = S.BASE
 MA_OK, MA_LECH, MA_KHONG_DO, MA_TU_CHOI = S.MA_OK, S.MA_LECH, S.MA_KHONG_DO, S.MA_TU_CHOI
 CAN_KIEM = S.CAN_KIEM
 TuChoi, KhongDoDuoc = S.TuChoi, S.KhongDoDuoc
-GOI_CAN = ("jsonlite", "sandwich", "lmtest", "survival", "ordinal", "mice")  # mice: chỉ khi có Bảng 5 (MI)
+GOI_CAN = ("jsonlite", "sandwich", "lmtest", "survival", "ordinal", "mice",  # mice: chỉ khi có Bảng 5 (MI)
+           "DescTools")  # DescTools: chỉ khi SAP khai KTC Newcombe cho hiệu số nguy cơ (23/11/2026)
 KHO_CRAN = "https://cloud.r-project.org"
 # keep_default_na của pandas 2.x — chỉ dùng khi máy sinh script không có pandas (bình thường đọc thẳng từ pandas).
 NA_PANDAS_DU_PHONG = (
@@ -538,10 +539,12 @@ CUM <- @@CUM@@
 DON_VI_PHOI_NHIEM <- @@DON_VI@@  # --don-vi-phoi-nhiem của Python (mọi họ mô hình)
 TY_LE <- @@TY_LE@@  # Bảng 1b: cột tính tỷ lệ + KTC Wilson (--ty-le)
 NGUONG_TY_LE <- @@NGUONG_TY_LE@@  # --nguong-ty-le (sự kiện = giá trị ≥ ngưỡng); NA ⇒ cột 0/1
+KC_HIEU_SO <- @@KC_HIEU_SO@@  # --kc-hieu-so: phương pháp KTC hiệu số nguy cơ SAP §4 khai (newcombe | wald)
 # Chuỗi pandas.read_csv coi là THIẾU (keep_default_na) — chép từ pandas @@PANDAS@@ lúc sinh script.
 NA_PANDAS <- @@NA_PANDAS@@
 @@KHOI_MI@@
-GOI_CAN <- c("jsonlite", "sandwich", "lmtest", "survival", "ordinal", if (MI_CO) "mice")
+GOI_CAN <- c("jsonlite", "sandwich", "lmtest", "survival", "ordinal", if (MI_CO) "mice",
+             if (identical(KC_HIEU_SO, "newcombe")) "DescTools")
 
 dung <- function(ma, ...) {
   thong_diep <- paste0(...)
@@ -641,10 +644,24 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
       or_tho <- (e1 / (n1 - e1)) / (e0 / (n0 - e0))
       se_log <- sqrt(1 / e0 + 1 / (n0 - e0) + 1 / e1 + 1 / (n1 - e1))
       bang <- table(y, g)
+      # 23/11/2026: hiệu số nguy cơ p1 − p0 + KTC theo ĐÚNG phương pháp SAP khai — Newcombe qua gói DescTools
+      # (cài đặt ĐỘC LẬP với Python; method = "score" là Newcombe hybrid score, phương pháp 10), Wald tính tay với
+      # 1,96 như Python
+      p1 <- e1 / n1
+      p0 <- e0 / n0
+      rd_ci <- if (identical(KC_HIEU_SO, "newcombe")) {
+        b <- DescTools::BinomDiffCI(e1, n1, e0, n0, conf.level = 0.95, method = "score")
+        as.numeric(b[1, c("lwr.ci", "upr.ci")])
+      } else if (identical(KC_HIEU_SO, "wald")) {
+        (p1 - p0) + c(-1.96, 1.96) * sqrt(p0 * (1 - p0) / n0 + p1 * (1 - p1) / n1)
+      } else {
+        stop("phương pháp KTC hiệu số nguy cơ «", KC_HIEU_SO, "» chưa hỗ trợ — không tự lùi về Wald")
+      }
       list(loai = "binary", nhom = muc, n = c(n0, n1), bien_co = c(e0, e1), or = or_tho,
            ci = exp(log(or_tho) + c(-1.96, 1.96) * se_log),  # Python dùng 1,96 cố định
            p_yates = suppressWarnings(stats::chisq.test(bang, correct = TRUE)$p.value),
-           p_pearson = suppressWarnings(stats::chisq.test(bang, correct = FALSE)$p.value))
+           p_pearson = suppressWarnings(stats::chisq.test(bang, correct = FALSE)$p.value),
+           rd = p1 - p0, rd_ci = rd_ci, rd_phuong_phap = KC_HIEU_SO)
     } else {
       s0 <- s0[is.finite(s0)]
       s1 <- s1[is.finite(s1)]
@@ -1088,6 +1105,7 @@ def sinh_script_r(
         "@@DON_VI@@": gia_tri_r(don_vi, so=True),
         "@@TY_LE@@": vec_r(dt.get("ty_le") or []),
         "@@NGUONG_TY_LE@@": gia_tri_r(dt.get("nguong_ty_le"), so=True),
+        "@@KC_HIEU_SO@@": chuoi_r(dt.get("kc_hieu_so") or "wald"),
         "@@PANDAS@@": ver_pd,
         "@@NA_PANDAS@@": vec_r(na),
         "@@KHOI_MI@@": khoi_mi if khoi_mi is not None else khoi_mi_r({}, Path("."), csv_p),
@@ -2241,7 +2259,7 @@ def _ket_cuc_chinh(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
                 n_py=n_py,
                 n_r=n_r,
             )
-        ]
+        ] + _hieu_so_nguy_co(pc, rc, n_py, n_r)
     if lp in ("continuous", "categorical") and lr == "continuous":
         test = str(pc.get("test", "")).lower()
         if "welch" in test:
@@ -2281,6 +2299,25 @@ def _ket_cuc_chinh(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
             )
         ]
     return [_khong_so(ten, f"loại kết cục khác nhau: Python «{lp}», R «{lr}»", n_py=n_py, n_r=n_r)]
+
+
+def _hieu_so_nguy_co(pc: dict, rc: dict, n_py, n_r) -> list[dict]:
+    """Hiệu số nguy cơ thô + KTC (23/11/2026): R tính lại bằng ĐÚNG phương pháp Python ghi (Newcombe qua DescTools —
+    cài đặt độc lập; Wald tính tay). Phép tất định ⇒ dung sai = đơn vị làm tròn của Python. Khác phương pháp ⇒ không
+    so được."""
+    if pc.get("risk_diff") is None:
+        return []  # bệnh–chứng (không ước lượng được hiệu số) hoặc một nhóm rỗng — Python không ghi
+    pp_py = pc.get("risk_diff_ci_method") or "wald"
+    ten = f"Kết cục chính — hiệu số nguy cơ thô (nhóm sau − nhóm trước), KTC 95 % {pp_py}"
+    py = {"uoc_luong": pc.get("risk_diff"), "ci": list(pc.get("risk_diff_ci_95") or []) or None, "p": None}
+    if rc.get("rd") is None:
+        return [_khong_so(ten, "R không ra hiệu số nguy cơ (script R cũ — sinh lại bằng cu-phap)", py=py,
+                          n_py=n_py, n_r=n_r)]
+    if rc.get("rd_phuong_phap") != pp_py:
+        return [_khong_so(ten, f"phương pháp KTC khác nhau: Python «{pp_py}», R «{rc.get('rd_phuong_phap')}»", py=py,
+                          r={"uoc_luong": rc.get("rd"), "ci": rc.get("rd_ci")}, n_py=n_py, n_r=n_r)]
+    return [_dong(ten, py, {"uoc_luong": rc.get("rd"), "ci": rc.get("rd_ci"), "p": None}, n_py=n_py, n_r=n_r,
+                  tran=S.DUNG_SAI_TY_LE)]
 
 
 def _ket_cuc_chinh_cum(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
@@ -2666,7 +2703,7 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
 
 def _dac_ta_lech(dt_py: dict, dt_r: dict) -> list[str]:
     lech = []
-    for k in ("outcome", "group", "time", "event", "cot_cum", "loc", "nguong_ty_le"):
+    for k in ("outcome", "group", "time", "event", "cot_cum", "loc", "nguong_ty_le", "kc_hieu_so"):
         if (dt_py.get(k) or None) != (dt_r.get(k) or None):
             lech.append(f"{k}: Python={dt_py.get(k)!r} · R={dt_r.get(k)!r}")
     if dt_py.get("ty_le") is not None and list(dt_py.get("ty_le") or []) != list(dt_r.get("ty_le") or []):

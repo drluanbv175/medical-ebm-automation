@@ -458,7 +458,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "cross_sectional": ("Toàn bộ mẫu đủ tiêu chí", "Phân tích đầy đủ", "Hồi quy logistic/tuyến tính"),
         "diagnostic": ("Bệnh nhân có xét nghiệm chỉ số và tiêu chuẩn vàng", "Phân tích đầy đủ", "ROC, AUC, độ nhạy/đặc hiệu"),
         "sr_ma": ("Tất cả nghiên cứu đủ tiêu chí đưa vào", "Phân tích đầy đủ", "Random/Fixed effects meta-analysis"),
-        "case_control": ("Ca bệnh vs chứng ghép cặp", "Phân tích đầy đủ", "Conditional logistic regression"),
+        # 23/11/2026: bệnh–chứng chọn phương pháp theo KIỂU GHÉP G1 đã chốt (khối dưới) — giá trị này chỉ là chỗ giữ.
+        "case_control": ("Ca bệnh vs chứng", "Phân tích đầy đủ", "[CẦN]"),
         # THÊM 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction"
         # (mô hình tiên lượng/TRIPOD+AI) trước đây rơi vào .get() fallback
         # ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]") — an toàn (không bịa
@@ -489,6 +490,22 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "NI_PROPORTION": "Hiệu tỷ lệ (risk difference) + 95%CI (Newcombe) so với biên Δ",
             "MD": "t-test hoặc Mann-Whitney; ANCOVA/hồi quy tuyến tính hiệu chỉnh giá trị nền",
         }.get(str(effect_type or "").upper().replace("ARR", "ARR%").replace("%%", "%"), main_method)
+
+    # 23/11/2026 (G7 phát hiện G6 lệch SAP bệnh–chứng): khuôn cũ in CỨNG «Conditional logistic regression» cho mọi đề tài
+    # bệnh–chứng, kể cả khi G1 ghép theo TẦN SUẤT (dữ liệu không có bộ ghép) ⇒ G6 chạy logistic không điều kiện, lệch
+    # SAP. Nay theo kiểu ghép G1 đã chốt (khung_de_tai.kieu_ghep_benh_chung, cùng hàm cổng G1-AUTO-04c dùng): cá thể ⇒
+    # logistic có điều kiện theo bộ ghép; tần suất ⇒ logistic không điều kiện hiệu chỉnh biến ghép; không ghép ⇒
+    # logistic không điều kiện. Chưa chốt ⇒ ô [CẦN …] (G4 không khoá được §4 còn ô trống).
+    if design_code == "case_control":
+        import khung_de_tai as KD  # noqa: PLC0415
+
+        kieu_ghep = (khung or {}).get("kieu_ghep")
+        if kieu_ghep in KD.KIEU_GHEP:
+            ten_ghep, main_method = KD.KIEU_GHEP[kieu_ghep]
+            pop = f"Ca bệnh vs chứng — {ten_ghep}"
+        else:
+            main_method = ("[CẦN CHỐT kiểu ghép nhóm chứng ở G1 (gate_params.G1.matching_type: individual | frequency "
+                           "| none) — quyết định logistic có/không điều kiện]")
 
     # THÊM 16/11/2026 (giả lập trọn vòng 8 thiết kế): cắt ngang MÔ TẢ (G3 «descriptive…» hoặc cỡ mẫu theo độ chính xác
     # của tỷ lệ, không thước đo hiệu ứng) — phân tích chính là ƯỚC LƯỢNG TỶ LỆ + KTC, không phải hồi quy. Khuôn cũ in
@@ -1174,6 +1191,8 @@ def _khung_sap(out, meta):
         # ⇒ SAP định tính không hỏi lại
         "tiep_can": g1.get("qualitative_approach"), "bao_hoa": g1.get("saturation_criterion"),
         "chon_mau": g1.get("recruitment_strategy") if str(g1.get("recruitment_strategy") or "").strip() else None,
+        # 23/11/2026: kiểu ghép nhóm chứng của đề tài bệnh–chứng ⇒ họ mô hình §4 (logistic có/không điều kiện)
+        "kieu_ghep": KD.kieu_ghep_benh_chung(g1)[0],
     }
 
 

@@ -223,3 +223,73 @@ def truy_van_tu_khai_niem(meta: Mapping[str, Any]) -> Optional[str]:
     nhom, _loai = khai_niem_chuan(meta)
     phan = ["(" + " OR ".join(_mot_thuat_ngu(t) for t in nhom[ma]) + ")" for ma in ("P", "I", "O") if nhom.get(ma)]
     return " AND ".join(phan) or None
+
+
+# ───────────────────────────── Kiểu ghép nhóm chứng của đề tài BỆNH–CHỨNG (23/11/2026) ─────────────────────────────
+# Vì sao: giả lập bệnh–chứng ghi G1 «ghép theo giới và nhóm tuổi 5 năm, tỷ lệ 2 chứng : 1 ca» (không nói ghép CẶP CÁ
+# THỂ hay ghép THEO TẦN SUẤT) mà biện pháp sai lệch + SAP §4 ghi «hồi quy logistic có điều kiện»; dữ liệu không có mã bộ
+# ghép, G6 chạy logistic không điều kiện. Kiểu ghép quyết định họ mô hình phân tích chính (STROBE 12d): ghép cặp cá thể
+# ⇒ logistic CÓ ĐIỀU KIỆN theo bộ ghép; ghép theo tần suất ⇒ logistic KHÔNG điều kiện, hiệu chỉnh theo các biến ghép;
+# không ghép ⇒ logistic không điều kiện. Một hàm DÙNG CHUNG cho bộ sinh G1, cổng G1 (G1-AUTO-04c) và khuôn SAP G4.
+KIEU_GHEP = {
+    "ca_the": ("ghép cặp cá thể (individual matching)",
+               "Hồi quy logistic có điều kiện (conditional logistic regression) theo bộ ghép (matched set) → OR "
+               "(95%CI)"),
+    "tan_suat": ("ghép theo tần suất (frequency matching)",
+                 "Hồi quy logistic không điều kiện, hiệu chỉnh theo các biến ghép (ghép theo tần suất) → OR (95%CI)"),
+    "khong_ghep": ("không ghép", "Hồi quy logistic không điều kiện → OR (95%CI)"),
+}
+_KIEU_GHEP_KHAI = {"individual": "ca_the", "ca_the": "ca_the", "frequency": "tan_suat", "tan_suat": "tan_suat",
+                   "none": "khong_ghep", "unmatched": "khong_ghep", "khong_ghep": "khong_ghep"}
+_RE_TAN_SUAT = re.compile(r"ghep\s+(?:theo\s+)?tan\s+suat|frequency[\s-]+match")
+_RE_CA_THE = re.compile(r"ghep\s+cap|individual(?:ly)?[\s-]+match|pair[\s-]+match|bo\s+ghep|matched\s+set|"
+                        r"ghep\s+\d+\s*[:：]\s*\d+")
+_RE_PHU_DINH_CA_THE = re.compile(r"khong\s+(?:phai\s+)?ghep\s+cap(?:\s+ca\s+the)?|not\s+individual(?:ly)?[\s-]+match")
+_RE_KHONG_GHEP = re.compile(r"khong\s+ghep\b|\bunmatched\b|khong\s+(?:co\s+)?(?:bat|ghep)\s+cap")
+_RE_CO_GHEP = re.compile(r"ghep|\bmatch")
+
+
+def _bo_dau_d(s: str) -> str:
+    import unicodedata  # noqa: PLC0415
+
+    s = unicodedata.normalize("NFD", s or "")
+    return "".join(c for c in s if unicodedata.category(c) != "Mn").lower().replace("đ", "d")
+
+
+def _chu_ghep(g1: Mapping[str, Any]) -> str:
+    """Văn bản G1 nói về cách chọn nhóm chứng: nguồn chứng + sơ đồ thời gian + biện pháp sai lệch chọn mẫu."""
+    phan = [g1.get("control_source"), g1.get("study_schema_timeline")]
+    for b in g1.get("bias_controls") or []:
+        if isinstance(b, Mapping):
+            phan.append(b.get("bien_phap"))
+    return " ".join(str(x) for x in phan if isinstance(x, str))
+
+
+def kieu_ghep_benh_chung(g1: Mapping[str, Any]) -> Tuple[Optional[str], str]:
+    """(kiểu ghép ∈ KIEU_GHEP hoặc None, căn cứ) của đề tài bệnh–chứng từ gate_params.G1.
+
+    Khai tường minh `matching_type` (individual | frequency | none; nhận cả ca_the | tan_suat | khong_ghep) THẮNG. Không
+    khai ⇒ đọc lời G1 (control_source, study_schema_timeline, bias_controls[].bien_phap): «ghép theo tần suất» ⇒
+    tan_suat; «ghép cặp»/«bộ ghép»/«1:2» (không bị phủ định) ⇒ ca_the; cả hai ⇒ None (mâu thuẫn); «không ghép» ⇒
+    khong_ghep; nhắc «ghép» mà không rõ kiểu ⇒ None (mơ hồ — G1 phải chốt); không nhắc ghép ⇒ khong_ghep."""
+    g1 = g1 if isinstance(g1, Mapping) else {}
+    khai = str(g1.get("matching_type") or "").strip().lower()
+    if khai:
+        kieu = _KIEU_GHEP_KHAI.get(khai)
+        return (kieu, f"gate_params.G1.matching_type = «{khai}»") if kieu else (
+            None, f"gate_params.G1.matching_type = «{khai}» không thuộc individual | frequency | none")
+    bd = _bo_dau_d(_chu_ghep(g1))
+    tan_suat = bool(_RE_TAN_SUAT.search(bd))
+    ca_the = bool(_RE_CA_THE.search(_RE_PHU_DINH_CA_THE.sub(" ", bd)))
+    if tan_suat and ca_the:
+        return None, "lời G1 nói CẢ ghép theo tần suất LẪN ghép cặp cá thể — mâu thuẫn"
+    if tan_suat:
+        return "tan_suat", "lời G1 nêu «ghép theo tần suất»"
+    if ca_the:
+        return "ca_the", "lời G1 nêu ghép cặp cá thể (ghép cặp / bộ ghép / tỷ lệ ghép k:m)"
+    if _RE_KHONG_GHEP.search(bd):
+        return "khong_ghep", "lời G1 nêu «không ghép»"
+    if _RE_CO_GHEP.search(bd):
+        return None, ("lời G1 nhắc «ghép» nhưng không nói ghép cặp cá thể hay ghép theo tần suất — chưa chốt được họ "
+                      "mô hình phân tích chính")
+    return "khong_ghep", "lời G1 không nhắc ghép nhóm chứng"
