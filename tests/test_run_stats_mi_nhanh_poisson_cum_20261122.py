@@ -54,7 +54,11 @@ def _uoc(mi: dict, bien: str) -> dict:
 
 def test_mi_poisson_cum_tim_lai_tham_so_that():
     np.random.seed(20261122)  # MICEData dùng bộ sinh số ngẫu nhiên toàn cục của numpy
-    mi = RSA.multiple_imputation_model(_mo_phong_cum(3000, 60, 1), "y", "x2", ["x1"], "poisson_pr", 10, "cum", {})
+    # 23/11/2026: m = 40 (trước 10). Ước lượng tỷ lệ thông tin thiếu với m = 10 dao động 0,06–0,40 theo hạt giống;
+    # trên CI Ubuntu (OpenBLAS đa luồng lệch dãy ngẫu nhiên) từng ra 0,593 ⇒ đỏ dù phương pháp đúng. Quy tắc
+    # m ≥ 100 × tỷ lệ thông tin thiếu (White, Royston & Wood 2011, PMID 21225900) ⇒ ~25; m = 40 cho 0,18–0,29 và
+    # đạt mọi khẳng định dưới đây ở 16/16 hạt giống đo trên máy. Ngưỡng giữ nguyên.
+    mi = RSA.multiple_imputation_model(_mo_phong_cum(3000, 60, 1), "y", "x2", ["x1"], "poisson_pr", 40, "cum", {})
     assert mi["model"] == "poisson_cluster_mi" and mi["cluster"] == {"cot": "cum", "so_cum": 60}
     assert mi["bo_may"] == "tu_lap" and "PMID 21225900" in mi["phuong_phap_gop"]
     for bien, that in (("x1", 1.3), ("x2", 1.5)):
