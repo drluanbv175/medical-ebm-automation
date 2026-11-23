@@ -126,6 +126,20 @@ def test_cong_phan_do_khi_g6_co_phan_tich_loi_20261123(tmp_path):
     assert any("G6 chạy LỖI 1 phân tích SAP: KT_chi_phi_hieu_qua" in x for x in loi), loi
 
 
+@pytest.mark.parametrize("kc", ["LECH", "LOI", "TU_CHOI"])
+def test_cong_phan_do_khi_kiem_cheo_khong_khop_20261123(tmp_path, kc):
+    """Kiểm chéo SPSS/R LỆCH/LỖI/TỪ CHỐI ⇒ đỏ; KHOP và KHONG_DO_DUOC (máy không có R/SPSS) không đỏ."""
+    g6 = _du_lieu_g6()
+    g6["g6"]["phan_tich"] = [{"id": "MT1_chinh", "trang_thai": "DA_CHAY", "kiem_cheo": "KHOP"},
+                             {"id": "NC_nu", "trang_thai": "DA_CHAY", "kiem_cheo": "KHONG_DO_DUOC"}]
+    _bao_cao(tmp_path, "rct_nhi_phan", du_lieu=g6)
+    assert KG.kiem_mot(tmp_path / "rct_nhi_phan.json") == []
+    g6["g6"]["phan_tich"][0]["kiem_cheo"] = kc
+    _bao_cao(tmp_path, "rct_nhi_phan", du_lieu=g6)
+    loi = KG.kiem_mot(tmp_path / "rct_nhi_phan.json")
+    assert any(f"kiểm chéo SPSS/R không khớp ở 1 phân tích: MT1_chinh={kc}" in x for x in loi), loi
+
+
 def test_cong_phan_bo_qua_bieu_do_khi_g6_khong_tu_dong(tmp_path):
     """Thiết kế chưa có engine phân tích chính (g6.khong_tu_dong) — không đòi biểu đồ (đã có cổng khác giữ)."""
     _bao_cao(tmp_path, "rct_nhi_phan", du_lieu={"de_cuong_nop": {"ma": 0}, "g6": {"khong_tu_dong": "…"}})
