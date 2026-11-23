@@ -92,7 +92,20 @@ def test_clogit_bo_khong_thong_tin_dem_vao_n_khong_vao_hop_ly():
     them = pd.DataFrame({"bo": [999, 999], "y": [0, 0], "x": [1, 0], "z": [0, 1], "a": [60.0, 61.0]})
     mv = RSA.conditional_logit_model(pd.concat([d, them], ignore_index=True), "y", "x", ["z", "a"], "bo")
     assert (mv["n"], mv["so_bo_ghep"], mv["so_bo_thong_tin"], mv["n_thong_tin"]) == (272, 91, 90, 270)
+    assert mv["ca_toi_da_moi_bo"] == 1  # bộ toàn chứng có 0 ca — vẫn là số ca TỐI ĐA
     assert mv["results"][0]["OR_adj"] == round(float(np.exp(R_CLOGIT["x"][0])), 3)  # bộ toàn chứng không đổi ước lượng
+    hai_ca = pd.DataFrame({"bo": [998] * 3, "y": [1, 1, 0], "x": [1, 0, 0], "z": [0, 1, 0], "a": [60.0, 61, 62]})
+    assert RSA.conditional_logit_model(pd.concat([d, hai_ca], ignore_index=True), "y", "x", ["z", "a"],
+                                       "bo")["ca_toi_da_moi_bo"] == 2
+
+
+def test_clogit_bien_hang_xet_tren_bo_mang_thong_tin():
+    """Biến hằng trong mọi bộ MANG THÔNG TIN nhưng khác nhau ở một bộ toàn chứng (bộ đó bị loại khỏi hợp lý) vẫn không
+    ước lượng được ⇒ phải báo lỗi có tên biến, không để statsmodels gặp ma trận suy biến."""
+    d = _df_ghep().assign(gioi=lambda t: t["bo"] % 2)
+    them = pd.DataFrame({"bo": [999, 999], "y": [0, 0], "x": [1, 0], "z": [0, 1], "a": [60.0, 61.0], "gioi": [0, 1]})
+    mv = RSA.conditional_logit_model(pd.concat([d, them], ignore_index=True), "y", "x", ["z", "gioi"], "bo")
+    assert "gioi" in (mv.get("error") or "") and "HẰNG trong mọi bộ ghép" in mv["error"], mv
 
 
 def test_clogit_bien_hang_trong_bo_la_loi_co_ten_bien():
