@@ -283,7 +283,9 @@ def test_script_r_thi_hanh_hop_le_cu_phap_r(tmp_path, thiet_ke):
     for ten, ma in (("r01.R", r01), ("r03.R", r03)):
         p = tmp_path / ten
         p.write_text(ma, encoding="utf-8", newline="\n")
-        r = subprocess.run(["Rscript", "--vanilla", "-e", f"invisible(parse(file = '{p}', encoding = 'UTF-8'))"],
+        # 23/11/2026: as_posix — đường dẫn Windows «C:\Users\…» nhúng thẳng vào chuỗi R bị đọc «\U» thành mã thoát
+        r = subprocess.run(["Rscript", "--vanilla", "-e",
+                            f"invisible(parse(file = '{p.as_posix()}', encoding = 'UTF-8'))"],
                            capture_output=True, text=True)
         assert r.returncode == 0, (thiet_ke, ten, r.stderr[-400:])
     assert "◆ MÔ HÌNH CHÍNH" in r03 and any(d.lstrip() and not d.startswith("#") and "◆" in d for d in r03.split("\n"))

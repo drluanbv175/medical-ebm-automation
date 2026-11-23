@@ -451,6 +451,8 @@ def _chay_r(loai, ch, df, tmp_path):
                                      newline="\n")
     r = subprocess.run(["Rscript", "--vanilla", str(tmp_path / "s.R"), str(tmp_path / "d.csv"),
                         str(tmp_path / "k.json"), str(tmp_path / "c.json")], capture_output=True, text=True)
+    if r.returncode != 0 and P.goi_r_thieu(r.stderr):  # như máy không có R: không đo được, không phải «trượt»
+        pytest.skip(f"R thiếu gói {P.goi_r_thieu(r.stderr)} — không đo được")
     assert r.returncode == 0, r.stderr[-1500:]
     return json.loads((tmp_path / "k.json").read_text(encoding="utf-8")), nk
 
@@ -535,3 +537,15 @@ def test_r_trong_so_ba_che_do(tmp_path):
     p = gh["ty_le_chinh"]["p"]
     assert gh["gioi_han_bo_ve"]["thap"] == pytest.approx(p * 0.95)
     assert gh["so_sanh_thoi_gian_cho"]["bo_ve"]["trung_vi"] == 80
+
+
+@pytest.mark.parametrize("err, goi", [
+    ("Error in library(jsonlite) : there is no package called ‘jsonlite’", "jsonlite"),   # R trên Mac, locale UTF-8
+    ("Error in library(jsonlite) : there is no package called 'jsonlite'", "jsonlite"),   # R trên Windows (CI 23/11)
+    ('Error : there is no package called "brant"', "brant"),
+    ("Error in clm(...) : object 'x' not found", None),
+    ("", None),
+])
+def test_goi_r_thieu_nhan_ca_hai_kieu_nhay_20261123(err, goi):
+    """Thiếu gói R ⇒ «không đo được — cài gói», ở MỌI locale (trước 23/11: chỉ nhận nháy cong ⇒ Windows báo «R lỗi»)."""
+    assert P.goi_r_thieu(err) == goi
