@@ -337,13 +337,27 @@ def la_sap_co_dieu_kien(sap4: str) -> bool:
     return bool(re.search(r"logistic\s+co\s+dieu\s+kien|conditional\s+logistic|\bclogit\b", bd))
 
 
-def ap_dung_bien_co_hiem(design_code: Any, sap4: str = "") -> bool:
+#: 24/11/2026 — nhãn dòng §12 run_g4_auto in khi G0 có giả thuyết MỤC TIÊU PHỤ (vd «tỷ lệ X và yếu tố liên quan»)
+NHAN_GIA_THUYET_PHU = "Giả thuyết mục tiêu phụ (định trước"
+
+
+def co_muc_tieu_phu_phan_tich(sap_text: str) -> bool:
+    """SAP có dòng giả thuyết mục tiêu phụ định trước ⇒ đề tài có mục tiêu PHÂN TÍCH (hồi quy) ngoài ước lượng tỷ lệ."""
+    return NHAN_GIA_THUYET_PHU.casefold() in (sap_text or "").casefold()
+
+
+def ap_dung_bien_co_hiem(design_code: Any, sap4: str = "", co_muc_tieu_phu: bool = False) -> bool:
     """Thiết kế có hồi quy trên kết cục nhị phân (kể cả phân tích tổn hại của RCT) ⇒ SAP phải khai phương pháp biến cố
-    hiếm. Cắt ngang MÔ TẢ (§4 ước lượng tỷ lệ, không mô hình) không áp dụng."""
+    hiếm. Cắt ngang MÔ TẢ (§4 ước lượng tỷ lệ, không mô hình) chỉ áp dụng khi có MỤC TIÊU PHỤ phân tích yếu tố liên
+    quan (24/11/2026, đề tài đối chứng công khai: «tỷ lệ + yếu tố liên quan» là dạng cắt ngang phổ biến nhất; mục tiêu
+    phụ chạy hồi quy logistic đa biến mà SAP không khai phương pháp biến cố hiếm ⇒ rào EPV của G6 chặn, mục tiêu phụ
+    không có ước lượng)."""
     ma = str(design_code or "").strip().lower()
     if ma not in _THIET_KE_BIEN_CO_HIEM:
         return False
-    return not (ma == "cross_sectional" and re.search(r"ước lượng tỷ lệ|uoc luong ty le", sap4 or "", re.I))
+    if ma == "cross_sectional" and re.search(r"ước lượng tỷ lệ|uoc luong ty le", sap4 or "", re.I):
+        return bool(co_muc_tieu_phu)
+    return True
 
 
 def phuong_phap_bien_co_hiem_sap(sap5: str) -> dict:
@@ -906,7 +920,8 @@ def evaluate_g4_quality(
         # 23/11/2026: thiết kế có hồi quy nhị phân ⇒ §5 phải KHAI phương pháp biến cố hiếm (rào EPV của G6 chặn mô hình
         # thì G6 chạy phương pháp này) — vắng/ô trống/không nhận ra ⇒ chưa khoá được (gộp vào G4-AUTO-04: cùng chủ đề
         # EPV, phân công trách nhiệm giữ một chủ).
-        if ap_dung_bien_co_hiem(design_code, _section_body(artifact_text, "§4")):
+        if ap_dung_bien_co_hiem(design_code, _section_body(artifact_text, "§4"),
+                                co_muc_tieu_phu_phan_tich(artifact_text)):
             bch = phuong_phap_bien_co_hiem_sap(body5)
             if not bch["phuong_phap"]:
                 ly = ("dòng còn ô trống" if bch["o_trong"] else

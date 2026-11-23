@@ -1,0 +1,4462 @@
+{
+ "schema": "gia_lap/khong_loc_day_du/v1",
+ "truy_van": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab])",
+ "so_hit_that": 444,
+ "so_bai_lay_ve": 444,
+ "ngay_tai": "2026-11-23",
+ "cach": "PubMed E-utilities esearch (sort=date) + esummary, không lọc thiết kế",
+ "ban_ghi": [
+  {
+   "pmid": "43039462",
+   "title": "A systematic review of prediction models for tuberculosis infection and incident tuberculosis disease among adolescent and adult household contacts.",
+   "year": "2026",
+   "journal": "BMJ global health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "43028564",
+   "title": "Machine-Learning-Assisted Risk Stratification for Tuberculosis Infection in High-Risk Groups Receiving Immunosuppressive Therapy.",
+   "year": "2026",
+   "journal": "Diagnostics (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42996211",
+   "title": "Can identifying recent Mycobacterium tuberculosis infection support faster tuberculosis vaccine trials?",
+   "year": "2026",
+   "journal": "medRxiv : the preprint server for health sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Preprint"
+   ]
+  },
+  {
+   "pmid": "42976682",
+   "title": "miR-let-7f-5p and miR-223-3p as potential biomarkers for identification of tuberculosis infection: Evidence from patients and household contacts in Indonesia.",
+   "year": "2026",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42754502",
+   "title": "Incidence and Risk Factors for Tuberculosis Among TBI-Positive Contacts Identified Through Contact Tracing in Catalonia.",
+   "year": "2026",
+   "journal": "Archivos de bronconeumologia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42676523",
+   "title": "Comparative performance of IP-10-Based assays for immune detection of Mycobacterium tuberculosis infection: a cross-sectional evaluation.",
+   "year": "2026",
+   "journal": "Frontiers in medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42641153",
+   "title": "Erratum for Chee et al., \"QuantiFERON-TB Gold Plus CD8+ T cell responses in contacts with tuberculosis disease and recent tuberculosis infection\".",
+   "year": "2026",
+   "journal": "Microbiology spectrum",
+   "pubtypes": [
+    "Journal Article",
+    "Published Erratum"
+   ]
+  },
+  {
+   "pmid": "42563152",
+   "title": "Screening and tuberculosis preventive treatment among household contacts of drug-resistant tuberculosis patients: a scoping review.",
+   "year": "2026",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "42516725",
+   "title": "Immunological Evidence of Latent Tuberculosis Infection among Noncontacts and Contacts with Index Tuberculosis Patients.",
+   "year": "2026",
+   "journal": "Journal of global infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42320712",
+   "title": "Association between immune-response magnitude to tuberculosis infection tests and short-term disease risk: a prospective cohort study.",
+   "year": "2026",
+   "journal": "Clinical microbiology and infection : the official publication of the European Society of Clinical Microbiology and Infectious Diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "42264594",
+   "title": "Risk of tuberculosis infection according to exposure time and other factors of contacts and their index cases.",
+   "year": "2026",
+   "journal": "Enfermedades infecciosas y microbiologia clinica (English ed.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42264591",
+   "title": "Recommendations on the Diagnosis and Treatment of Tuberculosis Infection: SEPAR/SEIMC/Spanish Ministry of Health Consensus Statement.",
+   "year": "2026",
+   "journal": "Enfermedades infecciosas y microbiologia clinica (English ed.)",
+   "pubtypes": [
+    "Consensus Statement",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42248852",
+   "title": "Mycobacterium tuberculosis transmission from tuberculosis patients with and without recognized symptoms: a case-contact study in eastern China.",
+   "year": "2026",
+   "journal": "Nature communications",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "42247627",
+   "title": "A Novel Therapy With a One-Month Ultrashort Regimen to Halt Progression From Latent Infection to Active Tuberculosis Among Close Contacts (The TB‑YOUTH Study): Protocol for a Cluster Randomized Controlled Trial.",
+   "year": "2026",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "42205449",
+   "title": "Comparative agreement between tuberculin skin test and QuantiFERON-TB Gold In-Tube across different levels of exposure in a college-based tuberculosis outbreak.",
+   "year": "2026",
+   "journal": "Frontiers in public health",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "42162225",
+   "title": "Circulating metabolites associated with protection against Mycobacterium tuberculosis infection and inhibition of mycobacterial growth.",
+   "year": "2026",
+   "journal": "Communications biology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42078193",
+   "title": "Adjunct Diagnostic Accuracy of Antigen-specific Interleukin-2 for Latent Tuberculosis Infection in Pregnancy.",
+   "year": "2026",
+   "journal": "Open forum infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42024911",
+   "title": "Diagnostic accuracy and safety of Cy-Tb for detection of tuberculosis infection: A multicentric study from India.",
+   "year": "2026",
+   "journal": "The Indian journal of medical research",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "42021170",
+   "title": "Prevalence of latent tuberculosis infection in Malaysia: the first systematic review and meta-analysis.",
+   "year": "2026",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "41999988",
+   "title": "Incidence of latent TB infection among hospital contacts in an intermediate-burden country.",
+   "year": "2026",
+   "journal": "American journal of infection control",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41928248",
+   "title": "Cost-effectiveness of latent tuberculosis infection testing and preventive treatment among TB contacts in China: a Markov model.",
+   "year": "2026",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41900363",
+   "title": "Evaluation of a Fluorescence Immunoassay-Based IGRA for Latent Tuberculosis Diagnosis: A Simplified, Cost-Effective Alternative.",
+   "year": "2026",
+   "journal": "Microorganisms",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41858867",
+   "title": "Tuberculosis infection tests for contact screening in Brazil: a cost-effectiveness analysis.",
+   "year": "2026",
+   "journal": "Lancet regional health. Americas",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41713438",
+   "title": "Characterising progression and regression patterns across the spectrum of tuberculosis: a multistate modelling approach.",
+   "year": "2026",
+   "journal": "The Lancet. Global health",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "41607885",
+   "title": "Performance evaluation of the AFIAS IGRA-TB (IFN-gamma) test versus QuantiFERON®-TB gold plus (QFT®-Plus) ELISA in the Barrio Obrero hospital network, Asunción-Paraguay, 2025.",
+   "year": "2025",
+   "journal": "Frontiers in public health",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study",
+    "Evaluation Study"
+   ]
+  },
+  {
+   "pmid": "41545280",
+   "title": "Recommendations on the Diagnosis and Treatment of Tuberculosis Infection: SEPAR/SEIMC/Spanish Ministry of Health Consensus Statement.",
+   "year": "2026",
+   "journal": "Archivos de bronconeumologia",
+   "pubtypes": [
+    "Consensus Statement",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41531702",
+   "title": "Latent Tuberculosis Infection among Household Contacts of Drug-sensitive Pulmonary Tuberculosis Patients: A Cross-sectional Study from Medan, Indonesia.",
+   "year": "2025",
+   "journal": "Acta medica Philippina",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41444872",
+   "title": "Screening of close contacts of pulmonary tuberculosis in an urban area in Shanghai, China: a cross-sectional study.",
+   "year": "2025",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41444517",
+   "title": "Effect of BCG vaccination on the progression of latent tuberculosis infection to active disease in contacts: a systematic review and meta-analysis.",
+   "year": "2025",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "41430120",
+   "title": "Mycobacterium tuberculosis transmission among child and adolescent contacts of people with pulmonary tuberculosis in Brazil: a multi-center prospective cohort study.",
+   "year": "2025",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "41309403",
+   "title": "Prevalent and incident latent tuberculosis infection among healthcare workers in Taiwan: A multi-center observational study.",
+   "year": "2026",
+   "journal": "Journal of microbiology, immunology, and infection = Wei mian yu gan ran za zhi",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "41294359",
+   "title": "Diagnostic Accuracy of the STANDARD F TB-Feron FIA Assay for Tuberculosis Infection in Vietnam: A Cross-Sectional Study.",
+   "year": "2026",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41261656",
+   "title": "Current tuberculosis status and challenges among dialysis patients in Japan: A nationwide cross-sectional survey.",
+   "year": "2025",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "41239243",
+   "title": "Detect early TB infection, evaluate contacts for TB (DETEC-TB) - a protocol for a prospective cohort study on active case finding for tuberculosis disease and tuberculosis infection source tracing.",
+   "year": "2025",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41170045",
+   "title": "CY-TB skin test: Detect and defeat.",
+   "year": "2025",
+   "journal": "Bioinformation",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41144091",
+   "title": "Performance of QuantiFERON tests for detecting latent tuberculosis infections: A Meta-analysis.",
+   "year": "2025",
+   "journal": "Immunologic research",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Review",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41130767",
+   "title": "[A retrospective cohort study on the risk of pulmonary tuberculosis incidence among individuals with latent tuberculosis infection in schools].",
+   "year": "2025",
+   "journal": "Zhonghua yu fang yi xue za zhi [Chinese journal of preventive medicine]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41114592",
+   "title": "QuantiFERON-TB Gold Plus CD8+ T cell responses in contacts with tuberculosis disease and recent tuberculosis infection.",
+   "year": "2025",
+   "journal": "Microbiology spectrum",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41097198",
+   "title": "Vitamin D Status, Fasting Blood Glucose, and Latent Tuberculosis Infection in a High-Risk Population in Ulaanbaatar, Mongolia.",
+   "year": "2025",
+   "journal": "Nutrients",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41082546",
+   "title": "Prevalence and factors associated with tuberculosis infection (TBI) among residents of a monastery situated in a high-TB burden area: A cross-sectional study, Sikkim, India.",
+   "year": "2025",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41041335",
+   "title": "Clinical laboratory analytes and platelet-associated parameters as surrogate markers of subclinical inflammation in latent tuberculosis infection.",
+   "year": "2025",
+   "journal": "Frontiers in immunology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41040068",
+   "title": "Tuberculosis contact investigation: an evaluation of yield and guideline adherence, Upper Bavaria, Germany, 2018 to 2022.",
+   "year": "2025",
+   "journal": "Euro surveillance : bulletin Europeen sur les maladies transmissibles = European communicable disease bulletin",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41019099",
+   "title": "Mycobacterium tuberculosis infection status and associated factors among household close contacts of rifampicin-resistant pulmonary tuberculosis patients: A single-center cross-sectional study.",
+   "year": "2025",
+   "journal": "Journal of clinical tuberculosis and other mycobacterial diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40975589",
+   "title": "Macrophage profiles in drug-resistant tuberculosis patients and their close contacts: A pilot study.",
+   "year": "2025",
+   "journal": "The Indian journal of tuberculosis",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "40971381",
+   "title": "Evaluation of QIAreach QuantiFERON-TB lateral-flow nanoparticle fluorescence assay for TB infection diagnosis among TB household contacts in three high-burden settings.",
+   "year": "2025",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40953864",
+   "title": "Assessing tuberculosis infection prevalence and test concordance in high-risk groups: a cross-sectional study in Mexicali, Baja California.",
+   "year": "2025",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40895130",
+   "title": "Long-term occupational risk of latent tuberculosis infection in Hamburg, Germany: Findings from a 13-year prospective observational study.",
+   "year": "2025",
+   "journal": "Journal of clinical tuberculosis and other mycobacterial diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40828791",
+   "title": "Epidemiological factors associated with immunological resistance in household contacts exposed to active tuberculosis in South Africa: A logistic regression analysis.",
+   "year": "2025",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40809392",
+   "title": "Epidemiological Analysis of Tuberculosis Transmission, Risk Factors, and Subclinical Tuberculosis Management in a High School Outbreak, South Korea.",
+   "year": "2025",
+   "journal": "Open forum infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40790601",
+   "title": "Community and Universal Testing for TB among close contacts of microbiologically confirmed pulmonary TB patients in two high TB burden countries: a protocol for a pragmatic cluster-randomised control trial.",
+   "year": "2025",
+   "journal": "Trials",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol"
+   ]
+  },
+  {
+   "pmid": "40707081",
+   "title": "Latent tuberculosis infection care cascade among the household contacts of pulmonary tuberculosis patients - Findings from an urban feasibility study.",
+   "year": "2025",
+   "journal": "The Indian journal of tuberculosis",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40576297",
+   "title": "Risk Factors Associated With Tuberculosis Infection Among Household Contacts of Patients With Microbiologically Confirmed Pulmonary Tuberculosis in 3 High Tuberculosis Burden Countries.",
+   "year": "2025",
+   "journal": "The Journal of infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40551790",
+   "title": "Latent tuberculosis infection screening of adult close contacts: a cost-utility analysis.",
+   "year": "2025",
+   "journal": "ERJ open research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40440402",
+   "title": "Risk of Tuberculosis Infection in Young Children Exposed to Multidrug-resistant Tuberculosis in the TB-CHAMP Multi-site Randomized Controlled Trial.",
+   "year": "2025",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40373470",
+   "title": "Reduced host cell-free DNA as a biomarker in latent tuberculosis infection among tuberculosis contacts.",
+   "year": "2025",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40290203",
+   "title": "Latent Tuberculosis Infection among Household Contacts of Tuberculosis Patients, Healthcare Workers, and Tuberculosis Patients Using QuantiFERON-tuberculosis Gold Plus and Tuberculin Skin Test in a Tertiary Care Hospital Setting Bhubaneswar, Odisha - A Cross-sectional Study.",
+   "year": "2025",
+   "journal": "Journal of global infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40166935",
+   "title": "Insights into protection against Mycobacterium tuberculosis infection: time to officially confirm another phenotype?",
+   "year": "2025",
+   "journal": "The Journal of clinical investigation",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40165121",
+   "title": "Evaluation of QuantiFERON TB gold plus among TB household contacts in high incidence settings.",
+   "year": "2025",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Evaluation Study"
+   ]
+  },
+  {
+   "pmid": "40102730",
+   "title": "Multi-omic latent variable data integration reveals multicellular structure pathways associated with resistance to tuberculin skin test (TST)/interferon gamma release assay (IGRA) conversion in Uganda.",
+   "year": "2025",
+   "journal": "BMC genomics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40005550",
+   "title": "Exposure Time to a Tuberculosis Index Case as a Marker of Infection in Immigrant Populations.",
+   "year": "2025",
+   "journal": "Pathogens (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39946288",
+   "title": "The role of IgA and IgG in Mycobacterium tuberculosis infection: a cross-sectional study in Ethiopia.",
+   "year": "2026",
+   "journal": "Clinical and experimental immunology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39854792",
+   "title": "CD14(++)CD16(-) classical monocyte subset secreting IL-1ß and IL-10 is associated with 'Tuberculosis Resisters' phenotype.",
+   "year": "2025",
+   "journal": "Human immunology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39836352",
+   "title": "High risk of drug-resistant tuberculosis in IGRA-negative contacts: should preventive treatment be considered?",
+   "year": "2025",
+   "journal": "Infection",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39833916",
+   "title": "Underestimated latent tuberculosis infection burden among school contacts in China: a cross-sectional study.",
+   "year": "2025",
+   "journal": "Archives of public health = Archives belges de sante publique",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39817357",
+   "title": "Micronutrient status and risk of Mycobacterium tuberculosis infection in Indonesian tuberculosis case contacts.",
+   "year": "2025",
+   "journal": "Transactions of the Royal Society of Tropical Medicine and Hygiene",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39709975",
+   "title": "Effectiveness of the primary Bacillus Calmette-Guérin vaccine against the risk of Mycobacterium tuberculosis infection and tuberculosis disease: a meta-analysis of individual participant data.",
+   "year": "2025",
+   "journal": "The Lancet. Microbe",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39422171",
+   "title": "Management implications of latent TB among under-five children at risk: Insights from a community study in Mumbai, India.",
+   "year": "2025",
+   "journal": "Pediatric pulmonology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39421397",
+   "title": "Test and treat approach for tuberculosis infection amongst household contacts of drug-susceptible pulmonary tuberculosis, Mumbai, India.",
+   "year": "2024",
+   "journal": "Frontiers in tuberculosis",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39280729",
+   "title": "Comparative Evaluation of Diagnostic Performance: Standard E TB Feron ELISA vs QuantiFERON-TB Gold Plus for Latent Tuberculosis Infection Detection in Diverse Risk Groups in Bangladesh.",
+   "year": "2024",
+   "journal": "Infection and drug resistance",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39186747",
+   "title": "Exposure to bovine livestock and latent tuberculosis infection in children: Investigating the zoonotic tuberculosis potential in a large urban and peri-urban area of Cameroon.",
+   "year": "2024",
+   "journal": "PLOS global public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39122402",
+   "title": "Study protocol: diagnostic accuracy study comparing Cy-Tb and STANDARD F TB-Feron FIA tests for tuberculosis infection diagnosis in Vietnam.",
+   "year": "2024",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41332483",
+   "title": "[Tuberculosis Risk and Efficacy of Latent Tuberculosis Infection Treatment among Participants of National Latent Tuberculosis Infection Screening Program].",
+   "year": "2024",
+   "journal": "Jugan geon-gang gwa jilbyeong",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39085338",
+   "title": "Economic evaluation of diagnosis and treatment for latent tuberculosis infection among contacts of pulmonary tuberculosis patients in Thailand.",
+   "year": "2024",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38988028",
+   "title": "A Mycobacterium bovis outbreak among exhibition animals at a zoo in the Republic of Korea: the first contact investigation of zoonotic tuberculosis.",
+   "year": "2024",
+   "journal": "Osong public health and research perspectives",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38975791",
+   "title": "Evaluation of concordance of new QuantiFERON-TB Gold Plus platforms for Mycobacterium tuberculosis infection diagnosis in a prospective cohort of household contacts.",
+   "year": "2024",
+   "journal": "Microbiology spectrum",
+   "pubtypes": [
+    "Journal Article",
+    "Evaluation Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38972907",
+   "title": "Suppression of host gene expression is associated with latent TB infection: a possible diagnostic biomarker.",
+   "year": "2024",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38919407",
+   "title": "Screening of household contacts for TB infection in Cote d'Ivoire.",
+   "year": "2024",
+   "journal": "IJTLD open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38851427",
+   "title": "Tuberculosis infection among close contacts of patients with pulmonary tuberculosis in China: a population-based, multicentered study.",
+   "year": "2024",
+   "journal": "Clinical microbiology and infection : the official publication of the European Society of Clinical Microbiology and Infectious Diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "38820119",
+   "title": "Effect of Smoking on Longitudinal Interferon γ Release Assay Results Among Close Contacts of People with Pulmonary Tuberculosis.",
+   "year": "2025",
+   "journal": "The Journal of infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "38653232",
+   "title": "Mycobacterium tuberculosis Infection in School Contacts of Tuberculosis Cases: A Systematic Review and Meta-Analysis.",
+   "year": "2024",
+   "journal": "The American journal of tropical medicine and hygiene",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "38408518",
+   "title": "Interferon-gamma release assay conversion after Mycobacterium tuberculosis exposure specifically associates with greater risk of progression to tuberculosis: A prospective cohort study in Leicester, UK.",
+   "year": "2024",
+   "journal": "International journal of infectious diseases : IJID : official publication of the International Society for Infectious Diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38393123",
+   "title": "The Yield of Active Tuberculosis Disease and Latent Tuberculosis Infection in Tuberculosis Household Contacts Investigated Using Chest X-ray in Yogyakarta Province, Indonesia.",
+   "year": "2024",
+   "journal": "Tropical medicine and infectious disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38365178",
+   "title": "Quantifying the contribution of smear-negative, culture-positive pulmonary tuberculosis to nosocomial transmission.",
+   "year": "2024",
+   "journal": "American journal of infection control",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38244554",
+   "title": "PET-CT-guided characterisation of progressive, preclinical tuberculosis infection and its association with low-level circulating Mycobacterium tuberculosis DNA in household contacts in Leicester, UK: a prospective cohort study.",
+   "year": "2024",
+   "journal": "The Lancet. Microbe",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38174327",
+   "title": "Tuberculin test using Indian indigenous purified-protein derivative (PPD) shows only moderate agreement with international standard PPD.",
+   "year": "2024",
+   "journal": "Journal of clinical tuberculosis and other mycobacterial diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38133444",
+   "title": "Outcomes and Challenges in the Programmatic Implementation of Tuberculosis Preventive Therapy among Household Contacts of Pulmonary TB Patients: A Mixed-Methods Study from a Rural District of Karnataka, India.",
+   "year": "2023",
+   "journal": "Tropical medicine and infectious disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38095783",
+   "title": "Tuberculosis Preventive Treatment.",
+   "year": "2024",
+   "journal": "Indian journal of pediatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "37899038",
+   "title": "Tuberculosis Case Detection and Guideline Adherence among Child Contacts in Switzerland: A Retrospective Observational Study.",
+   "year": "2023",
+   "journal": "Respiration; international review of thoracic diseases",
+   "pubtypes": [
+    "Observational Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37869168",
+   "title": "Differential levels of anti-Mycobacterium tuberculosis-specific IgAs in saliva of household contacts with latent tuberculosis infection.",
+   "year": "2023",
+   "journal": "Frontiers in medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37736581",
+   "title": "Tuberculin skin testing and QuantiFERON™-TB Gold Plus positivity among household contacts in Vietnam.",
+   "year": "2023",
+   "journal": "Public health action",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37696247",
+   "title": "Mycobacterium tuberculosis -induced monocyte transcriptional responses associated with resistance to tuberculin skin test/interferon-γ release assay conversion in people with HIV.",
+   "year": "2023",
+   "journal": "AIDS (London, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "37647315",
+   "title": "Reversions of QuantiFERON-TB Gold Plus in tuberculosis contact investigation: A prospective multicentre cohort study.",
+   "year": "2023",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Multicenter Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37608477",
+   "title": "Latent TB and depressive symptoms in household contacts of persons with active TB.",
+   "year": "2023",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "37580184",
+   "title": "Predicting stringent QuantiFERON-TB Gold Plus conversions in contacts of tuberculosis patients.",
+   "year": "2023",
+   "journal": "Journal of microbiology, immunology, and infection = Wei mian yu gan ran za zhi",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37478309",
+   "title": "Use of Interferon-Gamma Release Assays in Children <2 Years Old.",
+   "year": "2023",
+   "journal": "Journal of the Pediatric Infectious Diseases Society",
+   "pubtypes": [
+    "Review",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37426113",
+   "title": "Association of Mycobacterium tuberculosis infection test results with risk factors for tuberculosis transmission.",
+   "year": "2023",
+   "journal": "Journal of clinical tuberculosis and other mycobacterial diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37404556",
+   "title": "Tuberculosis in 0-5-year-old children following TB contact investigations: a retrospective study in a low burden setting.",
+   "year": "2023",
+   "journal": "Frontiers in pediatrics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37227925",
+   "title": "1-Year Incidence of Tuberculosis Infection and Disease Among Household Contacts of Rifampin- and Multidrug-Resistant Tuberculosis.",
+   "year": "2023",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37147354",
+   "title": "Reduced microbial diversity of the nasopharyngeal microbiome in household contacts with latent tuberculosis infection.",
+   "year": "2023",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37192326",
+   "title": "",
+   "year": "2023",
+   "journal": "",
+   "pubtypes": [
+    "Review"
+   ]
+  },
+  {
+   "pmid": "37058459",
+   "title": "Differentially expressed transcript isoforms associate with resistance to tuberculin skin test and interferon gamma release assay conversion.",
+   "year": "2023",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36972254",
+   "title": "Determinants of QuantiFERON Plus-diagnosed tuberculosis infection in adult Ugandan TB contacts: A cross-sectional study.",
+   "year": "2023",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36930628",
+   "title": "Factors associated with prevalent Mycobacterium tuberculosis infection and disease among adolescents and adults exposed to rifampin-resistant tuberculosis in the household.",
+   "year": "2023",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "36871409",
+   "title": "Mycobacterium tuberculosis-specific cytokine responses according to HIV status among household contacts of people with TB.",
+   "year": "2023",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "36795574",
+   "title": "QuantiFERON-TB Gold Plus Performance in Children: A Narrative Review.",
+   "year": "2023",
+   "journal": "The Pediatric infectious disease journal",
+   "pubtypes": [
+    "Review",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36781053",
+   "title": "Risk of tuberculosis transmission by children in Hamburg, Germany.",
+   "year": "2023",
+   "journal": "Respiratory medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36759036",
+   "title": "Optimising diagnosis and treatment of tuberculosis infection in community and primary care settings in two urban provinces of Viet Nam: a cohort study.",
+   "year": "2023",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36740307",
+   "title": "Comparison of IGRA and TST in the diagnosis of latent tuberculosis among women of reproductive age in South India.",
+   "year": "2023",
+   "journal": "The Indian journal of tuberculosis",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "36707289",
+   "title": "Vitamin D and cathelicidin levels and susceptibility to Mycobacterium tuberculosis infection acquisition in household contacts.",
+   "year": "2023",
+   "journal": "Enfermedades infecciosas y microbiologia clinica (English ed.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36582115",
+   "title": "QuantiFERON Supernatant-Based Host Biomarkers Predicting Progression to Active Tuberculosis Disease Among Household Contacts of Tuberculosis Patients.",
+   "year": "2023",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36510919",
+   "title": "Tuberculin test versus interferon gamma release assay in pregnant women with household contacts of tuberculosis patients.",
+   "year": "2022",
+   "journal": "International journal of mycobacteriology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36471416",
+   "title": "Low secondary attack rate after prolonged exposure to sputum smear positive miliary tuberculosis in a neonatal unit.",
+   "year": "2022",
+   "journal": "Antimicrobial resistance and infection control",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36420425",
+   "title": "The Impact of Diabetes and Prediabetes on Prevalence of Mycobacterium tuberculosis Infection Among Household Contacts of Active Tuberculosis Cases in Ethiopia.",
+   "year": "2022",
+   "journal": "Open forum infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36294107",
+   "title": "Economic Evaluation of Screening Strategy for Latent Tuberculosis Infection (LTBI) in Contacts of Tuberculosis Patients: Systematic Review and Quality Assessment.",
+   "year": "2022",
+   "journal": "International journal of environmental research and public health",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36211970",
+   "title": "Prevalence of latent tuberculosis infection and incidence of active tuberculosis in school close contacts in Shanghai, China: Baseline and follow-up results of a prospective cohort study.",
+   "year": "2022",
+   "journal": "Frontiers in cellular and infection microbiology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36093366",
+   "title": "Magnitude and associated factors of latent tuberculosis infection due to Mycobacterium tuberculosis complex among high-risk groups in urban Bobo-Dioulasso, Burkina Faso.",
+   "year": "2022",
+   "journal": "IJID regions",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35918722",
+   "title": "GeneXpert or chest-X-ray or tuberculin skin testing for household contact assessment (GXT): protocol for a cluster-randomized trial.",
+   "year": "2022",
+   "journal": "Trials",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35843494",
+   "title": "Possible sex difference in latent tuberculosis infection risk among close tuberculosis contacts.",
+   "year": "2022",
+   "journal": "International journal of infectious diseases : IJID : official publication of the International Society for Infectious Diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "35796839",
+   "title": "CT and (18)F-FDG PET abnormalities in contacts with recent tuberculosis infections but negative chest X-ray.",
+   "year": "2022",
+   "journal": "Insights into imaging",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "35757819",
+   "title": "High rate of transmission in a pulmonary tuberculosis outbreak in a junior high school in China, 2020.",
+   "year": "2021",
+   "journal": "IJID regions",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35695527",
+   "title": "Monocyte Transcriptional Responses to Mycobacterium tuberculosis Associate with Resistance to Tuberculin Skin Test and Interferon Gamma Release Assay Conversion.",
+   "year": "2022",
+   "journal": "mSphere",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35519172",
+   "title": "Association between human leukocyte antigen class II (HLA-DRB and -DQB) alleles and outcome of exposure to Mycobacterium tuberculosis: a cross-sectional study in Nairobi, Kenya.",
+   "year": "2022",
+   "journal": "The Pan African medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35416716",
+   "title": "Latent Tuberculosis Infection Diagnosis among Household Contacts in a High Tuberculosis-Burden Area: a Comparison between Transcript Signature and Interferon Gamma Release Assay.",
+   "year": "2022",
+   "journal": "Microbiology spectrum",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35354703",
+   "title": "Multidrug-Resistant Tuberculosis Outbreak among Immigrants in Tokyo, Japan, 2019-2021.",
+   "year": "2022",
+   "journal": "Japanese journal of infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35351933",
+   "title": "Hypovitaminosis D among newly diagnosed pulmonary TB patients and their household contacts in Uganda.",
+   "year": "2022",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35325093",
+   "title": "Impact of the COVID-19 pandemic on contact tracing of patients with pulmonary tuberculosis.",
+   "year": "2022",
+   "journal": "European journal of public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35271625",
+   "title": "A prevalence study in Guadalajara, Mexico, comparing tuberculin skin test and QuantiFERON-TB Gold In-Tube.",
+   "year": "2022",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35242336",
+   "title": "Household contact investigation for the detection of active tuberculosis and latent tuberculosis: A comprehensive evaluation in two high-burden provinces in Iran.",
+   "year": "2022",
+   "journal": "New microbes and new infections",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35239624",
+   "title": "High Prevalence of Tuberculosis Infection and Disease in Child Household Contacts of Adults With Rifampin-resistant Tuberculosis.",
+   "year": "2022",
+   "journal": "The Pediatric infectious disease journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "35086622",
+   "title": "Incomplete contact investigation and risk of developing TB among healthcare professionals.",
+   "year": "2022",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34904674",
+   "title": "Discordance between TST and QFT-TBGold Plus for Latent Tuberculosis Screening among Under-Five Children: An Interim Analysis.",
+   "year": "2021",
+   "journal": "Journal of tropical pediatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34851140",
+   "title": "Lessons Learned from Implementation of an Interferon Gamma Release Assay to Screen for Latent Tuberculosis Infection in a Large Multicenter Observational Cohort Study in Brazil.",
+   "year": "2021",
+   "journal": "Microbiology spectrum",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34756079",
+   "title": "Identification of Recent Tuberculosis Exposure Using QuantiFERON-TB Gold Plus, a Multicenter Study.",
+   "year": "2021",
+   "journal": "Microbiology spectrum",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "34641820",
+   "title": "Tuberculosis-Learning the Impact of Nutrition (TB LION): protocol for an interventional study to decrease TB risk in household contacts.",
+   "year": "2021",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34558465",
+   "title": "Evaluation of a new interferon gamma release assay, in comparison to tuberculin skin tests and quantiferon tuberculosis goldplus for the detection of latent tuberculosis infection in children from a high tuberculosis burden setting.",
+   "year": "2021",
+   "journal": "International journal of mycobacteriology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34518204",
+   "title": "Determinants of losses in the latent tuberculosis infection cascade of care in Brazil.",
+   "year": "2021",
+   "journal": "BMJ global health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34499863",
+   "title": "Comparison of three tests for latent tuberculosis infection in high-risk people in the USA: an observational cohort study.",
+   "year": "2022",
+   "journal": "The Lancet. Infectious diseases",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Observational Study",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "34389503",
+   "title": "Interferon gamma release assays for detection of latent Mycobacterium tuberculosis in older Hispanic people.",
+   "year": "2021",
+   "journal": "International journal of infectious diseases : IJID : official publication of the International Society for Infectious Diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34388985",
+   "title": "Tuberculosis infection screening in children with close contact: a hospital-based study.",
+   "year": "2021",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34271200",
+   "title": "Assessment of Interferon Gamma-Induced Protein 10 mRNA Release Assay for Detection of Latent Tuberculosis Infection in Egyptian Pediatric Household Contacts.",
+   "year": "2021",
+   "journal": "International journal of infectious diseases : IJID : official publication of the International Society for Infectious Diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34111032",
+   "title": "Monocyte metabolic transcriptional programs associate with resistance to tuberculin skin test/interferon-γ release assay conversion.",
+   "year": "2021",
+   "journal": "The Journal of clinical investigation",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34100007",
+   "title": "Detection of Mycobacterium tuberculosis complex DNA in CD34-positive peripheral blood mononuclear cells of asymptomatic tuberculosis contacts: an observational study.",
+   "year": "2021",
+   "journal": "The Lancet. Microbe",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34053903",
+   "title": "Comparing the cost-effectiveness of two screening strategies for latent tuberculosis infection in Portugal.",
+   "year": "2021",
+   "journal": "Pulmonology",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "34029706",
+   "title": "Pulmonary tuberculosis and management of contact patients in a Department of Nephrology and Kidney Transplantation.",
+   "year": "2022",
+   "journal": "International journal of infectious diseases : IJID : official publication of the International Society for Infectious Diseases",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33971674",
+   "title": "[Frequency Distribution and Risk Factors for Latent Tuberculosis in Contact Persons: Cologne 2012-2016].",
+   "year": "2021",
+   "journal": "Pneumologie (Stuttgart, Germany)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33869073",
+   "title": "Screening for Mycobacterium tuberculosis Infection Using Beijing/K Strain-Specific Peptides in a School Outbreak Cohort.",
+   "year": "2021",
+   "journal": "Frontiers in cellular and infection microbiology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33772550",
+   "title": "Resistance to Mycobacterium tuberculosis Infection Among Household Contacts: A Multinational Study.",
+   "year": "2021",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33661925",
+   "title": "Genome-wide association study of resistance to Mycobacterium tuberculosis infection identifies a locus at 10q26.2 in three distinct populations.",
+   "year": "2021",
+   "journal": "PLoS genetics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33656429",
+   "title": "Management of latent TB infection in child household contacts aged under 5 years.",
+   "year": "2021",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Letter"
+   ]
+  },
+  {
+   "pmid": "33606824",
+   "title": "Closing delivery gaps in the treatment of tuberculosis infection: Lessons from implementation research in Peru.",
+   "year": "2021",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33573613",
+   "title": "Diagnosis of latent tuberculosis infection among pediatric household contacts of Iranian tuberculosis cases using tuberculin skin test, IFN- γ release assay and IFN-γ-induced protein-10.",
+   "year": "2021",
+   "journal": "BMC pediatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33524936",
+   "title": "Host transcriptional response to TB preventive therapy differentiates two sub-groups of IGRA-positive individuals.",
+   "year": "2021",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33293291",
+   "title": "The relationship between social risk factors and latent tuberculosis infection among individuals residing in England: a cross-sectional study.",
+   "year": "2020",
+   "journal": "BMJ global health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33059620",
+   "title": "Interpretation of serial interferon-gamma test results to measure new tuberculosis infection among household contacts in Zambia and South Africa.",
+   "year": "2020",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "33046016",
+   "title": "Implementing contact tracing for tuberculosis in Kyrgyz Republic and risk factors for positivity using QuantiFERON-TB Gold plus.",
+   "year": "2020",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33020006",
+   "title": "Depression and recovery of IL-17A secretion in mitogen responses in patients with active tuberculosis-a prospective observational study.",
+   "year": "2021",
+   "journal": "Journal of the Formosan Medical Association = Taiwan yi zhi",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "32832853",
+   "title": "Detection of Mycobacterium tuberculosis DNA in CD34 (+) peripheral blood mononuclear cells of Ugandan adults with latent infection: a cross-sectional and nested prospective study.",
+   "year": "2020",
+   "journal": "AAS open research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32741535",
+   "title": "CD4(+) T cell proliferative responses to PPD and CFP-10 associate with recent M. tuberculosis infection.",
+   "year": "2020",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32640768",
+   "title": "Evolution of Interferon-Gamma Release Assay Results and Submillisievert Chest CT Findings among Close Contacts of Active Pulmonary Tuberculosis Patients.",
+   "year": "2020",
+   "journal": "Tuberculosis and respiratory diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32517725",
+   "title": "A blood RNA transcript signature for TB exposure in household contacts.",
+   "year": "2020",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32493779",
+   "title": "Fourth-Generation QuantiFERON-TB Gold Plus: What Is the Evidence?",
+   "year": "2020",
+   "journal": "Journal of clinical microbiology",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "32474489",
+   "title": "Positivity of interferon-gamma release assay among foreign-born individuals, Tokyo, Japan, 2015-2017.",
+   "year": "2020",
+   "journal": "International journal of mycobacteriology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32373716",
+   "title": "How are high burden countries implementing policies and tools for latent tuberculosis infection? A survey of current practices and barriers.",
+   "year": "2020",
+   "journal": "Health science reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32366931",
+   "title": "IFN-γ and IgG responses to Mycobacterium tuberculosis latency antigen Rv2626c differentiate remote from recent tuberculosis infection.",
+   "year": "2020",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32268646",
+   "title": "[Application of two-step approach for tuberculosis infection testing in tuberculosis control in schools].",
+   "year": "2020",
+   "journal": "Zhonghua yu fang yi xue za zhi [Chinese journal of preventive medicine]",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32243917",
+   "title": "First insight into latent tuberculosis infection among household contacts of tuberculosis patients in Duhok, Iraqi Kurdistan: using tuberculin skin test and QuantiFERON-TB Gold Plus test.",
+   "year": "2020",
+   "journal": "International journal of infectious diseases : IJID : official publication of the International Society for Infectious Diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32156698",
+   "title": "Absolute risk of tuberculosis among untreated populations with a positive tuberculin skin test or interferon-gamma release assay result: systematic review and meta-analysis.",
+   "year": "2020",
+   "journal": "BMJ (Clinical research ed.)",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "32089146",
+   "title": "An office building outbreak: the changing epidemiology of tuberculosis in Shenzhen, China.",
+   "year": "2020",
+   "journal": "Epidemiology and infection",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32083944",
+   "title": "Evaluation of QuantiFERON-TB Gold Plus for Predicting Incident Tuberculosis among Recent Contacts: A Prospective Cohort Study.",
+   "year": "2020",
+   "journal": "Annals of the American Thoracic Society",
+   "pubtypes": [
+    "Evaluation Study",
+    "Letter",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32067903",
+   "title": "Role of CD8 T-cell in immune response to tuberculosis-specific antigen in QuantiFERON-TB Gold Plus.",
+   "year": "2020",
+   "journal": "Journal of infection and chemotherapy : official journal of the Japan Society of Chemotherapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32005136",
+   "title": "Identification of subclinical tuberculosis in household contacts using exposure scores and contact investigations.",
+   "year": "2020",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31991008",
+   "title": "Foreign background and older age of children were associated with infection in Swedish tuberculosis contacts.",
+   "year": "2020",
+   "journal": "Acta paediatrica (Oslo, Norway : 1992)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31931917",
+   "title": "Tuberculin skin test reaction depends on type of purified protein derivative: implications for cut-off values.",
+   "year": "2019",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31825645",
+   "title": "Quantitative IFN-γ Release Assay and Tuberculin Skin Test Results to Predict Incident Tuberculosis. A Prospective Cohort Study.",
+   "year": "2020",
+   "journal": "American journal of respiratory and critical care medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31681551",
+   "title": "Validation and Clinical Application of Interferon-Gamma Release Assay for Diagnosis of Latent Tuberculosis Infection in Children.",
+   "year": "2019",
+   "journal": "International journal of applied & basic medical research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31615611",
+   "title": "Tuberculosis screening in outpatient healthcare workers: lessons from a high-income, low TB burden country.",
+   "year": "2019",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31615605",
+   "title": "Serial T-SPOT.TB in household contacts of tuberculosis patients: a 6-year observational study in China.",
+   "year": "2019",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31533882",
+   "title": "Vitamin D deficiency is associated with tuberculosis infection among household contacts in Ulaanbaatar, Mongolia.",
+   "year": "2019",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31504674",
+   "title": "Effectiveness of BCG Vaccination Against Mycobacterium tuberculosis Infection in Adults: A Cross-sectional Analysis of a UK-Based Cohort.",
+   "year": "2020",
+   "journal": "The Journal of infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31482780",
+   "title": "Low Prevalence of Latent Tuberculosis Infection among Contacts of Smear-Positive Adults in Brazil.",
+   "year": "2019",
+   "journal": "The American journal of tropical medicine and hygiene",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31430056",
+   "title": "Analysis of cellular and soluble profiles in QuantiFERON nonconverters, converters, and reverters in the Gambia.",
+   "year": "2019",
+   "journal": "Immunity, inflammation and disease",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31412355",
+   "title": "Changes in Transcript, Metabolite, and Antibody Reactivity During the Early Protective Immune Response in Humans to Mycobacterium tuberculosis Infection.",
+   "year": "2020",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31402331",
+   "title": "Variation in interferon-γ production between QFT-Plus and QFT-GIT assays in TB contact investigation.",
+   "year": "2019",
+   "journal": "Respiratory investigation",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31390691",
+   "title": "Proposal to Revise the Screening Test for Latent Tuberculosis Infection in Close Contacts at Elementary Schools in Korea.",
+   "year": "2019",
+   "journal": "Journal of preventive medicine and public health = Yebang Uihakhoe chi",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31370087",
+   "title": "[Contact Investigation in Active Tuberculosis and Management of Latent TB Infection: 5-year Analysis at a German City Health Authority].",
+   "year": "2020",
+   "journal": "Gesundheitswesen (Bundesverband der Arzte des Offentlichen Gesundheitsdienstes (Germany))",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31333654",
+   "title": "Two-Hit in vitro T-Cell Stimulation Detects Mycobacterium tuberculosis Infection in QuantiFERON Negative Tuberculosis Patients and Healthy Contacts From Ghana.",
+   "year": "2019",
+   "journal": "Frontiers in immunology",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31318864",
+   "title": "Infection free \"resisters\" among household contacts of adult pulmonary tuberculosis.",
+   "year": "2019",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31298280",
+   "title": "Early Clearance of Mycobacterium tuberculosis: The INFECT Case Contact Cohort Study in Indonesia.",
+   "year": "2020",
+   "journal": "The Journal of infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31261357",
+   "title": "Analysis and Reporting of Tests for Tuberculosis Infection in Childhood Contacts of Infectious Source Cases.",
+   "year": "2019",
+   "journal": "The Pediatric infectious disease journal",
+   "pubtypes": [
+    "Letter",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "31261356",
+   "title": "Re: \"Analysis and Reporting of Tests for Tuberculosis Infection in Childhood Contacts of Infectious Source Cases\".",
+   "year": "2019",
+   "journal": "The Pediatric infectious disease journal",
+   "pubtypes": [
+    "Letter",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "31225622",
+   "title": "Age-specific prevalence of TB infection among household contacts of pulmonary TB: Is it time for TB preventive therapy?",
+   "year": "2019",
+   "journal": "Transactions of the Royal Society of Tropical Medicine and Hygiene",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31217214",
+   "title": "Abdominal tuberculosis with a Pseudo-Sister Mary Joseph nodule mimicking peritoneal carcinomatosis.",
+   "year": "2019",
+   "journal": "BMJ case reports",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31208362",
+   "title": "Risk factors for active tuberculosis in 938 QuantiFERON-positive schoolchildren in Mongolia: a community-based cross-sectional study.",
+   "year": "2019",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31205929",
+   "title": "A new mathematical model to identify contacts with recent and remote latent tuberculosis.",
+   "year": "2019",
+   "journal": "ERJ open research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31172709",
+   "title": "Experiences of Latent Tuberculosis Infection Treatment for the North Korean Refugees.",
+   "year": "2019",
+   "journal": "Tuberculosis and respiratory diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31172703",
+   "title": "The Infectivity of Pulmonary Tuberculosis in Korean Army Units: Evidence from Outbreak Investigations.",
+   "year": "2019",
+   "journal": "Tuberculosis and respiratory diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31155511",
+   "title": "QuantiFERON-TB Gold In-Tube test performance in a large pediatric population investigated for suspected tuberculosis infection.",
+   "year": "2019",
+   "journal": "Paediatric respiratory reviews",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31110348",
+   "title": "IFN-γ-independent immune markers of Mycobacterium tuberculosis exposure.",
+   "year": "2019",
+   "journal": "Nature medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31023260",
+   "title": "Tuberculosis infection risk, preventive therapy care cascade and incidence of tuberculosis disease in healthcare workers at Maputo Central Hospital.",
+   "year": "2019",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30958547",
+   "title": "Early Clearance of Mycobacterium tuberculosis Is Associated With Increased Innate Immune Responses.",
+   "year": "2020",
+   "journal": "The Journal of infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30954505",
+   "title": "Estimate of the annual risk of tuberculosis infection in a general population of Japan.",
+   "year": "2019",
+   "journal": "Journal of theoretical biology",
+   "pubtypes": [
+    "Letter",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30919880",
+   "title": "Blood Transcriptomic Stratification of Short-term Risk in Contacts of Tuberculosis.",
+   "year": "2020",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30915957",
+   "title": "Overweight, Obesity, and Older Age Favor Latent Tuberculosis Infection among Household Contacts in Low Tuberculosis-Incidence Settings within Panama.",
+   "year": "2019",
+   "journal": "The American journal of tropical medicine and hygiene",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30850687",
+   "title": "Use of IP-10 detection in dried plasma spots for latent tuberculosis infection diagnosis in contacts via mail.",
+   "year": "2019",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30741387",
+   "title": "Management of Latent Tuberculosis Infection in Children from Developing Countries.",
+   "year": "2019",
+   "journal": "Indian journal of pediatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "30707912",
+   "title": "CD8 response measured by QuantiFERON-TB Gold Plus and tuberculosis disease status.",
+   "year": "2019",
+   "journal": "The Journal of infection",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30523172",
+   "title": "High prevalence of infection and low incidence of disease in child contacts of patients with drug-resistant tuberculosis: a prospective cohort study.",
+   "year": "2019",
+   "journal": "Archives of disease in childhood",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30505150",
+   "title": "Impact of Choice of Test for Latent Tuberculosis Infection on Treatment Acceptance and Completion.",
+   "year": "2018",
+   "journal": "Microbiology insights",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30481307",
+   "title": "Polymorphisms in TLR4 and TNFA and Risk of Mycobacterium tuberculosis Infection and Development of Active Disease in Contacts of Tuberculosis Cases in Brazil: A Prospective Cohort Study.",
+   "year": "2019",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30439554",
+   "title": "Discordance in latent tuberculosis (TB) test results in patients with end-stage renal disease.",
+   "year": "2019",
+   "journal": "Public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30334521",
+   "title": "Two interferon gamma release assays for predicting active tuberculosis: the UK PREDICT TB prognostic test study.",
+   "year": "2018",
+   "journal": "Health technology assessment (Winchester, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30248152",
+   "title": "C-Tb skin test to diagnose Mycobacterium tuberculosis infection in children and HIV-infected adults: A phase 3 trial.",
+   "year": "2018",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Clinical Trial, Phase III",
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30231948",
+   "title": "Epidemiology, detection, and management of tuberculosis among end-stage renal disease patients.",
+   "year": "2018",
+   "journal": "Infection control and hospital epidemiology",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "30224215",
+   "title": "[Practice recommendations for the use and interpretation of interferon gamma release assays in the diagnosis of latent and active tuberculosis].",
+   "year": "2018",
+   "journal": "Revue des maladies respiratoires",
+   "pubtypes": [
+    "Journal Article",
+    "Practice Guideline"
+   ]
+  },
+  {
+   "pmid": "30205963",
+   "title": "Diagnostic performance of GM-CSF and IL-2 in response to long-term specific-antigen cell stimulation in patients with active and latent tuberculosis infection.",
+   "year": "2018",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30174209",
+   "title": "Prognostic value of interferon-γ release assays and tuberculin skin test in predicting the development of active tuberculosis (UK PREDICT TB): a prospective cohort study.",
+   "year": "2018",
+   "journal": "The Lancet. Infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30165605",
+   "title": "Long-term Stability of Resistance to Latent Mycobacterium tuberculosis Infection in Highly Exposed Tuberculosis Household Contacts in Kampala, Uganda.",
+   "year": "2019",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30157233",
+   "title": "Boosting effect of IL-7 in interferon gamma release assays to diagnose Mycobacterium tuberculosis infection.",
+   "year": "2018",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30067752",
+   "title": "Tuberculin skin test and QuantiFERON-Gold In Tube assay for diagnosis of latent TB infection among household contacts of pulmonary TB patients in high TB burden setting.",
+   "year": "2018",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30029893",
+   "title": "Borderline QuantiFERON results and the distinction between specific responses and test variability.",
+   "year": "2018",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29991394",
+   "title": "Daily cough frequency in tuberculosis and association with household infection.",
+   "year": "2018",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29960282",
+   "title": "Recommendations for the management of tuberculosis in children - KOMPASS TB. Part 1: Tuberculosis prevention.",
+   "year": "2018",
+   "journal": "Advances in respiratory medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29862955",
+   "title": "Diabetes and pre-diabetes among household contacts of tuberculosis patients in India: is it time to screen them all?",
+   "year": "2018",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29731933",
+   "title": "Latent Tuberculosis Infection - Diagnosis and Treatment.",
+   "year": "2018",
+   "journal": "Open access Macedonian journal of medical sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29663953",
+   "title": "Cost-effectiveness of contact screening strategies for tuberculosis among high-school adolescents in South Korea.",
+   "year": "2018",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29642834",
+   "title": "[Risk of travel associated tuberculosis].",
+   "year": "2018",
+   "journal": "Mikrobiyoloji bulteni",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "29548281",
+   "title": "Mycobacterium tuberculosis thymidylate kinase antigen assays for designating incipient, high-risk latent M.tb infection.",
+   "year": "2018",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "29505017",
+   "title": "Household tuberculosis contact investigation in a tuberculosis-prevalent country: Are the tuberculin skin test and interferon-gamma release assay enough in elderly contacts?",
+   "year": "2018",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29348181",
+   "title": "Intensity of exposure to pulmonary tuberculosis determines risk of tuberculosis infection and disease.",
+   "year": "2018",
+   "journal": "The European respiratory journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29332319",
+   "title": "Treatment of Latent Tuberculosis Infection and Its Clinical Efficacy.",
+   "year": "2018",
+   "journal": "Tuberculosis and respiratory diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "29190430",
+   "title": "Evaluating UK National Guidance for Screening of Children for Tuberculosis. A Prospective Multicenter Study.",
+   "year": "2018",
+   "journal": "American journal of respiratory and critical care medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29161328",
+   "title": "Use of QuantiFERON®-TB Gold in-tube culture supernatants for measurement of antibody responses.",
+   "year": "2017",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29020191",
+   "title": "QuantiFERON-TB Gold In-Tube as a Confirmatory Test for Tuberculin Skin Test in Tuberculosis Contact Tracing: A Noninferiority Clinical Trial.",
+   "year": "2018",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "pubtypes": [
+    "Equivalence Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28821234",
+   "title": "Incident Mycobacterium tuberculosis infection in household contacts of infectious tuberculosis patients in Brazil.",
+   "year": "2017",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28793935",
+   "title": "Utilization of Electronic Health Record Events to Conduct a Tuberculosis Contact Investigation in a High-Risk Oncology Unit.",
+   "year": "2017",
+   "journal": "Infection control and hospital epidemiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28722570",
+   "title": "Mycobacterium tuberculosis Infection in Close Childhood Contacts of Adults with Pulmonary Tuberculosis is Increased by Secondhand Exposure to Tobacco.",
+   "year": "2017",
+   "journal": "The American journal of tropical medicine and hygiene",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28512556",
+   "title": "Pediatric Tuberculosis in Northern Sardinia.",
+   "year": "2017",
+   "journal": "Mediterranean journal of hematology and infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28419376",
+   "title": "Latent TB infection and pulmonary TB disease among patients with diabetes mellitus in Bandung, Indonesia.",
+   "year": "2017",
+   "journal": "Transactions of the Royal Society of Tropical Medicine and Hygiene",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28407146",
+   "title": "High rates of latent TB infection in contacts and the wider community in South India.",
+   "year": "2017",
+   "journal": "Transactions of the Royal Society of Tropical Medicine and Hygiene",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28367796",
+   "title": "Contact investigation after a fatal case of extensively drug-resistant tuberculosis (XDR-TB) in an aircraft, Germany, July 2013.",
+   "year": "2017",
+   "journal": "Euro surveillance : bulletin Europeen sur les maladies transmissibles = European communicable disease bulletin",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28317801",
+   "title": "Utility of QuantiFERON tuberculosis gold-in-tube test for detecting latent tuberculosis infection among close household contacts of confirmed tuberculosis patients in Accra, Ghana.",
+   "year": "2017",
+   "journal": "International journal of mycobacteriology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28234083",
+   "title": "Evaluation of tuberculosis contact investigations in Japan.",
+   "year": "2017",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28225337",
+   "title": "Multiple cytokines for the detection of Mycobacterium tuberculosis infection in children with tuberculosis.",
+   "year": "2017",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28159608",
+   "title": "Safety and efficacy of the C-Tb skin test to diagnose Mycobacterium tuberculosis infection, compared with an interferon γ release assay and the tuberculin skin test: a phase 3, double-blind, randomised, controlled trial.",
+   "year": "2017",
+   "journal": "The Lancet. Respiratory medicine",
+   "pubtypes": [
+    "Clinical Trial, Phase III",
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28114976",
+   "title": "Close contact interferon-gamma response to the new PstS1((285-374)):CPF10: a preliminary 1-year follow-up study.",
+   "year": "2017",
+   "journal": "BMC research notes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28111432",
+   "title": "Comparing tuberculin skin test and interferon γ release assay (T-SPOT.TB) to diagnose latent tuberculosis infection in household contacts.",
+   "year": "2017",
+   "journal": "The Korean journal of internal medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28060926",
+   "title": "Comparison of TST and IGRA in Diagnosis of Latent Tuberculosis Infection in a High TB-Burden Setting.",
+   "year": "2017",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27866367",
+   "title": "Risk for latent and active tuberculosis in Germany.",
+   "year": "2017",
+   "journal": "Infection",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27855476",
+   "title": "[Tuberculosis Contact Investigation: Eight Years of Experience with the QuantiFERON-TB®Gold In-Tube in Lower Saxony, Germany].",
+   "year": "2017",
+   "journal": "Gesundheitswesen (Bundesverband der Arzte des Offentlichen Gesundheitsdienstes (Germany))",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27390280",
+   "title": "First evaluation of QuantiFERON-TB Gold Plus performance in contact screening.",
+   "year": "2016",
+   "journal": "The European respiratory journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27668896",
+   "title": "Latent tuberculosis infection (LTBI): a real host defence or a permanent threat?",
+   "year": "2016",
+   "journal": "Le infezioni in medicina",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "27445519",
+   "title": "Change in the Prevalence of Testing for Latent Tuberculosis Infection in the United States: 1999-2012.",
+   "year": "2016",
+   "journal": "Canadian respiratory journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27424071",
+   "title": "Executive Summary of the Guidelines for the Use of interferon-gamma Release Assays in the Diagnosis of Tuberculosis Infection.",
+   "year": "2016",
+   "journal": "Archivos de bronconeumologia",
+   "pubtypes": [
+    "Consensus Statement",
+    "Journal Article",
+    "Practice Guideline"
+   ]
+  },
+  {
+   "pmid": "27335104",
+   "title": "The impact of BCG vaccination on tuberculin skin test responses in children is age dependent: evidence to be considered when screening children for tuberculosis infection.",
+   "year": "2016",
+   "journal": "Thorax",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "27330961",
+   "title": "Importance of TB contact investigations.",
+   "year": "2016",
+   "journal": "Respiratory medicine case reports",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27263224",
+   "title": "[USE OF QuantiFERON® TB-GOLD IN-TUBE IN A CONTACT INVESTIGATION TO DETERMINE THE ONSET OF TUBERCULOSIS WITH OR WITHOUT LATENT TUBERCULOSIS INFECTION TREATMENT].",
+   "year": "2016",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27222718",
+   "title": "Multidrug-resistant tuberculosis outbreak in an Italian prison: tolerance of pyrazinamide plus levofloxacin prophylaxis and serial interferon gamma release assays.",
+   "year": "2016",
+   "journal": "New microbes and new infections",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27155192",
+   "title": "M. tuberculosis DNA detection in nasopharyngeal mucosa can precede tuberculosis development in contacts.",
+   "year": "2016",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "27052266",
+   "title": "A prospective cohort study of latent tuberculosis in adult close contacts of active pulmonary tuberculosis patients in Korea.",
+   "year": "2016",
+   "journal": "The Korean journal of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "26927987",
+   "title": "Interferon-gamma release assays and tuberculin skin testing for diagnosing latent Mycobacterium tuberculosis infection in at-risk groups in Poland.",
+   "year": "2016",
+   "journal": "International journal of mycobacteriology",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26821394",
+   "title": "[FACTORS ASSOCIATED WITH CHANGES IN THE NUMBER OF LATENT TUBERCULOSIS INFECTION NOTIFICATIONS IN JAPAN: NATIONWIDE SURVEY FINDINGS].",
+   "year": "2015",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26771653",
+   "title": "The Use of Interferon Gamma Inducible Protein 10 as a Potential Biomarker in the Diagnosis of Latent Tuberculosis Infection in Uganda.",
+   "year": "2016",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26725461",
+   "title": "Comparison of latent tuberculosis infection rate between contacts with active tuberculosis and non-contacts.",
+   "year": "2016",
+   "journal": "Respiratory medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26694909",
+   "title": "Assessment of latent tuberculosis infection in psychiatric inpatients: A survey after tuberculosis outbreaks.",
+   "year": "2016",
+   "journal": "Journal of microbiology, immunology, and infection = Wei mian yu gan ran za zhi",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26676497",
+   "title": "Diagnosis of latent Mycobacterium tuberculosis infection: tuberculin test versus interferon-gamma release.",
+   "year": "2015",
+   "journal": "Revista da Sociedade Brasileira de Medicina Tropical",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26584529",
+   "title": "Outbreak of isoniazid-resistant tuberculosis in an immigrant community in Spain.",
+   "year": "2016",
+   "journal": "Archivos de bronconeumologia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26546406",
+   "title": "PpiA antigen specific immune response is a potential biomarker for latent tuberculosis infection.",
+   "year": "2015",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26521523",
+   "title": "TRANSMISSION AND RISK FACTORS FOR LATENT TUBERCULOSIS INFECTIONS AMONG INDEX CASE-MATCHED HOUSEHOLD CONTACTS.",
+   "year": "2015",
+   "journal": "The Southeast Asian journal of tropical medicine and public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26493989",
+   "title": "Effect of isoniazid preventive therapy on immune responses to mycobacterium tuberculosis: an open label randomised, controlled, exploratory study.",
+   "year": "2015",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26493775",
+   "title": "Do the tuberculin skin test and the QuantiFERON-TB Gold in-tube test agree in detecting latent tuberculosis among high-risk contacts? A systematic review and meta-analysis.",
+   "year": "2015",
+   "journal": "Epidemiology and health",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "26421415",
+   "title": "Profile of interferon-gamma response to latency-associated and novel in vivo expressed antigens in a cohort of subjects recently exposed to Mycobacterium tuberculosis.",
+   "year": "2015",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26407408",
+   "title": "Relating Tuberculosis (TB) Contact Characteristics to QuantiFERON-TB-Gold and Tuberculin Skin Test Results in the Toronto Pediatric TB Clinic.",
+   "year": "2015",
+   "journal": "Journal of the Pediatric Infectious Diseases Society",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26405286",
+   "title": "Management of latent Mycobacterium tuberculosis infection: WHO guidelines for low tuberculosis burden countries.",
+   "year": "2015",
+   "journal": "The European respiratory journal",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "26399233",
+   "title": "A scoping review of cost-effectiveness of screening and treatment for latent tubercolosis infection in migrants from high-incidence countries.",
+   "year": "2015",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "26394149",
+   "title": "Cough Aerosol Cultures of Mycobacterium tuberculosis: Insights on TST / IGRA Discordance and Transmission Dynamics.",
+   "year": "2015",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26342121",
+   "title": "Evaluation of the QuantiFERON?-TB Gold In-Tube assay and tuberculin skin test for the diagnosis of Mycobacterium tuberculosis infection in northeastern Thailand.",
+   "year": "2015",
+   "journal": "Asian Pacific journal of allergy and immunology",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26337480",
+   "title": "[Longitudinal follow-up of contact subjects of cases of tuberculosis in Paris].",
+   "year": "2015",
+   "journal": "Revue des maladies respiratoires",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "26320991",
+   "title": "[Up-to-date applicability of interferon-γ release assays for the diagnosis of tuberculosis].",
+   "year": "2015",
+   "journal": "Enfermedades infecciosas y microbiologia clinica",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26270062",
+   "title": "Investigation of Tuberculosis in a High School - San Antonio, Texas, 2012.",
+   "year": "2015",
+   "journal": "MMWR. Morbidity and mortality weekly report",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26202990",
+   "title": "Flow cytometry analysis of CD4+IFN-γ+ T-cells for the diagnosis of mycobacterium tuberculosis infection.",
+   "year": "2016",
+   "journal": "Cytometry. Part B, Clinical cytometry",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26195117",
+   "title": "[Children exposed to multidrug-resistant tuberculosis: How should we manage? Analysis of 46 child contacts and review of the literature].",
+   "year": "2015",
+   "journal": "Revue de pneumologie clinique",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "26175730",
+   "title": "Quantity and Quality of Inhaled Dose Predicts Immunopathology in Tuberculosis.",
+   "year": "2015",
+   "journal": "Frontiers in immunology",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "25936741",
+   "title": "IFN-γ/TNF-α ratio in response to immuno proteomically identified human T-cell antigens of Mycobacterium tuberculosis - The most suitable surrogate biomarker for latent TB infection.",
+   "year": "2015",
+   "journal": "The Journal of infection",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25901728",
+   "title": "Use of the QuantiFERON®-TB Gold in Tube test for screening TB contacts and predictive value for active TB.",
+   "year": "2015",
+   "journal": "Infectious diseases (London, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25868027",
+   "title": "Role of confirmatory interferon-gamma release assays in school outbreaks of tuberculosis in South Korea.",
+   "year": "2015",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25861578",
+   "title": "Results of tuberculosis contact investigation in congregate settings in Korea, 2013.",
+   "year": "2014",
+   "journal": "Osong public health and research perspectives",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25861575",
+   "title": "The Usefulness of the Tuberculosis Skin Test and the Interferon-gamma Release Assay in the Diagnosis of Latent Tuberculosis Infection in South Korea.",
+   "year": "2014",
+   "journal": "Osong public health and research perspectives",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25861337",
+   "title": "Diagnosis and treatment of latent tuberculosis infection.",
+   "year": "2015",
+   "journal": "Tuberculosis and respiratory diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "25824629",
+   "title": "The assessment of cytokines in Quantiferon supernatants for the diagnosis of latent TB infection in a tribal population of Melghat, India.",
+   "year": "2015",
+   "journal": "Journal of infection and public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25794770",
+   "title": "[Comparative study of concordance and costs between tuberculin skin test and QuantiFERON(®)-TB Gold In-Tube in the diagnosis of latent tuberculosis infection among contacts of patients with pulmonary tuberculosis].",
+   "year": "2015",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25774015",
+   "title": "Cost Effectiveness of Preventive Treatment for Tuberculosis in Special High-Risk Populations.",
+   "year": "2015",
+   "journal": "PharmacoEconomics",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "25763458",
+   "title": "Risk Assessment of Tuberculosis in Contacts by IFN-γ Release Assays. A Tuberculosis Network European Trials Group Study.",
+   "year": "2015",
+   "journal": "American journal of respiratory and critical care medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25737986",
+   "title": "Performance of a rapid strip test for the serologic diagnosis of latent tuberculosis in children.",
+   "year": "2015",
+   "journal": "Journal of clinical and diagnostic research : JCDR",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25730948",
+   "title": "[Association between smoking and tuberculosis infection].",
+   "year": "2014",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25730946",
+   "title": "[The evaluation of the utility of QuantiFERON TB-Gold In-Tube; QFT-GIT].",
+   "year": "2014",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25699406",
+   "title": "Predicting the Development of Tuberculosis with the Tuberculin Skin Test and QuantiFERON Testing.",
+   "year": "2015",
+   "journal": "Annals of the American Thoracic Society",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25692351",
+   "title": "Role of QuantiFERON(®)-TB Gold In-Tube in tuberculosis contact investigation: experience in a tuberculosis unit.",
+   "year": "2015",
+   "journal": "Infectious diseases (London, England)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25689894",
+   "title": "T-Spot.TB outperforms tuberculin skin test in predicting development of active tuberculosis among household contacts.",
+   "year": "2015",
+   "journal": "Respirology (Carlton, Vic.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25622087",
+   "title": "Optimizing the detection of recent tuberculosis infection in children in a high tuberculosis-HIV burden setting.",
+   "year": "2015",
+   "journal": "American journal of respiratory and critical care medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25466365",
+   "title": "QuantiFERON-TB Gold In-Tube test conversions and reversions among tuberculosis patients and their household contacts in Addis Ababa: a one year follow-up study.",
+   "year": "2014",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25452040",
+   "title": "Adjunctive biomarkers for improving diagnosis of tuberculosis and monitoring therapeutic effects.",
+   "year": "2015",
+   "journal": "The Journal of infection",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25410989",
+   "title": "Serial QuantiFERON-TB Gold In-Tube assay and tuberculin skin test to diagnose latent tuberculosis in household Mexican contacts: conversion and reversion rates and associated factors using conventional and borderline zone definitions.",
+   "year": "2014",
+   "journal": "Memorias do Instituto Oswaldo Cruz",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25404412",
+   "title": "Risk factors for latent tuberculosis infection in close contacts of active tuberculosis patients in South Korea: a prospective cohort study.",
+   "year": "2014",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25372043",
+   "title": "Impact of co-infections and BCG immunisation on immune responses among household contacts of tuberculosis patients in a Ugandan cohort.",
+   "year": "2014",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25274036",
+   "title": "Vitamin D status and incidence of tuberculosis infection conversion in contacts of pulmonary tuberculosis patients: a prospective cohort study.",
+   "year": "2015",
+   "journal": "Epidemiology and infection",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25195296",
+   "title": "[Risk of tuberculosis infection among care workers during an outbreak of tuberculosis at a care facility for the elderly].",
+   "year": "2014",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25073535",
+   "title": "Comparison of IGRA tests and TST in the diagnosis of latent tuberculosis infection and predicting tuberculosis in risk groups in Krakow, Poland.",
+   "year": "2014",
+   "journal": "Scandinavian journal of infectious diseases",
+   "pubtypes": [
+    "Comparative Study",
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25041769",
+   "title": "Interferon-gamma release assays and the diagnosis of tuberculosis: have they found their place?",
+   "year": "2014",
+   "journal": "Internal medicine journal",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "25012075",
+   "title": "Agreement between QuantiFERON®-TB Gold In-Tube and the tuberculin skin test and predictors of positive test results in Warao Amerindian pediatric tuberculosis contacts.",
+   "year": "2014",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24947627",
+   "title": "An interferon-gamma release assay test performs well in routine screening for tuberculosis.",
+   "year": "2014",
+   "journal": "Danish medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24937049",
+   "title": "Tuberculin skin test and interferon-gamma release assay values are associated with antimicrobial peptides expression in  polymorphonuclear cells during latent tuberculous infection.",
+   "year": "2014",
+   "journal": "Memorias do Instituto Oswaldo Cruz",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24903932",
+   "title": "Predictors of contact tracing completion and outcomes in tuberculosis: a 21-year retrospective cohort study.",
+   "year": "2014",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24903785",
+   "title": "Latent tuberculous infection prevalence among paediatric contacts of drug-resistant and drug-susceptible cases.",
+   "year": "2014",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24841855",
+   "title": "Analysis of Th1, Th17 and regulatory T cells in tuberculosis case contacts.",
+   "year": "2014",
+   "journal": "Cellular immunology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24716362",
+   "title": "[Lessons learned from tuberculosis outbreak cases].",
+   "year": "2014",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24581013",
+   "title": "Lessons learned from earthquake-related tuberculosis exposures in a community shelter, Japan, 2011.",
+   "year": "2014",
+   "journal": "American journal of infection control",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24521785",
+   "title": "Evaluation of gamma interferon immune response elicited by the newly constructed PstS-1(285-374):CFP10 fusion protein to detect Mycobacterium tuberculosis infection.",
+   "year": "2014",
+   "journal": "Clinical and vaccine immunology : CVI",
+   "pubtypes": [
+    "Comparative Study",
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24454900",
+   "title": "Tuberculosis contact investigation using interferon-gamma release assay with chest x-ray and computed tomography.",
+   "year": "2014",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24327943",
+   "title": "Serial IGRA testing of trainees in the healthcare sector in a country with low incidence for tuberculosis - a prospective cohort study.",
+   "year": "2013",
+   "journal": "GMS hygiene and infection control",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24313987",
+   "title": "Prevalence of latent tuberculosis infection in Sudan: a case-control study comparing interferon-γ release assay and tuberculin skin test.",
+   "year": "2013",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24053975",
+   "title": "Interferon-γ responses to Mycobacterium tuberculosis Rpf proteins in contact investigation.",
+   "year": "2013",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24040564",
+   "title": "Blood Cells and Interferon-Gamma Levels Correlation in Latent Tuberculosis Infection.",
+   "year": "2013",
+   "journal": "ISRN pulmonology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24011630",
+   "title": "Ethnicity-tailored novel set of ESAT-6 peptides for differentiating active and latent tuberculosis.",
+   "year": "2013",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23860885",
+   "title": "Tuberculosis infection during Hajj pilgrimage. The risk to pilgrims and their communities.",
+   "year": "2013",
+   "journal": "Saudi medical journal",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "23700446",
+   "title": "The prevalence of latent Mycobacterium tuberculosis infection based on an interferon-γ release assay: a cross-sectional survey among urban adults in Mwanza, Tanzania.",
+   "year": "2013",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23638198",
+   "title": "Prevalence of latent and active tuberculosis among dairy farm workers exposed to cattle infected by Mycobacterium bovis.",
+   "year": "2013",
+   "journal": "PLoS neglected tropical diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23593145",
+   "title": "Cost-effectiveness of Quantiferon®-TB Gold-in-Tube versus tuberculin skin testing for contact screening and treatment of latent tuberculosis infection in Brazil.",
+   "year": "2013",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23529019",
+   "title": "Using QuantiFERON-TB Gold In-Tube for field-based tuberculosis contact investigations in congregate settings.",
+   "year": "2013",
+   "journal": "Journal of public health management and practice : JPHMP",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23506719",
+   "title": "Performance of tuberculin skin test compared to QFT-IT to detect latent TB among high-risk contacts in Mexico.",
+   "year": "2013",
+   "journal": "Archives of medical research",
+   "pubtypes": [
+    "Comparative Study",
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23460006",
+   "title": "Advances in the diagnosis of latent tuberculosis infection.",
+   "year": "2013",
+   "journal": "Seminars in respiratory and critical care medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "23356448",
+   "title": "Apoptosis-associated biomarkers in tuberculosis: promising for diagnosis and prognosis prediction.",
+   "year": "2013",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23342541",
+   "title": "Agreement between skin testing and QuantiFERON-TB Gold In-Tube assay (QFT-TB) in detecting latent tuberculosis infection among household contacts in India.",
+   "year": "2012",
+   "journal": "The Indian journal of tuberculosis",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23339888",
+   "title": "[Analysis of discordance between tuberculin test and QuantiFERON-TB® Gold In-Tube in studies of contacts].",
+   "year": "2013",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "Clinical Trial",
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23306539",
+   "title": "Cough aerosols of Mycobacterium tuberculosis predict new infection: a household contact study.",
+   "year": "2013",
+   "journal": "American journal of respiratory and critical care medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23276770",
+   "title": "Antigen-specific CD4- and CD8-positive signatures in different phases of Mycobacterium tuberculosis infection.",
+   "year": "2013",
+   "journal": "Diagnostic microbiology and infectious disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23272100",
+   "title": "Evaluation of the diagnostic potential of IP-10 and IL-2 as biomarkers for the diagnosis of active and latent tuberculosis in a BCG-vaccinated population.",
+   "year": "2012",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23200579",
+   "title": "[Recent latent tuberculous infection (LTBI) in different sub-groups of contacts].",
+   "year": "2012",
+   "journal": "Revue des maladies respiratoires",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "23131256",
+   "title": "Risk factors for Mycobacterium tuberculosis infection in Indonesian children living with a sputum smear-positive case.",
+   "year": "2012",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23104773",
+   "title": "Drug therapy for children with tuberculosis.",
+   "year": "2012",
+   "journal": "Archives of disease in childhood",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23077594",
+   "title": "Determining Mycobacterium tuberculosis infection among BCG-immunised Ugandan children by T-SPOT.TB and tuberculin skin testing.",
+   "year": "2012",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22956558",
+   "title": "Single-step QuantiFERON screening of adult contacts: a prospective cohort study of tuberculosis risk.",
+   "year": "2013",
+   "journal": "Thorax",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22937059",
+   "title": "Observational study of QuantiFERON®-TB gold in-tube assay in tuberculosis contacts in a low incidence area.",
+   "year": "2012",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22877977",
+   "title": "Helminths and skewed cytokine profiles increase tuberculin skin test positivity in Warao Amerindians.",
+   "year": "2012",
+   "journal": "Tuberculosis (Edinburgh, Scotland)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22717944",
+   "title": "Modelling the cost-effectiveness of strategies to prevent tuberculosis in child contacts in a high-burden setting.",
+   "year": "2013",
+   "journal": "Thorax",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "22700862",
+   "title": "Identifying predictors of interferon-γ release assay results in pediatric latent tuberculosis: a protective role of bacillus Calmette-Guerin?: a pTB-NET collaborative study.",
+   "year": "2012",
+   "journal": "American journal of respiratory and critical care medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22692027",
+   "title": "Well-quantified tuberculosis exposure is a reliable surrogate measure of tuberculosis infection.",
+   "year": "2012",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22653490",
+   "title": "Interferon gamma-induced protein-10 concentrations in children with previous tuberculosis infections and disease.",
+   "year": "2012",
+   "journal": "The Pediatric infectious disease journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22586160",
+   "title": "Screening for latent tuberculosis infection: performance of tuberculin skin test and interferon-γ release assays under real-life conditions.",
+   "year": "2012",
+   "journal": "Annals of the rheumatic diseases",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22585454",
+   "title": "Serial interferon-gamma release assays after chemoprophylaxis in a tuberculosis outbreak cohort.",
+   "year": "2012",
+   "journal": "Infection",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22514937",
+   "title": "[Examination of onset cases in contact investigation].",
+   "year": "2012",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22484244",
+   "title": "Use of the T-SPOT.TB assay to screen latent tuberculosis infection among the TB contacts in Shanghai, China.",
+   "year": "2012",
+   "journal": "The Journal of infection",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22441737",
+   "title": "Increased frequencies of pulmonary regulatory T-cells in latent Mycobacterium tuberculosis infection.",
+   "year": "2012",
+   "journal": "The European respiratory journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22381458",
+   "title": "Interferon gamma and interferon gamma inducible protein-10 in detecting tuberculosis infection.",
+   "year": "2012",
+   "journal": "The Journal of infection",
+   "pubtypes": [
+    "Comparative Study",
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22325792",
+   "title": "QuantiFERON®-TB Gold In-Tube assay vs. tuberculin skin test in Indonesian children living with a tuberculosis case.",
+   "year": "2012",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22256408",
+   "title": "Interferon-gamma release assay for detection of latent tuberculosis infection in casual and close contacts of tuberculosis cases.",
+   "year": "2011",
+   "journal": "Eastern Mediterranean health journal = La revue de sante de la Mediterranee orientale = al-Majallah al-sihhiyah li-sharq al-mutawassit",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22250466",
+   "title": "[Comparison of conventional tuberculin skin test and QFT-2G, a new method for diagnosis of tuberculosis infection, with the use of the contact score].",
+   "year": "2011",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "Comparative Study",
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22250463",
+   "title": "[Comparative performance of tuberculin skin test and QuantiFERON TB-gold in contact investigations for tuberculosis].",
+   "year": "2011",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22240217",
+   "title": "[Screening contacts for latent tuberculosis infection (LTBI) using an interferon test in Paris in 2009].",
+   "year": "2012",
+   "journal": "Revue des maladies respiratoires",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "22118167",
+   "title": "Programmatic impact of using QuantiFERON®-TB Gold in routine contact investigation activities.",
+   "year": "2011",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22066009",
+   "title": "Longitudinal analysis of QuantiFERON-TB Gold In-Tube in children with adult household tuberculosis contact in South Africa: a prospective cohort study.",
+   "year": "2011",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "21966356",
+   "title": "Can interferon-gamma or interferon-gamma-induced-protein-10 differentiate tuberculosis infection and disease in children of high endemic areas?",
+   "year": "2011",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21966239",
+   "title": "Tuberculosis in children: New diagnostic blood tests.",
+   "year": "2010",
+   "journal": "Paediatrics & child health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21961888",
+   "title": "Systematic review of cost and cost-effectiveness of different TB-screening strategies.",
+   "year": "2011",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "21903320",
+   "title": "Advances in the diagnosis of tuberculosis infection.",
+   "year": "2011",
+   "journal": "Archivos de bronconeumologia",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "21835069",
+   "title": "Adverse events and development of tuberculosis after 4 months of rifampicin prophylaxis in a tuberculosis outbreak.",
+   "year": "2012",
+   "journal": "Epidemiology and infection",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21756513",
+   "title": "QuantiFERON-TB Gold In-Tube for the detection of Mycobacterium tuberculosis infection in children with household tuberculosis contact.",
+   "year": "2011",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "21695661",
+   "title": "[New recommendations for contact tracing in tuberculosis].",
+   "year": "2011",
+   "journal": "Gesundheitswesen (Bundesverband der Arzte des Offentlichen Gesundheitsdienstes (Germany))",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21681979",
+   "title": "Concordance between tuberculin skin test and interferon-γ assay and interferon-γ response to mitogen in pediatric tuberculosis contacts.",
+   "year": "2011",
+   "journal": "Pediatric pulmonology",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21572371",
+   "title": "Interferon-γ release assay for the diagnosis of latent tuberculosis in children younger than 5 years of age.",
+   "year": "2011",
+   "journal": "The Pediatric infectious disease journal",
+   "pubtypes": [
+    "Comparative Study",
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21560113",
+   "title": "[New recommendations for contact tracing in tuberculosis. German Central Committee against Tuberculosis].",
+   "year": "2011",
+   "journal": "Pneumologie (Stuttgart, Germany)",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21543457",
+   "title": "Interferon-γ release assay for the diagnosis of tuberculosis in children.",
+   "year": "2012",
+   "journal": "Archives of disease in childhood",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21524761",
+   "title": "[Comparative performance of QuantiFERON(®)-TB Gold IT versus tuberculin skin test among contact investigations for latent tuberculosis infection].",
+   "year": "2011",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "Comparative Study",
+    "Controlled Clinical Trial",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "21483746",
+   "title": "Risk factors associated with positive QuantiFERON-TB Gold In-Tube and tuberculin skin tests results in Zambia and South Africa.",
+   "year": "2011",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21420564",
+   "title": "Diagnosis of tuberculosis infection using interferon-γ-based assays.",
+   "year": "2011",
+   "journal": "Enfermedades infecciosas y microbiologia clinica",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "21419733",
+   "title": "[Study of contacts in children and adolescents using the QuantiFERON®-TB Gold In-Tube].",
+   "year": "2011",
+   "journal": "Anales de pediatria (Barcelona, Spain : 2003)",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21332285",
+   "title": "Tuberculin skin test and interferon-γ release assay show better correlation after the tuberculin 'window period' in tuberculosis contacts.",
+   "year": "2011",
+   "journal": "Scandinavian journal of infectious diseases",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21148232",
+   "title": "Time interval to conversion of interferon-gamma release assay after exposure to tuberculosis.",
+   "year": "2011",
+   "journal": "The European respiratory journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21063967",
+   "title": "[Evaluation of Quantiferon-TB Gold and tuberculin skin test in patients with tuberculosis, close contact of patients, health care workers and tuberculosis laboratory personnel].",
+   "year": "2010",
+   "journal": "Mikrobiyoloji bulteni",
+   "pubtypes": [
+    "Comparative Study",
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21061707",
+   "title": "[Diagnosis and treatment of latent tubercular infections].",
+   "year": "2010",
+   "journal": "Giornale italiano di medicina del lavoro ed ergonomia",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21030395",
+   "title": "Protective effect of BCG vaccination in a nursery outbreak in 2009: time to reconsider the vaccination threshold?",
+   "year": "2010",
+   "journal": "Thorax",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20947898",
+   "title": "A comparison between interferon gamma release assays and the tuberculin skin test in the contact tracing of patients with chronic kidney disease.",
+   "year": "2011",
+   "journal": "Thorax",
+   "pubtypes": [
+    "Comment",
+    "Comparative Study",
+    "Letter"
+   ]
+  },
+  {
+   "pmid": "20937183",
+   "title": "Latent tuberculosis infection among close contacts of multidrug-resistant tuberculosis patients in central Taiwan.",
+   "year": "2010",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20857019",
+   "title": "Comparison of the QuantiFERON®-TB Gold assay and tuberculin skin test to detect latent tuberculosis infection among target groups in Trinidad & Tobago.",
+   "year": "2010",
+   "journal": "Revista panamericana de salud publica = Pan American journal of public health",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20814857",
+   "title": "[Implementation of the interferon-γ release assay for contact tracing: a 2-year project in lower Saxony, Germany].",
+   "year": "2011",
+   "journal": "Gesundheitswesen (Bundesverband der Arzte des Offentlichen Gesundheitsdienstes (Germany))",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20802162",
+   "title": "Negative and positive predictive value of a whole-blood interferon-γ release assay for developing active tuberculosis: an update.",
+   "year": "2011",
+   "journal": "American journal of respiratory and critical care medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20731612",
+   "title": "Pairing QuantiFERON gold in-tube with opt-out HIV testing in a tuberculosis contact investigation in the Southeastern United States.",
+   "year": "2010",
+   "journal": "AIDS patient care and STDs",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "20662251",
+   "title": "[Tuberculosis infection by tuberculin skin test or QuantiFERON and related factors in contact investigations].",
+   "year": "2010",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20616761",
+   "title": "Whole blood interferon-γ release assay is a useful tool for the diagnosis of tuberculosis infection particularly among Bacille Calmette Guèrin-vaccinated children.",
+   "year": "2010",
+   "journal": "The Pediatric infectious disease journal",
+   "pubtypes": [
+    "Comparative Study",
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20422203",
+   "title": "Comparison of T-cell interferon-gamma release assays for Mycobacterium tuberculosis-specific antigens in patients with active and latent tuberculosis.",
+   "year": "2010",
+   "journal": "Lung",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20411295",
+   "title": "Interferon-gamma releasing assay versus tuberculin skin testing for latent tuberculosis infection in targeted screening programs for high risk immigrants.",
+   "year": "2010",
+   "journal": "Infection",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20381206",
+   "title": "[Mantoux versus immunoferon-gamma test for diagnosis of latent tuberculosis infection in TB patient contacts].",
+   "year": "2011",
+   "journal": "Atencion primaria",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "20202306",
+   "title": "Cost-effectiveness of QuantiFERON-TB test vs. tuberculin skin test in the diagnosis of latent tuberculosis infection.",
+   "year": "2010",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20170555",
+   "title": "Different screening strategies (single or dual) for the diagnosis of suspected latent tuberculosis: a cost effectiveness analysis.",
+   "year": "2010",
+   "journal": "BMC pulmonary medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20068506",
+   "title": "Commercial interferon gamma release assays compared to the tuberculin skin test for diagnosis of latent Mycobacterium tuberculosis infection in childhood contacts in the Gambia.",
+   "year": "2010",
+   "journal": "The Pediatric infectious disease journal",
+   "pubtypes": [
+    "Comparative Study",
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20054506",
+   "title": "Tuberculosis - Risk of continued transmission in healthcare workers.",
+   "year": "2010",
+   "journal": "Revista portuguesa de pneumologia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22132004",
+   "title": "Tuberculosis in children: New diagnostic blood tests.",
+   "year": "2010",
+   "journal": "The Canadian journal of infectious diseases & medical microbiology = Journal canadien des maladies infectieuses et de la microbiologie medicale",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20011589",
+   "title": "IFNgamma response to Mycobacterium tuberculosis, risk of infection and disease in household contacts of tuberculosis patients in Colombia.",
+   "year": "2009",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19879123",
+   "title": "Serial interferon-gamma release assays after rifampicin prophylaxis in a tuberculosis outbreak.",
+   "year": "2010",
+   "journal": "Respiratory medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19822083",
+   "title": "Interferon-gamma-release assays detect recent tuberculosis re-infection in elderly contacts.",
+   "year": "2009",
+   "journal": "International journal of immunopathology and pharmacology",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19783328",
+   "title": "Interferon gamma release assays: principles and practice.",
+   "year": "2010",
+   "journal": "Enfermedades infecciosas y microbiologia clinica",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "19758506",
+   "title": "[New diagnostic test for tuberculosis].",
+   "year": "2009",
+   "journal": "Ugeskrift for laeger",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19682884",
+   "title": "Enhanced cost-benefit analysis of strategies for LTBI screening and INH chemoprevention in Germany.",
+   "year": "2009",
+   "journal": "Respiratory medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19460248",
+   "title": "Use of the QuantiFERON-TB Gold test to confirm latent tuberculosis infection in a Canadian tuberculosis clinic.",
+   "year": "2009",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19445695",
+   "title": "Host markers in QuantiFERON supernatants differentiate active TB from latent TB infection: preliminary report.",
+   "year": "2009",
+   "journal": "BMC pulmonary medicine",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19407047",
+   "title": "LTBI: latent tuberculosis infection or lasting immune responses to M. tuberculosis? A TBNET consensus statement.",
+   "year": "2009",
+   "journal": "The European respiratory journal",
+   "pubtypes": [
+    "Journal Article",
+    "Consensus Statement"
+   ]
+  },
+  {
+   "pmid": "19125189",
+   "title": "Temporal dynamics of interferon gamma responses in children evaluated for tuberculosis.",
+   "year": "2009",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "19020909",
+   "title": "Quantitative T-cell interferon-gamma responses to Mycobacterium tuberculosis-specific antigens in active and latent tuberculosis.",
+   "year": "2009",
+   "journal": "European journal of clinical microbiology & infectious diseases : official publication of the European Society of Clinical Microbiology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19017873",
+   "title": "Comparative performance of tuberculin skin test, QuantiFERON-TB-Gold In Tube assay, and T-Spot.TB test in contact investigations for tuberculosis.",
+   "year": "2009",
+   "journal": "Chest",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19017451",
+   "title": "Cost-effectiveness of a new interferon-based blood assay, QuantiFERON-TB Gold, in screening tuberculosis contacts.",
+   "year": "2008",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18990532",
+   "title": "The role of a whole blood interferon-gamma assay for the detection of latent tuberculosis infection in Bacille Calmette-Guérin vaccinated children.",
+   "year": "2008",
+   "journal": "Diagnostic microbiology and infectious disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18979994",
+   "title": "[Effects of prophylaxis on QuantiFERON TB-2G responses among children].",
+   "year": "2008",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18936496",
+   "title": "Prognostic value of a T-cell-based, interferon-gamma biomarker in children with tuberculosis contact.",
+   "year": "2008",
+   "journal": "Annals of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18682747",
+   "title": "Improving T-cell assays for the diagnosis of latent TB infection: potential of a diagnostic test based on IP-10.",
+   "year": "2008",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18652520",
+   "title": "Cost effectiveness of interferon-gamma release assay for tuberculosis contact screening in Japan.",
+   "year": "2008",
+   "journal": "Molecular diagnosis & therapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18550615",
+   "title": "Active case finding of tuberculosis in Europe: a Tuberculosis Network European Trials Group (TBNET) survey.",
+   "year": "2008",
+   "journal": "The European respiratory journal",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18409747",
+   "title": "[Screening of latent tuberculosis infection in health care workers by QuantiFERON-TB and tuberculin skin test].",
+   "year": "2007",
+   "journal": "Giornale italiano di medicina del lavoro ed ergonomia",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18399875",
+   "title": "Interferon-gamma responses after isoniazid chemotherapy for latent tuberculosis.",
+   "year": "2008",
+   "journal": "Respirology (Carlton, Vic.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18297454",
+   "title": "A contact investigation of the transmission of Mycobacterium tuberculosis from a nurse working in a newborn nursery and maternity ward.",
+   "year": "2008",
+   "journal": "Journal of infection and chemotherapy : official journal of the Japan Society of Chemotherapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18276940",
+   "title": "Predictive value of a whole blood IFN-gamma assay for the development of active tuberculosis disease after recent infection with Mycobacterium tuberculosis.",
+   "year": "2008",
+   "journal": "American journal of respiratory and critical care medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17988427",
+   "title": "Performance of an interferon-gamma release assay for diagnosing latent tuberculosis infection in children.",
+   "year": "2008",
+   "journal": "Epidemiology and infection",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17986121",
+   "title": "Latent tuberculosis infection in a military setting diagnosed by whole-blood interferon-gamma assay.",
+   "year": "2007",
+   "journal": "Respirology (Carlton, Vic.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17961228",
+   "title": "Comparison of two interferon gamma release assays in the diagnosis of Mycobacterium tuberculosis infection and disease in The Gambia.",
+   "year": "2007",
+   "journal": "BMC infectious diseases",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17763708",
+   "title": "[Utility of QuantiFERON TB-2G for tuberculosis contact investigations in public health services].",
+   "year": "2007",
+   "journal": "[Nihon koshu eisei zasshi] Japanese journal of public health",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17682705",
+   "title": "[Comparison of interferon-gamma whole blood assay with tuberculin skin test for the diagnosis of tuberculosis infection in tuberculosis contacts].",
+   "year": "2007",
+   "journal": "Mikrobiyoloji bulteni",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17633119",
+   "title": "[Analysis of tuberculosis infection among foreigners using QuantiFeron TB-2G test].",
+   "year": "2007",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17537773",
+   "title": "Quantitative scoring of an interferon-gamma assay for differentiating active from latent tuberculosis.",
+   "year": "2007",
+   "journal": "The European respiratory journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17504793",
+   "title": "Cost-effectiveness of interferon-gamma release assay testing for the treatment of latent tuberculosis.",
+   "year": "2007",
+   "journal": "The European respiratory journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17494792",
+   "title": "Cost-effectiveness of interferon-gamma release assay screening for latent tuberculosis infection treatment in Germany.",
+   "year": "2007",
+   "journal": "Chest",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17468703",
+   "title": "[New immunological tests in the diagnosis of tuberculosis].",
+   "year": "2007",
+   "journal": "Revue des maladies respiratoires",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "17350970",
+   "title": "Potential effect of NICE tuberculosis guidelines on paediatric tuberculosis screening.",
+   "year": "2008",
+   "journal": "Archives of disease in childhood",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17310783",
+   "title": "[Application and problems of quantiFERON TB-2G for tuberculosis control programs--(2) clinical use of quantiFERON TB-2G].",
+   "year": "2007",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17257436",
+   "title": "Isoniazid prophylaxis differently modulates T-cell responses to RD1-epitopes in contacts recently exposed to Mycobacterium tuberculosis: a pilot study.",
+   "year": "2007",
+   "journal": "Respiratory research",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17217125",
+   "title": "Interferon-gamma release assays and TB screening in high-income countries: a cost-effectiveness analysis.",
+   "year": "2007",
+   "journal": "The international journal of tuberculosis and lung disease : the official journal of the International Union against Tuberculosis and Lung Disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17154047",
+   "title": "[Characteristics of a diagnostic method for tuberculosis infection based on whole blood interferon-gamma assay].",
+   "year": "2006",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "16707012",
+   "title": "Tuberculosis contact investigation with a new, specific blood test in a low-incidence population containing a high proportion of BCG-vaccinated persons.",
+   "year": "2006",
+   "journal": "Respiratory research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16631911",
+   "title": "Use in routine clinical practice of two commercial blood tests for diagnosis of infection with Mycobacterium tuberculosis: a prospective study.",
+   "year": "2006",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Clinical Trial",
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16571615",
+   "title": "Cost-optimisation of screening for latent tuberculosis in close contacts.",
+   "year": "2006",
+   "journal": "The European respiratory journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16363672",
+   "title": "[Cost-effectiveness analysis of QuantiFERON-TB 2nd generation used for detection of tuberculosis infection in contact investigations].",
+   "year": "2005",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16312206",
+   "title": "Comparison of tuberculin skin test and Quantiferon immunological assay for latent tuberculosis infection.",
+   "year": "2005",
+   "journal": "Monaldi archives for chest disease = Archivio Monaldi per le malattie del torace",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16218445",
+   "title": "[Detection of tuberculosis infection using a whole blood interferon gamma assay in a contact investigation--evaluation using quantiFERon TB-2G].",
+   "year": "2005",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16167779",
+   "title": "[Usefulness of QuantiFERON TB-2G in contact investigation of a tuberculosis outbreak in a university].",
+   "year": "2005",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15729888",
+   "title": "[Usefulness of a novel diagnostic method of tuberculosis infection, QuantiFERON TB-2G, in an outbreak of tuberculosis].",
+   "year": "2004",
+   "journal": "Kekkaku : [Tuberculosis]",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15495587",
+   "title": "[New tools for detection of latent tuberculosis].",
+   "year": "2004",
+   "journal": "Biomedica : revista del Instituto Nacional de Salud",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "15087297",
+   "title": "Comparison of tuberculin skin test and new specific blood test in tuberculosis contacts.",
+   "year": "2004",
+   "journal": "American journal of respiratory and critical care medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  }
+ ]
+}

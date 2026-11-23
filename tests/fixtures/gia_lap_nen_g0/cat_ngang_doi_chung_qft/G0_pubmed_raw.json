@@ -1,0 +1,766 @@
+{
+  "sr_ma": [
+    {
+      "pmid": "42021170",
+      "title": "Prevalence of latent tuberculosis infection in Malaysia: the first systematic review and meta-analysis.",
+      "year": "2026",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42021170/",
+      "authors": "Wada Y, Afolabi HA, Irekeola AA, Bello KE, Yean CY"
+    },
+    {
+      "pmid": "41444517",
+      "title": "Effect of BCG vaccination on the progression of latent tuberculosis infection to active disease in contacts: a systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41444517/",
+      "authors": "Cai S, Yan T, Yang Y, Guo X, Li X"
+    },
+    {
+      "pmid": "41144091",
+      "title": "Performance of QuantiFERON tests for detecting latent tuberculosis infections: A Meta-analysis.",
+      "year": "2025",
+      "journal": "Immunologic research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41144091/",
+      "authors": "Weyesa JB, Legesse M, Gumi B, Medhin G, Tolossa K"
+    },
+    {
+      "pmid": "39709975",
+      "title": "Effectiveness of the primary Bacillus Calmette-Guérin vaccine against the risk of Mycobacterium tuberculosis infection and tuberculosis disease: a meta-analysis of individual participant data.",
+      "year": "2025",
+      "journal": "The Lancet. Microbe",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39709975/",
+      "authors": "Pelzer PT, Stuck L, Martinez L, Richards AS, Acuña-Villaorduña C"
+    },
+    {
+      "pmid": "38653232",
+      "title": "Mycobacterium tuberculosis Infection in School Contacts of Tuberculosis Cases: A Systematic Review and Meta-Analysis.",
+      "year": "2024",
+      "journal": "The American journal of tropical medicine and hygiene",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38653232/",
+      "authors": "Wang W, Liu A, Liu X, You N, Wang Z"
+    },
+    {
+      "pmid": "36294107",
+      "title": "Economic Evaluation of Screening Strategy for Latent Tuberculosis Infection (LTBI) in Contacts of Tuberculosis Patients: Systematic Review and Quality Assessment.",
+      "year": "2022",
+      "journal": "International journal of environmental research and public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36294107/",
+      "authors": "Yoopetch P, Chitpim N, Jittikoon J, Udomsinprasert W, Thavorncharoensap M"
+    },
+    {
+      "pmid": "32156698",
+      "title": "Absolute risk of tuberculosis among untreated populations with a positive tuberculin skin test or interferon-gamma release assay result: systematic review and meta-analysis.",
+      "year": "2020",
+      "journal": "BMJ (Clinical research ed.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32156698/",
+      "authors": "Campbell JR, Winters N, Menzies D"
+    },
+    {
+      "pmid": "25774015",
+      "title": "Cost Effectiveness of Preventive Treatment for Tuberculosis in Special High-Risk Populations.",
+      "year": "2015",
+      "journal": "PharmacoEconomics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/25774015/",
+      "authors": "Diel R, Lampenius N, Nienhaus A"
+    },
+    {
+      "pmid": "21961888",
+      "title": "Systematic review of cost and cost-effectiveness of different TB-screening strategies.",
+      "year": "2011",
+      "journal": "BMC health services research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/21961888/",
+      "authors": "Nienhaus A, Schablon A, Costa JT, Diel R"
+    },
+    {
+      "pmid": "20381206",
+      "title": "[Mantoux versus immunoferon-gamma test for diagnosis of latent tuberculosis infection in TB patient contacts].",
+      "year": "2011",
+      "journal": "Atencion primaria",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/20381206/",
+      "authors": "Fernández Arias A"
+    }
+  ],
+  "rct": [
+    {
+      "pmid": "40440402",
+      "title": "Risk of Tuberculosis Infection in Young Children Exposed to Multidrug-resistant Tuberculosis in the TB-CHAMP Multi-site Randomized Controlled Trial.",
+      "year": "2025",
+      "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40440402/",
+      "authors": "Purchase SE, Brigden J, Seddon JA, Martinson NA, Fairlie L"
+    },
+    {
+      "pmid": "38851427",
+      "title": "Tuberculosis infection among close contacts of patients with pulmonary tuberculosis in China: a population-based, multicentered study.",
+      "year": "2024",
+      "journal": "Clinical microbiology and infection : the official publication of the European Society of Clinical Microbiology and Infectious Diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38851427/",
+      "authors": "Zhang C, Liu Y, Yao Y, Gong D, Lei R"
+    },
+    {
+      "pmid": "33059620",
+      "title": "Interpretation of serial interferon-gamma test results to measure new tuberculosis infection among household contacts in Zambia and South Africa.",
+      "year": "2020",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33059620/",
+      "authors": "Sloot R, Shanaube K, Claassens M, Telisinghe L, Schaap A"
+    },
+    {
+      "pmid": "30248152",
+      "title": "C-Tb skin test to diagnose Mycobacterium tuberculosis infection in children and HIV-infected adults: A phase 3 trial.",
+      "year": "2018",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30248152/",
+      "authors": "Aggerbeck H, Ruhwald M, Hoff ST, Borregaard B, Hellstrom E"
+    },
+    {
+      "pmid": "28159608",
+      "title": "Safety and efficacy of the C-Tb skin test to diagnose Mycobacterium tuberculosis infection, compared with an interferon γ release assay and the tuberculin skin test: a phase 3, double-blind, randomised, controlled trial.",
+      "year": "2017",
+      "journal": "The Lancet. Respiratory medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/28159608/",
+      "authors": "Ruhwald M, Aggerbeck H, Gallardo RV, Hoff ST, Villate JI"
+    },
+    {
+      "pmid": "27052266",
+      "title": "A prospective cohort study of latent tuberculosis in adult close contacts of active pulmonary tuberculosis patients in Korea.",
+      "year": "2016",
+      "journal": "The Korean journal of internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/27052266/",
+      "authors": "Park SH, Lee SJ, Cho YJ, Jeong YY, Kim HC"
+    },
+    {
+      "pmid": "26493989",
+      "title": "Effect of isoniazid preventive therapy on immune responses to mycobacterium tuberculosis: an open label randomised, controlled, exploratory study.",
+      "year": "2015",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26493989/",
+      "authors": "Biraro IA, Egesa M, Kimuda S, Smith SG, Toulza F"
+    },
+    {
+      "pmid": "29020191",
+      "title": "QuantiFERON-TB Gold In-Tube as a Confirmatory Test for Tuberculin Skin Test in Tuberculosis Contact Tracing: A Noninferiority Clinical Trial.",
+      "year": "2018",
+      "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/29020191/",
+      "authors": "Muñoz L, Santin M, Alcaide F, Ruíz-Serrano MJ, Gijón P"
+    }
+  ],
+  "guideline": [
+    {
+      "pmid": "30224215",
+      "title": "[Practice recommendations for the use and interpretation of interferon gamma release assays in the diagnosis of latent and active tuberculosis].",
+      "year": "2018",
+      "journal": "Revue des maladies respiratoires",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30224215/",
+      "authors": "Bergot E, Abiteboul D, Andréjak C, Antoun F, Barras E"
+    },
+    {
+      "pmid": "27424071",
+      "title": "Executive Summary of the Guidelines for the Use of interferon-gamma Release Assays in the Diagnosis of Tuberculosis Infection.",
+      "year": "2016",
+      "journal": "Archivos de bronconeumologia",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/27424071/",
+      "authors": "Santin M, García-García JM, Rigau D, Altet N, Anibarro L"
+    }
+  ],
+  "recent": [
+    {
+      "pmid": "41545280",
+      "title": "Recommendations on the Diagnosis and Treatment of Tuberculosis Infection: SEPAR/SEIMC/Spanish Ministry of Health Consensus Statement.",
+      "year": "2026",
+      "journal": "Archivos de bronconeumologia",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41545280/",
+      "authors": "Caminero JA, Anibarro L, Tabernero E, Alcaide F, Pérez-Mendoza G"
+    },
+    {
+      "pmid": "42264591",
+      "title": "Recommendations on the Diagnosis and Treatment of Tuberculosis Infection: SEPAR/SEIMC/Spanish Ministry of Health Consensus Statement.",
+      "year": "2026",
+      "journal": "Enfermedades infecciosas y microbiologia clinica (English ed.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42264591/",
+      "authors": "Caminero JA, Anibarro L, Tabernero E, Alcaide F, Pérez-Mendoza G"
+    },
+    {
+      "pmid": "42021170",
+      "title": "Prevalence of latent tuberculosis infection in Malaysia: the first systematic review and meta-analysis.",
+      "year": "2026",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42021170/",
+      "authors": "Wada Y, Afolabi HA, Irekeola AA, Bello KE, Yean CY"
+    },
+    {
+      "pmid": "41444517",
+      "title": "Effect of BCG vaccination on the progression of latent tuberculosis infection to active disease in contacts: a systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41444517/",
+      "authors": "Cai S, Yan T, Yang Y, Guo X, Li X"
+    },
+    {
+      "pmid": "41144091",
+      "title": "Performance of QuantiFERON tests for detecting latent tuberculosis infections: A Meta-analysis.",
+      "year": "2025",
+      "journal": "Immunologic research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41144091/",
+      "authors": "Weyesa JB, Legesse M, Gumi B, Medhin G, Tolossa K"
+    },
+    {
+      "pmid": "39709975",
+      "title": "Effectiveness of the primary Bacillus Calmette-Guérin vaccine against the risk of Mycobacterium tuberculosis infection and tuberculosis disease: a meta-analysis of individual participant data.",
+      "year": "2025",
+      "journal": "The Lancet. Microbe",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39709975/",
+      "authors": "Pelzer PT, Stuck L, Martinez L, Richards AS, Acuña-Villaorduña C"
+    },
+    {
+      "pmid": "38653232",
+      "title": "Mycobacterium tuberculosis Infection in School Contacts of Tuberculosis Cases: A Systematic Review and Meta-Analysis.",
+      "year": "2024",
+      "journal": "The American journal of tropical medicine and hygiene",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38653232/",
+      "authors": "Wang W, Liu A, Liu X, You N, Wang Z"
+    },
+    {
+      "pmid": "36294107",
+      "title": "Economic Evaluation of Screening Strategy for Latent Tuberculosis Infection (LTBI) in Contacts of Tuberculosis Patients: Systematic Review and Quality Assessment.",
+      "year": "2022",
+      "journal": "International journal of environmental research and public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36294107/",
+      "authors": "Yoopetch P, Chitpim N, Jittikoon J, Udomsinprasert W, Thavorncharoensap M"
+    },
+    {
+      "pmid": "40440402",
+      "title": "Risk of Tuberculosis Infection in Young Children Exposed to Multidrug-resistant Tuberculosis in the TB-CHAMP Multi-site Randomized Controlled Trial.",
+      "year": "2025",
+      "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40440402/",
+      "authors": "Purchase SE, Brigden J, Seddon JA, Martinson NA, Fairlie L"
+    },
+    {
+      "pmid": "38851427",
+      "title": "Tuberculosis infection among close contacts of patients with pulmonary tuberculosis in China: a population-based, multicentered study.",
+      "year": "2024",
+      "journal": "Clinical microbiology and infection : the official publication of the European Society of Clinical Microbiology and Infectious Diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38851427/",
+      "authors": "Zhang C, Liu Y, Yao Y, Gong D, Lei R"
+    }
+  ],
+  "observational": [
+    {
+      "pmid": "42320712",
+      "title": "Association between immune-response magnitude to tuberculosis infection tests and short-term disease risk: a prospective cohort study.",
+      "year": "2026",
+      "journal": "Clinical microbiology and infection : the official publication of the European Society of Clinical Microbiology and Infectious Diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42320712/",
+      "authors": "Ratovoson R, Donkeng V, Ranaivomanana P, Tagnouokam-Ngoupo PA, Tchatchueng J"
+    },
+    {
+      "pmid": "42264594",
+      "title": "Risk of tuberculosis infection according to exposure time and other factors of contacts and their index cases.",
+      "year": "2026",
+      "journal": "Enfermedades infecciosas y microbiologia clinica (English ed.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42264594/",
+      "authors": "Godoy S, Alsedà M, Parrón I, Millet JP, Caylà JA"
+    },
+    {
+      "pmid": "42248852",
+      "title": "Mycobacterium tuberculosis transmission from tuberculosis patients with and without recognized symptoms: a case-contact study in eastern China.",
+      "year": "2026",
+      "journal": "Nature communications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42248852/",
+      "authors": "Chen C, Hu X, Horsburgh CR, Wu W, Chen C"
+    },
+    {
+      "pmid": "42247627",
+      "title": "A Novel Therapy With a One-Month Ultrashort Regimen to Halt Progression From Latent Infection to Active Tuberculosis Among Close Contacts (The TB‑YOUTH Study): Protocol for a Cluster Randomized Controlled Trial.",
+      "year": "2026",
+      "journal": "JMIR research protocols",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42247627/",
+      "authors": "Yang Y, Zhou F, Ren Y, Li F, Yang Q"
+    },
+    {
+      "pmid": "42205449",
+      "title": "Comparative agreement between tuberculin skin test and QuantiFERON-TB Gold In-Tube across different levels of exposure in a college-based tuberculosis outbreak.",
+      "year": "2026",
+      "journal": "Frontiers in public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42205449/",
+      "authors": "Sun Z, Wu Y, Ding X, Liu Q, Shao Y"
+    },
+    {
+      "pmid": "42024911",
+      "title": "Diagnostic accuracy and safety of Cy-Tb for detection of tuberculosis infection: A multicentric study from India.",
+      "year": "2026",
+      "journal": "The Indian journal of medical research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42024911/",
+      "authors": "Singh M, Hussain T, Modi B, Nair S, Kumar S"
+    },
+    {
+      "pmid": "41999988",
+      "title": "Incidence of latent TB infection among hospital contacts in an intermediate-burden country.",
+      "year": "2026",
+      "journal": "American journal of infection control",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41999988/",
+      "authors": "Ryu SH, Lee JJ, Lim YJ, Kim J, Jung J"
+    },
+    {
+      "pmid": "41713438",
+      "title": "Characterising progression and regression patterns across the spectrum of tuberculosis: a multistate modelling approach.",
+      "year": "2026",
+      "journal": "The Lancet. Global health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41713438/",
+      "authors": "Larsson L, Calderwood CJ, Marambire ET, Gupta RK, Banze D"
+    },
+    {
+      "pmid": "41607885",
+      "title": "Performance evaluation of the AFIAS IGRA-TB (IFN-gamma) test versus QuantiFERON®-TB gold plus (QFT®-Plus) ELISA in the Barrio Obrero hospital network, Asunción-Paraguay, 2025.",
+      "year": "2025",
+      "journal": "Frontiers in public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41607885/",
+      "authors": "Céspedes C, Riveros J, Villalba A, Gutierrez S, Ocampo R"
+    },
+    {
+      "pmid": "41444872",
+      "title": "Screening of close contacts of pulmonary tuberculosis in an urban area in Shanghai, China: a cross-sectional study.",
+      "year": "2025",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41444872/",
+      "authors": "Zhang S, Li F, Chen J, Wu Z, Ning C"
+    },
+    {
+      "pmid": "41430120",
+      "title": "Mycobacterium tuberculosis transmission among child and adolescent contacts of people with pulmonary tuberculosis in Brazil: a multi-center prospective cohort study.",
+      "year": "2025",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41430120/",
+      "authors": "Sobral L, Arriaga MB, Souza AB, Barreto-Duarte B, Garcia-Rosa BS"
+    },
+    {
+      "pmid": "41309403",
+      "title": "Prevalent and incident latent tuberculosis infection among healthcare workers in Taiwan: A multi-center observational study.",
+      "year": "2026",
+      "journal": "Journal of microbiology, immunology, and infection = Wei mian yu gan ran za zhi",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41309403/",
+      "authors": "Wu CJ, Lee SS, Shu CC, Lin SM, Lee CC"
+    },
+    {
+      "pmid": "41294359",
+      "title": "Diagnostic Accuracy of the STANDARD F TB-Feron FIA Assay for Tuberculosis Infection in Vietnam: A Cross-Sectional Study.",
+      "year": "2026",
+      "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41294359/",
+      "authors": "Nguyen HT, Vo LNQ, Codlin AJ, Forse R, Wingfield T"
+    },
+    {
+      "pmid": "41261656",
+      "title": "Current tuberculosis status and challenges among dialysis patients in Japan: A nationwide cross-sectional survey.",
+      "year": "2025",
+      "journal": "Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41261656/",
+      "authors": "Yoshifuji A, Kikuchi K, Ando R, Uehara Y, Kanno Y"
+    },
+    {
+      "pmid": "41239243",
+      "title": "Detect early TB infection, evaluate contacts for TB (DETEC-TB) - a protocol for a prospective cohort study on active case finding for tuberculosis disease and tuberculosis infection source tracing.",
+      "year": "2025",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41239243/",
+      "authors": "Amour M, Joseph P, Ngowi J, Issa A, Moshiro C"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "43039462",
+      "title": "A systematic review of prediction models for tuberculosis infection and incident tuberculosis disease among adolescent and adult household contacts.",
+      "year": "2026",
+      "journal": "BMJ global health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43039462/"
+    },
+    {
+      "pmid": "43028564",
+      "title": "Machine-Learning-Assisted Risk Stratification for Tuberculosis Infection in High-Risk Groups Receiving Immunosuppressive Therapy.",
+      "year": "2026",
+      "journal": "Diagnostics (Basel, Switzerland)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43028564/"
+    },
+    {
+      "pmid": "42996211",
+      "title": "Can identifying recent Mycobacterium tuberculosis infection support faster tuberculosis vaccine trials?",
+      "year": "2026",
+      "journal": "medRxiv : the preprint server for health sciences",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42996211/"
+    },
+    {
+      "pmid": "42976682",
+      "title": "miR-let-7f-5p and miR-223-3p as potential biomarkers for identification of tuberculosis infection: Evidence from patients and household contacts in Indonesia.",
+      "year": "2026",
+      "journal": "Tuberculosis (Edinburgh, Scotland)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42976682/"
+    },
+    {
+      "pmid": "42754502",
+      "title": "Incidence and Risk Factors for Tuberculosis Among TBI-Positive Contacts Identified Through Contact Tracing in Catalonia.",
+      "year": "2026",
+      "journal": "Archivos de bronconeumologia",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42754502/"
+    },
+    {
+      "pmid": "42676523",
+      "title": "Comparative performance of IP-10-Based assays for immune detection of Mycobacterium tuberculosis infection: a cross-sectional evaluation.",
+      "year": "2026",
+      "journal": "Frontiers in medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42676523/"
+    },
+    {
+      "pmid": "42641153",
+      "title": "Erratum for Chee et al., \"QuantiFERON-TB Gold Plus CD8+ T cell responses in contacts with tuberculosis disease and recent tuberculosis infection\".",
+      "year": "2026",
+      "journal": "Microbiology spectrum",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42641153/"
+    },
+    {
+      "pmid": "42563152",
+      "title": "Screening and tuberculosis preventive treatment among household contacts of drug-resistant tuberculosis patients: a scoping review.",
+      "year": "2026",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42563152/"
+    },
+    {
+      "pmid": "42516725",
+      "title": "Immunological Evidence of Latent Tuberculosis Infection among Noncontacts and Contacts with Index Tuberculosis Patients.",
+      "year": "2026",
+      "journal": "Journal of global infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42516725/"
+    },
+    {
+      "pmid": "42320712",
+      "title": "Association between immune-response magnitude to tuberculosis infection tests and short-term disease risk: a prospective cohort study.",
+      "year": "2026",
+      "journal": "Clinical microbiology and infection : the official publication of the European Society of Clinical Microbiology and Infectious Diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42320712/"
+    },
+    {
+      "pmid": "42264594",
+      "title": "Risk of tuberculosis infection according to exposure time and other factors of contacts and their index cases.",
+      "year": "2026",
+      "journal": "Enfermedades infecciosas y microbiologia clinica (English ed.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42264594/"
+    },
+    {
+      "pmid": "42264591",
+      "title": "Recommendations on the Diagnosis and Treatment of Tuberculosis Infection: SEPAR/SEIMC/Spanish Ministry of Health Consensus Statement.",
+      "year": "2026",
+      "journal": "Enfermedades infecciosas y microbiologia clinica (English ed.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42264591/"
+    },
+    {
+      "pmid": "42248852",
+      "title": "Mycobacterium tuberculosis transmission from tuberculosis patients with and without recognized symptoms: a case-contact study in eastern China.",
+      "year": "2026",
+      "journal": "Nature communications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42248852/"
+    },
+    {
+      "pmid": "42247627",
+      "title": "A Novel Therapy With a One-Month Ultrashort Regimen to Halt Progression From Latent Infection to Active Tuberculosis Among Close Contacts (The TB‑YOUTH Study): Protocol for a Cluster Randomized Controlled Trial.",
+      "year": "2026",
+      "journal": "JMIR research protocols",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42247627/"
+    },
+    {
+      "pmid": "42205449",
+      "title": "Comparative agreement between tuberculin skin test and QuantiFERON-TB Gold In-Tube across different levels of exposure in a college-based tuberculosis outbreak.",
+      "year": "2026",
+      "journal": "Frontiers in public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42205449/"
+    },
+    {
+      "pmid": "42162225",
+      "title": "Circulating metabolites associated with protection against Mycobacterium tuberculosis infection and inhibition of mycobacterial growth.",
+      "year": "2026",
+      "journal": "Communications biology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42162225/"
+    },
+    {
+      "pmid": "42078193",
+      "title": "Adjunct Diagnostic Accuracy of Antigen-specific Interleukin-2 for Latent Tuberculosis Infection in Pregnancy.",
+      "year": "2026",
+      "journal": "Open forum infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42078193/"
+    },
+    {
+      "pmid": "42024911",
+      "title": "Diagnostic accuracy and safety of Cy-Tb for detection of tuberculosis infection: A multicentric study from India.",
+      "year": "2026",
+      "journal": "The Indian journal of medical research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42024911/"
+    },
+    {
+      "pmid": "42021170",
+      "title": "Prevalence of latent tuberculosis infection in Malaysia: the first systematic review and meta-analysis.",
+      "year": "2026",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42021170/"
+    },
+    {
+      "pmid": "41999988",
+      "title": "Incidence of latent TB infection among hospital contacts in an intermediate-burden country.",
+      "year": "2026",
+      "journal": "American journal of infection control",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41999988/"
+    },
+    {
+      "pmid": "41928248",
+      "title": "Cost-effectiveness of latent tuberculosis infection testing and preventive treatment among TB contacts in China: a Markov model.",
+      "year": "2026",
+      "journal": "BMC health services research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41928248/"
+    },
+    {
+      "pmid": "41900363",
+      "title": "Evaluation of a Fluorescence Immunoassay-Based IGRA for Latent Tuberculosis Diagnosis: A Simplified, Cost-Effective Alternative.",
+      "year": "2026",
+      "journal": "Microorganisms",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41900363/"
+    },
+    {
+      "pmid": "41858867",
+      "title": "Tuberculosis infection tests for contact screening in Brazil: a cost-effectiveness analysis.",
+      "year": "2026",
+      "journal": "Lancet regional health. Americas",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41858867/"
+    },
+    {
+      "pmid": "41713438",
+      "title": "Characterising progression and regression patterns across the spectrum of tuberculosis: a multistate modelling approach.",
+      "year": "2026",
+      "journal": "The Lancet. Global health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41713438/"
+    },
+    {
+      "pmid": "41607885",
+      "title": "Performance evaluation of the AFIAS IGRA-TB (IFN-gamma) test versus QuantiFERON®-TB gold plus (QFT®-Plus) ELISA in the Barrio Obrero hospital network, Asunción-Paraguay, 2025.",
+      "year": "2025",
+      "journal": "Frontiers in public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41607885/"
+    },
+    {
+      "pmid": "41545280",
+      "title": "Recommendations on the Diagnosis and Treatment of Tuberculosis Infection: SEPAR/SEIMC/Spanish Ministry of Health Consensus Statement.",
+      "year": "2026",
+      "journal": "Archivos de bronconeumologia",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41545280/"
+    },
+    {
+      "pmid": "41531702",
+      "title": "Latent Tuberculosis Infection among Household Contacts of Drug-sensitive Pulmonary Tuberculosis Patients: A Cross-sectional Study from Medan, Indonesia.",
+      "year": "2025",
+      "journal": "Acta medica Philippina",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41531702/"
+    },
+    {
+      "pmid": "41444872",
+      "title": "Screening of close contacts of pulmonary tuberculosis in an urban area in Shanghai, China: a cross-sectional study.",
+      "year": "2025",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41444872/"
+    },
+    {
+      "pmid": "41444517",
+      "title": "Effect of BCG vaccination on the progression of latent tuberculosis infection to active disease in contacts: a systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41444517/"
+    },
+    {
+      "pmid": "41430120",
+      "title": "Mycobacterium tuberculosis transmission among child and adolescent contacts of people with pulmonary tuberculosis in Brazil: a multi-center prospective cohort study.",
+      "year": "2025",
+      "journal": "BMC infectious diseases",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41430120/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 10,
+    "rct": 8,
+    "guideline": 2,
+    "observational": 173,
+    "recent": 8
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-11-23T19:32:42",
+    "truy_van_goc": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 10,
+        "so_bai_lay_ve": 10,
+        "pmid_lay_ve": [
+          "42021170",
+          "41444517",
+          "41144091",
+          "39709975",
+          "38653232",
+          "36294107",
+          "32156698",
+          "25774015",
+          "21961888",
+          "20381206"
+        ]
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 8,
+        "so_bai_lay_ve": 8,
+        "pmid_lay_ve": [
+          "40440402",
+          "38851427",
+          "33059620",
+          "30248152",
+          "28159608",
+          "27052266",
+          "26493989",
+          "29020191"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 2,
+        "so_bai_lay_ve": 2,
+        "pmid_lay_ve": [
+          "30224215",
+          "27424071"
+        ]
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 173,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42320712",
+          "42264594",
+          "42248852",
+          "42247627",
+          "42205449",
+          "42024911",
+          "41999988",
+          "41713438",
+          "41607885",
+          "41444872",
+          "41430120",
+          "41309403",
+          "41294359",
+          "41261656",
+          "41239243"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 8,
+        "so_bai_lay_ve": 10,
+        "pmid_lay_ve": [
+          "41545280",
+          "42264591",
+          "42021170",
+          "41444517",
+          "41144091",
+          "39709975",
+          "38653232",
+          "36294107",
+          "40440402",
+          "38851427"
+        ]
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 444,
+        "so_bai_lay_ve": 30,
+        "pmid_lay_ve": [
+          "43039462",
+          "43028564",
+          "42996211",
+          "42976682",
+          "42754502",
+          "42676523",
+          "42641153",
+          "42563152",
+          "42516725",
+          "42320712",
+          "42264594",
+          "42264591",
+          "42248852",
+          "42247627",
+          "42205449",
+          "42162225",
+          "42078193",
+          "42024911",
+          "42021170",
+          "41999988",
+          "41928248",
+          "41900363",
+          "41858867",
+          "41713438",
+          "41607885",
+          "41545280",
+          "41531702",
+          "41444872",
+          "41444517",
+          "41430120"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "43039462",
+          "43028564",
+          "42996211",
+          "42976682",
+          "42754502",
+          "42676523",
+          "42641153",
+          "42563152",
+          "42516725",
+          "42162225",
+          "42078193",
+          "41928248",
+          "41900363",
+          "41858867",
+          "41531702"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}

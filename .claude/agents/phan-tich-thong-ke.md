@@ -189,8 +189,10 @@ nguồn/`.sav`/đặc tả SPSS ≠ Python (kết quả cũ, khác hiệp biến
 lách; dòng «⚪ không so được» (Python lỗi/bỏ qua, SPSS thiếu bảng) phải nêu trong báo cáo, không coi là khớp; (7)
 `spss/de-xuat-ma-thieu.csv` (mã «Không biết/Từ chối…» chưa khai thiếu) là việc của thống kê viên — agent KHÔNG tự ghi
 `_ma-thieu-theo-bien.csv`; (8) phân tích BỔ SUNG (`<mã>_phan_tich_bo_sung.sps`, lượt SPSS riêng sau phân tích
-chính — `cu-phap --thang-do "TÊN:mục1,…"` thêm RELIABILITY): GENLINMIXED ↔ R clmm/glmer «lệch nhỏ» là bình thường
-(báo kèm phương sai intercept); Complex Samples có trọng số ↔ R survey trọng số CỐ ĐỊNH phải ✓ khớp, ↔ R
+chính — `cu-phap --thang-do "TÊN:mục1,…"` thêm RELIABILITY): GENLINMIXED ↔ R `pl_rspl` (cùng phương pháp RSPL
+Wolfinger–O'Connell 1993, p theo t với df phần dư) phải ✓ khớp — hệ số, SE, p và phương sai intercept; bản R
+Laplace (clmm/glmer) chỉ in kèm, không so với SPSS; R cũ không có RSPL ⇒ ⚪ không so được;
+Complex Samples có trọng số ↔ R survey trọng số CỐ ĐỊNH phải ✓ khớp, ↔ R
 postStratify (SAP) chỉ lệch SE; dòng «Trọng số — bảng tầng» ✗ LỆCH ⇒ DỪNG, báo thống kê viên (hai bản của cùng
 thuật toán gộp tầng); OR từng ngưỡng ↔ `ordinal_model`; Brant ≠ Test of Parallel Lines chỉ so kết luận; R chưa có
 ⇒ ⚪ không so được, KHÔNG phải khớp; (9) `run_g6_auto.py` ghi `scripts/05_spss_phan_tich.sps` XEM TRƯỚC — sau khi
@@ -547,6 +549,7 @@ thẩm quyền.
 Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
 - Công cụ `tools/bieu_do_chan_doan.py` (chủ) — biểu đồ chẩn đoán và mô hình dự báo (STARD/TRIPOD+AI); chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: hợp lệ–tin cậy · trung thực–minh bạch.
 - Công cụ `tools/bieu_do_chung.py` (chủ) — nền trình bày chung cho mọi biểu đồ kết quả; chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: kiểm soát chất lượng.
+- Công cụ `tools/doi_chung_cong_khai.py` (chủ) — đề tài đối chứng công khai: chạy G6 trên dữ liệu thật CC0 đã khử định danh (Mayito 2023, Dryad doi:10.5061/dryad.k3j9kd5bg, PMID 36972254) và đối chiếu từng ước lượng đã công bố — đạt khi tìm lại trong sai số làm tròn, lệch chỉ chấp nhận ở ô đã chứng minh nguyên nhân (`NGUYEN_NHAN`); chốt kiểm `tests/test_doi_chung_cong_khai_20261124.py` + `tools/kiem_gia_lap_16.py` (kịch bản `cross_sectional_doi_chung`); nguyên tắc: tái lập · kiểm chứng khách quan.
 - Công cụ `tools/g6_trong_so_survey.py` (chủ) — script R trọng số hậu phân tầng + phân tích giới hạn theo SAP; chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: khách quan · tái lập.
 - Công cụ `tools/hinh_g6.py` (chủ) — tự sinh biểu đồ kết quả G6 theo đặc tả SAP + dữ liệu đã khoá; chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: trung thực–minh bạch · tái lập.
 - Công cụ `tools/kiem_cheo_g6.py` (chủ) — kiểm chéo G6 bằng phần mềm thứ hai (SPSS và R); chốt kiểm `tests/test_kiem_cheo_g6_20261114.py`; nguyên tắc: kiểm chứng khách quan · tái lập.

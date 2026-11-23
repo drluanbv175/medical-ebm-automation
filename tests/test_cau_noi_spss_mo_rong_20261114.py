@@ -230,9 +230,15 @@ def test_doi_chieu_bo_sung_so_lieu_that():
     assert any("R trọng số cố định" in m for m in tt_["khop"]) and any(
         "svyolr trọng số cố định" in m for m in tt_["khop"]
     )
-    assert any("postStratify" in m for m in tt_["lech_nho"]) and any("Mô hình hỗn hợp" in m for m in tt_["lech_nho"])
+    assert any("postStratify" in m for m in tt_["lech_nho"])
+    # 24/11/2026: mô hình hỗn hợp so CÙNG phương pháp (R RSPL ↔ SPSS GENLINMIXED) ⇒ 3 hệ số + phương sai đều KHỚP, không
+    # còn «lệch nhỏ (khác phương pháp)»; bản Laplace (clmm) chỉ in kèm
+    hh = [m for m in tt_["khop"] if m.startswith("Mô hình hỗn hợp")]
+    assert len(hh) == 4 and all("RSPL" in m for m in hh) and any("phương sai intercept" in m for m in hh), hh
+    assert not [m for m in tt_.get("lech_nho", []) if m.startswith("Mô hình hỗn hợp")]
     assert any(m.startswith("Tin cậy — Linh vuc A — Cronbach") for m in tt_["khop"])
-    assert any("Phương sai intercept" in x for x in tt) and any("cùng định nghĩa SPSS" in x for x in tt)
+    assert any("clmm (Laplace)" in x and "không so với SPSS" in x for x in tt) and any("cùng định nghĩa SPSS" in x
+                                                                                      for x in tt)
 
 
 def test_doi_chieu_bo_sung_khong_r_va_bang_tang_lech():

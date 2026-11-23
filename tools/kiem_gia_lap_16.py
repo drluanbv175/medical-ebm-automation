@@ -29,6 +29,7 @@ KICH_BAN = {
     "rct_kinh_te": "rct_kinh_te", "rct_hon_hop": "rct_hon_hop", "case_control_ghep_cap": "benh_chung_ghep_cap",
     "case_control_ghep_cap_thieu": "benh_chung_ghep_cap_thieu",
     "case_control_ghep_cap_hiem": "benh_chung_ghep_cap_hiem",
+    "cross_sectional_doi_chung": "cat_ngang_doi_chung_qft",
 }
 # 17/11/2026 — kịch bản CHÂN THỰC (gia_lap_chan_thuc): cùng cổng phán + ước lượng chính phải tìm lại tham số thật.
 CHAN_THUC = {f"{t}_chan_thuc": f"{t}_chan_thuc" for t in ("rct", "cross_sectional", "cohort", "case_control",
@@ -76,6 +77,14 @@ def kiem_mot(p: Path) -> List[str]:
     if cx.get("ket") in ("SAI", "CHUA_DO"):  # CHUA_DO chỉ xảy ra khi kịch bản có khai phép kiểm mà không đo được
         loi.append(f"độ chính xác {cx.get('ket')}: {cx.get('lay')} thật {cx.get('that')} · ước lượng {cx.get('uoc')} "
                    f"KTC {cx.get('ci_95')} {cx.get('loi') or ''}".strip())
+    # 24/11/2026 (đề tài đối chứng công khai): số G6 trên dữ liệu THẬT phải tìm lại ước lượng đã công bố — mọi lệch
+    # phải nằm đúng ô đã chứng minh nguyên nhân (doi_chung_cong_khai.NGUYEN_NHAN)
+    dch = j.get("doi_chung") or {}
+    if dch.get("ket") in ("KHONG_DAT", "CHUA_DO"):
+        sai = [f"{x.get('loai')}:{x.get('bien')} {x.get('trang_thai')}" for x in dch.get("dong") or []
+               if x.get("trang_thai") in ("LECH", "KHONG_CO_SO", "NGUYEN_NHAN_CU")]
+        ly = "; ".join(sai)[:300] or dch.get("loi") or dch.get("ly_do")
+        loi.append(f"đối chứng công khai {dch.get('ket')}: {ly}")
     # 22/11/2026 (kiểm toàn hệ 11 khâu): khâu 9–10 trước đây không có ở cổng phán — 22/24 kịch bản thiếu hình bắt buộc
     # của chuẩn báo cáo (sơ đồ luồng) và bản diễn giải không bàn hạn chế/khái quát theo chuẩn mà CI vẫn xanh.
     g6 = ((j.get("du_lieu") or {}).get("g6") or {})

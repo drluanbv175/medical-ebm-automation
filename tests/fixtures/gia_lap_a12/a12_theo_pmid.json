@@ -96,6 +96,13 @@
    ],
    "source": "pubmed"
   },
+  "20381206": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "20592050": {
    "status": "ok",
    "sources_tried": [
@@ -236,6 +243,13 @@
    ],
    "source": "pubmed"
   },
+  "25372043": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "25554246": {
    "status": "ok",
    "sources_tried": [
@@ -299,6 +313,13 @@
    ],
    "source": "pubmed"
   },
+  "27052266": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "27422768": {
    "status": "ok",
    "sources_tried": [
@@ -328,6 +349,13 @@
    "source": "pubmed"
   },
   "28586172": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "29020191": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -426,6 +454,13 @@
    "source": "pubmed"
   },
   "32865377": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "33059620": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -558,6 +593,13 @@
    ],
    "source": "pubmed"
   },
+  "36294107": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "36322107": {
    "status": "ok",
    "sources_tried": [
@@ -580,6 +622,13 @@
    "source": "pubmed"
   },
   "36924031": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "36972254": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -663,7 +712,21 @@
    ],
    "source": "pubmed"
   },
+  "38653232": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "38739123": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "38851427": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -929,6 +992,13 @@
    ],
    "source": "pubmed"
   },
+  "41144091": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "41191358": {
    "status": "ok",
    "sources_tried": [
@@ -958,6 +1028,13 @@
    "source": "pubmed"
   },
   "41379039": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "41444517": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -1062,6 +1139,13 @@
    ],
    "source": "pubmed"
   },
+  "42264594": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "42283624": {
    "status": "ok",
    "sources_tried": [
@@ -1154,6 +1238,13 @@
    "source": "pubmed"
   },
   "42616235": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42641153": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -1372,6 +1463,23 @@
    "volume": "340",
    "pages": "c869",
    "pmcid": "PMC2844943"
+  },
+  "20381206": {
+   "status": "resolved",
+   "title": "[Mantoux versus immunoferon-gamma test for diagnosis of latent tuberculosis infection in TB patient contacts].",
+   "authors": "Fernández Arias A",
+   "journal": "Atencion primaria",
+   "year": "2011",
+   "doi": "10.1016/j.aprim.2009.12.014",
+   "n_authors": 1,
+   "authors_6": [
+    "Fernández Arias A"
+   ],
+   "journal_abbr": "Aten Primaria",
+   "volume": "43",
+   "issue": "1",
+   "pages": "18-25",
+   "pmcid": "PMC7024441"
   },
   "20592050": {
    "status": "resolved",
@@ -1691,6 +1799,28 @@
    "issue": "5",
    "pages": "429-36"
   },
+  "25372043": {
+   "status": "resolved",
+   "title": "Impact of co-infections and BCG immunisation on immune responses among household contacts of tuberculosis patients in a Ugandan cohort.",
+   "authors": "Biraro IA, Egesa M, Toulza F, Levin J, Cose S",
+   "journal": "PloS one",
+   "year": "2014",
+   "doi": "10.1371/journal.pone.0111517",
+   "n_authors": 10,
+   "authors_6": [
+    "Biraro IA",
+    "Egesa M",
+    "Toulza F",
+    "Levin J",
+    "Cose S",
+    "Joloba M"
+   ],
+   "journal_abbr": "PLoS One",
+   "volume": "9",
+   "issue": "11",
+   "pages": "e111517",
+   "pmcid": "PMC4221037"
+  },
   "25554246": {
    "status": "resolved",
    "title": "Preferred reporting items for systematic review and meta-analysis protocols (PRISMA-P) 2015 statement.",
@@ -1804,6 +1934,28 @@
    "year": "2016",
    "doi": "10.1016/j.jclinepi.2016.02.031"
   },
+  "27052266": {
+   "status": "resolved",
+   "title": "A prospective cohort study of latent tuberculosis in adult close contacts of active pulmonary tuberculosis patients in Korea.",
+   "authors": "Park SH, Lee SJ, Cho YJ, Jeong YY, Kim HC",
+   "journal": "The Korean journal of internal medicine",
+   "year": "2016",
+   "doi": "10.3904/kjim.2015.095",
+   "n_authors": 8,
+   "authors_6": [
+    "Park SH",
+    "Lee SJ",
+    "Cho YJ",
+    "Jeong YY",
+    "Kim HC",
+    "Lee JD"
+   ],
+   "journal_abbr": "Korean J Intern Med",
+   "volume": "31",
+   "issue": "3",
+   "pages": "517-24",
+   "pmcid": "PMC4855100"
+  },
   "27422768": {
    "status": "resolved",
    "title": "Safety of metamizole: a systematic review of the literature.",
@@ -1843,6 +1995,30 @@
    "journal": "Hepatology (Baltimore, Md.)",
    "year": "2017",
    "doi": "10.1002/hep.29302"
+  },
+  "29020191": {
+   "status": "resolved",
+   "title": "QuantiFERON-TB Gold In-Tube as a Confirmatory Test for Tuberculin Skin Test in Tuberculosis Contact Tracing: A Noninferiority Clinical Trial.",
+   "authors": "Muñoz L, Santin M, Alcaide F, Ruíz-Serrano MJ, Gijón P",
+   "journal": "Clinical infectious diseases : an official publication of the Infectious Diseases Society of America",
+   "year": "2018",
+   "doi": "10.1093/cid/cix745",
+   "n_authors": 30,
+   "authors_6": [
+    "Muñoz L",
+    "Santin M",
+    "Alcaide F",
+    "Ruíz-Serrano MJ",
+    "Gijón P",
+    "Bermúdez E"
+   ],
+   "nhom_tac_gia": [
+    "OPTIMIST Study Team"
+   ],
+   "journal_abbr": "Clin Infect Dis",
+   "volume": "66",
+   "issue": "3",
+   "pages": "396-403"
   },
   "29133356": {
    "status": "resolved",
@@ -2059,6 +2235,28 @@
    "volume": "383",
    "issue": "15",
    "pages": "1413-1424"
+  },
+  "33059620": {
+   "status": "resolved",
+   "title": "Interpretation of serial interferon-gamma test results to measure new tuberculosis infection among household contacts in Zambia and South Africa.",
+   "authors": "Sloot R, Shanaube K, Claassens M, Telisinghe L, Schaap A",
+   "journal": "BMC infectious diseases",
+   "year": "2020",
+   "doi": "10.1186/s12879-020-05483-9",
+   "n_authors": 8,
+   "authors_6": [
+    "Sloot R",
+    "Shanaube K",
+    "Claassens M",
+    "Telisinghe L",
+    "Schaap A",
+    "Godfrey-Faussett P"
+   ],
+   "journal_abbr": "BMC Infect Dis",
+   "volume": "20",
+   "issue": "1",
+   "pages": "760",
+   "pmcid": "PMC7559914"
   },
   "33176659": {
    "status": "resolved",
@@ -2320,6 +2518,28 @@
    "pages": "e64",
    "pmcid": "PMC9641656"
   },
+  "36294107": {
+   "status": "resolved",
+   "title": "Economic Evaluation of Screening Strategy for Latent Tuberculosis Infection (LTBI) in Contacts of Tuberculosis Patients: Systematic Review and Quality Assessment.",
+   "authors": "Yoopetch P, Chitpim N, Jittikoon J, Udomsinprasert W, Thavorncharoensap M",
+   "journal": "International journal of environmental research and public health",
+   "year": "2022",
+   "doi": "10.3390/ijerph192013529",
+   "n_authors": 9,
+   "authors_6": [
+    "Yoopetch P",
+    "Chitpim N",
+    "Jittikoon J",
+    "Udomsinprasert W",
+    "Thavorncharoensap M",
+    "Youngkong S"
+   ],
+   "journal_abbr": "Int J Environ Res Public Health",
+   "volume": "19",
+   "issue": "20",
+   "pages": "13529",
+   "pmcid": "PMC9603136"
+  },
   "36322107": {
    "status": "resolved",
    "title": "Nurse-led Telehealth Intervention for Rehabilitation (Telerehabilitation) Among Community-Dwelling Patients With Chronic Diseases: Systematic Review and Meta-analysis.",
@@ -2379,6 +2599,28 @@
    "journal": "Hepatology (Baltimore, Md.)",
    "year": "2023",
    "doi": "10.1097/HEP.0000000000000351"
+  },
+  "36972254": {
+   "status": "resolved",
+   "title": "Determinants of QuantiFERON Plus-diagnosed tuberculosis infection in adult Ugandan TB contacts: A cross-sectional study.",
+   "authors": "Mayito J, Martineau AR, Tiwari D, Nakiyingi L, Kateete DP",
+   "journal": "PloS one",
+   "year": "2023",
+   "doi": "10.1371/journal.pone.0281559",
+   "n_authors": 7,
+   "authors_6": [
+    "Mayito J",
+    "Martineau AR",
+    "Tiwari D",
+    "Nakiyingi L",
+    "Kateete DP",
+    "Reece ST"
+   ],
+   "journal_abbr": "PLoS One",
+   "volume": "18",
+   "issue": "3",
+   "pages": "e0281559",
+   "pmcid": "PMC10042355"
   },
   "37203233": {
    "status": "resolved",
@@ -2505,6 +2747,28 @@
    "issue": "82",
    "pages": "185-189"
   },
+  "38653232": {
+   "status": "resolved",
+   "title": "Mycobacterium tuberculosis Infection in School Contacts of Tuberculosis Cases: A Systematic Review and Meta-Analysis.",
+   "authors": "Wang W, Liu A, Liu X, You N, Wang Z",
+   "journal": "The American journal of tropical medicine and hygiene",
+   "year": "2024",
+   "doi": "10.4269/ajtmh.23-0038",
+   "n_authors": 10,
+   "authors_6": [
+    "Wang W",
+    "Liu A",
+    "Liu X",
+    "You N",
+    "Wang Z",
+    "Chen C"
+   ],
+   "journal_abbr": "Am J Trop Med Hyg",
+   "volume": "110",
+   "issue": "6",
+   "pages": "1253-1260",
+   "pmcid": "PMC11154035"
+  },
   "38739123": {
    "status": "resolved",
    "title": "Titration of Medications After Acute Heart Failure Is Safe, Tolerated, and Effective Regardless of Risk.",
@@ -2512,6 +2776,27 @@
    "journal": "JACC. Heart failure",
    "year": "2024",
    "doi": "10.1016/j.jchf.2024.04.017"
+  },
+  "38851427": {
+   "status": "resolved",
+   "title": "Tuberculosis infection among close contacts of patients with pulmonary tuberculosis in China: a population-based, multicentered study.",
+   "authors": "Zhang C, Liu Y, Yao Y, Gong D, Lei R",
+   "journal": "Clinical microbiology and infection : the official publication of the European Society of Clinical Microbiology and Infectious Diseases",
+   "year": "2024",
+   "doi": "10.1016/j.cmi.2024.06.003",
+   "n_authors": 10,
+   "authors_6": [
+    "Zhang C",
+    "Liu Y",
+    "Yao Y",
+    "Gong D",
+    "Lei R",
+    "Xia Y"
+   ],
+   "journal_abbr": "Clin Microbiol Infect",
+   "volume": "30",
+   "issue": "9",
+   "pages": "1176-1182"
   },
   "38861561": {
    "status": "resolved",
@@ -2978,6 +3263,27 @@
    "year": "2025",
    "doi": "10.1016/j.ijnurstu.2025.105225"
   },
+  "41144091": {
+   "status": "resolved",
+   "title": "Performance of QuantiFERON tests for detecting latent tuberculosis infections: A Meta-analysis.",
+   "authors": "Weyesa JB, Legesse M, Gumi B, Medhin G, Tolossa K",
+   "journal": "Immunologic research",
+   "year": "2025",
+   "doi": "10.1007/s12026-025-09714-6",
+   "n_authors": 7,
+   "authors_6": [
+    "Weyesa JB",
+    "Legesse M",
+    "Gumi B",
+    "Medhin G",
+    "Tolossa K",
+    "Zewude A"
+   ],
+   "journal_abbr": "Immunol Res",
+   "volume": "73",
+   "issue": "1",
+   "pages": "151"
+  },
   "41191358": {
    "status": "resolved",
    "title": "Text Messaging and Video Stories to Support Hypertension Self-Management in Black Veterans: A Randomized Clinical Trial.",
@@ -3045,6 +3351,28 @@
    "issue": "18",
    "pages": "2415-2426",
    "pmcid": "PMC13561152"
+  },
+  "41444517": {
+   "status": "resolved",
+   "title": "Effect of BCG vaccination on the progression of latent tuberculosis infection to active disease in contacts: a systematic review and meta-analysis.",
+   "authors": "Cai S, Yan T, Yang Y, Guo X, Li X",
+   "journal": "BMC infectious diseases",
+   "year": "2025",
+   "doi": "10.1186/s12879-025-12318-y",
+   "n_authors": 12,
+   "authors_6": [
+    "Cai S",
+    "Yan T",
+    "Yang Y",
+    "Guo X",
+    "Li X",
+    "Chen H"
+   ],
+   "journal_abbr": "BMC Infect Dis",
+   "volume": "26",
+   "issue": "1",
+   "pages": "168",
+   "pmcid": "PMC12838412"
   },
   "41528277": {
    "status": "resolved",
@@ -3283,6 +3611,30 @@
    "year": "2026",
    "doi": "10.2196/88708"
   },
+  "42264594": {
+   "status": "resolved",
+   "title": "Risk of tuberculosis infection according to exposure time and other factors of contacts and their index cases.",
+   "authors": "Godoy S, Alsedà M, Parrón I, Millet JP, Caylà JA",
+   "journal": "Enfermedades infecciosas y microbiologia clinica (English ed.)",
+   "year": "2026",
+   "doi": "10.1016/j.eimce.2026.503179",
+   "n_authors": 16,
+   "authors_6": [
+    "Godoy S",
+    "Alsedà M",
+    "Parrón I",
+    "Millet JP",
+    "Caylà JA",
+    "Follia N"
+   ],
+   "nhom_tac_gia": [
+    "Transmission of Tuberculosis in Catalonia (Spain) Working Group"
+   ],
+   "journal_abbr": "Enferm Infecc Microbiol Clin (Engl Ed)",
+   "volume": "44",
+   "issue": "6",
+   "pages": "503179"
+  },
   "42283624": {
    "status": "resolved",
    "title": "Clinical effectiveness of telepharmacy services in patients with non-communicable diseases in ambulatory care settings.",
@@ -3483,6 +3835,26 @@
    "journal": "Endocrine",
    "year": "2026",
    "doi": "10.1007/s12020-026-04752-y"
+  },
+  "42641153": {
+   "status": "resolved",
+   "title": "Erratum for Chee et al., \"QuantiFERON-TB Gold Plus CD8+ T cell responses in contacts with tuberculosis disease and recent tuberculosis infection\".",
+   "authors": "Chee CB-E, Kyi-Win K, Tan S, Wang Y-T",
+   "journal": "Microbiology spectrum",
+   "year": "2026",
+   "doi": "10.1128/spectrum.01512-26",
+   "n_authors": 4,
+   "authors_6": [
+    "Chee CB-E",
+    "Kyi-Win K",
+    "Tan S",
+    "Wang Y-T"
+   ],
+   "journal_abbr": "Microbiol Spectr",
+   "volume": "14",
+   "issue": "10",
+   "pages": "e0151226",
+   "pmcid": "PMC13640955"
   },
   "42659939": {
    "status": "resolved",

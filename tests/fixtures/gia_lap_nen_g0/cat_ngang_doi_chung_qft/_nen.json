@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-23T19:33:37+07:00",
+  "study": "ZZCANARY-DOI-CHUNG-QFT",
+  "topic": "Tỷ lệ nhiễm lao tiềm ẩn chẩn đoán bằng QuantiFERON-TB Gold Plus và yếu tố liên quan ở người lớn tiếp xúc gần với người bệnh lao phổi tại Kampala, Uganda: phân tích thứ cấp bộ dữ liệu cắt ngang công khai",
+  "query_en": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab])",
+  "base_query": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab])"
+}

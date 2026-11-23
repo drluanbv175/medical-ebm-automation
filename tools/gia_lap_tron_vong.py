@@ -1225,7 +1225,13 @@ class TronVong:
         n = self._n_g3()
         dl_redcap = self.kb.get("du_lieu_redcap")
         tu_dien_g5 = self.out / f"G5_REDCap_dictionary_{self.study}.csv"
-        if dl_redcap and tu_dien_g5.is_file():
+        if (self.kb.get("bien_the") or {}).get("du_lieu_that"):
+            # 24/11/2026 (đề tài đối chứng công khai): phiếu gốc = bộ dữ liệu THẬT đã công bố (kiểm SHA-256 trước khi
+            # đọc) — đi qua ĐÚNG đường nhập kép, tiếp nhận, làm sạch, khoá như dữ liệu thu thập
+            import gia_lap_doi_chung as GDC  # noqa: PLC0415
+
+            hang = GDC.hang_du_lieu_that(self.kb)
+        elif dl_redcap and tu_dien_g5.is_file():
             # 17/11/2026 (diễn tập trên khung THẬT): sinh theo đúng từ điển G5 — logic nhánh, calc, khoảng, thứ tự
             # ngày — để dữ liệu mô phỏng đi qua đúng cổng tiếp nhận mà dữ liệu thật sẽ đi qua.
             import sinh_du_lieu_redcap as SR  # noqa: PLC0415
@@ -1282,6 +1288,8 @@ class TronVong:
                               "cuoi": ["máy không có IBM SPSS Statistics — người nhập lần 2 dùng Excel"]})
         lan1, lan2 = cai_loi_nhap(hang)
         self.du_lieu = {"n": len(hang), "loi_cai_lan1": len(lan1), "loi_cai_lan2": len(lan2)}
+        if (self.kb.get("bien_the") or {}).get("du_lieu_that"):
+            self.du_lieu["nguon_that"] = self.kb["bien_the"]["du_lieu_that"]
         if not (nl / "MAU.xlsx").is_file():
             # 17/11/2026 (kịch bản chân thực): G5 không dựng được từ điển (vd SAP chưa khoá vì G3 còn REVIEW) ⇒ không có
             # mẫu nhập. Dừng GỌN với lý do của hệ — bản cũ sập FileNotFoundError, che mất cổng thật đang chặn.
@@ -2980,7 +2988,8 @@ Kết luận tổng thể: {ket_luan}
                 "dung": self.dung,
                 "so_o_loi_may": len(loi_may), "o_loi_may": sorted(set(loi_may))[:200],
                 "crash": [b["buoc"] for b in self.buoc if b.get("crash")], "buoc": self.buoc,
-                "chinh_xac": self._chinh_xac_an_toan(), "so_do_sai": self._soat_so_do(),
+                "chinh_xac": self._chinh_xac_an_toan(), "doi_chung": self._doi_chung_an_toan(),
+                "so_do_sai": self._soat_so_do(),
                 "chuan_bao_cao": self._chuan_bao_cao()}
 
     def _chuan_bao_cao(self) -> Dict[str, Any]:
@@ -3015,6 +3024,42 @@ Kết luận tổng thể: {ket_luan}
     def _chinh_xac_an_toan(self) -> Dict[str, Any]:
         try:
             return self.kiem_chinh_xac()
+        except Exception as exc:  # noqa: BLE001 — báo cáo không được sập vì phép kiểm phụ
+            return {"ket": "CHUA_DO", "loi": f"{type(exc).__name__}: {exc}"[:200]}
+
+    def kiem_doi_chung(self) -> Dict[str, Any]:
+        """Đề tài đối chứng công khai (24/11/2026): số G6 của CHÍNH lượt chạy (tỷ lệ chính, OR thô từng phân tích đơn
+        biến, OR hiệu chỉnh của mô hình đa biến) so với ước lượng đã công bố — doi_chung_cong_khai.doi_chieu. Kịch bản
+        không dùng dữ liệu thật ⇒ «không áp dụng»; G6 chưa chạy ⇒ «chưa đo»."""
+        if not (self.kb.get("bien_the") or {}).get("du_lieu_that"):
+            return {"ket": "KHONG_AP_DUNG"}
+        import doi_chung_cong_khai as DC  # noqa: PLC0415
+
+        tom = _doc_json(self.out / "G6_analysis_summary.json")
+        if not tom:
+            return {"ket": "CHUA_DO", "ly_do": "chưa có G6_analysis_summary.json"}
+        he: Dict[str, Any] = {}
+        t = next(iter(tom.get("ty_le") or []), None) or {}
+        if t:
+            he["ty_le:qft_duong"] = {"uoc": t.get("ty_le"), "ci": t.get("CI_95_wilson_doc_lap"),
+                                     "so_su_kien": t.get("so_su_kien"), "n": t.get("n")}
+        for b in DC.YEU_TO:
+            r = next((x for x in ((_doc_json(self.out / f"G6_DB_{b}_analysis_summary.json").get("multivariate") or {})
+                                  .get("results") or []) if x.get("variable") == b), None)
+            if r:
+                he[f"or_tho:{b}"] = {"uoc": r.get("OR_adj"), "ci": r.get("CI_95"), "p": r.get("p")}
+        tom_mv = _doc_json(self.out / "G6_MT2_da_bien_analysis_summary.json")
+        khoi = tom_mv.get("bien_co_hiem") or tom_mv.get("multivariate") or {}
+        for r in khoi.get("results") or []:
+            he[f"or_hieu_chinh:{r.get('variable')}"] = {"uoc": r.get("OR_adj"), "ci": r.get("CI_95"), "p": r.get("p")}
+        kq = DC.doi_chieu(he)
+        return {"ket": kq["ket"], "dem": kq["dem"], "phuong_phap_da_bien": khoi.get("phuong_phap") or "logistic",
+                "dong": [{k: x.get(k) for k in ("bien", "loai", "uoc", "ci", "trang_thai", "nguyen_nhan")}
+                         | {"he": x.get("he")} for x in kq["dong"]]}
+
+    def _doi_chung_an_toan(self) -> Dict[str, Any]:
+        try:
+            return self.kiem_doi_chung()
         except Exception as exc:  # noqa: BLE001 — báo cáo không được sập vì phép kiểm phụ
             return {"ket": "CHUA_DO", "loi": f"{type(exc).__name__}: {exc}"[:200]}
 
@@ -3104,6 +3149,14 @@ ICF_EN_CHU_DE = {
                                  "cross-sectional study",
                         "purpose": "estimate how many people treated for high blood pressure at the clinic have their "
                                    "blood pressure under control."},
+    # 24/11/2026: đề tài đối chứng công khai — phân tích thứ cấp, miễn phiếu đồng ý; mục này chỉ để bản tiếng Anh (nếu
+    # Hội đồng đòi) không mượn chủ đề tăng huyết áp của kịch bản gốc
+    "cat_ngang_doi_chung_qft": {"title": "QuantiFERON-TB Gold Plus positivity and associated factors among adult "
+                                         "close contacts of pulmonary tuberculosis patients in Kampala, Uganda: a "
+                                         "secondary analysis of a public cross-sectional dataset",
+                                "purpose": "re-analyse a published, de-identified public dataset to estimate how many "
+                                           "close contacts have latent tuberculosis infection and which factors are "
+                                           "associated with it."},
     "thuan_tap_phoi_nhiem": {"title": "Long-term proton pump inhibitor use and fracture risk in people aged 60 and "
                                       "over: a cohort study",
                              "purpose": "compare the risk of fractures over 3 years between people aged 60 and over "

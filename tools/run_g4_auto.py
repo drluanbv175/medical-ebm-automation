@@ -716,7 +716,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             # trống): khai TRƯỚC phương pháp khi số biến cố không đủ cho hồi quy — G6 chạy đúng phương pháp này.
             # 23/11/2026: ghép cặp cá thể ⇒ khuôn chỉ có phương pháp có điều kiện (firth_dk)
             *([G4Q.dong_khuon_bien_co_hiem((khung or {}).get("kieu_ghep") if design_code == "case_control" else None)]
-              if G4Q.ap_dung_bien_co_hiem(design_code, main_method) else []),
+              if G4Q.ap_dung_bien_co_hiem(design_code, main_method, bool(str(gia_thuyet_phu or "").strip()))
+              else []),
             "",
             "### §6 DỮ LIỆU THIẾU",
             "",

@@ -18,7 +18,10 @@ là thiết kế (case-control, qualitative…) hay bối cảnh (ngoại trú, 
 theo thang 18/11/2026) thì bỏ; tiêu đề chạm MỌI khối khái niệm ⇒ «trực tiếp», thiếu đúng một khối
 (≥ 2 khối) ⇒ «gián tiếp», còn lại ⇒ «không liên quan» kèm lý do — TRỪ bài mà hồ sơ đề tài đã dẫn làm bằng chứng
 (PMID trong nội dung G0/G1 của kịch bản): tiêu đề hay dùng thuật ngữ rộng hơn truy vấn («digital health
-interventions», «non-invasive tests») nên không xếp lạc đề chỉ vì tiêu đề, tối thiểu «gián tiếp». Đó là cách
+interventions», «non-invasive tests») nên không xếp lạc đề chỉ vì tiêu đề, tối thiểu «gián tiếp». Thông báo biên tập
+(đính chính, rút bài, quan ngại — «Erratum for…», «Correction to…») không phải nghiên cứu ⇒ luôn «không liên quan»
+kèm lý do, dù tiêu đề chạm đủ khối (24/11/2026: đề tài đối chứng công khai từng dẫn một «Erratum for Chee et al.» như
+bằng chứng ở bảng tổng quan). Đó là cách
 giả lập tạo dữ kiện có cấu trúc để đo dây chuyền — KHÔNG phải sàng lọc có giá trị khoa học; đề tài thật vẫn do agent
 `tong-quan-y-van` đọc từng bài.
 
@@ -255,9 +258,19 @@ def _cham(tieu_de: str, tn: str) -> bool:
     return re.search(r"(?<![a-z0-9])" + re.escape(tn), tieu_de) is not None
 
 
+#: thông báo biên tập ở đầu tiêu đề — không phải bằng chứng (PubMed: Published Erratum, Retraction of Publication,
+#: Expression of Concern)
+THONG_BAO_BIEN_TAP = re.compile(r"^\s*(?:erratum|errata|correction|corrigendum|retraction(?: note| notice)?|"
+                                r"notice of retraction|expression of concern)\b", re.I)
+LY_DO_THONG_BAO = ("Thông báo biên tập (đính chính/rút bài/quan ngại), không phải nghiên cứu — không dùng làm "
+                   "bằng chứng.")
+
+
 def xep_lien_quan(tieu_de: str, khoi: Sequence[Sequence[str]]) -> Tuple[str, List[int]]:
-    """(mức liên quan, chỉ số các khối KHÔNG chạm). Luật ở docstring mô-đun."""
+    """(mức liên quan, chỉ số các khối KHÔNG chạm). Luật ở docstring mô-đun; thông báo biên tập ⇒ «khong»."""
     td = str(tieu_de or "").lower()
+    if THONG_BAO_BIEN_TAP.match(td):
+        return "khong", []
     thieu = [i for i, k in enumerate(khoi) if not any(_cham(td, t) for t in k)]
     if khoi and not thieu:
         return "truc_tiep", thieu
@@ -300,10 +313,14 @@ def _tom_tat(bai: Mapping[str, Any], muc: str, khoi: Sequence[Sequence[str]], th
     if muc == "gian_tiep_da_dan":
         return cau + ("Hồ sơ đề tài dẫn bài này làm bằng chứng nền; tiêu đề dùng thuật ngữ rộng hơn truy vấn nên "
                       "xếp gián tiếp, chờ đọc tóm tắt để xếp lại.")
+    if THONG_BAO_BIEN_TAP.match(str(bai.get("title") or "")):
+        return cau + LY_DO_THONG_BAO
     return cau + "Tiêu đề không cùng khái niệm chính của câu hỏi."
 
 
-def _ly_do_khong(khoi: Sequence[Sequence[str]], thieu: Sequence[int]) -> str:
+def _ly_do_khong(khoi: Sequence[Sequence[str]], thieu: Sequence[int], tieu_de: str = "") -> str:
+    if THONG_BAO_BIEN_TAP.match(str(tieu_de or "")):
+        return LY_DO_THONG_BAO
     return "Tiêu đề không nêu " + ", ".join(_nhan_khoi(khoi[i]) for i in thieu) + " — khác khái niệm chính."
 
 
@@ -370,8 +387,8 @@ def soan_tong_hop(out_dir: Path, study: str, nen_dir: Optional[Path], hom_nay: d
     def sang(p: str) -> Tuple[Dict[str, Any], str, List[int]]:
         b = theo_pmid.get(p, {"pmid": p})
         muc, thieu = xep_lien_quan(str(b.get("title") or ""), khoi)
-        if muc == "khong" and p in da_dan:
-            muc = "gian_tiep_da_dan"
+        if muc == "khong" and p in da_dan and not THONG_BAO_BIEN_TAP.match(str(b.get("title") or "")):
+            muc = "gian_tiep_da_dan"  # bài hồ sơ đã dẫn — trừ thông báo biên tập
         return b, muc, thieu
 
     sang_loc = []
@@ -381,7 +398,7 @@ def soan_tong_hop(out_dir: Path, study: str, nen_dir: Optional[Path], hom_nay: d
                 "lien_quan": "gian_tiep" if muc == "gian_tiep_da_dan" else muc,
                 "tom_tat": _tom_tat(b, muc, khoi, thieu)}
         if muc == "khong":
-            dong["ly_do"] = _ly_do_khong(khoi, thieu)
+            dong["ly_do"] = _ly_do_khong(khoi, thieu, b.get("title"))
         sang_loc.append(dong)
     # Nhánh không lọc: bản ghi đã lấy về trong lượt G0 + phần vượt trần (nhánh đầy đủ).
     lay_ve = [str(x) for x in kl.get("pmid_lay_ve") or []] if isinstance(kl.get("pmid_lay_ve"), list) else []
@@ -395,7 +412,7 @@ def soan_tong_hop(out_dir: Path, study: str, nen_dir: Optional[Path], hom_nay: d
             continue
         b, muc, thieu = sang(p)
         if muc == "khong":
-            khong_loc.append({"pmid": p, "lien_quan": "khong", "ly_do": _ly_do_khong(khoi, thieu)})
+            khong_loc.append({"pmid": p, "lien_quan": "khong", "ly_do": _ly_do_khong(khoi, thieu, b.get("title"))})
         else:
             bo_sung.append({"pmid": p, "tieu_de": str(b.get("title") or "").strip() or f"PMID {p}",
                             "thiet_ke_that": thiet_ke_that(b, nhom.get(p, ())),

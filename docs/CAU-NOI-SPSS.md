@@ -177,7 +177,7 @@ chính vẫn còn nguyên.
 
 | Khối | Khi nào sinh | SPSS | Tham chiếu |
 |---|---|---|---|
-| Mô hình hỗn hợp | có cột cụm, kết cục thứ tự/nhị phân (`--khong-hon-hop` để tắt) | GENLINMIXED, intercept ngẫu nhiên theo cụm | R `ordinal::clmm` / `lme4::glmer` (Laplace) trên CÙNG tệp .sav |
+| Mô hình hỗn hợp | có cột cụm, kết cục thứ tự/nhị phân (`--khong-hon-hop` để tắt) | GENLINMIXED, intercept ngẫu nhiên theo cụm (chỉ có giả khả dĩ phần dư RSPL) | R `pl_rspl` — CÙNG phương pháp RSPL (Wolfinger & O'Connell 1993), phải KHỚP; bản Laplace `ordinal::clmm` / `lme4::glmer` (phương pháp phân tích chính theo SAP) chỉ in kèm |
 | Trọng số hậu phân tầng | `G6_checkpoint.json → trong_so` (run_g6_auto rút từ SAP §4) + `his_tong_hop/N_tang_HIS.csv` (`--khong-trong-so` để tắt) | CSPLAN + CSDESCRIPTIVES (tỷ lệ hài lòng) + CSORDINAL (svyolr) | R `survey`: trọng số CỐ ĐỊNH (phải khớp) và `postStratify` (SAP — lệch nhỏ ở SE) |
 | Độ tin cậy | `--thang-do "TÊN:mục1,mục2,…"` (lặp được) | RELIABILITY + ICC nhất quán (KTC Feldt) | `kiem_tin_cay_thang_do.py` trên cùng dữ liệu, cùng mã thiếu |
 | Giả định tỷ lệ odds | kết cục thứ tự ≥ 3 mức | LOGISTIC nhị phân tại từng ngưỡng Y > k + Test of Parallel Lines | bảng OR theo ngưỡng + Brant của `run_stats_analysis.ordinal_model` |
@@ -195,7 +195,7 @@ Trọng số:
 - OR theo ngưỡng 12/12 khớp. Cronbach α khớp tới 15 chữ số. Bảng tầng hai bản trùng nhau (16 tầng, đều kích hoạt).
 - Tỷ lệ có trọng số và svyolr của SPSS khớp R (trọng số cố định) tới từng chữ số, cả KTC. Với R `postStratify`, ước
   lượng trùng, SE khác (đúng dự đoán).
-- GENLINMIXED so với clmm: «lệch nhỏ» khoảng 1 % SE.
+- GENLINMIXED so với clmm: «lệch nhỏ» khoảng 1 % SE (đo 14/11). Từ 24/11/2026: SPSS 31 GENLINMIXED không có tuỳ chọn Laplace/cầu phương (đặc tả cú pháp `GENLINMIXED.xml` không có từ khoá phương pháp ước lượng) nên R mô phỏng đúng RSPL của SPSS; đo trên dữ liệu giả 600 ca/30 cụm (thứ bậc 5 mức và nhị phân) và trên fixture này: hệ số, SE, phương sai trùng SPSS tới ≥ 7 chữ số, p theo t bậc tự do phần dư như `DF_METHOD=RESIDUAL` ⇒ «✓ khớp».
 - Brant (Wald) và Test of Parallel Lines (LR) là hai kiểm định khác nhau — chỉ so kết luận ở ngưỡng 0,05.
 
 Bẫy SPSS đã gặp khi xây khối này:

@@ -605,6 +605,20 @@
     "dct:phuong_phap": "thiết kế và kế hoạch phân tích nhất quán"
    }
   },
+  "doi_chung_cong_khai.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "đề tài đối chứng công khai — đối chiếu số G6 với ước lượng đã công bố trên dữ liệu thật CC0 (Dryad)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_doi_chung_cong_khai_20261124.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "tìm lại ước lượng đã công bố từ dữ liệu gốc trong sai số làm tròn",
+    "tong:kiem_chung": "lệch chỉ được chấp nhận ở ô đã chứng minh nguyên nhân"
+   }
+  },
   "duyet_kiem_may_api.py": {
    "pham_vi": "nghien_cuu",
    "chu": "kiem-chung-trich-dan",
@@ -876,6 +890,19 @@
    "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_gia_lap_dinh_ky_20261115.py"],
    "nguyen_tac": {
     "tong:kiem_chung": "chạy thử trọn chuỗi để bắt lỗi hệ trước khi gặp đề tài thật",
+    "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
+   }
+  },
+  "gia_lap_doi_chung.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "kịch bản đối chứng công khai của giả lập trọn vòng (dữ liệu thật đã khử định danh)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_doi_chung_cong_khai_20261124.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "chạy trọn chuỗi trên dữ liệu thật có ước lượng đã công bố",
     "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
    }
   },

@@ -1,0 +1,247 @@
+{
+  "study": "ZZCANARY-DOI-CHUNG-QFT",
+  "gate": "G0",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08",
+  "generated_at": "2026-11-23T19:32:42.795783",
+  "topic": "Tỷ lệ nhiễm lao tiềm ẩn chẩn đoán bằng QuantiFERON-TB Gold Plus và yếu tố liên quan ở người lớn tiếp xúc gần với người bệnh lao phổi tại Kampala, Uganda: phân tích thứ cấp bộ dữ liệu cắt ngang công khai",
+  "base_query": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab])",
+  "pubmed_results": {
+    "total_found": 37,
+    "n_pmids": 37,
+    "all_pmids": [
+      "39709975",
+      "38851427",
+      "42264591",
+      "27052266",
+      "41309403",
+      "41444517",
+      "41430120",
+      "41607885",
+      "32156698",
+      "42264594",
+      "26493989",
+      "20381206",
+      "38653232",
+      "36294107",
+      "42248852",
+      "41261656",
+      "42205449",
+      "42021170",
+      "21961888",
+      "41713438",
+      "41545280",
+      "41144091",
+      "29020191",
+      "25774015",
+      "42024911",
+      "40440402",
+      "33059620",
+      "27424071",
+      "41239243",
+      "42320712",
+      "30248152",
+      "28159608",
+      "41444872",
+      "41294359",
+      "30224215",
+      "41999988",
+      "42247627"
+    ],
+    "n_sr": 10,
+    "n_rct": 8,
+    "n_guideline": 2,
+    "n_observational": 173,
+    "n_recent": 8,
+    "most_recent_year": 2026,
+    "counts_are_real": true,
+    "counts_unavailable": [],
+    "query_errors": {}
+  },
+  "n_sr": 10,
+  "n_rct": 8,
+  "n_pmids": 37,
+  "pmids_verified": [
+    "39709975",
+    "38851427",
+    "42264591",
+    "27052266",
+    "41309403",
+    "41444517",
+    "41430120",
+    "41607885",
+    "32156698",
+    "42264594",
+    "26493989",
+    "20381206",
+    "38653232",
+    "36294107",
+    "42248852",
+    "41261656",
+    "42205449",
+    "42021170",
+    "21961888",
+    "41713438",
+    "41545280",
+    "41144091",
+    "29020191",
+    "25774015",
+    "42024911",
+    "40440402",
+    "33059620",
+    "27424071",
+    "41239243",
+    "42320712",
+    "30248152",
+    "28159608",
+    "41444872",
+    "41294359",
+    "30224215",
+    "41999988",
+    "42247627"
+  ],
+  "evidence_note": "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "evidence_level": "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "research_gaps": [
+    "KHÔNG phát hiện khoảng trống nào từ dữ liệu PubMed đã tra (đã có SR/MA, RCT, guideline và nghiên cứu mới) — [CẦN — bác sĩ tự xác định khoảng trống, ví dụ quần thể/bối cảnh chưa được phủ; hệ KHÔNG suy ra được]",
+    "Có 5 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh trùng lặp (xem §3.6 của G0_A1)"
+  ],
+  "design_suggestion": "Nghiên cứu phân tích dưới nhóm / quần thể đặc thù / pragmatic trial",
+  "novelty_concern": "⚠ Chủ đề đã có nhiều SR/MA → cần biện minh tính mới rõ ràng | ⚠ ClinicalTrials.gov: 5 nghiên cứu ĐANG/SẮP TUYỂN cho truy vấn này (tổng 21 hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật.",
+  "registry_check": {
+    "registry": "ClinicalTrials.gov",
+    "query": "(\"Interferon-gamma Release Tests\"[MeSH] OR QuantiFERON[tiab] OR \"interferon gamma release\"[tiab]) AND (\"Contact Tracing\"[MeSH] OR contacts[tiab] OR \"household contacts\"[tiab]) AND (\"Latent Tuberculosis\"[MeSH] OR \"latent tuberculosis\"[tiab] OR \"tuberculosis infection\"[tiab])",
+    "checked": true,
+    "n_trials": 21,
+    "n_active": 5,
+    "trials": [
+      {
+        "nct_id": "NCT06580639",
+        "title": "The Role of a Mycobacterium Growth Inhibition Assay to Quantify Host Immune Control of M. Tuberculosis",
+        "status": "UNKNOWN",
+        "start_date": "2020-08-01",
+        "phases": null,
+        "study_type": "OBSERVATIONAL",
+        "conditions": "Tuberculosis, Immunologic Activity Alteration",
+        "enrollment": 280,
+        "url": "https://clinicaltrials.gov/study/NCT06580639"
+      },
+      {
+        "nct_id": "NCT02208427",
+        "title": "Toward a Safe and Reachable Preventive Therapy for LTBI: a Multicenter Randomized Controlled Study in Taiwan",
+        "status": "UNKNOWN",
+        "start_date": "2014-08",
+        "phases": [
+          "PHASE3"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Latent Tuberculosis Infection",
+        "enrollment": 283,
+        "url": "https://clinicaltrials.gov/study/NCT02208427"
+      },
+      {
+        "nct_id": "NCT01223534",
+        "title": "QuantiFERON®-TB Gold In-Tube for the Diagnosis of Tuberculosis Infection in Contact Tracing Study.",
+        "status": "COMPLETED",
+        "start_date": "2010-07",
+        "phases": [
+          "PHASE4"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Latent Tuberculosis Infection",
+        "enrollment": 871,
+        "url": "https://clinicaltrials.gov/study/NCT01223534"
+      },
+      {
+        "nct_id": "NCT01398618",
+        "title": "Comparing Two Preventive Regimens for Latent Tuberculosis Infection (LTBI)",
+        "status": "UNKNOWN",
+        "start_date": "2011-05",
+        "phases": [
+          "PHASE3"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Latent Tuberculosis Infection",
+        "enrollment": 300,
+        "url": "https://clinicaltrials.gov/study/NCT01398618"
+      },
+      {
+        "nct_id": "NCT02653404",
+        "title": "IGRA and Mantoux Response in Children With Suspected Latent or Active TB Infection",
+        "status": "UNKNOWN",
+        "start_date": "2015-04",
+        "phases": null,
+        "study_type": "OBSERVATIONAL",
+        "conditions": "Tuberculosis, Pulmonary, Interferon-gamma Release Tests, Tuberculin Test",
+        "enrollment": 50,
+        "url": "https://clinicaltrials.gov/study/NCT02653404"
+      }
+    ],
+    "error": null,
+    "checked_at": "2026-11-23T19:32:39",
+    "query_gui_ctgov": "(\"Interferon-gamma Release Tests\" OR QuantiFERON OR \"interferon gamma release\" ) AND (\"Contact Tracing\" OR contacts OR \"household contacts\" ) AND (\"Latent Tuberculosis\" OR \"latent tuberculosis\" OR \"tuberculosis infection\" )"
+  },
+  "guardrail": {
+    "passed": true,
+    "n_errors": 0,
+    "errors": []
+  },
+  "artifacts": {
+    "A1_markdown": "exports/ZZCANARY-DOI-CHUNG-QFT/G0_A1_PICO_FINER_ZZCANARY-DOI-CHUNG-QFT.md",
+    "A1_docx": "exports/ZZCANARY-DOI-CHUNG-QFT/G0_A1_PICO_FINER_ZZCANARY-DOI-CHUNG-QFT.docx"
+  },
+  "pending_doctor_actions": [
+    "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+    "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+    "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+    "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+    "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"7a82bfdc3a5ea973\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
+    "Chạy: python tools/g0_quality_gate.py --study ZZCANARY-DOI-CHUNG-QFT"
+  ],
+  "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "danh_muc_doc_bo_sung": [],
+  "quality_contract_version": "G0-2026.1",
+  "quality_gate": {
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "contract_version": "G0-2026.1",
+    "automated_checks_passed": true,
+    "human_confirmation_complete": false,
+    "pending_actions": [
+      "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+      "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+      "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+      "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+      "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+      "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"7a82bfdc3a5ea973\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+      "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
+    ],
+    "dau_van_tay_luc_cham": "7a82bfdc3a5ea973"
+  },
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_PICO",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được bác sĩ chốt (còn chờ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08). Hệ KHÔNG tự viết PICO thay bác sĩ.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
+      "study_meta_patch": {
+        "gate_params": {
+          "G0": {
+            "pico_confirmed": true
+          }
+        }
+      },
+      "must_not_fabricate": [
+        "PICO",
+        "primary_outcome",
+        "FINER",
+        "hypothesis"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
+}

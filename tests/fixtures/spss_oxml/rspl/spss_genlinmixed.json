@@ -1,0 +1,15 @@
+{
+ "_nguon": "IBM SPSS Statistics 31.0.1 GENLINMIXED (macOS), đo 23–24/11/2026 trên du_lieu_gia_cum.csv (600 ca GIẢ, 30 cụm, sinh bởi hạt giống 7). Thứ bậc: TARGET=g1 MULTINOMIAL LOGIT; nhị phân: yb = (g1 >= 4) BINOMIAL LOGIT REFERENCE=0; FIXED nhom tuoi (SCALE) + hệ số chặn; RANDOM hệ số chặn theo cum, VARIANCE_COMPONENTS; DF_METHOD=RESIDUAL COVB=MODEL. Số chép nguyên từ bảng Fixed Coefficients / Covariance Parameters qua OMS.",
+ "thu_bac": {
+  "nhom": {"b": 0.87387423548163, "se": 0.20898756317101, "p": 3.3329980190677e-05},
+  "tuoi": {"b": 0.032051377503691, "se": 0.0080689296221682, "p": 7.9955076691007e-05},
+  "phuong_sai": 0.15503664542447,
+  "df": 594
+ },
+ "nhi_phan": {
+  "nhom": {"b": 0.82594662192095, "se": 0.19125406656792, "p": 1.8387287039623e-05},
+  "tuoi": {"b": 0.041908082442325, "se": 0.0098588937656702, "p": 2.4715730415403e-05},
+  "phuong_sai": 0.02464981094694,
+  "df": 597
+ }
+}
