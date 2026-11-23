@@ -226,8 +226,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 23/11/2026 (chốt chung «điền sai kiểu»): viet-ban-thao (chủ) và tham-dinh-dau-ra (kiểm) nhận dòng
 # `tools/quet_dien_sai_kieu.py` theo config/phan_cong_cong_cu.json; khối trách nhiệm sinh tự động của dieu-phoi-g7 và
 # viet-ban-thao thêm G7-AUTO-09 — vẫn 64.
+# 23/11/2026: chép 2 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
+# 23/11/2026: chép 4 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
 MANIFEST_SELF_CHECK_SHA256 = (
-    "b05615817d2593ff1f16845a82beecaed8663980d61949229b5f5692041abec0"
+    "c7dd9eb5c03950b5213166ed2f56e7ff3aafe8d21b944b1a329fd54aaa0e30d6"
 )
 
 MINIMUM_AGENT_COUNT = 64

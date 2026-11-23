@@ -146,7 +146,9 @@ def ung_vien_rscript(he: str | None = None, goc_cai: list[Path] | None = None) -
     """Mọi Rscript chạy được, ưu tiên: EBM_RSCRIPT › PATH › chỗ cài mặc định (Mac / Windows). Không trùng lặp."""
     env = os.environ.get("EBM_RSCRIPT", "").strip()
     if env:
-        return [Path(env)]
+        # 23/11/2026: biến trỏ tệp KHÔNG có ⇒ «không tìm thấy R» (KhongDoDuoc) như máy không cài — cùng luật với
+        # EBM_SPSS_PYTHON (17/11/2026), không đưa đường hỏng cho subprocess.
+        return [Path(env)] if Path(env).is_file() else []
     he = he or ("nt" if os.name == "nt" else sys.platform)
     ra: list[Path] = []
     w = shutil.which("Rscript")
@@ -651,19 +653,19 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
       bang <- table(y, g)
       # 23/11/2026: hiệu số nguy cơ p1 − p0 + KTC theo ĐÚNG phương pháp SAP khai — Newcombe qua gói DescTools
       # (cài đặt ĐỘC LẬP với Python; method = "score" là Newcombe hybrid score, phương pháp 10), Wald tính tay với
-      # 1,96 như Python
+      # phân vị chính xác qnorm(0.975) (23/11/2026: Python cũng bỏ 1,96 làm tròn — SPSS dùng phân vị chính xác)
       p1 <- e1 / n1
       p0 <- e0 / n0
       rd_ci <- if (identical(KC_HIEU_SO, "newcombe")) {
         b <- DescTools::BinomDiffCI(e1, n1, e0, n0, conf.level = 0.95, method = "score")
         as.numeric(b[1, c("lwr.ci", "upr.ci")])
       } else if (identical(KC_HIEU_SO, "wald")) {
-        (p1 - p0) + c(-1.96, 1.96) * sqrt(p0 * (1 - p0) / n0 + p1 * (1 - p1) / n1)
+        (p1 - p0) + c(-1, 1) * stats::qnorm(0.975) * sqrt(p0 * (1 - p0) / n0 + p1 * (1 - p1) / n1)
       } else {
         stop("phương pháp KTC hiệu số nguy cơ «", KC_HIEU_SO, "» chưa hỗ trợ — không tự lùi về Wald")
       }
       list(loai = "binary", nhom = muc, n = c(n0, n1), bien_co = c(e0, e1), or = or_tho,
-           ci = exp(log(or_tho) + c(-1.96, 1.96) * se_log),  # Python dùng 1,96 cố định
+           ci = exp(log(or_tho) + c(-1, 1) * stats::qnorm(0.975) * se_log),  # phân vị chính xác, như Python
            p_yates = suppressWarnings(stats::chisq.test(bang, correct = TRUE)$p.value),
            p_pearson = suppressWarnings(stats::chisq.test(bang, correct = FALSE)$p.value),
            rd = p1 - p0, rd_ci = rd_ci, rd_phuong_phap = KC_HIEU_SO,

@@ -605,6 +605,21 @@
     "dct:phuong_phap": "thiết kế và kế hoạch phân tích nhất quán"
    }
   },
+  "dung_goi_ky.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "nhiem_vu": [],
+   "viec": "dựng gói ký cho đề tài thật: khâu đang mở → Word đề cương nộp → lắp G10 → K1–K21 → hồ sơ đơn vị → đối chiếu 9 trường → một gói ký theo thứ tự cổng; khâu đỏ thì dừng",
+   "nguoi_dung_phu": ["dieu-phoi-g10", "dao-duc-dang-ky"],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tests/test_dung_goi_ky_20261123.py", "tools/buoc_dang_mo.py", "tools/kiem_de_cuong_nop_hoi_dong.py"],
+   "nguyen_tac": {
+    "tong:dat_chuan": "khâu đỏ thì dừng, không xuất gói ký trông như đủ; gói ký cũ dời khỏi chỗ hiện hành",
+    "nt:dao_duc": "không ký, không ghi sổ cái, không bật cờ xác nhận — chữ ký là gói tài liệu ký đã chuẩn bị",
+    "nt:tai_lap": "mỗi tài liệu trong gói kèm SHA-256; cổng thường kèm dấu nội dung hiện tại"
+   }
+  },
   "duyet_kiem_may_api.py": {
    "pham_vi": "nghien_cuu",
    "chu": "kiem-chung-trich-dan",
@@ -962,6 +977,21 @@
     "nt:kiem_soat_cl": "chuẩn bị câu hỏi phản biện trước buổi họp"
    }
   },
+  "goi_ra_khuon_sap.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thiet-ke-nghien-cuu",
+   "cong": ["G4"],
+   "nhiem_vu": ["G4-T1"],
+   "viec": "gói rà khuôn SAP theo thiết kế cho thống kê viên (8 thiết kế + cụm/không kém hơn/ghép cặp; nguyên văn SAP giả lập; ô đồng ý/sửa để trống)",
+   "nguoi_dung_phu": ["dieu-phoi-g4"],
+   "nguoi_kiem": ["phan-tich-thong-ke"],
+   "chot_kiem": ["tests/test_goi_ra_khuon_sap_20261123.py", "tools/g4_quality_gate.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "nội dung chép nguyên văn SAP ví dụ, không viết câu mới; máy không ghi nhận xét thay thống kê viên",
+    "nt:kiem_soat_cl": "nhận xét đưa về nguồn khuôn SAP (run_g4_auto.py, g4_quality_gate.py), giả lập lại, phát hành gói rà mới",
+    "nt:tai_lap": "mỗi trang kèm SHA-256 của SAP nguồn"
+   }
+  },
   "gom_toan_van_oa.py": {
    "pham_vi": "nghien_cuu",
    "chu": "thu-thu-tai-lieu",
@@ -1308,6 +1338,20 @@
     "nt:trung_thuc": "số liệu không có nguồn trong danh mục bị loại (K10)",
     "tong:dat_chuan": "đề cương chỉ nộp khi K1–K19 đạt",
     "dct:kiem_chung": "cỡ mẫu khớp G3, PMID trong biên nhận A12"
+   }
+  },
+  "kiem_dot_bien_dinh_ky.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "nhiem_vu": [],
+   "viec": "kiểm đột biến định kỳ theo sổ config/dot_bien_dinh_ky.json: chốt bị làm yếu mà test vẫn xanh ⇒ đỏ",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tests/test_kiem_dot_bien_dinh_ky_20261123.py", ".github/workflows/dot-bien-dinh-ky.yml"],
+   "nguyen_tac": {
+    "nt:kiem_soat_cl": "chốt được đo lại định kỳ, không chỉ lúc viết",
+    "tong:kiem_chung": "đột biến sống sót, sổ lệch mã hay nền đỏ đều là đỏ, không bao giờ bỏ qua"
    }
   },
   "kiem_do_tuoi_thang_diem.py": {
