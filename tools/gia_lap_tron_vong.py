@@ -2950,10 +2950,14 @@ Kết luận tổng thể: {ket_luan}
     def _soat_so_do(self) -> List[str]:
         """«tệp: K11 dòng N: …» cho mọi lỗi trình bày số đo trong văn bản .md của đề tài (tối đa 200).
 
-        23/11/2026: bản thảo G7 và báo cáo tổng hợp nghiệm thu soát thêm luật K11 số nguyên từ 5 chữ số chưa nhóm
-        nghìn (bảng GRADE từng in «15 (79845)») — như đề cương nộp; báo cáo tổng hợp (dựng trong bộ nhớ) nay cũng
-        soát luật số đo như mọi văn bản .md."""
+        23/11/2026: mọi văn bản đầu ra của chốt «điền sai kiểu» (`quet_dien_sai_kieu.MAU_TEP` — đề cương nộp/thống
+        nhất, SAP, bản thảo G7, hồ sơ đạo đức, phiếu) và báo cáo tổng hợp nghiệm thu soát thêm luật K11 số nguyên từ
+        5 chữ số chưa nhóm nghìn, kể cả tử/mẫu số của phân số (bảng GRADE từng in «15 (79845)», SAP «N = 25462»);
+        báo cáo tổng hợp (dựng trong bộ nhớ) nay cũng soát luật số đo như mọi văn bản .md."""
+        import fnmatch  # noqa: PLC0415
+
         import kiem_de_cuong_nop_hoi_dong as KDN  # noqa: PLC0415
+        import quet_dien_sai_kieu as QDSK  # noqa: PLC0415
 
         ra: List[str] = []
         out = getattr(self, "out", None)
@@ -2969,7 +2973,7 @@ Kết luận tổng thể: {ket_luan}
                 md = p.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 continue
-            ra += _loi(str(p.relative_to(out)), md, p.name.startswith("G7_A8_MANUSCRIPT_"))
+            ra += _loi(str(p.relative_to(out)), md, any(fnmatch.fnmatch(p.name, m) for m in QDSK.MAU_TEP))
         if out and (Path(out) / f"G7_A8_MANUSCRIPT_{self.study}.md").is_file():
             try:
                 ra += _loi(f"BAO_CAO_TONG_HOP_{self.study}", self._bao_cao_tong_hop_van(), True)

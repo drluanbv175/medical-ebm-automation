@@ -174,6 +174,27 @@ def test_g7_auto_09_chan_khi_con_loi_kieu():
     assert G7Q._quet_dien_sai_kieu("α = 0.05 hai phía") and G7Q._quet_dien_sai_kieu("") == []
 
 
+def test_sap_n_nhom_nghin_va_sap_cu_khong_nhom_deu_doi_chieu_dung_g3():
+    """SAP mới (bộ sinh G4 thật) in N kiểu Việt «25.462»; SAP đã ký trước in «25462» — G4-AUTO-03 đối chiếu G3 ĐÚNG ở
+    cả hai dạng (cả §1, §12, chứng chỉ khoá); N lệch G3 vẫn bị chặn ở cả hai dạng."""
+    sys.path.insert(0, str(ROOT / "tests"))
+    from test_g4_quality_gate import _evaluate, _fresh_sap, _g3_checkpoint, _row  # noqa: PLC0415
+
+    assert G4A._n(25462) == "25.462" and G4A._n(385) == "385" and G4A._n(None) == "None"
+    moi_sap = _fresh_sap(n_adjusted=25462)
+    assert "- **Cỡ mẫu:** N = 25.462" in moi_sap and "- **Cỡ mẫu cuối:** N = 25.462" in moi_sap
+    assert "║ Cỡ mẫu   : N = 25.462" in moi_sap
+    cu_sap = moi_sap.replace("25.462", "25462")
+    g3 = _g3_checkpoint(n_adjusted=25462)
+    for sap in (moi_sap, cu_sap):
+        p = G4Q.parse_signed_numbers(sap)
+        assert (p["n"], p["n_muc1"], p["n_chung_chi"]) == (25462, 25462, 25462)
+        tc = _row(_evaluate(artifact_text=sap, g3_checkpoint=g3), "G4-AUTO-03")
+        assert tc["status"] == "PASS", tc["evidence"]
+        lech = _row(_evaluate(artifact_text=sap, g3_checkpoint=_g3_checkpoint(n_adjusted=25463)), "G4-AUTO-03")
+        assert lech["status"] == "BLOCK" and "25462" in lech["evidence"], lech["evidence"]
+
+
 def test_bo_sinh_sap_g3_g7_in_dau_phay_va_bo_cham_doc_ca_hai_dau():
     assert G4A._so(0.05) == "0,05" and G4A._so(0.855) == "0,855" and G4A._so(None) == "[CẦN từ G3]"
     for dau in (".", ","):
@@ -233,6 +254,11 @@ def test_g10_co_mau_in_alpha_luc_mau_dau_phay():
                           "G3": {"alpha": 0.05, "power": 0.8, "n_total": 200, "n_adjusted": 220, "n_per_group": 100,
                                  "dropout": 0.1, "formula_used": "Two-proportion"}}, {})
     assert "Mức ý nghĩa α = 0,05; lực mẫu (power) = 0,8." in van and Q.quet(van) == []
+    lon = G10A.sec_comau({"G1": {"design": {"internal_code": "rct"}},
+                          "G3": {"alpha": 0.05, "power": 0.8, "n_total": 23148, "n_adjusted": 25462,
+                                 "n_per_group": 11574, "dropout": 0.1, "formula_used": "Two-proportion"}}, {})
+    assert "**23.148** (mỗi nhóm: 11.574)" in lon and "cỡ mẫu cần thu: **25.462**" in lon
+    assert not any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11(lon))
 
 
 def test_gia_lap_nhan_o_p_lam_tron_ve_0_khi_so_da_doi_dau_phay():
@@ -248,6 +274,11 @@ def test_k11_so_lon_mot_nguon_va_day_pmid_la_dinh_danh():
     assert any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11("Tổng 79845 người tham gia nghiên cứu."))
     assert not any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11("Các tổng quan (PMID 36828607, 35014147) báo cáo."))
     assert not any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11("Bootstrap với hạt giống 20261115 cố định."))
+    assert not any(KDN.la_loi_so_lon(x) for x in KDN.loi_k11("- **Random seed:** 20261028"))
+    # phân số: tử/mẫu số từ 5 chữ số cũng nhóm nghìn; dấu phẩy ngắt câu không che số; dấu phẩy thập phân thì có
+    assert [m.group(0) for m in Q.SO_LON_RE.finditer("can thiệp 1001/39887, chứng 1447/39958")] == ["39887", "39958"]
+    assert [m.group(0) for m in Q.SO_LON_RE.finditer("tổng 12345, trong đó")] == ["12345"]
+    assert [m.group(0) for m in Q.SO_LON_RE.finditer("1,23456; 12345,6; mg/12345x; đường/12345/a")] == []
 
 
 def test_bo_doi_nhom_nghin_so_nguyen_tru_ma_va_tu_kiem_g7():
@@ -257,15 +288,23 @@ def test_bo_doi_nhom_nghin_so_nguyen_tru_ma_va_tu_kiem_g7():
     json_g6 = '{"k": 15, "nguoi": 79845, "rr": 0.6932469446923869}'
     assert G7A.kiem_so_trich_g6(G7A.hien_so_g6("| 15 (79845) | 0.6932469446923869 |"), json_g6) == []
     assert G7A.kiem_so_trich_g6("| 15 (79.846) |", json_g6) == ["79.846"], "số nhóm nghìn sai vẫn lộ"
+    json_ps = '{"su_kien_can_thiep": 1001, "n_can_thiep": 39887}'
+    nhap = G7A.hien_so_g6("nhánh can thiệp 1001/39887 biến cố/số người")
+    assert nhap == "nhánh can thiệp 1001/39.887 biến cố/số người" and G7A.kiem_so_trich_g6(nhap, json_ps) == []
+    assert G7A.kiem_so_trich_g6("nhánh can thiệp 1001/39.886", json_ps) == ["39.886"], "mẫu số sai vẫn lộ"
 
 
-def test_gia_lap_soat_so_lon_o_ban_thao_g7_khong_o_sap(tmp_path, monkeypatch):
+def test_gia_lap_soat_so_lon_moi_van_ban_dau_ra_va_bao_cao(tmp_path, monkeypatch):
     ma = next(m for m, kb in GT.GL.KICH_BAN.items() if kb["thiet_ke"] == "sr_ma")
     tv = GT.TronVong(ma, tmp_path)
     tv.out.mkdir(parents=True)
     (tv.out / f"G7_A8_MANUSCRIPT_{tv.study}.md").write_text("| Nhập viện | 15 (79845) |\n", encoding="utf-8",
                                                               newline="\n")
-    (tv.out / f"G4_A5_SAP_FINAL_{tv.study}.md").write_text("- **Cỡ mẫu:** N = 25462\n", encoding="utf-8", newline="\n")
-    monkeypatch.setattr(GT.TronVong, "_bao_cao_tong_hop_van", lambda self: "Tổng 60363 người tham gia.")
+    (tv.out / f"G4_A5_SAP_FINAL_{tv.study}.md").write_text("- **Cỡ mẫu:** N = 25462\n- **Random seed:** 20261115\n",
+                                                           encoding="utf-8", newline="\n")
+    (tv.out / f"G6_DIEN_GIAI_{tv.study}.md").write_text("Tổng 25462 người (không thuộc văn bản đầu ra).\n",
+                                                        encoding="utf-8", newline="\n")
+    monkeypatch.setattr(GT.TronVong, "_bao_cao_tong_hop_van", lambda self: "nhánh can thiệp 1001/39887 người.")
     sai = tv._soat_so_do()
-    assert [x.split(":")[0] for x in sai] == [f"G7_A8_MANUSCRIPT_{tv.study}.md", f"BAO_CAO_TONG_HOP_{tv.study}"], sai
+    assert sorted(x.split(":")[0] for x in sai) == sorted(
+        [f"G4_A5_SAP_FINAL_{tv.study}.md", f"G7_A8_MANUSCRIPT_{tv.study}.md", f"BAO_CAO_TONG_HOP_{tv.study}"]), sai

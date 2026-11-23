@@ -31,6 +31,7 @@ import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6,
 import g4_quality_gate as G4Q  # noqa: E402  (khung §12 dùng chung với bộ chấm — G4-06)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import hon_hop as HH  # noqa: E402  (thiết kế hỗn hợp — §17, 17/11/2026)
+import quet_dien_sai_kieu as QDSK  # noqa: E402  (quy ước số tiếng Việt — K11 nhóm nghìn, 23/11/2026)
 import skill_standards as S  # noqa: E402  (đặc tả thiết kế khoá ở G1, chuẩn báo cáo theo thiết kế)
 import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
@@ -140,6 +141,12 @@ def _so(gia_tri, mac_dinh="[CẦN từ G3]"):
         return f"{float(gia_tri):g}".replace(".", ",")
     except (TypeError, ValueError):
         return str(gia_tri)
+
+
+def _n(gia_tri):
+    """Số NGUYÊN của SAP (N, số cụm, số ca, quần thể FPC) theo K11: từ 5 chữ số nhóm nghìn («25462» ⇒ «25.462») —
+    23/11/2026; `g4_quality_gate.parse_signed_numbers` đọc cả dạng có và không nhóm nghìn (SAP đã ký trước)."""
+    return QDSK.viet_so(gia_tri) if isinstance(gia_tri, int) and not isinstance(gia_tri, bool) else str(gia_tri)
 
 
 def _phan_tram(ty_le, mac_dinh="[CẦN từ G3]"):
@@ -539,12 +546,12 @@ def generate(study, topic, design_code, design_primary, reporting_std,
     elif not n_adjusted:
         dong_co_mau_1 = "- **Cỡ mẫu:** [CẦN từ G3]  "
     elif loai12 == "power":
-        dong_co_mau_1 = f"- **Cỡ mẫu cuối:** N = {n_adjusted} (alpha={_so(alpha)}, power={_phan_tram(power)})  "
+        dong_co_mau_1 = f"- **Cỡ mẫu cuối:** N = {_n(n_adjusted)} (alpha={_so(alpha)}, power={_phan_tram(power)})  "
     elif loai12 == "chinh_xac":
-        dong_co_mau_1 = (f"- **Cỡ mẫu cuối:** N = {n_adjusted} (độ tin cậy {do_tin_cay}, sai số tuyệt đối "
+        dong_co_mau_1 = (f"- **Cỡ mẫu cuối:** N = {_n(n_adjusted)} (độ tin cậy {do_tin_cay}, sai số tuyệt đối "
                          f"d = ±{_so(precision)})  ")
     else:
-        dong_co_mau_1 = f"- **Cỡ mẫu cuối:** N = {n_adjusted} (phương pháp riêng của thiết kế — xem A4)  "
+        dong_co_mau_1 = f"- **Cỡ mẫu cuối:** N = {_n(n_adjusted)} (phương pháp riêng của thiết kế — xem A4)  "
     # VÁ 04/10/2026 (soát từng cổng, G4-05): câu «N kế hoạch … lớn hơn mức tối thiểu» từng in chỉ với điều kiện hai số
     # KHÁC nhau — không xét CHIỀU — nên SAP ký khẳng định SAI khi chủ nhiệm chốt N THẤP hơn N tối thiểu (đề tài thiếu
     # lực). Nay rẽ nhánh theo chiều; chiều thấp hơn phải có giải trình của người thật (ô [CẦN] nếu chưa khai).
@@ -810,7 +817,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         import run_g3_auto as _G3A  # noqa: PLC0415 — chỉ cần khi G3 có khai lực mục tiêu phụ
         dong_luc_phu = _G3A.dong_luc_muc_tieu_phu(g3.get("luc_muc_tieu_phu"))
     dong_n_12 = (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
-                 (f"- **Cỡ mẫu:** N = {n_adjusted}  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  "))
+                 (f"- **Cỡ mẫu:** N = {_n(n_adjusted)}  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  "))
     if loai12 == "dinh_tinh":
         tieu_de_12 = "### §12 KHÔNG KIỂM ĐỊNH GIẢ THUYẾT (định tính)"
         muc_12 = [
@@ -866,8 +873,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             if g3.get(khoa) is not None:
                 muc_12.append(f"- **{nhan}:** {_so(g3.get(khoa))}  ")
         if design_code == "diagnostic" and g3.get("n_benh") is not None:
-            muc_12 += [f"- **Số ca bệnh cần:** {g3.get('n_benh')}  ",
-                       f"- **Số ca không bệnh cần:** {g3.get('n_khong_benh')}  ",
+            muc_12 += [f"- **Số ca bệnh cần:** {_n(g3.get('n_benh'))}  ",
+                       f"- **Số ca không bệnh cần:** {_n(g3.get('n_khong_benh'))}  ",
                        f"- **Tỷ lệ hiện mắc dự kiến:** {_so(g3.get('prevalence'))}  "]
     if gia_thuyet_phu and str(gia_thuyet_phu).strip() and loai12 != "dinh_tinh":
         muc_12.append(f"- **Giả thuyết mục tiêu phụ (định trước, gate_params.G0.hypothesis_secondary):** "
@@ -881,12 +888,12 @@ def generate(study, topic, design_code, design_primary, reporting_std,
                    f"- **ICC:** {_so(icc)}  ",
                    f"- **Cỡ cụm trung bình (m):** {_so(cluster_size)}  "]
         if g3.get("n_clusters") is not None:
-            muc_12.append(f"- **Số cụm:** {g3.get('n_clusters')}  ")
+            muc_12.append(f"- **Số cụm:** {_n(g3.get('n_clusters'))}  ")
     if g3.get("population_n") is not None:
-        muc_12.append(f"- **Quần thể hữu hạn (FPC):** N = {g3.get('population_n')}  ")
+        muc_12.append(f"- **Quần thể hữu hạn (FPC):** N = {_n(g3.get('population_n'))}  ")
 
     dong_co_mau_cc = (f"║ Cỡ mẫu   : {n_na_note:<49} ║" if n_not_applicable else
-                      (f"║ Cỡ mẫu   : N = {str(n_adjusted):<45} ║" if n_adjusted
+                      (f"║ Cỡ mẫu   : N = {_n(n_adjusted):<45} ║" if n_adjusted
                        else "║ Cỡ mẫu   : [CẦN từ G3]                                      ║"))
     def _o_khung(nhan, gia_tri):
         return f"║ {nhan:<10}: {gia_tri:<48} ║"

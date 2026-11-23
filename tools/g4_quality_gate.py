@@ -420,12 +420,19 @@ def _so_thuc(chuoi: str) -> float:
 
 #: một số thập phân viết dấu chấm HOẶC dấu phẩy (không nuốt dấu phẩy ngắt câu «0,05, độ tin cậy»)
 _SO_KY = r"(\d+(?:[.,]\d+)?)"
+#: một số NGUYÊN đã ký: có nhóm nghìn kiểu Việt («25.462» — SAP từ 23/11/2026) hoặc không («25462» — SAP ký trước)
+_NGUYEN_KY = r"(\d{1,3}(?:\.\d{3})+(?!\d)|\d+)"
+
+
+def _so_nguyen(chuoi: str) -> int:
+    """Số nguyên đã ký, bỏ dấu chấm nhóm nghìn."""
+    return int(chuoi.replace(".", ""))
 
 # Bộ đọc số liệu đã ký: (khoá, mẫu, kiểu). Nhãn khớp ĐÚNG dòng run_g4_auto.generate() in ở §12.
 _MAU_SO_MUC12: tuple[tuple[str, str, Any], ...] = (
     ("alpha", r"\*\*Alpha \([^)]*\):\*\*\s*" + _SO_KY, _so_thuc),
     ("power_pct", r"\*\*Power:\*\*\s*(\d+)%", int),
-    ("n", r"\*\*Cỡ mẫu:\*\*\s*N\s*=\s*(\d+)", int),
+    ("n", r"\*\*Cỡ mẫu:\*\*\s*N\s*=\s*" + _NGUYEN_KY, _so_nguyen),
     ("hypothesis_type", r"\*\*Loại giả thuyết:\*\*\s*(\S+)", str),
     ("margin", r"\*\*Biên \(margin, Δ\):\*\*\s*" + _SO_KY, _so_thuc),
     ("sd", r"\*\*Độ lệch chuẩn \(SD\) kết cục:\*\*\s*" + _SO_KY, _so_thuc),
@@ -440,11 +447,11 @@ _MAU_SO_MUC12: tuple[tuple[str, str, Any], ...] = (
     ("design_effect", r"\*\*Hiệu ứng thiết kế \(DE\):\*\*\s*" + _SO_KY, _so_thuc),
     ("icc", r"\*\*ICC:\*\*\s*" + _SO_KY, _so_thuc),
     ("cluster_size", r"\*\*Cỡ cụm trung bình \(m\):\*\*\s*" + _SO_KY, _so_thuc),
-    ("n_clusters", r"\*\*Số cụm:\*\*\s*(\d+)", int),
-    ("n_benh", r"\*\*Số ca bệnh cần:\*\*\s*(\d+)", int),
-    ("n_khong_benh", r"\*\*Số ca không bệnh cần:\*\*\s*(\d+)", int),
+    ("n_clusters", r"\*\*Số cụm:\*\*\s*" + _NGUYEN_KY, _so_nguyen),
+    ("n_benh", r"\*\*Số ca bệnh cần:\*\*\s*" + _NGUYEN_KY, _so_nguyen),
+    ("n_khong_benh", r"\*\*Số ca không bệnh cần:\*\*\s*" + _NGUYEN_KY, _so_nguyen),
     ("prevalence", r"\*\*Tỷ lệ hiện mắc dự kiến:\*\*\s*" + _SO_KY, _so_thuc),
-    ("population_n", r"\*\*Quần thể hữu hạn \(FPC\):\*\*\s*N\s*=\s*(\d+)", int),
+    ("population_n", r"\*\*Quần thể hữu hạn \(FPC\):\*\*\s*N\s*=\s*" + _NGUYEN_KY, _so_nguyen),
 )
 
 
@@ -472,10 +479,10 @@ def parse_signed_numbers(artifact_text: str) -> dict[str, Any]:
             result["effect_val"] = _so_thuc(m.group(2))
         result["alpha_khong_ap_dung"] = bool(re.search(r"\*\*Alpha[^*\n]*:\*\*\s*KHÔNG ÁP DỤNG", section))
         result["power_khong_ap_dung"] = bool(re.search(r"\*\*Power:\*\*\s*KHÔNG ÁP DỤNG", section))
-    m1 = re.search(r"\*\*Cỡ mẫu cuối:\*\*\s*N\s*=\s*(\d+)", _section_body(artifact_text, "§1"))
-    result["n_muc1"] = int(m1.group(1)) if m1 else None
-    m5 = re.search(r"Cỡ mẫu\s*:\s*N\s*=\s*(\d+)", _phan_body(artifact_text, "5"))
-    result["n_chung_chi"] = int(m5.group(1)) if m5 else None
+    m1 = re.search(r"\*\*Cỡ mẫu cuối:\*\*\s*N\s*=\s*" + _NGUYEN_KY, _section_body(artifact_text, "§1"))
+    result["n_muc1"] = _so_nguyen(m1.group(1)) if m1 else None
+    m5 = re.search(r"Cỡ mẫu\s*:\s*N\s*=\s*" + _NGUYEN_KY, _phan_body(artifact_text, "5"))
+    result["n_chung_chi"] = _so_nguyen(m5.group(1)) if m5 else None
     return result
 
 

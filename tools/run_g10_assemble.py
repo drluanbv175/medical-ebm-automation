@@ -379,9 +379,9 @@ def sec_tomtat(cps, meta) -> str:
     # thuyết — tránh đề cương nói "428" trong khi bác sĩ đã quyết định 1000.
     confirmed_n = _g(cps["G3"], "confirmed_n", default=None)
     if confirmed_n is not None:
-        n_txt = f"{confirmed_n} đối tượng (đã bác sĩ/chủ nhiệm chốt; N tối thiểu tính toán: {n_adj})"
+        n_txt = f"{_nv(confirmed_n)} đối tượng (đã bác sĩ/chủ nhiệm chốt; N tối thiểu tính toán: {_nv(n_adj)})"
     else:
-        n_txt = f"{n_adj} đối tượng"
+        n_txt = f"{_nv(n_adj)} đối tượng"
     std = _g(cps["G1"], "design", "reporting_standard",
              default=_g(cps["G4"], "reporting_standard", default=TAG_BS))
     protocol_summary = meta.get("summary")
@@ -767,6 +767,11 @@ def sec_bienso(cps, meta) -> str:
     return "\n".join(lines)
 
 
+def _nv(x) -> str:
+    """Số nguyên cỡ mẫu theo K11 (từ 5 chữ số nhóm nghìn — «25.462»); không phải số nguyên ⇒ nguyên văn (23/11/2026)."""
+    return QDSK.viet_so(x) if isinstance(x, int) and not isinstance(x, bool) else str(x)
+
+
 def sec_comau(cps, meta) -> str:
     g3 = cps["G3"]
     if not g3:
@@ -797,24 +802,24 @@ def sec_comau(cps, meta) -> str:
     code = S.canonical_design_code(_design_code(cps))
     per_group = ""
     if code in _MULTI_ARM_DESIGNS and n_per not in ("?", n_total):
-        per_group = f" (mỗi nhóm: {n_per})"
+        per_group = f" (mỗi nhóm: {_nv(n_per)})"
     confirmed_n = _g(g3, "confirmed_n", default=None)
     confirmed_block = ""
     if confirmed_n is not None:
         adequate = _g(g3, "confirmed_n_adequate", default=None)
         if adequate is True:
             confirmed_block = (
-                f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{confirmed_n}** — "
-                f"✅ ĐẠT, ≥ N tối thiểu tính theo thống kê ({n_adj}).\n"
+                f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{_nv(confirmed_n)}** — "
+                f"✅ ĐẠT, ≥ N tối thiểu tính theo thống kê ({_nv(n_adj)}).\n"
             )
         elif adequate is False:
             confirmed_block = (
-                f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{confirmed_n}** — "
-                f"🔴 CẢNH BÁO, THẤP HƠN N tối thiểu tính theo thống kê ({n_adj}); nguy cơ "
+                f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{_nv(confirmed_n)}** — "
+                f"🔴 CẢNH BÁO, THẤP HƠN N tối thiểu tính theo thống kê ({_nv(n_adj)}); nguy cơ "
                 "thiếu lực thống kê (underpowered) — cần xác nhận có chủ đích hoặc điều chỉnh.\n"
             )
         else:
-            confirmed_block = f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{confirmed_n}**.\n"
+            confirmed_block = f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{_nv(confirmed_n)}**.\n"
     ma_khung = {"systematic_review": "sr_ma"}.get(code, code)  # canonical_design_code("sr_ma") = "systematic_review"
     if ma_khung in _KHUNG_CO_MAU_KHONG_DUNG_LUC:
         # 22/11/2026: thiết kế không dùng công thức lực mẫu — trước đây khối này in «lực mẫu (power) = 0.8» (MẶC ĐỊNH
@@ -827,7 +832,7 @@ def sec_comau(cps, meta) -> str:
             f"**Phương pháp xác định cỡ mẫu:** {_KHUNG_CO_MAU_KHONG_DUNG_LUC[ma_khung]}.\n\n"
             + (f"- {cong_thuc.rstrip('.')}.\n" if cong_thuc else "")
             + "- Thiết kế không dùng công thức lực mẫu của nghiên cứu so sánh một kết cục.\n"
-            + (f"- Cỡ mẫu đã chốt: **{confirmed_n}**" + (f" — {cach.rstrip('.')}.\n" if cach else ".\n")
+            + (f"- Cỡ mẫu đã chốt: **{_nv(confirmed_n)}**" + (f" — {cach.rstrip('.')}.\n" if cach else ".\n")
                if confirmed_n is not None else "")
             + "\n"
             + (f"> **Nguồn giả định (G3 — thống kê viên/chủ nhiệm khai):** {'; '.join(nguon)}.\n" if nguon else "")
@@ -836,8 +841,8 @@ def sec_comau(cps, meta) -> str:
         f"{S.de_cuong_heading('comau')}\n\n"
         f"**Công thức áp dụng (tự động từ G3):** {formula}.\n\n"
         f"- Mức ý nghĩa α = {QDSK.viet_so(alpha)}; lực mẫu (power) = {QDSK.viet_so(power)}.\n"
-        f"- Cỡ mẫu tối thiểu tính được: **{n_total}**{per_group}.\n"
-        f"- Dự phòng bỏ cuộc {dropout_pct} → cỡ mẫu cần thu: **{n_adj}**.\n"
+        f"- Cỡ mẫu tối thiểu tính được: **{_nv(n_total)}**{per_group}.\n"
+        f"- Dự phòng bỏ cuộc {dropout_pct} → cỡ mẫu cần thu: **{_nv(n_adj)}**.\n"
         f"{confirmed_block}\n"
         + (f"> **Nguồn giả định (G3 — thống kê viên/chủ nhiệm khai):** {'; '.join(nguon)}.\n" if nguon else
            f"> Lưu ý: nếu effect size/tỷ lệ giả định lấy từ y văn, PHẢI ghi PMID/DOI "

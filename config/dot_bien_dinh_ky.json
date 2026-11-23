@@ -168,6 +168,30 @@
    "cu": "        loi_may += [f\"{self.ma}:dien_sai_kieu_van_ban:{x}\" for x in dsk]\n",
    "moi": "        pass\n",
    "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "QDSK-K11-PHAN-SO",
+   "chot": "số nguyên từ 5 chữ số ở tử/mẫu số phân số («1001/39887») cũng phải nhóm nghìn (K11)",
+   "tep": "tools/quet_dien_sai_kieu.py",
+   "cu": "(?:(?<=\\d/)|(?<!/))\\d{5,}(?![\\w.-])(?!,\\d)(?:(?=/\\d)|(?!/))",
+   "moi": "(?<!/)\\d{5,}(?![\\w.-])(?!,\\d)(?!/)",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "G4-N-NHOM-NGHIN-DOC",
+   "chot": "bộ chấm G4 đọc N đã ký ở cả dạng nhóm nghìn («25.462») lẫn SAP ký trước («25462»)",
+   "tep": "tools/g4_quality_gate.py",
+   "cu": "_NGUYEN_KY = r\"(\\d{1,3}(?:\\.\\d{3})+(?!\\d)|\\d+)\"",
+   "moi": "_NGUYEN_KY = r\"(\\d+)\"",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "G4-N-NHOM-NGHIN-IN",
+   "chot": "SAP in N, số cụm, số ca, quần thể FPC theo nhóm nghìn kiểu Việt (K11)",
+   "tep": "tools/run_g4_auto.py",
+   "cu": "    return QDSK.viet_so(gia_tri) if isinstance(gia_tri, int) and not isinstance(gia_tri, bool) else str(gia_tri)",
+   "moi": "    return str(gia_tri)",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
   }
  ]
 }

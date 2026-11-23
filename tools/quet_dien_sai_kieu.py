@@ -94,9 +94,13 @@ def bo_dau(s: Any) -> str:
 LE_TOI_DA = 4
 #: K11 — số nguyên từ 5 chữ số chưa nhóm nghìn («79845» ⇒ «79.845»); NGUỒN DUY NHẤT cho luật K11 của
 #: kiem_de_cuong_nop_hoi_dong và bộ đổi `viet_hoa_so` (23/11/2026)
-SO_LON_RE = re.compile(r"(?<![\w.,/-])\d{5,}(?![\w.,/-])")
+#: 23/11/2026: cả TỬ SỐ/MẪU SỐ của phân số «1001/39887», «934/38903» (số ở hai phía dấu «/» đều là số) — «/» cạnh chữ
+#: (đường dẫn, «mg/dL») hoặc phía kia không phải số thì không phải phân số
+#: dấu phẩy chỉ loại khi là dấu thập phân («1,23456», «12345,6»), không loại dấu phẩy ngắt câu («tổng 12345, trong đó»)
+SO_LON_RE = re.compile(r"(?<![\w.-])(?<!\d,)(?:(?<=\d/)|(?<!/))\d{5,}(?![\w.-])(?!,\d)(?:(?=/\d)|(?!/))")
 #: số định danh, không phải số đếm («seed 20261115», «hạt giống 20261115», «mã 40062», «số 3869») — không nhóm nghìn
-NGU_CANH_MA_RE = re.compile(r"(?:seed|hạt giống|mã|ID|ISSN|NCT|số hiệu|số)\s*[:=]?\s*$", re.I)
+#: (chấp nhận dấu nhấn mạnh Markdown giữa nhãn và số: «Random seed:** 20261028»)
+NGU_CANH_MA_RE = re.compile(r"(?:seed|hạt giống|mã|ID|ISSN|NCT|số hiệu|số)\s*[*_]*\s*[:=]?\s*[*_]*\s*$", re.I)
 #: nhãn thông điệp K11 của luật số lớn (bộ giả lập lọc theo nhãn này)
 NHAN_SO_LON = "số từ 5 chữ số chưa nhóm nghìn — viết 10.000"
 
