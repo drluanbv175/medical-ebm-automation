@@ -1492,7 +1492,7 @@ KIEU_SANG_MUC_DO = {"nhi_phan": "NOMINAL", "danh_dinh": "NOMINAL", "thu_tu": "OR
 _VAI_TRO_SPSS = {"ket_cuc_chinh": "TARGET", "ket_cuc_phu": "TARGET", "thoi_gian": "TARGET", "su_kien": "TARGET",
                  "phoi_nhiem": "INPUT", "yeu_to": "INPUT", "hiep_bien": "INPUT", "phan_tang": "INPUT",
                  "mo_ta": "INPUT", "dinh_nghia_thay_the": "INPUT", "tuan_thu_de_cuong": "INPUT", "cum": "NONE",
-                 "trong_so": "NONE", "bo_ghep": "NONE"}
+                 "trong_so": "NONE", "bo_ghep": "NONE", "bien_ghep": "INPUT"}
 
 
 def _so_hay_none(x) -> float | None:
@@ -1565,7 +1565,8 @@ def thuoc_tinh_ky_vong(b: dict) -> dict[str, str]:
 #: Một biến có thể nằm ở nhiều dòng ma trận (vd tuổi: mô tả ở MT1, yếu tố ở MT3) ⇒ vai trò gộp theo thứ tự ưu tiên;
 #: vai trò ĐẦU quyết định VARIABLE ROLE.
 UU_TIEN_VAI_TRO = ("ket_cuc_chinh", "ket_cuc_phu", "phoi_nhiem", "yeu_to", "hiep_bien", "phan_tang", "cum",
-                   "thoi_gian", "su_kien", "trong_so", "dinh_nghia_thay_the", "tuan_thu_de_cuong", "bo_ghep", "mo_ta")
+                   "thoi_gian", "su_kien", "trong_so", "dinh_nghia_thay_the", "tuan_thu_de_cuong", "bo_ghep",
+                   "bien_ghep", "mo_ta")
 
 
 def vai_tro_spss(b: dict) -> str:
@@ -2154,6 +2155,7 @@ def dac_ta(args) -> dict:
     dt["bien_co_hiem_da_chay"] = (bch.get("phuong_phap") or None) if isinstance(bch, dict) and not bch.get("error") \
         else None
     dt["bo_ghep"] = tom.get("bo_ghep")  # 23/11/2026: mã bộ ghép ⇒ logistic có điều kiện (COXREG theo STRATA)
+    dt["bien_ghep"] = list(tom.get("bien_ghep") or []) or None  # biến dùng để ghép (mô hình gán đa trị)
     pl = dt["hiep_bien_phan_loai"]
     dt["covariates_mo_hinh"] = [t for c in dt["covariates"] for t in (pl[c]["ten"] if c in pl else [c])]
     # OR theo MỖI k đơn vị phơi nhiễm (C1a: mỗi 15 phút chờ) — thiếu thì SPSS tính theo mỗi phút ⇒ «lệch» giả
@@ -3267,16 +3269,19 @@ def doi_chieu_bien_co_hiem(b: dict | None, sp: dict | None, p_fisher: float | No
 
 #: SPSS không có hồi quy logistic Firth (hợp lý phạt) sẵn — như phép bootstrap: ghi rõ, đối chiếu bằng R
 KHONG_SO_FIRTH_SPSS = "không đối chiếu được bằng SPSS (SPSS không có hồi quy Firth sẵn) — đối chiếu bằng R (logistf)"
+KHONG_SO_FIRTH_DK_SPSS = ("không đối chiếu được bằng SPSS (SPSS không có hồi quy logistic có điều kiện có phạt "
+                          "Firth) — đối chiếu bằng R (survival::clogit, hợp lý phạt có điều kiện)")
 
 
 def doi_chieu_firth(b: dict | None) -> list[dict]:
     """Biến cố hiếm theo Firth (23/11/2026): mỗi hệ số một dòng «không so được» có lý do — không bỏ dòng im lặng, không
     chấm khớp giả; con số được đối chiếu ở cầu nối R (logistf)."""
-    if not isinstance(b, dict) or b.get("phuong_phap") != "firth":
+    if not isinstance(b, dict) or b.get("phuong_phap") not in ("firth", "firth_dk"):
         return []
     if b.get("error"):
         return [_khong_so("Biến cố hiếm — Firth", f"Python lỗi: {b['error']}")]
-    return [_khong_so(f"Biến cố hiếm — Firth — {r.get('variable')}", KHONG_SO_FIRTH_SPSS,
+    ly_do = KHONG_SO_FIRTH_DK_SPSS if b["phuong_phap"] == "firth_dk" else KHONG_SO_FIRTH_SPSS
+    return [_khong_so(f"Biến cố hiếm — Firth — {r.get('variable')}", ly_do,
                       py={"uoc_luong": r.get("OR_adj"), "ci": r.get("CI_95"), "p": r.get("p")})
             for r in b.get("results") or []]
 

@@ -62,6 +62,9 @@ jobs:
           - { kb: rct_hon_hop, node: "test_gia_lap_bien_the_kho[rct_hon_hop]" }
           # 23/11/2026 — bệnh–chứng ghép cặp cá thể: logistic có điều kiện theo bộ ghép (đối chiếu R clogit, SPSS COXREG)
           - { kb: case_control_ghep_cap, node: "test_gia_lap_bien_the_kho[case_control_ghep_cap]" }
+          # 23/11/2026 (chiều) — ghép cặp cá thể: gán đa trị giữ cấu trúc ghép · biến cố hiếm Firth có điều kiện
+          - { kb: case_control_ghep_cap_thieu, node: "test_gia_lap_bien_the_kho[case_control_ghep_cap_thieu]" }
+          - { kb: case_control_ghep_cap_hiem, node: "test_gia_lap_bien_the_kho[case_control_ghep_cap_hiem]" }
           # 17/11/2026 — 8 kịch bản CHÂN THỰC (phiếu nhiều phần, sàng lọc, nhánh, calc, dữ liệu sinh từ từ điển G5) +
           # phép kiểm độ chính xác: ước lượng chính phải tìm lại tham số dùng để sinh dữ liệu (tools/gia_lap_chan_thuc.py)
           - { kb: rct_chan_thuc, node: "test_gia_lap_chan_thuc[rct_chan_thuc]" }

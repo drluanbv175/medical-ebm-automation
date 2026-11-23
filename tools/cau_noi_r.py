@@ -543,6 +543,7 @@ NGUONG_TY_LE <- @@NGUONG_TY_LE@@  # --nguong-ty-le (sự kiện = giá trị ≥
 KC_HIEU_SO <- @@KC_HIEU_SO@@  # --kc-hieu-so: phương pháp KTC hiệu số nguy cơ SAP §4 khai (newcombe | wald)
 BIEN_CO_HIEM <- @@BIEN_CO_HIEM@@  # Python chạy mô tả chính xác (biến cố hiếm SAP §5, rào EPV chặn hồi quy) ⇒ R tính lại
 FIRTH <- @@FIRTH@@  # Python chạy hồi quy Firth (biến cố hiếm SAP §5) ⇒ R tính lại bằng logistf (pl = TRUE)
+FIRTH_DK <- @@FIRTH_DK@@  # Python chạy Firth CÓ ĐIỀU KIỆN (ghép cặp) ⇒ R tính lại trên survival::clogit (hợp lý phạt)
 BO_GHEP <- @@BO_GHEP@@  # mã bộ ghép (bệnh–chứng ghép cặp cá thể) ⇒ hồi quy logistic có điều kiện survival::clogit
 # Chuỗi pandas.read_csv coi là THIẾU (keep_default_na) — chép từ pandas @@PANDAS@@ lúc sinh script.
 NA_PANDAS <- @@NA_PANDAS@@
@@ -771,6 +772,51 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
     }
     list(mo_hinh = "firth", thang = "OR", n = nrow(dm), so_bien_co = sum(k$df$.y), he_so = he)
   })
+  # 23/11/2026: biến cố hiếm của bệnh–chứng ghép cặp (firth_conditional_logit_model) — hợp lý CÓ ĐIỀU KIỆN có phạt
+  # Firth (Heinze & Puhr 2010): ℓ_c và I_c lấy từ survival::clogit(method = "exact") tại β (iter.max = 0, cài đặt độc
+  # lập với Python), cực đại bằng optim; KTC hợp lý phạt hồ sơ (uniroot), p tỷ số hợp lý phạt
+  if (isTRUE(FIRTH_DK) && LOAI == "binary" && co(BO_GHEP)) KET$firth_dk <- khoi("firth_dk", {
+    hb <- HIEP_BIEN[HIEP_BIEN %in% names(D)]
+    dm <- ca_du(D, c(KET_CUC, NHOM, hb, BO_GHEP))
+    gt <- sap_xep(dm[[KET_CUC]])
+    k <- khung(as.numeric(dm[[KET_CUC]] == gt[length(gt)]), ma_tran_du_bao(dm, c(NHOM, hb)), list(.bo = dm[[BO_GHEP]]))
+    ct <- stats::as.formula(paste(".y ~", k$ve_phai, "+ strata(.bo)"))
+    vn <- names(k$ten)
+    pll <- function(b) {
+      f <- suppressWarnings(survival::clogit(ct, data = k$df, method = "exact", init = b,
+                                             control = survival::coxph.control(iter.max = 0)))
+      f$loglik[2] + 0.5 * as.numeric(determinant(solve(f$var), logarithm = TRUE)$modulus)
+    }
+    dk <- list(reltol = 1e-15, maxit = 5000)
+    o <- stats::optim(rep(0, length(vn)), function(b) -pll(b), method = "BFGS", control = dk)
+    lmax <- -o$value
+    ho_so <- function(j, v) {
+      if (length(vn) == 1) return(pll(v))
+      g <- function(bb) {
+        b <- numeric(length(vn))
+        b[j] <- v
+        b[-j] <- bb
+        -pll(b)
+      }
+      -stats::optim(o$par[-j], g, method = "BFGS", control = dk)$value
+    }
+    se <- sqrt(diag(solve(-stats::optimHess(o$par, pll))))
+    he <- list()
+    for (j in seq_along(vn)) {
+      h <- function(v) 2 * (lmax - ho_so(j, v)) - stats::qchisq(0.95, 1)
+      can <- function(huong) {
+        xa <- o$par[j] + huong * 2 * se[j]
+        for (lan in 1:60) {
+          if (h(xa) > 0) return(stats::uniroot(h, sort(c(o$par[j], xa)), tol = 1e-10)$root)
+          xa <- xa + huong * se[j]
+        }
+        NA
+      }
+      he[[k$ten[[vn[j]]]]] <- list(uoc_luong = exp(o$par[j]), ci = exp(c(can(-1), can(1))),
+                                    p = stats::pchisq(2 * (lmax - ho_so(j, 0)), 1, lower.tail = FALSE), b = o$par[j])
+    }
+    list(mo_hinh = "firth_dk", thang = "OR", n = nrow(dm), so_bien_co = sum(k$df$.y), he_so = he)
+  })
 }
 
 # ── 4b. Poisson log-link, SE vững HC0 — poisson_pr_model() (F2; Zou 2004) ─────────────────────────────
@@ -845,8 +891,11 @@ if (MI_CO && co(KET_CUC) && co(NHOM)) {
   KET$mi <- khoi("mi", {
     so_hoa <- function(x) suppressWarnings(as.numeric(x))
     d0 <- if (co(CUM)) D[!is.na(D[[CUM]]), , drop = FALSE] else D
+    if (co(MI_BO_GHEP)) d0 <- d0[!is.na(d0[[MI_BO_GHEP]]), , drop = FALSE]
     pt <- MI_BIEN_PT[MI_BIEN_PT %in% names(d0)]
     khung_cot <- setdiff(pt, MI_THU_DONG)
+    # 23/11/2026: ghép cặp cá thể — biến dùng để ghép vào mô hình GÁN (Seaman & Keogh 2015), không vào mô hình phân tích
+    khung_cot <- c(khung_cot, setdiff(MI_BIEN_GHEP[MI_BIEN_GHEP %in% names(d0)], khung_cot))
     for (v in MI_THU_DONG) khung_cot <- c(khung_cot, setdiff(MI_NGUON[[v]], khung_cot))
     nhanh <- names(MI_NHANH)[names(MI_NHANH) %in% khung_cot]
     for (s in nhanh) for (x in MI_DIEU_KIEN[[s]]) {
@@ -900,9 +949,15 @@ if (MI_CO && co(KET_CUC) && co(NHOM)) {
           X[[b]] <- so_hoa(di[[b]])
         }
       }
-      kh <- khung(so_hoa(di[[pt[1]]]), X)
-      ct <- stats::as.formula(paste(".y ~", kh$ve_phai))
+      if (MI_LOAI == "clogit") {  # hồi quy logistic có điều kiện theo bộ ghép trong từng bộ gán (như Python)
+        yy <- so_hoa(di[[pt[1]]])
+        kh <- khung(as.numeric(yy == max(yy, na.rm = TRUE)), X, list(.bo = di[[MI_BO_GHEP]]))
+      } else {
+        kh <- khung(so_hoa(di[[pt[1]]]), X)
+      }
+      ct <- stats::as.formula(paste(".y ~", kh$ve_phai, if (MI_LOAI == "clogit") "+ strata(.bo)" else ""))
       fit <- switch(MI_LOAI,
+        clogit = survival::clogit(ct, data = kh$df, method = "exact"),
         poisson = stats::glm(ct, data = kh$df, family = stats::poisson(link = "log"),
                              control = stats::glm.control(1e-10, 200)),
         binary = stats::glm(ct, data = kh$df, family = stats::binomial(), control = stats::glm.control(1e-10, 200)),
@@ -1053,7 +1108,7 @@ def ma_r_bien_gia(dt: dict) -> str:
 #: số khác nhau), nên đối chiếu MI dùng sai số Monte Carlo.
 HAT_GIONG_MI_R = 20261122
 _MO_HINH_MI = {"poisson_hc0_mi": "poisson", "poisson_cluster_mi": "poisson", "logistic_mi": "binary",
-               "linear_mi": "continuous"}
+               "linear_mi": "continuous", "logistic_dk_mi": "clogit"}
 
 
 def nhanh_sang_r(bt: str) -> str:
@@ -1091,6 +1146,7 @@ def khoi_mi_r(tom: dict, d: Path, csv_p: Path) -> str:
     mi = (tom or {}).get("multiple_imputation") or {}
     dt = (tom or {}).get("dac_ta_phan_tich") or {}
     tat = ("MI_CO <- FALSE\nMI_M <- 0L\nMI_HAT <- 0L\nMI_LOAI <- \"\"\nMI_MO_HINH <- \"\"\nMI_BIEN_PT <- character(0)\n"
+           "MI_BIEN_GHEP <- character(0)\nMI_BO_GHEP <- NA_character_\n"
            "MI_PHAN_LOAI <- character(0)\nMI_THU_DONG <- character(0)\nMI_NGUON <- list()\nMI_NHANH <- list()\n"
            "MI_DIEU_KIEN <- list()\n.mi_tinh_lai <- function(di) di\nMI_KHONG_DUNG_DUOC <- NA_character_\n")
     if not mi.get("results") or mi.get("skipped") or mi.get("error") or mi.get("model") not in _MO_HINH_MI:
@@ -1114,6 +1170,9 @@ def khoi_mi_r(tom: dict, d: Path, csv_p: Path) -> str:
         f"MI_LOAI <- {chuoi_r(_MO_HINH_MI[mi['model']])}",
         f"MI_MO_HINH <- {chuoi_r(mi['model'])}",
         f"MI_BIEN_PT <- {vec_r([b for b in bien if b])}",
+        # 23/11/2026: gán đa trị ghép cặp — biến ghép (mô hình gán) + mã bộ ghép (mô hình có điều kiện)
+        f"MI_BIEN_GHEP <- {vec_r(list(mi.get('bien_ghep') or []))}",
+        f"MI_BO_GHEP <- {gia_tri_r(mi.get('bo_ghep'))}",
         f"MI_PHAN_LOAI <- {vec_r(list((dt.get('hiep_bien_phan_loai') or {}).keys()))}",
         f"MI_THU_DONG <- {vec_r(thu_dong)}",
         "MI_NGUON <- list(" + ", ".join(f"{chuoi_r(v)} = {vec_r(ds)}" for v, ds in nguon.items()) + ")",
@@ -1151,6 +1210,7 @@ def sinh_script_r(
         "@@KC_HIEU_SO@@": chuoi_r(dt.get("kc_hieu_so") or "wald"),
         "@@BIEN_CO_HIEM@@": "TRUE" if dt.get("bien_co_hiem_da_chay") == "mo_ta_chinh_xac" else "FALSE",
         "@@FIRTH@@": "TRUE" if dt.get("bien_co_hiem_da_chay") == "firth" else "FALSE",
+        "@@FIRTH_DK@@": "TRUE" if dt.get("bien_co_hiem_da_chay") == "firth_dk" else "FALSE",
         "@@BO_GHEP@@": gia_tri_r(dt.get("bo_ghep")),
         "@@PANDAS@@": ver_pd,
         "@@NA_PANDAS@@": vec_r(na),
@@ -2370,7 +2430,7 @@ def _bien_co_hiem_r(tom: dict, rc: dict) -> list[dict]:
     """Biến cố hiếm (23/11/2026): KTC Clopper–Pearson từng nhóm + p Fisher của Python ↔ R (binom.test/fisher.test).
     Phép tất định ⇒ dung sai = đơn vị làm tròn 4 chữ số của Python."""
     b = tom.get("bien_co_hiem")
-    if not isinstance(b, dict) or b.get("error") or b.get("phuong_phap") == "firth":  # Firth: _firth_r so riêng
+    if not isinstance(b, dict) or b.get("error") or b.get("phuong_phap") in ("firth", "firth_dk"):  # _firth_r so
         return []
     rb = rc.get("bien_co_hiem") or {}
     if not rb:
@@ -2393,10 +2453,14 @@ def _firth_r(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
     """Biến cố hiếm theo Firth (23/11/2026): OR + KTC hợp lý phạt hồ sơ + p tỷ số hợp lý phạt của Python
     (firth_logistic_model) ↔ R logistf(pl = TRUE) — hai cài đặt độc lập của cùng đại lượng, từng hệ số hai chiều."""
     b = tom.get("bien_co_hiem")
-    if not (isinstance(b, dict) and b.get("phuong_phap") == "firth") and not kq.get("firth"):
+    pp = b.get("phuong_phap") if isinstance(b, dict) else None
+    # 23/11/2026: Firth CÓ ĐIỀU KIỆN (ghép cặp) so với khối firth_dk của R (survival::clogit + hợp lý phạt)
+    khoa = "firth_dk" if (pp == "firth_dk" or (pp != "firth" and kq.get("firth_dk"))) else "firth"
+    if pp != khoa and not kq.get(khoa):
         return []
-    return _he_so_hai_phia("Biến cố hiếm — Firth (OR, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt)", b,
-                           kq.get("firth"), loi_r.get("firth"), ("OR_adj",))
+    ten = ("Biến cố hiếm — Firth có điều kiện theo bộ ghép (OR, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt)"
+           if khoa == "firth_dk" else "Biến cố hiếm — Firth (OR, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt)")
+    return _he_so_hai_phia(ten, b, kq.get(khoa), loi_r.get(khoa), ("OR_adj",))
 
 
 def _ket_cuc_chinh_cum(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
@@ -2777,7 +2841,10 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
         dong += _he_so_hai_phia("Poisson HC0 — PR thô", tho_py, kq.get("poisson_tho"), loi_r.get("poisson"), ("PR",))
         dong += _he_so_hai_phia("Poisson HC0 — PR hiệu chỉnh", pr, kq.get("poisson_hieu_chinh"), loi_r.get("poisson"),
                                 ("PR_adj",))  # fmt: skip
-    if (mv or {}).get("model") == "logistic_dk" or kq.get("da_bien_tho"):
+    # rào EPV chặn hồi quy có điều kiện (thay bằng Firth có điều kiện theo SAP) ⇒ không so OR thô của mô hình cố ý không
+    # chạy (R vẫn khớp clogit) — như mô hình hiệu chỉnh ở trên
+    if ((mv or {}).get("model") == "logistic_dk" or kq.get("da_bien_tho")) and not (
+            tom.get("multivariate") or {}).get("thay_the_theo_sap"):
         tho = {"results": (mv or {}).get("crude"), "n": (mv or {}).get("n")} if mv and not mv.get("error") else mv
         dong += _he_so_hai_phia("Logistic có điều kiện theo bộ ghép — OR thô (chỉ phơi nhiễm)", tho,
                                 kq.get("da_bien_tho"), loi_r.get("da_bien"), ("OR_adj",))
@@ -2791,7 +2858,8 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
 
 def _dac_ta_lech(dt_py: dict, dt_r: dict) -> list[str]:
     lech = []
-    for k in ("outcome", "group", "time", "event", "cot_cum", "loc", "nguong_ty_le", "kc_hieu_so", "bo_ghep"):
+    for k in ("outcome", "group", "time", "event", "cot_cum", "loc", "nguong_ty_le", "kc_hieu_so", "bo_ghep",
+              "bien_ghep"):
         if (dt_py.get(k) or None) != (dt_r.get(k) or None):
             lech.append(f"{k}: Python={dt_py.get(k)!r} · R={dt_r.get(k)!r}")
     if dt_py.get("ty_le") is not None and list(dt_py.get("ty_le") or []) != list(dt_r.get("ty_le") or []):

@@ -429,6 +429,12 @@ def muc_hon_hop(meta) -> list:
     return dong
 
 
+#: 23/11/2026 — SAP §6 của bệnh–chứng ghép cặp cá thể (Seaman & Keogh 2015, PMID 26237003; G6 _mi_ghep_cap)
+DONG_MI_GHEP_CAP = ("- **Gán đa trị cho thiết kế ghép cặp cá thể:** mô hình gán gồm tình trạng ca/chứng, phơi nhiễm, hiệp "
+                    "biến và các biến dùng để ghép (Seaman & Keogh 2015); mô hình phân tích trong từng bộ gán là hồi quy "
+                    "logistic có điều kiện theo bộ ghép; gộp theo luật Rubin  ")
+
+
 def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
              hypothesis_type="superiority", margin=None, n_statistical_min=None, *,
@@ -708,13 +714,18 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "- **Giả định:** [CẦN kiểm tra PH / normality theo thiết kế]  ",
             # 23/11/2026 (G7 phát hiện ở rct_cum: tổn hại 2 biến cố ⇒ rào EPV chặn logistic, bảng đa biến bản thảo để
             # trống): khai TRƯỚC phương pháp khi số biến cố không đủ cho hồi quy — G6 chạy đúng phương pháp này.
-            *([G4Q.DONG_KHUON_BIEN_CO_HIEM] if G4Q.ap_dung_bien_co_hiem(design_code, main_method) else []),
+            # 23/11/2026: ghép cặp cá thể ⇒ khuôn chỉ có phương pháp có điều kiện (firth_dk)
+            *([G4Q.dong_khuon_bien_co_hiem((khung or {}).get("kieu_ghep") if design_code == "case_control" else None)]
+              if G4Q.ap_dung_bien_co_hiem(design_code, main_method) else []),
             "",
             "### §6 DỮ LIỆU THIẾU",
             "",
             "- **Chiến lược:** Multiple Imputation (MI, m=20, method=pmm)  ",
             "- **Giả định:** MAR (missing at random)  ",
             "- **Biến đưa vào mô hình imputation:** [CẦN BÁC SĨ ĐIỀN]  ",
+            # 23/11/2026: bệnh–chứng ghép cặp cá thể — gán giữ cấu trúc ghép, phân tích có điều kiện trong từng bộ
+            *([DONG_MI_GHEP_CAP] if design_code == "case_control" and (khung or {}).get("kieu_ghep") == "ca_the"
+              else []),
             "- **Phân tích hoàn chỉnh (complete case):** báo cáo song song với MI  ",
             "",
             "### §7 PHÂN TÍCH NHÓM NHỎ (Subgroup Analysis)",

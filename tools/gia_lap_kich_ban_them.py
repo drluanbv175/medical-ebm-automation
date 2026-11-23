@@ -1316,6 +1316,9 @@ _PHAN_BIEN_THUAN_TAP: Dict[str, Any] = {
 #: 23/11/2026: lời khai SAP §5 cho biến cố hiếm theo Firth (khớp g4_quality_gate.phuong_phap_bien_co_hiem_sap «firth»)
 TRA_LOI_FIRTH = ("hồi quy logistic Firth (hợp lý phạt Jeffreys, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt) khi số "
                  "biến cố dưới 10 × số tham số; áp cho mọi phân tích nhị phân của SAP, kể cả tổn hại")
+#: 23/11/2026 (chiều): lời khai SAP §5 cho bệnh–chứng GHÉP CẶP CÁ THỂ — Firth có điều kiện (khớp «firth_dk»)
+TRA_LOI_FIRTH_DK = ("hồi quy logistic có điều kiện có phạt Firth theo bộ ghép (Heinze–Puhr 2010; KTC hợp lý phạt hồ "
+                    "sơ, p tỷ số hợp lý phạt) khi số ca dưới 10 × số tham số; áp cho mọi phân tích của SAP")
 #: lời khai mô tả chính xác — thiết kế CỤM giữ phương pháp này (Firth không có sai số chuẩn theo cụm)
 TRA_LOI_MO_TA_CHINH_XAC = ("mô tả số biến cố từng nhóm + KTC chính xác Clopper–Pearson + p chính xác Fisher, "
                            "không chạy hồi quy khi số biến cố dưới 10 × số tham số; áp cho mọi phân tích nhị phân của "
