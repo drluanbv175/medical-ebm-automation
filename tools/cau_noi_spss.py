@@ -2148,6 +2148,8 @@ def dac_ta(args) -> dict:
     # 23/11/2026: phương pháp KTC hiệu số nguy cơ của lượt Python (SAP §4) — SPSS/R tính lại đúng phương pháp này.
     # Tóm tắt cũ không ghi (engine cũ luôn Wald) ⇒ None; cú pháp/script coi None là Wald.
     dt["kc_hieu_so"] = tom.get("kc_hieu_so")
+    # 23/11/2026: Python đã chạy phương pháp biến cố hiếm (rào EPV chặn hồi quy) ⇒ SPSS/R tính lại cùng phương pháp
+    dt["bien_co_hiem_da_chay"] = bool(tom_day_du.get("bien_co_hiem"))
     pl = dt["hiep_bien_phan_loai"]
     dt["covariates_mo_hinh"] = [t for c in dt["covariates"] for t in (pl[c]["ten"] if c in pl else [c])]
     # OR theo MỖI k đơn vị phơi nhiễm (C1a: mỗi 15 phút chờ) — thiếu thì SPSS tính theo mỗi phút ⇒ «lệch» giả
@@ -2279,6 +2281,8 @@ def cu_phap_phan_tich(
             if loai_kc == "binary":
                 khoi("ket_cuc_chinh", [f"CROSSTABS /TABLES={g} BY {y} /STATISTICS=CHISQ RISK /CELLS=COUNT ROW."])
                 khoi("hieu_so", cu_phap_hieu_so(y, g, muc_g, so.get(g), dt.get("kc_hieu_so")))
+                if dt.get("bien_co_hiem_da_chay"):  # 23/11/2026: Python chạy phương pháp biến cố hiếm (rào EPV)
+                    khoi("bien_co_hiem", cu_phap_bien_co_hiem(y, g))
             else:
                 g0, g1 = (v if so.get(g) else "'" + v + "'" for v in muc_g or [])
                 khoi("ket_cuc_chinh", [f"T-TEST GROUPS={g}({g0} {g1}) /VARIABLES={y} /CRITERIA=CI(.95)."])
@@ -2602,6 +2606,37 @@ def cu_phap_hieu_so(y: str, g: str, muc_g: list | None, g_la_so: bool | None, kc
     ]
 
 
+def cu_phap_bien_co_hiem(y: str, g: str) -> list[str]:
+    """Biến cố hiếm (23/11/2026): KTC 95% chính xác Clopper–Pearson của tỷ lệ biến cố TỪNG nhóm (PROPORTIONS
+    /ONESAMPLE theo SPLIT FILE nhóm). p chính xác Fisher lấy từ bảng Chi-Square Tests của CROSSTABS kết cục chính (bảng
+    2×2 luôn có dòng Fisher's Exact Test). Đo 23/11/2026 trên SPSS 31: 1/160 ⇒ 0,000158–0,034329, trùng R binom.test."""
+    return [
+        f"SORT CASES BY {g}.",
+        f"SPLIT FILE LAYERED BY {g}.",
+        f"PROPORTIONS /ONESAMPLE {y} TESTVAL=0.5 TESTTYPES=NONE CITYPES=CLOPPER_PEARSON",
+        "  /SUCCESS VALUE=LAST /CRITERIA CILEVEL=95 /MISSING SCOPE=ANALYSIS USERMISSING=EXCLUDE.",
+        "SPLIT FILE OFF.",
+    ]
+
+
+def doc_bien_co_hiem(thu_muc_kq: Path) -> dict | None:
+    """oms_bien_co_hiem.xml ⇒ {nhóm: {n, so_bien_co, ty_le, ci}} — None khi SPSS không ra bảng."""
+    p = thu_muc_kq / "oms_bien_co_hiem.xml"
+    if not p.exists():
+        return None
+    ra: dict = {}
+    for b in phang_oxml(p):
+        if _chuan_bang(b["bang"]) != "onesampleproportionsconfidenceintervals":
+            continue
+        for hang, cot in _hang_theo_bien(b).items():
+            if not hang or "clopper" not in str(hang[-1]).lower():
+                continue
+            ra[_ma_so_gon(str(hang[0]))] = {"n": _lay(cot, "Trials"), "so_bien_co": _lay(cot, "Successes"),
+                                            "ty_le": _lay(cot, "Proportion"),
+                                            "ci": [_lay(cot, "Lower"), _lay(cot, "Upper")]}
+    return ra or None
+
+
 def doc_hieu_so(thu_muc_kq: Path) -> dict | None:
     """Đọc oms_hieu_so.xml ⇒ {rd, ci, phuong_phap (mã), n} — None khi SPSS không ra bảng."""
     p = thu_muc_kq / "oms_hieu_so.xml"
@@ -2654,9 +2689,14 @@ def doc_ket_qua(thu_muc_kq: Path, dt: dict, man: dict) -> dict:
                     ra["ket_cuc_chinh"]["p_pearson"] = _lay(cot, "asymptotic")
                 if hang and hang[-1] == "Continuity Correction":
                     ra["ket_cuc_chinh"]["p_yates"] = _lay(cot, "asymptotic")
+                if hang and hang[-1] == "Fisher's Exact Test":  # 23/11/2026: p chính xác Fisher (biến cố hiếm)
+                    ra["ket_cuc_chinh"]["p_fisher"] = _lay(cot, r"Exact Sig\. \(2-sided\)")
     hs = doc_hieu_so(thu_muc_kq)
     if hs is not None:
         ra["hieu_so"] = hs
+    bch = doc_bien_co_hiem(thu_muc_kq)
+    if bch is not None:
+        ra["bien_co_hiem"] = bch
     tt = bang("ket_cuc_chinh", "independentsamplestest")
     if tt:
         kq = {"loai": "continuous"}
@@ -3159,6 +3199,25 @@ def _dong_tat_dinh(muc: str, py: dict, sp: dict, tran: float, n_py=None, n_sp=No
             "n": {"python": n_py, "spss": n_sp}}
 
 
+def doi_chieu_bien_co_hiem(b: dict | None, sp: dict | None, p_fisher: float | None) -> list[dict]:
+    """Biến cố hiếm (23/11/2026): tỷ lệ + KTC Clopper–Pearson từng nhóm và p Fisher, Python ↔ SPSS; tất định."""
+    if not isinstance(b, dict) or b.get("error"):
+        return []
+    if not sp:
+        return [_khong_so("Biến cố hiếm — KTC chính xác Clopper–Pearson", "SPSS không ra bảng PROPORTIONS theo nhóm")]
+    ra = []
+    for g in b.get("nhom") or []:
+        s = sp.get(_ma_so_gon(str(g.get("gia_tri")))) or {}
+        ra.append(_dong_tat_dinh(f"Biến cố hiếm — tỷ lệ + KTC 95% Clopper–Pearson, nhóm `{g.get('gia_tri')}`",
+                                 {"uoc_luong": g.get("ty_le"), "ci": g.get("ci_95_clopper_pearson")},
+                                 {"uoc_luong": s.get("ty_le"), "ci": s.get("ci")}, DUNG_SAI_TY_LE, g.get("n"),
+                                 s.get("n")))
+    if "fisher_p_hai_phia" in b:
+        ra.append(_dong_tat_dinh("Biến cố hiếm — p chính xác Fisher (hai phía)", {"uoc_luong": b["fisher_p_hai_phia"]},
+                                 {"uoc_luong": p_fisher}, DUNG_SAI_TY_LE))
+    return ra
+
+
 def doi_chieu_hieu_so(pc: dict, hs: dict | None) -> list[dict]:
     """Hiệu số nguy cơ thô + KTC (23/11/2026): SPSS PROPORTIONS cùng phương pháp Python ghi; phép tất định ⇒ dung sai
     = đơn vị làm tròn của Python. Khác phương pháp ⇒ không so được (không chấm khớp hai phương pháp khác nhau)."""
@@ -3227,6 +3286,7 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
             )
         )
         dong += doi_chieu_hieu_so(pc, kq.get("hieu_so"))
+        dong += doi_chieu_bien_co_hiem(tom.get("bien_co_hiem"), kq.get("bien_co_hiem"), sc.get("p_fisher"))
     elif loai_pc == "continuous" and sc.get("loai") == "continuous":
         welch = "welch" in str(pc.get("test", "")).lower()
         s = sc.get("welch" if welch else "student") or {}

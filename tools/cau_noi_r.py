@@ -540,6 +540,7 @@ DON_VI_PHOI_NHIEM <- @@DON_VI@@  # --don-vi-phoi-nhiem của Python (mọi họ 
 TY_LE <- @@TY_LE@@  # Bảng 1b: cột tính tỷ lệ + KTC Wilson (--ty-le)
 NGUONG_TY_LE <- @@NGUONG_TY_LE@@  # --nguong-ty-le (sự kiện = giá trị ≥ ngưỡng); NA ⇒ cột 0/1
 KC_HIEU_SO <- @@KC_HIEU_SO@@  # --kc-hieu-so: phương pháp KTC hiệu số nguy cơ SAP §4 khai (newcombe | wald)
+BIEN_CO_HIEM <- @@BIEN_CO_HIEM@@  # Python chạy phương pháp biến cố hiếm SAP §5 (rào EPV chặn hồi quy) ⇒ R tính lại
 # Chuỗi pandas.read_csv coi là THIẾU (keep_default_na) — chép từ pandas @@PANDAS@@ lúc sinh script.
 NA_PANDAS <- @@NA_PANDAS@@
 @@KHOI_MI@@
@@ -661,7 +662,11 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
            ci = exp(log(or_tho) + c(-1.96, 1.96) * se_log),  # Python dùng 1,96 cố định
            p_yates = suppressWarnings(stats::chisq.test(bang, correct = TRUE)$p.value),
            p_pearson = suppressWarnings(stats::chisq.test(bang, correct = FALSE)$p.value),
-           rd = p1 - p0, rd_ci = rd_ci, rd_phuong_phap = KC_HIEU_SO)
+           rd = p1 - p0, rd_ci = rd_ci, rd_phuong_phap = KC_HIEU_SO,
+           # 23/11/2026: biến cố hiếm — KTC chính xác Clopper–Pearson (binom.test) + p chính xác Fisher (fisher.test)
+           bien_co_hiem = if (isTRUE(BIEN_CO_HIEM)) list(
+             ci0 = as.numeric(stats::binom.test(e0, n0)$conf.int), ci1 = as.numeric(stats::binom.test(e1, n1)$conf.int),
+             fisher_p = stats::fisher.test(matrix(c(e0, n0 - e0, e1, n1 - e1), 2, byrow = TRUE))$p.value) else NULL)
     } else {
       s0 <- s0[is.finite(s0)]
       s1 <- s1[is.finite(s1)]
@@ -1106,6 +1111,7 @@ def sinh_script_r(
         "@@TY_LE@@": vec_r(dt.get("ty_le") or []),
         "@@NGUONG_TY_LE@@": gia_tri_r(dt.get("nguong_ty_le"), so=True),
         "@@KC_HIEU_SO@@": chuoi_r(dt.get("kc_hieu_so") or "wald"),
+        "@@BIEN_CO_HIEM@@": "TRUE" if dt.get("bien_co_hiem_da_chay") else "FALSE",
         "@@PANDAS@@": ver_pd,
         "@@NA_PANDAS@@": vec_r(na),
         "@@KHOI_MI@@": khoi_mi if khoi_mi is not None else khoi_mi_r({}, Path("."), csv_p),
@@ -2259,7 +2265,7 @@ def _ket_cuc_chinh(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
                 n_py=n_py,
                 n_r=n_r,
             )
-        ] + _hieu_so_nguy_co(pc, rc, n_py, n_r)
+        ] + _hieu_so_nguy_co(pc, rc, n_py, n_r) + _bien_co_hiem_r(tom, rc)
     if lp in ("continuous", "categorical") and lr == "continuous":
         test = str(pc.get("test", "")).lower()
         if "welch" in test:
@@ -2318,6 +2324,29 @@ def _hieu_so_nguy_co(pc: dict, rc: dict, n_py, n_r) -> list[dict]:
                           r={"uoc_luong": rc.get("rd"), "ci": rc.get("rd_ci")}, n_py=n_py, n_r=n_r)]
     return [_dong(ten, py, {"uoc_luong": rc.get("rd"), "ci": rc.get("rd_ci"), "p": None}, n_py=n_py, n_r=n_r,
                   tran=S.DUNG_SAI_TY_LE)]
+
+
+def _bien_co_hiem_r(tom: dict, rc: dict) -> list[dict]:
+    """Biến cố hiếm (23/11/2026): KTC Clopper–Pearson từng nhóm + p Fisher của Python ↔ R (binom.test/fisher.test).
+    Phép tất định ⇒ dung sai = đơn vị làm tròn 4 chữ số của Python."""
+    b = tom.get("bien_co_hiem")
+    if not isinstance(b, dict) or b.get("error"):
+        return []
+    rb = rc.get("bien_co_hiem") or {}
+    if not rb:
+        return [_khong_so("Biến cố hiếm — KTC chính xác/Fisher", "R không ra khối biến cố hiếm (script R cũ — sinh "
+                          "lại bằng cu-phap)")]
+    ra = []
+    for i, g in enumerate(b.get("nhom") or []):
+        ra.append(_dong(f"Biến cố hiếm — tỷ lệ + KTC 95% Clopper–Pearson, nhóm `{g.get('gia_tri')}`",
+                        {"uoc_luong": g.get("ty_le"), "ci": g.get("ci_95_clopper_pearson"), "p": None},
+                        {"uoc_luong": (rc.get("bien_co") or [None, None])[i] / (rc.get("n") or [1, 1])[i]
+                         if rc.get("bien_co") else None, "ci": rb.get(f"ci{i}"), "p": None},
+                        n_py=g.get("n"), n_r=(rc.get("n") or [None, None])[i], tran=S.DUNG_SAI_TY_LE))
+    if "fisher_p_hai_phia" in b:
+        ra.append(_dong("Biến cố hiếm — p chính xác Fisher (hai phía)", {"uoc_luong": b["fisher_p_hai_phia"]},
+                        {"uoc_luong": rb.get("fisher_p")}, tran=S.DUNG_SAI_TY_LE))
+    return ra
 
 
 def _ket_cuc_chinh_cum(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
@@ -2672,6 +2701,10 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
     cum = bool(dt.get("cot_cum")) or (mv or {}).get("cov_type") == "cluster"
     nguon = kq.get("da_bien_cum") if cum else kq.get("da_bien")
     mo_hinh = (mv or {}).get("model") or (nguon or {}).get("mo_hinh") or ("ordinal_logit_po" if la_tt else "?")
+    # 23/11/2026: rào EPV chặn hồi quy và Python chạy phương pháp biến cố hiếm SAP §5 thay thế (đã so ở dòng «Biến cố
+    # hiếm») ⇒ mô hình hồi quy KHÔNG phải ước lượng của lượt — không so hệ số R với một mô hình Python cố ý không chạy.
+    if (mv or {}).get("thay_the_theo_sap"):
+        mv, nguon = None, None
     dong += _he_so_hai_phia(
         f"Đa biến ({mo_hinh}{', SE cụm CR1 t(G−1)' if cum else ''})",
         mv,

@@ -706,6 +706,9 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  ",
             "- **Phương pháp chọn biến:** Đưa vào toàn bộ (không stepwise)  ",
             "- **Giả định:** [CẦN kiểm tra PH / normality theo thiết kế]  ",
+            # 23/11/2026 (G7 phát hiện ở rct_cum: tổn hại 2 biến cố ⇒ rào EPV chặn logistic, bảng đa biến bản thảo để
+            # trống): khai TRƯỚC phương pháp khi số biến cố không đủ cho hồi quy — G6 chạy đúng phương pháp này.
+            *([G4Q.DONG_KHUON_BIEN_CO_HIEM] if G4Q.ap_dung_bien_co_hiem(design_code, main_method) else []),
             "",
             "### §6 DỮ LIỆU THIẾU",
             "",

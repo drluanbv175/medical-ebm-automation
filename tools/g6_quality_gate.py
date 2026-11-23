@@ -643,7 +643,8 @@ def _doi_chieu_luot_chay_vao_auto09(ket: list[dict], thu_muc: Path, sap: str, tr
                                              "phương pháp đã chạy với SAP §4",
                       **({"pass": None} if k9["pass"] is True else {}))
             return _DRAFT if trang_thai != "BLOCKED" else trang_thai
-    dat, chi_tiet = doi_chieu_phuong_phap_da_chay(_sec(sap, 4), tom if isinstance(tom, dict) else None)
+    dat, chi_tiet = doi_chieu_phuong_phap_da_chay(_sec(sap, 4), tom if isinstance(tom, dict) else None,
+                                                  sap5=_sec(sap, 5))
     k9["detail"] = f"{k9['detail']} · LƯỢT CHẠY: {chi_tiet}"
     if dat is False:
         k9.update({"pass": False, "blocking": True})
@@ -665,7 +666,7 @@ def co_khoi_phan_tich(tom) -> bool:
     return isinstance(tom, dict) and any(tom.get(k) not in (None, {}, []) for k in KHOI_PHAN_TICH)
 
 
-def doi_chieu_phuong_phap_da_chay(sap4: str, tom: dict | None) -> tuple[bool | None, str]:
+def doi_chieu_phuong_phap_da_chay(sap4: str, tom: dict | None, sap5: str = "") -> tuple[bool | None, str]:
     """Phần «lượt chạy» của G6-AUTO-09: (đạt?, chi tiết). None = không đo được (chưa có tóm tắt / không nhận ra họ)."""
     if not tom:
         return None, ("chưa có G6_analysis_summary.json (phân tích chính chưa chạy) — chưa đối chiếu được phương pháp "
@@ -677,6 +678,19 @@ def doi_chieu_phuong_phap_da_chay(sap4: str, tom: dict | None) -> tuple[bool | N
     ho_chay = ho_mo_hinh_tom_tat(tom)
     kc = phuong_phap_kc_hieu_so_sap(sap4)
     loi = []
+    # 23/11/2026: rào EPV chặn hồi quy logistic ⇒ lượt chạy phải dùng ĐÚNG phương pháp biến cố hiếm SAP §5 khai (định
+    # trước) — chạy đúng thì coi là chạy đúng họ SAP; thiếu/khác ⇒ CHẶN (bảng không được trống im lặng).
+    mv = tom.get("multivariate") if isinstance(tom.get("multivariate"), dict) else {}
+    if sap5 and (mv.get("rao_epv") or "EPV" in str(mv.get("warning") or "")):
+        import g4_quality_gate as G4Q  # noqa: PLC0415
+
+        pp = G4Q.phuong_phap_bien_co_hiem_sap(sap5)["phuong_phap"]
+        b = tom.get("bien_co_hiem") if isinstance(tom.get("bien_co_hiem"), dict) else {}
+        if pp and (b.get("phuong_phap") != pp or b.get("error")):
+            loi.append(f"rào EPV chặn hồi quy logistic nhưng lượt chạy không có phương pháp biến cố hiếm SAP §5 khai "
+                       f"(«{G4Q.BIEN_CO_HIEM[pp][0]}»): {b.get('error') or 'thiếu khối bien_co_hiem'}")
+        elif pp:
+            ho_chay = ho_chay | ho_sap
     if kc["chua_ho_tro"]:
         loi.append(f"SAP §4 khai KTC hiệu số nguy cơ theo {', '.join(kc['chua_ho_tro'])} — G6 CHƯA tính được phương "
                    "pháp này (hỗ trợ: Newcombe hybrid score, Wald); không tự lùi về Wald")
