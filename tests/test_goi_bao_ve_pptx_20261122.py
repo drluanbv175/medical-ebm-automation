@@ -253,3 +253,25 @@ def test_ngat_tu_khong_cat_giua_tu() -> None:
     tu = "Nghiêngnghiêng"
     rong_in = G._rong_pt(tu, 20, False) / 0.6 / 72.0
     assert G.so_dong_chu(" ".join([tu] * 3), 20, False, rong_in) == 3
+
+
+# ── 23/11/2026: hàng bảng thấp hơn chiều cao đo 1 EMU (CI Linux) ──────────────────────────────────────────────────
+@pytest.mark.parametrize("inch", [0.92, 0.1, 0.05, 1.234567, 3.3, 7.5])
+def test_emu_tron_len_khong_thap_hon_chieu_cao_do(inch: float) -> None:
+    """0,92 inch tính ra 841 247,9999… EMU; `Inches` cắt còn 841 247 ⇒ hàng thấp hơn chữ 1 EMU (> dung sai kiểm)."""
+    e = G._emu_tron_len(inch)
+    assert e / 914400.0 >= inch - 1e-9 and e - inch * 914400 < 1.0
+
+
+def test_pptx_kiem_dat_voi_phong_mac_dinh_linux(goc: Path, tmp_path: Path, monkeypatch) -> None:
+    """Máy không có Times New Roman (CI Ubuntu) dùng phông có chân mặc định của matplotlib (DejaVu Serif) — bộ dựng và
+    bộ kiểm cùng phông nên tệp vẫn phải đạt. Trước bản vá: «trang 12: hàng bảng 2 tràn chữ»."""
+    from matplotlib import font_manager as fm
+
+    monkeypatch.setattr(G, "_duong_phong", lambda dam: fm.findfont(fm.FontProperties(
+        family="DejaVu Serif", weight="bold" if dam else "normal"), fallback_to_default=True))
+    monkeypatch.setattr(G, "_PHONG", {})
+    ra = tmp_path / "ra"
+    assert G.main(["--study", MA, "--exports-root", str(goc), "--ghi", "--khong-word", "--thu-muc-ra", str(ra)]) == 0
+    (trang, _cb), goi = _trang(goc)
+    assert G.kiem_pptx(ra / G.TEN_PPTX.format(study=MA), trang, goi["dong"]) == []

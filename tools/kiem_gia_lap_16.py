@@ -86,6 +86,12 @@ def kiem_mot(p: Path) -> List[str]:
               and x.get("trang_thai") == "LOI"]
     if pt_loi:
         loi.append(f"G6 chạy LỖI {len(pt_loi)} phân tích SAP: {', '.join(pt_loi)[:200]}")
+    # 23/11/2026: kiểm chéo SPSS/R ra LỆCH/LỖI/TỪ CHỐI mà kịch bản vẫn xanh — giả lập trên máy có R/SPSS từng lọt hai
+    # LỆCH (z = 1,96 làm tròn ở Python rồi ở script R). Máy không có R/SPSS (CI) ra KHONG_DO_DUOC — không đỏ.
+    kc_hong = [f"{x.get('id')}={x.get('kiem_cheo')}" for x in g6.get("phan_tich") or [] if isinstance(x, dict)
+               and x.get("kiem_cheo") in ("LECH", "LOI", "TU_CHOI")]
+    if kc_hong:
+        loi.append(f"kiểm chéo SPSS/R không khớp ở {len(kc_hong)} phân tích: {', '.join(kc_hong)[:200]}")
     bd = g6.get("bieu_do")
     if "khong_tu_dong" not in g6:
         if not isinstance(bd, dict) or not bd.get("co_tep"):
