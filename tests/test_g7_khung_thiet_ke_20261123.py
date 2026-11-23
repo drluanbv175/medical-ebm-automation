@@ -233,7 +233,8 @@ def test_muc_do_nhay_kappa_chi_chep_do_thong_nhat(tmp_path):
                         "gate": "G6_DN_hai_nguoi_ma"}])
     text = "\n".join(G7.dung_do_nhay_g6(out, dinh_tinh=True))
     assert text.startswith("*Kiểm tra độ tin cậy theo SAP")
-    assert "kappa Cohen = 0.6516; 15/20 cặp mã trùng" in text and "Gia đình hỗ trợ" not in text
+    # 23/11/2026: số G6 qua tự kiểm nguyên văn rồi mới in theo quy ước tiếng Việt (chốt «điền sai kiểu»)
+    assert "kappa Cohen = 0,6516; 15/20 cặp mã trùng" in text and "Gia đình hỗ trợ" not in text
 
 
 # ── α, số phía, khung giả thuyết theo SAP §12/G3 (agent thống kê phát hiện ở bản thảo không kém hơn) ─────────────────

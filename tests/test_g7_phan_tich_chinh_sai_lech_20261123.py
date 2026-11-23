@@ -157,13 +157,13 @@ def test_mi_la_chinh_bang_gan_da_tri_o_muc_3_ca_day_du_ve_muc_5():
     assert k["da_dung"], k.get("ly_do")
     s3, s5 = "\n".join(k["s3"]), "\n".join(k["s5"])
     assert "*Phân tích chính theo SAP — Gán đa trị (G6, `G6_table5_multiple_imputation.txt`)" in s3
-    assert "| `ppi` | 1.3308 | 1.111–1.5941 | 0.0019 |" in s3
+    assert "| `ppi` | 1,3308 | 1,111–1,5941 | 0,0019 |" in s3
     assert "Gán đa trị (G6): m = 20; 948/4396 hàng có dữ liệu thiếu được gán" in s3
     # ước lượng ca đầy đủ KHÔNG đứng ở §3
     assert "table4_poisson_pr" not in s3 and "1.4067" not in s3
     assert ("*Phân tích ca đầy đủ (không gán đa trị) — độ nhạy so với gán đa trị theo SAP: Mô hình đa biến Poisson sai "
             "số robust") in s5
-    assert "| `ppi` | 1.4067 | 1.1489–1.7223 | 0.001 |" in s5 and "table5_multiple_imputation" not in s5
+    assert "| `ppi` | 1,4067 | 1,1489–1,7223 | 0,001 |" in s5 and "table5_multiple_imputation" not in s5
     # ước lượng thô của kết cục chính vẫn đứng trước phân tích chính; chiều so sánh của hàng nhóm ghi dưới cả hai bảng
     assert _i(k["s3"], "Ước lượng thô (nhóm `1` so với `0`)") < _i(k["s3"], "Phân tích chính theo SAP — Gán đa trị")
     assert "*Hàng `ppi`: nhóm `1` so với nhóm `0`.*" in s3 and "*Hàng `ppi`: nhóm `1` so với nhóm `0`.*" in s5
@@ -189,8 +189,8 @@ def test_poisson_la_chinh_mi_o_do_nhay():
     dt = {k: v for k, v in DT_MI.items() if k != "n_imputations"}
     k = G7.dung_ket_qua_tu_g6(_g6(_tom_tat_mi()), dac_ta_chinh=dt, sap=SAP_POISSON)
     s3, s5 = "\n".join(k["s3"]), "\n".join(k["s5"])
-    assert "*Phân tích chính theo SAP — Mô hình đa biến Poisson sai số robust" in s3 and "1.4067" in s3
-    assert "*Gán đa trị (G6, `G6_table5_multiple_imputation.txt`)" in s5 and "1.3308" not in s3
+    assert "*Phân tích chính theo SAP — Mô hình đa biến Poisson sai số robust" in s3 and "1,4067" in s3
+    assert "*Gán đa trị (G6, `G6_table5_multiple_imputation.txt`)" in s5 and "1.3308" not in s3 and "1,3308" not in s3
 
 
 def _tom_tat_cum() -> dict:
@@ -228,8 +228,8 @@ def test_gop_nhan_mo_hinh_chinh_va_do_nhay_theo_sap():
     dt = {"loai_dac_thu": "gop"}
     sap = {"mo_hinh_gop": "hiệu ứng ngẫu nhiên (REML hoặc DerSimonian–Laird) là chính; hiệu ứng cố định ở độ nhạy"}
     s3 = "\n".join(G7.dung_ket_qua_tu_g6(_g6(_tom_tat_gop()), dac_ta_chinh=dt, sap=sap)["s3"])
-    assert ("RR gộp (hiệu ứng ngẫu nhiên — phân tích chính theo SAP) = 0.6932 (95% CI 0.6404–0.7505); RR gộp (hiệu "
-            "ứng cố định — phân tích độ nhạy theo SAP) = 0.7011") in s3
+    assert ("RR gộp (hiệu ứng ngẫu nhiên — phân tích chính theo SAP) = 0,6932 (95% CI 0,6404–0,7505); RR gộp (hiệu "
+            "ứng cố định — phân tích độ nhạy theo SAP) = 0,7011") in s3
     sap_cd = {"mo_hinh_gop": "hiệu ứng ngẫu nhiên ở độ nhạy; hiệu ứng cố định là chính"}
     s3_cd = "\n".join(G7.dung_ket_qua_tu_g6(_g6(_tom_tat_gop()), dac_ta_chinh=dt, sap=sap_cd)["s3"])
     assert "(hiệu ứng ngẫu nhiên — phân tích độ nhạy theo SAP)" in s3_cd
@@ -237,7 +237,7 @@ def test_gop_nhan_mo_hinh_chinh_va_do_nhay_theo_sap():
     # SAP không nói rõ ⇒ không đoán
     s3_mo = "\n".join(G7.dung_ket_qua_tu_g6(_g6(_tom_tat_gop()), dac_ta_chinh=dt,
                                             sap={"mo_hinh_gop": "Random/Fixed effects"})["s3"])
-    assert "RR gộp (hiệu ứng ngẫu nhiên) = 0.6932" in s3_mo and "theo SAP" not in s3_mo
+    assert "RR gộp (hiệu ứng ngẫu nhiên) = 0,6932" in s3_mo and "theo SAP" not in s3_mo
 
 
 def test_khong_kem_hon_hieu_so_nguy_co_la_chinh():
@@ -247,7 +247,7 @@ def test_khong_kem_hon_hieu_so_nguy_co_la_chinh():
     dt = {"outcome": "gay_xuong", "group": "ppi", "covariates": ["tuoi"], "outcome_type": "auto"}
     sap = {"phuong_phap_chinh": "Hiệu tỷ lệ (risk difference) + 95%CI (Newcombe) so với biên Δ"}
     s3 = "\n".join(G7.dung_ket_qua_tu_g6(_g6(tt), dac_ta_chinh=dt, sap=sap)["s3"])
-    assert "Hiệu số nguy cơ thô — phân tích chính theo SAP (`1` − `0`): RD = 0.0293" in s3
+    assert "Hiệu số nguy cơ thô — phân tích chính theo SAP (`1` − `0`): RD = 0,0293" in s3
 
 
 def test_cox_nhan_chinh_o_cox_hieu_chinh():
@@ -257,9 +257,9 @@ def test_cox_nhan_chinh_o_cox_hieu_chinh():
                        "adjusted_covariates": ["tuoi"]}}
     dt = {"time": "t", "event": "e", "group": "ppi", "covariates": ["tuoi"]}
     s3 = G7.dung_ket_qua_tu_g6(_g6(tt), dac_ta_chinh=dt, sap={})["s3"]
-    assert any(x.startswith("Cox hiệu chỉnh theo các hiệp biến tuoi — phân tích chính theo SAP: HR = 1.419")
+    assert any(x.startswith("Cox hiệu chỉnh theo các hiệp biến tuoi — phân tích chính theo SAP: HR = 1,419")
                for x in s3)
-    assert any(x.startswith("Cox thô: HR = 1.423") for x in s3)
+    assert any(x.startswith("Cox thô: HR = 1,423") for x in s3)
 
 
 def test_phan_tich_chinh_cac_nhanh_va_rao_lech():

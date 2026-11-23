@@ -489,7 +489,7 @@ def test_mo_rong_cum_chep_g1_g3_sap_g6_du_lieu_khoa_va_so_sang_loc(tmp_path, mon
             "được phân bổ và đưa vào phân tích kết cục chính; tổng 4 cụm, n = 15") in kq
     assert "không cụm nào rút khỏi nghiên cứu (số cụm phân tích/theo kế hoạch đã chốt ở G3: 4/4)" in kq
     assert "0 người ở nhóm can thiệp và 1 người ở nhóm chứng mất theo dõi" in kq
-    assert "ICC = 0.0467; hiệu ứng thiết kế 1.14" in kq
+    assert "ICC = 0,0467; hiệu ứng thiết kế 1,14" in kq  # 23/11/2026: số G6 kiểu Việt (hien_so_g6)
     assert ("*Cách tính cấu trúc cụm trong phân tích (SAP §4):* phân tích chính phải tính cấu trúc cụm — Hồi quy "
             "Poisson với sai số chuẩn theo cụm") in "\n".join(k["phuong_phap"])
     assert k["tom_tat"][0].startswith("**Clusters:** 4 cụm được phân bổ ngẫu nhiên theo cụm")

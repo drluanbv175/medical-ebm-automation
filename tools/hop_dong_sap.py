@@ -588,34 +588,53 @@ KHONG_AP_DUNG_RE = re.compile(r"không\s+áp\s+dụng|not\s+applicable", re.IGNO
 
 
 # ─────────────────────────── v2: số liệu đã ký (§12 + N ở §1 và chứng chỉ khoá) ───────────────────────────
+#: một số thập phân viết dấu chấm HOẶC dấu phẩy (không nuốt dấu phẩy ngắt câu «0,05, độ tin cậy»)
+SO_KY = r"(\d+(?:[.,]\d+)?)"
+#: một số NGUYÊN đã ký: có nhóm nghìn kiểu Việt («25.462» — SAP từ 23/11/2026) hoặc không («25462» — SAP ký trước)
+NGUYEN_KY = r"(\d{1,3}(?:\.\d{3})+(?!\d)|\d+)"
+
+
+def so_thuc_ky(chuoi: str) -> float:
+    """Số thập phân đã ký — dấu chấm (SAP ký trước 23/11/2026) hoặc dấu phẩy (quy ước tiếng Việt, chốt Q4)."""
+    return float(chuoi.replace(",", "."))
+
+
+def so_nguyen_ky(chuoi: str) -> int:
+    """Số nguyên đã ký, bỏ dấu chấm nhóm nghìn."""
+    return int(chuoi.replace(".", ""))
+
+
 MAU_SO_MUC12: Tuple[Tuple[str, str, Any], ...] = (
-    ("alpha", r"\*\*Alpha \([^)]*\):\*\*\s*([\d.]+)", float),
+    ("alpha", r"\*\*Alpha \([^)]*\):\*\*\s*" + SO_KY, so_thuc_ky),
     ("power_pct", r"\*\*Power:\*\*\s*(\d+)%", int),
-    ("n", r"\*\*Cỡ mẫu:\*\*\s*N\s*=\s*(\d+)", int),
+    ("n", r"\*\*Cỡ mẫu:\*\*\s*N\s*=\s*" + NGUYEN_KY, so_nguyen_ky),
     ("hypothesis_type", r"\*\*Loại giả thuyết:\*\*\s*(\S+)", str),
-    ("margin", r"\*\*Biên \(margin, Δ\):\*\*\s*([\d.]+)", float),
-    ("sd", r"\*\*Độ lệch chuẩn \(SD\) kết cục:\*\*\s*([\d.]+)", float),
-    ("precision", r"\*\*Sai số tuyệt đối cho phép \(d\):\*\*\s*±?\s*([\d.]+)", float),
-    ("p_uoc_luong", r"\*\*Tỷ lệ ước lượng \(p\):\*\*\s*([\d.]+)", float),
-    ("p0", r"\*\*Tỷ lệ biến cố nhóm chứng \(p0\):\*\*\s*([\d.]+)", float),
-    ("p_event", r"\*\*Tỷ lệ biến cố \(log-rank, p_event\):\*\*\s*([\d.]+)", float),
-    ("dropout", r"\*\*Tỷ lệ bỏ cuộc dự kiến:\*\*\s*([\d.]+)", float),
+    ("margin", r"\*\*Biên \(margin, Δ\):\*\*\s*" + SO_KY, so_thuc_ky),
+    ("sd", r"\*\*Độ lệch chuẩn \(SD\) kết cục:\*\*\s*" + SO_KY, so_thuc_ky),
+    # VÁ 04/10/2026 (soát từng cổng, G4-06/G4-08): tham số QUYẾT ĐỊNH N mà SAP ký từng không ghi (sai số d của thiết
+    # kế theo độ chính xác, p0, bỏ cuộc, chiều kết cục NI, cụm, chẩn đoán, FPC) — nay in ở §12 và đối chiếu G3.
+    ("precision", r"\*\*Sai số tuyệt đối cho phép \(d\):\*\*\s*±?\s*" + SO_KY, so_thuc_ky),
+    ("p_uoc_luong", r"\*\*Tỷ lệ ước lượng \(p\):\*\*\s*" + SO_KY, so_thuc_ky),
+    ("p0", r"\*\*Tỷ lệ biến cố nhóm chứng \(p0\):\*\*\s*" + SO_KY, so_thuc_ky),
+    ("p_event", r"\*\*Tỷ lệ biến cố \(log-rank, p_event\):\*\*\s*" + SO_KY, so_thuc_ky),
+    ("dropout", r"\*\*Tỷ lệ bỏ cuộc dự kiến:\*\*\s*" + SO_KY, so_thuc_ky),
     ("outcome_direction", r"\*\*Chiều kết cục:\*\*\s*(higher_better|lower_better)", str),
-    ("design_effect", r"\*\*Hiệu ứng thiết kế \(DE\):\*\*\s*([\d.]+)", float),
-    ("icc", r"\*\*ICC:\*\*\s*([\d.]+)", float),
-    ("cluster_size", r"\*\*Cỡ cụm trung bình \(m\):\*\*\s*([\d.]+)", float),
-    ("n_clusters", r"\*\*Số cụm:\*\*\s*(\d+)", int),
-    ("n_benh", r"\*\*Số ca bệnh cần:\*\*\s*(\d+)", int),
-    ("n_khong_benh", r"\*\*Số ca không bệnh cần:\*\*\s*(\d+)", int),
-    ("prevalence", r"\*\*Tỷ lệ hiện mắc dự kiến:\*\*\s*([\d.]+)", float),
-    ("population_n", r"\*\*Quần thể hữu hạn \(FPC\):\*\*\s*N\s*=\s*(\d+)", int),
+    ("design_effect", r"\*\*Hiệu ứng thiết kế \(DE\):\*\*\s*" + SO_KY, so_thuc_ky),
+    ("icc", r"\*\*ICC:\*\*\s*" + SO_KY, so_thuc_ky),
+    ("cluster_size", r"\*\*Cỡ cụm trung bình \(m\):\*\*\s*" + SO_KY, so_thuc_ky),
+    ("n_clusters", r"\*\*Số cụm:\*\*\s*" + NGUYEN_KY, so_nguyen_ky),
+    ("n_benh", r"\*\*Số ca bệnh cần:\*\*\s*" + NGUYEN_KY, so_nguyen_ky),
+    ("n_khong_benh", r"\*\*Số ca không bệnh cần:\*\*\s*" + NGUYEN_KY, so_nguyen_ky),
+    ("prevalence", r"\*\*Tỷ lệ hiện mắc dự kiến:\*\*\s*" + SO_KY, so_thuc_ky),
+    ("population_n", r"\*\*Quần thể hữu hạn \(FPC\):\*\*\s*N\s*=\s*" + NGUYEN_KY, so_nguyen_ky),
 )
 
 
 def doc_so_lieu_ky(text: str) -> Dict[str, Any]:
     """Số liệu đã KÝ: §12 (α/power/N/effect/giả thuyết/biên/SD + tham số quyết định N), N ở §1 (`n_muc1`) và ở chứng
     chỉ khoá PHẦN 5 (`n_chung_chi`); `alpha_khong_ap_dung`/`power_khong_ap_dung` = SAP khai tường minh «KHÔNG ÁP DỤNG».
-    Bộ đọc của g4_quality_gate.parse_signed_numbers (chuyển về đây 24/11/2026)."""
+    Bộ đọc của g4_quality_gate.parse_signed_numbers (chuyển về đây 24/11/2026). Đọc cả hai quy ước số: SAP ký trước
+    23/11/2026 (dấu chấm thập phân, N không nhóm nghìn) và SAP sinh từ ngày đó (dấu phẩy, N từ 5 chữ số nhóm nghìn)."""
     text = bo_dong_bam(text or "")
     section = than_muc_g4(text, "§12")
     result: Dict[str, Any] = {"found": bool(section), "effect_type": None, "effect_val": None,
@@ -626,16 +645,16 @@ def doc_so_lieu_ky(text: str) -> Dict[str, Any]:
             m = re.search(mau, section)
             if m:
                 result[khoa] = kieu(m.group(1))
-        m = re.search(r"\*\*Effect size dự kiến:\*\*\s*(\S+)\s*=\s*([\d.]+)", section)
+        m = re.search(r"\*\*Effect size dự kiến:\*\*\s*(\S+)\s*=\s*" + SO_KY, section)
         if m:
             result["effect_type"] = m.group(1)
-            result["effect_val"] = float(m.group(2))
+            result["effect_val"] = so_thuc_ky(m.group(2))
         result["alpha_khong_ap_dung"] = bool(re.search(r"\*\*Alpha[^*\n]*:\*\*\s*KHÔNG ÁP DỤNG", section))
         result["power_khong_ap_dung"] = bool(re.search(r"\*\*Power:\*\*\s*KHÔNG ÁP DỤNG", section))
-    m1 = re.search(r"\*\*Cỡ mẫu cuối:\*\*\s*N\s*=\s*(\d+)", than_muc_g4(text, "§1"))
-    result["n_muc1"] = int(m1.group(1)) if m1 else None
-    m5 = re.search(r"Cỡ mẫu\s*:\s*N\s*=\s*(\d+)", than_phan(text, "5"))
-    result["n_chung_chi"] = int(m5.group(1)) if m5 else None
+    m1 = re.search(r"\*\*Cỡ mẫu cuối:\*\*\s*N\s*=\s*" + NGUYEN_KY, than_muc_g4(text, "§1"))
+    result["n_muc1"] = so_nguyen_ky(m1.group(1)) if m1 else None
+    m5 = re.search(r"Cỡ mẫu\s*:\s*N\s*=\s*" + NGUYEN_KY, than_phan(text, "5"))
+    result["n_chung_chi"] = so_nguyen_ky(m5.group(1)) if m5 else None
     return result
 
 

@@ -707,6 +707,7 @@ def evaluate_g7_quality(
     do_nhay_g6: Optional[Mapping[str, str]] = None,
     o_cho_du_kien: Optional[List[str]] = None,
     lech_alpha: Optional[List[str]] = None,
+    dien_sai_kieu: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Chấm G7 theo hai tầng: máy kiểm được vs người thật phải chốt.
 
@@ -717,7 +718,8 @@ def evaluate_g7_quality(
     (tiêu chí không áp dụng). `o_cho_du_kien` (23/11/2026): ô chờ ở chỗ bộ sinh đã có dữ kiện để viết (o_cho_co_du_kien,
     gộp bản thảo hiện tại với bản bộ sinh vừa sinh — ghi ở G7_checkpoint) — có ⇒ G7-AUTO-05 CHẶN. `lech_alpha`
     (23/11/2026, lech_alpha_g7): α/số phía ghi trong bản thảo trái α SAP §12/G3 đã chốt — khẳng định trái cổng trước
-    ⇒ G7-AUTO-06 CHẶN.
+    ⇒ G7-AUTO-06 CHẶN. `dien_sai_kieu` (23/11/2026): lỗi của chốt chung `quet_dien_sai_kieu.quet` trên bản thảo — có
+    tham số ⇒ thêm G7-AUTO-09 (còn lỗi ⇒ CHẶN); None ⇒ người gọi không quét (kiểm đơn vị), tiêu chí không có dòng.
     """
     artifact_paths = artifact_paths or {}
     automatic: List[Dict[str, str]] = []
@@ -879,6 +881,19 @@ def evaluate_g7_quality(
             str(do_nhay_g6.get("status") or "REVIEW"), str(do_nhay_g6.get("evidence") or ""),
             "Chạy `chay_sap_g6.py chay` đủ đặc tả trên dữ liệu đã khoá rồi sinh lại bản thảo (run_g7_auto.py) — §5 "
             "phải có mọi mục vai «do_nhay», không bỏ mục nào, không thêm mục ngoài đặc tả.",
+        ))
+
+    # ── Điền sai kiểu (23/11/2026 — chốt chung quet_dien_sai_kieu) ─────────────
+    if dien_sai_kieu is not None:
+        automatic.append(_criterion(
+            "G7-AUTO-09", "Không điền sai kiểu (số đứng lẻ, mã số ở ô hỏi người, số chưa làm tròn, dấu chấm thập phân, "
+                          "ký hiệu nội bộ)",
+            "BLOCK" if dien_sai_kieu else "PASS",
+            "; ".join(dien_sai_kieu[:6]) + (f" (+{len(dien_sai_kieu) - 6} lỗi)" if len(dien_sai_kieu) > 6 else "")
+            if dien_sai_kieu else "không có lỗi điền sai kiểu",
+            "Sửa bộ sinh (run_g7_auto.py: số G6 qua `hien_so_g6`, số khác qua `quet_dien_sai_kieu.viet_so`) hoặc "
+            "câu trả lời của ô rồi sinh lại — không sửa tay số trong bản thảo. Đo: python3 "
+            "tools/quet_dien_sai_kieu.py --tep <bản thảo>.",
         ))
 
     # ── Tầng HUMAN — giá trị phải là NỘI DUNG THẬT (G7-06) ──────────────────
@@ -1146,12 +1161,20 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True,
         citation_detail=citation_detail,
         do_nhay_g6=doi_chieu_do_nhay_g6(out_dir, text),
         lech_alpha=lech_alpha_g7(out_dir, study, text),
+        dien_sai_kieu=_quet_dien_sai_kieu(text),
         o_cho_du_kien=o_cho_co_du_kien(out_dir, study, text)
         + [str(x) for x in ((checkpoints.get("G7") or {}).get("o_cho_co_du_kien_khi_sinh") or [])],
     )
     if write:
         write_quality_report(study, out_dir, report)
     return report
+
+
+def _quet_dien_sai_kieu(text: str) -> List[str]:
+    """Lỗi điền sai kiểu của bản thảo (G7-AUTO-09); bản thảo vắng ⇒ rỗng (G7-AUTO-04 đã chặn việc thiếu bản thảo)."""
+    import quet_dien_sai_kieu as QDSK  # noqa: PLC0415 — import lười (mô-đun dùng chung, không phụ thuộc vòng)
+
+    return QDSK.quet(text) if text.strip() else []
 
 
 def main() -> int:

@@ -223,13 +223,17 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # khối ký thứ ba theo đơn vị ngay trên Khoa (mã ở PR #419; cặp gốc EBM-drluanbv175#490) — vẫn 64.
 # 22/11/2026 (sổ phân công công cụ C1–C6): 23 agent nhận dòng «Công cụ `tools/x.py` (chủ|kiểm|dùng phụ)» theo
 # config/phan_cong_cong_cu.json, chép từ nhánh gốc claude/phan-cong-goc-20261122 — vẫn 64.
+# 23/11/2026 (chốt chung «điền sai kiểu»): viet-ban-thao (chủ) và tham-dinh-dau-ra (kiểm) nhận dòng
+# `tools/quet_dien_sai_kieu.py` theo config/phan_cong_cong_cu.json; khối trách nhiệm sinh tự động của dieu-phoi-g7 và
+# viet-ban-thao thêm G7-AUTO-09 — vẫn 64.
 # 23/11/2026: chép 2 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
 # 23/11/2026: chép 4 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
 # 23/11/2026 (hợp đồng SAP máy đọc): 4 agent nhận dòng `tools/hop_dong_sap.py` (thiet-ke-nghien-cuu chủ, dieu-phoi-g4
 # kiểm, phan-tich-thong-ke và viet-ban-thao dùng phụ) — vẫn 64.
 # 24/11/2026 (hợp đồng SAP v2): dòng hop_dong_sap.py của thiet-ke-nghien-cuu nêu thêm nơi đọc hợp đồng — vẫn 64.
+# 24/11/2026 (nhánh tích hợp 2): gộp dòng doctrine của nhánh hợp đồng SAP v2 và nhánh «điền sai kiểu» — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "fbdbd5df394d7b6dea1b8b5a90c4b3743cbd7622df6610c77c9af5d7fdb4f75c"
+    "af541880395387d9c7b18c2144c573cd5e8caf3f34f1f8405af0915b4d6ddf6c"
 )
 
 MINIMUM_AGENT_COUNT = 64

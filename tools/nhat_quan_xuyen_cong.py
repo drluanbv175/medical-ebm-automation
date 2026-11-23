@@ -1156,12 +1156,11 @@ def _de_hop_le(m: float, icc: float, cv: float) -> List[float]:
 
 
 def _mau_so(n: int) -> str:
-    """Mẫu nhận một số nguyên trong văn bản Việt: 1000 ⇒ «1000», «1.000», «1 000», «1,000»."""
+    """Mẫu nhận một số nguyên trong văn bản Việt: 1000 ⇒ «1000», «1.000», «1 000», «1,000»; 24/11/2026: mọi nhóm nghìn
+    (1234567 ⇒ «1.234.567» — quy ước số tiếng Việt của bộ sinh từ 23/11/2026), không chỉ nhóm cuối."""
     s = str(n)
-    if n < 1000:
-        return rf"(?<![\d.,]){s}(?![\d]|[.,]\d)"
-    nghin = s[:-3] + r"[.,  ]?" + s[-3:]
-    return rf"(?<![\d.,]){nghin}(?![\d]|[.,]\d)"
+    nhom = [s[max(0, i - 3):i] for i in range(len(s), 0, -3)][::-1]
+    return rf"(?<![\d.,]){'[.,  ]?'.join(nhom)}(?![\d]|[.,]\d)"
 
 
 def _truc_tinh_lai_co_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, Any]]:

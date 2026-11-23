@@ -86,6 +86,8 @@ def _chay_tron_vong(ma, tmp_path, monkeypatch):
     dich.parent.mkdir(parents=True, exist_ok=True)
     dich.write_text(json.dumps(bc, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     print(f"\n=== {ma} ({bc['thiet_ke']}) — dừng: {bc['dung']} · ô lỗi máy: {bc['so_o_loi_may']}")
+    for x in (bc.get("dien_sai_kieu") or [])[:12]:  # 23/11/2026: chốt chung «điền sai kiểu» — chỉ đúng chỗ cần sửa
+        print(f"  điền sai kiểu: {x}")
     print("  Phần A:", {k: bc["phan_a"].get(k) for k in ("cong_dung", "ket", "so_can_thiep_do_may")})
     for g, t in bc["o_theo_cong"].items():
         print(f"  {g}: {t['tong']} ô · hỏi lại {t['hoi_lai_da_chot']} · hỏi lặp {t['hoi_lap']} · "

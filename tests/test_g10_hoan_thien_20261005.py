@@ -709,8 +709,8 @@ def test_chung_h_dong_lam_mu_doc_quyet_dinh_g1_khi_chua_tach(ds, co):
 @pytest.mark.parametrize("loai, co, khong", [
     ("descriptive_precision", ["DESCRIPTIVE_PRECISION", "không có biên Δ"], ["Margin Δ", "[CẦN"]),
     ("precision", ["DESCRIPTIVE_PRECISION"], ["Margin Δ"]),
-    ("non_inferiority", ["NON_INFERIORITY — Margin Δ = 0.1"], []),
-    ("equivalence", ["EQUIVALENCE — Margin Δ = 0.1"], []),
+    ("non_inferiority", ["NON_INFERIORITY — Margin Δ = 0,1"], []),
+    ("equivalence", ["EQUIVALENCE — Margin Δ = 0,1"], []),
     ("superiority", [], ["Loại giả thuyết (tự động từ G3)"]),
     ("khong_ro_loai", [], ["Margin Δ"]),
 ])

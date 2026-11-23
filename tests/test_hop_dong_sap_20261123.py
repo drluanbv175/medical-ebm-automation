@@ -567,3 +567,35 @@ def test_v2_noi_tieu_thu_khong_tu_do_chu_sap():
     assert G4Q.parse_signed_numbers is HD.doc_so_lieu_ky and G4Q._section_body is HD.than_muc_g4
     assert G6Q._sec is HD.muc_g6 and G6Q.ket_cuc_chinh_sap is HD.ket_cuc_chinh_bien
     assert GC.phuong_phap_la_ty_le is HD.phuong_phap_la_ty_le and NQ._ma_cum is HD.ma_cum_chon_mau
+
+
+# ───── nhánh tích hợp 2 (24/11/2026): SAP sinh theo quy ước số tiếng Việt («0,05», «25.462») và SAP ký trước ─────
+@pytest.mark.parametrize("quy_uoc", ["so_viet", "ky_truoc"])
+def test_hop_dong_doc_hai_quy_uoc_so_cua_sap(tmp_path, quy_uoc):
+    """Bộ sinh G4 từ 23/11/2026 in số theo quy ước tiếng Việt (`quet_dien_sai_kieu.viet_so`: dấu phẩy thập phân, N từ 5
+    chữ số nhóm nghìn); SAP ký trước ghi dấu chấm và N liền. Hợp đồng — bộ đọc SAP DUY NHẤT — phải đọc ra CÙNG số liệu
+    đã ký ở cả hai dạng, `kiem` 0 lỗi, đủ điều kiện ký (G4-AUTO-13), và mọi nơi tiêu thụ (nhat_quan, G7) thấy cùng
+    số."""
+    sys.path.insert(0, str(REPO_ROOT / "tests"))
+    from test_g4_quality_gate import _fresh_sap  # noqa: PLC0415
+
+    sap = _fresh_sap(n_adjusted=25462, alpha=0.025, effect_val=0.75)
+    assert "- **Cỡ mẫu:** N = 25.462" in sap and "**Alpha (two-sided):** 0,025" in sap  # tiền đề: bộ sinh in số Việt
+    if quy_uoc == "ky_truoc":
+        sap = sap.replace("25.462", "25462").replace("0,025", "0.025").replace("0,75", "0.75")
+        assert "25.462" not in sap and "0,025" not in sap
+    d = _thu_muc(tmp_path, sap)
+    assert HD.ghi(MA, d)[0] == 0
+    hd, loi = HD.doc(d, MA)
+    assert loi == [] and HD.kiem_cho_khoa(d, MA) == []
+    so = hd["noi_dung"]["so_lieu_ky"]
+    assert (so["n"], so["n_muc1"], so["n_chung_chi"], so["alpha"], so["effect_val"]) == (25462, 25462, 25462, 0.025,
+                                                                                          0.75), so
+    assert hd["noi_dung"]["alpha_sap"]["chu_so"] == "025"
+    assert G4Q.parse_signed_numbers is HD.doc_so_lieu_ky and G4Q.parse_signed_numbers(sap)["n"] == 25462
+    assert _g4_auto_13(HD.kiem_cho_khoa(d, MA))["status"] == "PASS"
+    _nd, so_nq, loi_nq = NQ._sap(d, MA)
+    assert loi_nq == [] and so_nq["n"] == 25462 and so_nq["alpha"] == 0.025
+    assert G7._sap_tom_tat(d, MA)["alpha"] == 0.025 and G7Q.loi_hop_dong_sap(d, MA) == []
+    assert re.search(NQ._mau_so(25462), "N tối thiểu 25.462 người") and re.search(NQ._mau_so(25462), "N = 25462")
+    assert re.search(NQ._mau_so(1234567), "1.234.567 lượt") and not re.search(NQ._mau_so(1234567), "1.234.5670")

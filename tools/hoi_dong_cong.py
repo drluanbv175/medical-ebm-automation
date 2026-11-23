@@ -404,6 +404,8 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G7-AUTO-07": "G7-T3",
         # 23/11/2026: §5 bản thảo đủ mọi phân tích vai «do_nhay» của đặc tả G6 — viet-ban-thao chép từ tóm tắt G6
         "G7-AUTO-08": "G7-T1",
+        # 23/11/2026: không điền sai kiểu (chốt chung quet_dien_sai_kieu) — viet-ban-thao dựng bản thảo bằng bộ sinh
+        "G7-AUTO-09": "G7-T1",
         "G7-HUMAN-01": "PI@G7-T1", "G7-HUMAN-02": "PI@G7-T1", "G7-HUMAN-03": "PI@G7-T1", "G7-HUMAN-04": "PI@G7-T1",
         "G7-HUMAN-05": "PI@G7-T1",
     },

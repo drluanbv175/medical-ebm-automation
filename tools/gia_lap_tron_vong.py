@@ -71,20 +71,10 @@ LOAI_O = ("hoi_lai_da_chot", "hoi_lap", "khong_ap_dung", "moi_dung_vai", "chua_c
 LOAI_O_LOI_MAY = ("hoi_lai_da_chot", "hoi_lap", "dien_sai_kieu")
 
 
-def hoi_nguoi_vai_tro(nhan_khong_dau: str) -> bool:
-    """Ô hỏi NGƯỜI hoặc VAI TRÒ (ai thực hiện, người phụ trách, chức danh, thành viên…) — không phải ô hỏi số lượng
-    («số người», «bao nhiêu người»). Nhãn đã bỏ dấu (`bo_dau`)."""
-    k = str(nhan_khong_dau or "")
-    if re.search(r"\bso\b|bao nhieu|\bty le\b", k):
-        return False
-    return bool(re.search(r"\bai (thuc hien|phu trach|chiu trach nhiem|danh gia|phong van|nhap|kiem tra|giu)|"
-                          r"\bnguoi (thuc hien|phu trach|chiu trach nhiem|danh gia|phong van|kiem tra|giu)|"
-                          r"vai tro|chuc danh|chuc vu|thanh vien|ho ten", k))
+# 23/11/2026: hai phép phân loại kiểu ô của agent G7 (`hoi_nguoi_vai_tro`, `la_ma_so_don_le`) chuyển sang chốt chung
+# «điền sai kiểu» (tools/quet_dien_sai_kieu.py) — MỘT bản cho bộ giả lập lẫn chốt quét văn bản đầu ra
+from quet_dien_sai_kieu import hoi_chu, hoi_nguoi_vai_tro, la_ma_so_don_le  # noqa: E402,F401
 
-
-def la_ma_so_don_le(gia_tri: Any) -> bool:
-    """Giá trị chỉ là một con số (vd «6», «2,5») — không phải câu trả lời cho ô hỏi người/vai trò."""
-    return bool(re.fullmatch(r"\s*\d+(?:[.,]\d+)?\s*", str(gia_tri or "")))
 #: Bảng trích xuất cấp nghiên cứu của tổng quan (G5-T2) — PHẢI trùng `hoi_dong_cong.TEP_TRICH_XUAT_SR` (test khoá).
 TEP_TRICH_XUAT_SR = "06_phan_tich_R/study_level_extraction.csv"
 
@@ -312,7 +302,8 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
             ra.append({**o, "vi_tri": o_tich, "o": tep_text[o_tich:m.end()], "loai": "moi_dung_vai",
                        "dien": "☑ đã báo cáo trong bản thảo"})
             continue
-        so_0 = re.search(r"(?<![\d.])0(?:\.0+)?\s*$", tep_text[dau_dong:m.start()])
+        # 23/11/2026: bản thảo in số G6 theo quy ước tiếng Việt («0,0») — nhận cả hai dấu
+        so_0 = re.search(r"(?<![\d.,])0(?:[.,]0+)?\s*$", tep_text[dau_dong:m.start()])
         if "lam tron ve 0" in trong_o and so_0:
             # p mà G6 làm tròn về 0 kèm ô «báo cáo p < 0,001 theo chuẩn tạp chí» (17/11/2026): tác giả viết lại
             # ĐÚNG ngưỡng báo cáo thay cả «0.0 [ô]» — trước đây chữ «tạp chí» trong ô khớp câu trả lời tạp chí đích
@@ -365,7 +356,8 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
         elif tl is not None:
             # 23/11/2026: ô hỏi người/vai trò mà câu trả lời là mã số đơn lẻ ⇒ quy tắc khớp nhầm (lỗi máy), không phải
             # nội dung đúng vai
-            sai_kieu = la_ma_so_don_le(tl) and hoi_nguoi_vai_tro(f"{k} {trong_o}")
+            # 23/11/2026: mở rộng sang ô hỏi MÔ TẢ (chốt chung «điền sai kiểu» Q2 — `hoi_chu`)
+            sai_kieu = la_ma_so_don_le(tl) and hoi_chu(f"{k} {trong_o}")
             o.update(loai="dien_sai_kieu" if sai_kieu else "moi_dung_vai", dien=tl)
         elif re.fullmatch(r"_{3,}(?:\s*/\s*_{2,}\s*/\s*_{2,})?", o_txt.strip()) and "/" in o_txt:
             o.update(loai="moi_dung_vai", dien=date.today().strftime("%d/%m/%Y"))
@@ -2190,7 +2182,9 @@ class TronVong:
         for k in ("k", "epv", "n_ban_go_bang", "so_chu_de"):
             if dt.get(k) is not None:  # số lẻ (EPV 45,5) viết dấu phẩy thập phân như mọi số khác của lời văn
                 v = dt[k]
-                gt[k] = self._so_vn(v, 1) if isinstance(v, float) and not v.is_integer() else v
+                # 23/11/2026 (chốt «điền sai kiểu» Q4): số thực nguyên («41.0») in dạng số nguyên «41»
+                gt[k] = (self._so_vn(v, 1) if isinstance(v, float) and not v.is_integer()
+                         else int(v) if isinstance(v, float) else v)
         for i, cd in enumerate(dt.get("chu_de") or [], 1):
             gt[f"chu_de_{i}_ten"] = cd.get("chu_de")
             gt[f"chu_de_{i}_n"] = cd.get("n")
@@ -2962,11 +2956,24 @@ Kết luận tổng thể: {ket_luan}
                                    r"G6_A7_ANALYSIS_SCRIPTS|\.bak-")
 
     def _soat_so_do(self) -> List[str]:
-        """«tệp: K11 dòng N: …» cho mọi lỗi trình bày số đo trong văn bản .md của đề tài (tối đa 200)."""
+        """«tệp: K11 dòng N: …» cho mọi lỗi trình bày số đo trong văn bản .md của đề tài (tối đa 200).
+
+        23/11/2026: mọi văn bản đầu ra của chốt «điền sai kiểu» (`quet_dien_sai_kieu.MAU_TEP` — đề cương nộp/thống
+        nhất, SAP, bản thảo G7, hồ sơ đạo đức, phiếu) và báo cáo tổng hợp nghiệm thu soát thêm luật K11 số nguyên từ
+        5 chữ số chưa nhóm nghìn, kể cả tử/mẫu số của phân số (bảng GRADE từng in «15 (79845)», SAP «N = 25462»);
+        báo cáo tổng hợp (dựng trong bộ nhớ) nay cũng soát luật số đo như mọi văn bản .md."""
+        import fnmatch  # noqa: PLC0415
+
         import kiem_de_cuong_nop_hoi_dong as KDN  # noqa: PLC0415
+        import quet_dien_sai_kieu as QDSK  # noqa: PLC0415
 
         ra: List[str] = []
         out = getattr(self, "out", None)
+
+        def _loi(ten: str, md: str, so_lon: bool) -> List[str]:
+            return [f"{ten}: {x}" for x in KDN.loi_k11(md)
+                    if KDN.la_loi_so_do(x) or (so_lon and KDN.la_loi_so_lon(x))]
+
         for p in sorted(Path(out).rglob("*.md")) if out and Path(out).is_dir() else []:
             if "_dau_may_sinh" in p.parts or self._KHONG_SOAT_SO_DO.search(p.name):
                 continue
@@ -2974,7 +2981,12 @@ Kết luận tổng thể: {ket_luan}
                 md = p.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 continue
-            ra += [f"{p.relative_to(out)}: {x}" for x in KDN.loi_k11(md) if KDN.la_loi_so_do(x)]
+            ra += _loi(str(p.relative_to(out)), md, any(fnmatch.fnmatch(p.name, m) for m in QDSK.MAU_TEP))
+        if out and (Path(out) / f"G7_A8_MANUSCRIPT_{self.study}.md").is_file():
+            try:
+                ra += _loi(f"BAO_CAO_TONG_HOP_{self.study}", self._bao_cao_tong_hop_van(), True)
+            except Exception as exc:  # noqa: BLE001 — không dựng được báo cáo ⇒ một dòng lỗi (không đo được ≠ sạch)
+                ra.append(f"BAO_CAO_TONG_HOP_{self.study}: không soát được số đo — {type(exc).__name__}: {exc}"[:200])
         return ra[:200]
 
     def bao_cao(self) -> Dict[str, Any]:
@@ -2983,20 +2995,51 @@ Kết luận tổng thể: {ket_luan}
             theo_cong[g] = tom_tat_o([o for o in self.o if o["cong"] == g])
         loi_may = [f"{self.ma}:{o['cong']}:{o['loai']}:{o['tep']}:«{o['nhan']}»" for o in self.o
                    if o["loai"] in LOAI_O_LOI_MAY]
+        # 23/11/2026 (bác sĩ duyệt «bộ quét điền sai kiểu»): lỗi KIỂU của văn bản đầu ra (số đứng lẻ, mã số ở ô hỏi
+        # người, số chưa làm tròn, dấu chấm thập phân, ký hiệu nội bộ) tính là ô lỗi máy — bộ sinh hoặc câu trả lời sai
+        dsk = self._soat_dien_sai_kieu()
+        loi_may += [f"{self.ma}:dien_sai_kieu_van_ban:{x}" for x in dsk]
         return {"ma": self.ma, "study": self.study, "thiet_ke": self.thiet_ke, "phan_a": self.phan_a,
                 "cong": self.cong, "o_theo_cong": theo_cong, "du_lieu": self.du_lieu, "truc": self.truc,
                 "dung": self.dung,
-                "so_o_loi_may": len(loi_may), "o_loi_may": sorted(set(loi_may))[:200],
+                "so_o_loi_may": len(loi_may), "o_loi_may": sorted(set(loi_may))[:200], "dien_sai_kieu": dsk[:200],
                 "crash": [b["buoc"] for b in self.buoc if b.get("crash")], "buoc": self.buoc,
                 "chinh_xac": self._chinh_xac_an_toan(), "so_do_sai": self._soat_so_do(),
                 "chuan_bao_cao": self._chuan_bao_cao()}
+
+    def _bao_cao_tong_hop_van(self) -> str:
+        """Văn bản báo cáo tổng hợp nghiệm thu dựng từ gói đề tài (dựng một lần cho cả K18 lẫn chốt điền sai kiểu)."""
+        if getattr(self, "_bc_van", None) is None:
+            import bao_cao_tong_hop as BC  # noqa: PLC0415
+
+            bc = BC.sinh(self.study, Path(getattr(self, "out", "") or ""))
+            if "van" not in bc:
+                raise RuntimeError(f"không dựng được báo cáo tổng hợp: {bc.get('loi')}")
+            self._bc_van = str(bc["van"])
+        return self._bc_van
+
+    def _soat_dien_sai_kieu(self) -> List[str]:
+        """«tệp: Qn dòng N: …» — chốt chung `quet_dien_sai_kieu` trên mọi văn bản đầu ra của đề tài (đề cương nộp,
+        đề cương thống nhất, SAP, bản thảo G7, hồ sơ đạo đức, phiếu thu thập) và báo cáo tổng hợp (tối đa 200). Chốt
+        sập hoặc không dựng được báo cáo tổng hợp ⇒ một dòng lỗi (không đo được ≠ sạch)."""
+        out = Path(getattr(self, "out", "") or "")
+        if not out.is_dir():
+            return []
+        try:
+            import quet_dien_sai_kieu as QDSK  # noqa: PLC0415
+
+            them = {}
+            if (out / f"G7_A8_MANUSCRIPT_{self.study}.md").is_file():
+                them[f"BAO_CAO_TONG_HOP_{self.study}"] = self._bao_cao_tong_hop_van()
+            return QDSK.quet_thu_muc(out, them)[:200]
+        except Exception as exc:  # noqa: BLE001 — báo cáo không sập; CI phán «chưa đo» là lỗi
+            return [f"chốt điền sai kiểu không chạy được: {type(exc).__name__}: {exc}"[:200]]
 
     def _chuan_bao_cao(self) -> Dict[str, Any]:
         """Đối chiếu chuẩn báo cáo THEO MỤC (K18) cho bản thảo G7 và báo cáo tổng hợp nghiệm thu dựng từ gói đề tài
         (22/11/2026 — bác sĩ giao hoàn thiện SAP/bản thảo/báo cáo cho 8 thiết kế; trước đó không cổng nào đo khâu này
         trong CI). Trả {"ban_thao_thieu", "bao_cao_thieu", "bao_cao_cau_truc"} — mã «CHUẨN mã»; lỗi ⇒ {"loi"}."""
         try:
-            import bao_cao_tong_hop as BC  # noqa: PLC0415
             import hoi_dong_khoa_hoc as HD  # noqa: PLC0415
             import tieu_chi_ban_thao as K18  # noqa: PLC0415
 
@@ -3010,12 +3053,13 @@ Kết luận tổng thể: {ket_luan}
                 return sorted(f"{r.chuan} {r.ma}" for r in kq["ket_qua"] if r.trang_thai == "thieu")
 
             ra: Dict[str, Any] = {"ban_thao_thieu": thieu(p_bt.read_text(encoding="utf-8"))}
-            bc = BC.sinh(self.study, out)
-            if "van" not in bc:
-                ra["loi"] = f"không dựng được báo cáo tổng hợp: {bc.get('loi')}"
+            try:
+                van = self._bao_cao_tong_hop_van()
+            except RuntimeError as exc:
+                ra["loi"] = str(exc)
                 return ra
-            ra["bao_cao_thieu"] = thieu(str(bc["van"]))
-            ra["bao_cao_cau_truc"] = list(HD.kiem_cau_truc_bao_cao(str(bc["van"])).get("canh_bao") or [])
+            ra["bao_cao_thieu"] = thieu(van)
+            ra["bao_cao_cau_truc"] = list(HD.kiem_cau_truc_bao_cao(van).get("canh_bao") or [])
             return ra
         except Exception as exc:  # noqa: BLE001 — báo cáo không được sập vì phép kiểm phụ; CI phán «chưa đo»
             return {"loi": f"{type(exc).__name__}: {exc}"[:200]}

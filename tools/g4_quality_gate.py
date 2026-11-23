@@ -364,7 +364,9 @@ def _than_muc(text: str, section_num: str) -> str:
     return "\n".join(body.splitlines()[1:]).strip() if body else ""
 
 
-# Bộ đọc số liệu đã ký: (khoá, mẫu, kiểu). Nhãn khớp ĐÚNG dòng run_g4_auto.generate() in ở §12.
+# Bộ đọc số liệu đã ký: (khoá, mẫu, kiểu). Nhãn khớp ĐÚNG dòng run_g4_auto.generate() in ở §12. Sống ở bộ đọc SAP
+# duy nhất (hop_dong_sap, 24/11/2026) — đọc cả dấu phẩy thập phân («0,05») lẫn N có/không nhóm nghìn («25.462»/«25462»,
+# quy ước số tiếng Việt từ 23/11/2026); tên dưới đây là bí danh.
 _MAU_SO_MUC12 = HD.MAU_SO_MUC12
 parse_signed_numbers = HD.doc_so_lieu_ky
 
