@@ -1049,6 +1049,9 @@ class TronVong:
     #: cụm phương pháp (trong biện pháp G1) → các cách SAP có thể viết NGUYÊN VĂN cùng phương pháp đó
     _NEO_PHAN_TICH = (
         ("hồi quy logistic có điều kiện", ("hồi quy logistic có điều kiện", "conditional logistic")),
+        # 23/11/2026: bệnh–chứng ghép theo tần suất — biện pháp G1 «hồi quy logistic không điều kiện» (SAP §4 cùng chữ)
+        ("hồi quy logistic không điều kiện", ("hồi quy logistic không điều kiện", "logistic không điều kiện",
+                                              "unconditional logistic")),
         ("gán đa trị", ("gán đa trị", "Multiple Imputation", "MICE")),
         ("hồi quy logistic", ("hồi quy logistic", "logistic")),
         ("hồi quy Cox", ("hồi quy Cox", "Cox")),
@@ -1616,6 +1619,20 @@ class TronVong:
         ts_chinh = dict(chinh["tham_so"])
         if ts_chinh.get("outcome") and "outcome_type" not in ts_chinh and not ts_chinh.get("loai_dac_thu"):
             ts_chinh["outcome_type"] = loai_kc_tu_sap(text)
+        # 23/11/2026 (G7 phát hiện G6 lệch SAP — thử nghiệm không kém hơn): thống kê viên đọc phương pháp KTC hiệu số
+        # nguy cơ SAP §4 khai (cùng hàm chay_sap_g6 `kiem` và cổng G6-AUTO-09 dùng) và truyền vào đặc tả; phân tích kế
+        # thừa (nhóm con, độ nhạy) nhận cùng phương pháp. SAP khai phương pháp G6 chưa tính ⇒ `kiem` từ chối đặc tả.
+        import g6_quality_gate as G6Q  # noqa: PLC0415
+
+        kc_sap = G6Q.phuong_phap_kc_hieu_so_sap(G6Q._sec(text, 4))["phuong_phap"]
+        if kc_sap and ts_chinh.get("outcome") and not ts_chinh.get("loai_dac_thu"):
+            ts_chinh.setdefault("kc_hieu_so", kc_sap)
+        # 23/11/2026: phương pháp biến cố hiếm SAP §5 (rào EPV chặn hồi quy) — mọi phân tích có kết cục mang theo
+        import g4_quality_gate as G4Q  # noqa: PLC0415
+
+        bch_sap = G4Q.phuong_phap_bien_co_hiem_sap(G4Q._section_body(text, "§5"))["phuong_phap"]
+        if bch_sap and G4Q.BIEN_CO_HIEM[bch_sap][1] and ts_chinh.get("outcome") and not ts_chinh.get("loai_dac_thu"):
+            ts_chinh.setdefault("bien_co_hiem", bch_sap)
         ds: List[Dict[str, Any]] = []
         for x in mau:
             if x.get("tu_ma_tran"):  # 22/11/2026: dựng từ ma trận G3 + SAP §9 ở dưới, không từ hồ sơ
@@ -1646,6 +1663,12 @@ class TronVong:
             ds.append({"id": f"CHO_LAM_TAY_{i}", "vai": "do_nhay" if muc == "§9" else "phu", "sap_muc": muc,
                        "mo_ta": neo, "sap_neo": neo,
                        "chua_tu_dong": "hồ sơ chưa ánh xạ mục SAP này sang tham số phân tích — thống kê viên làm tay"})
+        if bch_sap and G4Q.BIEN_CO_HIEM[bch_sap][1]:  # SAP §5 áp cho MỌI phân tích nhị phân (kể cả không kế thừa)
+            for pt in ds:
+                ts = pt.get("tham_so")
+                if isinstance(ts, dict) and ts.get("outcome") and not any(
+                        ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to", "bang_chung")):
+                    ts.setdefault("bien_co_hiem", bch_sap)
         dt: Dict[str, Any] = {"nguon_sap": sap.name, "sha256_sap": CS6.sha256_tep(sap), "phan_tich": ds}
         if duoi_pytest_khoa_gia():
             dt["nguoi_duyet"] = f"STATISTICIAN:GIA-LAP-TKV:{self.hom_nay.isoformat()}:{CS6.dau_dac_ta(dt)}"
@@ -1681,6 +1704,8 @@ class TronVong:
             ts = {"outcome": bien, "group": nhom, "outcome_type": "binary"}
             if ts_chinh.get("loc"):
                 ts["loc"] = ts_chinh["loc"]
+            if ts_chinh.get("bien_co_hiem"):  # 23/11/2026: tổn hại hiếm ⇒ rào EPV chặn ⇒ phương pháp SAP §5
+                ts["bien_co_hiem"] = ts_chinh["bien_co_hiem"]
             ds.append({"id": pid, "vai": "phu", "sap_muc": "§15", "sap_neo": "Cách phân tích tổn hại", "mo_ta": mo_ta,
                        "tham_so": ts})
 
@@ -3132,6 +3157,10 @@ TRA_LOI_G5_G9_CHUNG: Tuple[Tuple[str, str], ...] = (
 
 # Câu trả lời CHUNG của các vai (thông tin hành chính, không PII thật): mẫu nhãn đã bỏ dấu → giá trị.
 TRA_LOI_CHUNG: Tuple[Tuple[str, str], ...] = (
+    # 23/11/2026: thống kê viên khai TRƯỚC phương pháp biến cố hiếm ở SAP §5 (rào EPV của G6 chặn hồi quy logistic khi
+    # số biến cố < 10 × số tham số — vd tổn hại nghiêm trọng của RCT) — khoá G4 đòi dòng này (G4-AUTO-04)
+    (r"bien co hiem", "mô tả số biến cố từng nhóm + KTC chính xác Clopper–Pearson + p chính xác Fisher, không chạy hồi "
+                      "quy khi số biến cố dưới 10 × số tham số; áp cho mọi phân tích nhị phân của SAP, kể cả tổn hại"),
     (r"^bac si( \+ doi nc)?$", "Bác sĩ/nhóm nghiên cứu"),  # thẻ NGƯỜI PHỤ TRÁCH ở danh sách việc của DMP
     (r"chu nhiem|ho ten chu nhiem|ten chu nhiem|nghien cuu vien chinh|principal investigator",
      TEN_CHU_NHIEM),

@@ -20,7 +20,8 @@
    "tuoi",
    "gioitinh",
    "nghe"
-  ]
+  ],
+  "kc_hieu_so": "wald"
  },
  "loai_ket_cuc": "binary",
  "ket_qua": {
@@ -44,7 +45,13 @@
     3.18892362503329
    ],
    "p_yates": 0.0126918558057368,
-   "p_pearson": 0.00887687058850065
+   "p_pearson": 0.00887687058850065,
+   "rd": 0.105190744215134,
+   "rd_ci": [
+    0.0266959266690921,
+    0.183685561761177
+   ],
+   "rd_phuong_phap": "wald"
   },
   "da_bien": {
    "mo_hinh": "logistic",

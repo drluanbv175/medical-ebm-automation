@@ -296,6 +296,53 @@ def _vai_o_trong_cua_nguoi(text: str, still_draft: Sequence[str]) -> list:
     return sorted(vai)
 
 
+# ── Biến cố hiếm (23/11/2026, G7 phát hiện ở rct_cum — phân tích tổn hại 2 biến cố) ──────────────────────────────────
+# Rào EPV của G6 (run_stats_analysis.multivariate_model: số biến cố < 10 × số tham số) từ chối hồi quy logistic ⇒ bảng
+# đa biến của bản thảo để trống. SAP phải KHAI TRƯỚC phương pháp thay thế; G6 chạy đúng phương pháp đó. Dùng CHUNG cho
+# khuôn G4 (run_g4_auto), chốt G4-AUTO-04, chay_sap_g6 `kiem` và G6-AUTO-09 (phần lượt chạy).
+# Nhãn KHÔNG chứa «EPV/VIF»: G4-AUTO-04 dò các từ đó trong §5 — nhãn khuôn mà chứa chúng thì bản nháp chưa ai đụng
+# cũng «có nhắc EPV» (đếm khuôn, không phải tín hiệu thật).
+NHAN_BIEN_CO_HIEM = "Biến cố hiếm (số biến cố dưới 10 lần số tham số của mô hình)"
+#: mã ⇒ (tên đầy đủ, G6 tự chạy khi rào EPV chặn?)
+BIEN_CO_HIEM = {
+    "mo_ta_chinh_xac": ("mô tả số biến cố từng nhóm + KTC chính xác Clopper–Pearson + p chính xác Fisher", True),
+    "firth": ("hồi quy logistic Firth (logistf)", False),
+}
+_THIET_KE_BIEN_CO_HIEM = ("rct", "cohort", "case_control", "cross_sectional")
+#: dòng khuôn SAP §5 (run_g4_auto in nguyên văn) — thống kê viên thay ô bằng MỘT phương pháp
+O_BIEN_CO_HIEM = ("[CẦN THỐNG KÊ VIÊN CHỌN — " + " | ".join(v[0] for v in BIEN_CO_HIEM.values())
+                  + "; áp cho mọi phân tích nhị phân của SAP, kể cả tổn hại]")
+DONG_KHUON_BIEN_CO_HIEM = f"- **{NHAN_BIEN_CO_HIEM}:** {O_BIEN_CO_HIEM}  "
+
+
+def ap_dung_bien_co_hiem(design_code: Any, sap4: str = "") -> bool:
+    """Thiết kế có hồi quy trên kết cục nhị phân (kể cả phân tích tổn hại của RCT) ⇒ SAP phải khai phương pháp biến cố
+    hiếm. Cắt ngang MÔ TẢ (§4 ước lượng tỷ lệ, không mô hình) không áp dụng."""
+    ma = str(design_code or "").strip().lower()
+    if ma not in _THIET_KE_BIEN_CO_HIEM:
+        return False
+    return not (ma == "cross_sectional" and re.search(r"ước lượng tỷ lệ|uoc luong ty le", sap4 or "", re.I))
+
+
+def phuong_phap_bien_co_hiem_sap(sap5: str) -> dict:
+    """Phương pháp biến cố hiếm SAP §5 khai: {"co_dong", "o_trong", "phuong_phap" (mã | None), "dong"}."""
+    dong = next((d for d in (sap5 or "").splitlines() if "bien co hiem" in _bo_dau_thuong(d)), "")
+    bd = _bo_dau_thuong(dong)
+    o_trong = "[can" in bd
+    pp = None
+    if not o_trong:
+        if "firth" in bd:
+            pp = "firth"
+        elif "clopper" in bd or ("chinh xac" in bd and "fisher" in bd):
+            pp = "mo_ta_chinh_xac"
+    return {"co_dong": bool(dong), "o_trong": o_trong, "phuong_phap": pp, "dong": dong.strip()}
+
+
+def _bo_dau_thuong(s: str) -> str:
+    s = unicodedata.normalize("NFD", s or "")
+    return "".join(c for c in s if unicodedata.category(c) != "Mn").lower().replace("đ", "d")
+
+
 def _section_body(text: str, section_num: str) -> str:
     """Thân nội dung của mục §N — giữa header §N và header §-kế-tiếp/"## PHẦN".
 
@@ -832,12 +879,32 @@ def evaluate_g4_quality(
             else "§5 chưa nhắc EPV/EPP/pmsampsize/VIF nào — mặc định template KHÔNG "
                  "chứa các từ này nên đây là tín hiệu thật, không phải đếm placeholder"
         )
+        # 23/11/2026: thiết kế có hồi quy nhị phân ⇒ §5 phải KHAI phương pháp biến cố hiếm (rào EPV của G6 chặn mô hình
+        # thì G6 chạy phương pháp này) — vắng/ô trống/không nhận ra ⇒ chưa khoá được (gộp vào G4-AUTO-04: cùng chủ đề
+        # EPV, phân công trách nhiệm giữ một chủ).
+        if ap_dung_bien_co_hiem(design_code, _section_body(artifact_text, "§4")):
+            bch = phuong_phap_bien_co_hiem_sap(body5)
+            if not bch["phuong_phap"]:
+                ly = ("dòng còn ô trống" if bch["o_trong"] else
+                      "dòng không nêu phương pháp nhận ra được" if bch["co_dong"] else "thiếu dòng")
+                epv_evidence += (f"; §5 chưa khai phương pháp biến cố hiếm ({ly}) — rào EPV của G6 chặn hồi quy thì "
+                                 "không có phương pháp định trước để chạy")
+                # luật mới (23/11/2026) không hạ cấp SAP ĐÃ KÝ (cùng nguyên tắc _chi_hien_thi_sau_ky): chỉ hiển thị;
+                # bản sửa đổi SAP (ký lại) phải khai. Trước khi ký ⇒ chưa khoá được.
+                if ledger_signed:
+                    epv_evidence += " (SAP đã ký trước luật này — chỉ hiển thị; SAP sửa đổi phải khai)"
+                else:
+                    epv_status = "REVIEW"
+            else:
+                epv_evidence += f"; biến cố hiếm: {BIEN_CO_HIEM[bch['phuong_phap']][0]}"
     automatic.append(_criterion(
         "G4-AUTO-04",
         "§5 phân tích đa biến có nhắc EPV/EPP/pmsampsize/VIF khi áp dụng",
         epv_status,
         epv_evidence,
-        "Ghi rõ EPV (Ogundimu 2016, PMID 26964707) hoặc VIF cho từng biến độc lập ở §5.",
+        "Ghi rõ EPV (Ogundimu 2016, PMID 26964707) hoặc VIF cho từng biến độc lập ở §5; thiết kế có hồi quy nhị "
+        f"phân khai dòng «{NHAN_BIEN_CO_HIEM}» với một phương pháp: "
+        + " | ".join(v[0] for v in BIEN_CO_HIEM.values()) + ".",
     ))
 
     # ── G4-AUTO-05 — §6 dữ liệu thiếu đã điền (không chỉ đếm MCAR/MAR/MNAR) ─

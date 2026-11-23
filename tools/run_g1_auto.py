@@ -1668,15 +1668,26 @@ def generate_g1_artifact(
             "pháp cỡ mẫu hiện hành cho mô hình đa biến"
         )
     elif internal == "case_control":
+        # 23/11/2026 (G7 phát hiện SAP «logistic có điều kiện» / G6 logistic không điều kiện): khung SAP theo KIỂU GHÉP
+        # G1 đã chốt (khung_de_tai.kieu_ghep_benh_chung) — không in cả hai nhánh để SAP sau chép nhầm nhánh.
+        import khung_de_tai as KD  # noqa: PLC0415
+
+        _kieu, _can_cu = KD.kieu_ghep_benh_chung((((meta or {}).get("gate_params") or {}).get("G1") or {})
+                                                 if isinstance(meta, dict) else {})
+        if _kieu:
+            _dong_ghep = (f"Phân tích chính ({KD.KIEU_GHEP[_kieu][0]} — {_can_cu}): {KD.KIEU_GHEP[_kieu][1]}\n")
+        else:
+            _dong_ghep = (f"Phân tích chính: [CẦN CHỐT kiểu ghép ở G1 — {_can_cu}] — ghép cặp cá thể ⇒ logistic có "
+                          "điều kiện theo bộ ghép; ghép theo tần suất ⇒ logistic không điều kiện hiệu chỉnh biến ghép; "
+                          "không ghép ⇒ logistic không điều kiện\n")
         sap_analysis_note = (
-            "Case-control không ghép: logistic regression → OR (95%CI)\n"
-            "Case-control ghép: conditional logistic regression theo matched set → "
-            "OR (95%CI)\n"
-            "Biến phơi nhiễm và confounders phải định trước; không dùng Cox/Kaplan-Meier "
+            _dong_ghep
+            + "Biến phơi nhiễm và confounders phải định trước; không dùng Cox/Kaplan-Meier "
             "cho lấy mẫu case-control thông thường"
         )
         quanso_note = (
-            "Tất cả ca bệnh và chứng đủ tiêu chí; giữ matched set nếu có ghép"
+            "Tất cả ca bệnh và chứng đủ tiêu chí; giữ nguyên bộ ghép (matched set)" if _kieu == "ca_the"
+            else "Tất cả ca bệnh và chứng đủ tiêu chí"
         )
         epv_note = (
             "Số ca/biến của mô hình phải được biện minh bằng mô phỏng hoặc phương pháp "
@@ -1785,6 +1796,13 @@ def generate_g1_artifact(
         "qualitative":    "N/A (QDA thủ công/NVivo/ATLAS.ti, không phải R)",
     }
     suggested_packages = _PACKAGE_SUGGESTIONS.get(internal, "tableone")
+    if internal == "case_control":
+        # 23/11/2026: gói theo KIỂU GHÉP đã chốt — «clogit nếu ghép» từng gợi ý logistic có điều kiện cho đề tài ghép
+        # theo tần suất (G1-AUTO-04c bắt chữ «clogit» trái kiểu ghép)
+        suggested_packages = {"ca_the": "survival (clogit theo bộ ghép), tableone, mice",
+                              "tan_suat": "stats (glm logistic, hiệu chỉnh biến ghép), tableone, mice",
+                              "khong_ghep": "stats (glm logistic), tableone, mice"}.get(
+            _kieu, "[CẦN CHỐT kiểu ghép ở G1 — quyết định glm logistic hay survival::clogit], tableone, mice")
     suggested_seed = run_date[:10].replace("-", "")
     protocol_core = G1Q.build_protocol_core(
         study=study_name,

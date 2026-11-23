@@ -66,6 +66,7 @@ import sys as _sys_r4
 import warnings
 from datetime import datetime
 from pathlib import Path
+from statistics import NormalDist
 
 import numpy as np
 import pandas as pd
@@ -490,7 +491,8 @@ def bo_hieu_so_benh_chung(res: dict) -> dict:
     """Gỡ hiệu số nguy cơ (kể cả bản hiệu chỉnh cụm) khỏi kết quả kết cục chính của đề tài bệnh–chứng, ghi lý do."""
     if not isinstance(res, dict) or res.get("error") or res.get("outcome_type") != "binary":
         return res
-    ra = {k: v for k, v in res.items() if k not in ("risk_diff", "risk_diff_ci_95")}
+    ra = {k: v for k, v in res.items()
+          if k not in ("risk_diff", "risk_diff_ci_95", "risk_diff_ci_method", "risk_diff_ci_ten")}
     if isinstance(ra.get("cum"), dict):
         ra["cum"] = {k: v for k, v in ra["cum"].items()
                      if k not in ("risk_diff_cum", "risk_diff_ci_95_cum", "p_rd_cum")}
@@ -498,15 +500,122 @@ def bo_hieu_so_benh_chung(res: dict) -> dict:
     return ra
 
 
+# 23/11/2026 (G7 phát hiện G6 lệch SAP ở thử nghiệm không kém hơn): SAP §4 khai «Hiệu tỷ lệ (risk difference) + 95%CI
+# (Newcombe)» nhưng engine luôn tính KTC Wald và không ghi tên phương pháp — kết luận không kém hơn đọc VỊ TRÍ cận KTC
+# so với biên Δ, nên đổi phương pháp KTC có thể đổi kết luận. Nay: SAP khai phương pháp nào, đặc tả G6 truyền đúng
+# phương pháp đó (`--kc-hieu-so`), tóm tắt ghi mã + tên phương pháp; phương pháp ngoài danh sách ⇒ LỖI (không tự lùi
+# về Wald). Cầu nối R/SPSS tính lại cùng phương pháp; g6_quality_gate G6-AUTO-09 (phần lượt chạy) đối chiếu SAP
+# ↔ tóm tắt.
+KC_HIEU_SO = {
+    "wald": "Wald (xấp xỉ chuẩn, z = 1,96)",
+    "newcombe": "Newcombe hybrid score — ghép hai khoảng Wilson không hiệu chỉnh liên tục (Newcombe 1998, "
+                "phương pháp 10; PMID 9595617)",
+}
+_Z_975 = NormalDist().inv_cdf(0.975)
+
+
+def _khoang_wilson(e: int, n: int, z: float) -> tuple[float, float]:
+    """Khoảng tin cậy Wilson (score, không hiệu chỉnh liên tục) của tỷ lệ e/n — thành phần của KTC Newcombe."""
+    p = e / n
+    tam = 2 * n * p + z * z
+    ban_kinh = z * math.sqrt(z * z + 4 * n * p * (1 - p))
+    mau = 2 * (n + z * z)
+    return (tam - ban_kinh) / mau, (tam + ban_kinh) / mau
+
+
+def kc_hieu_so_newcombe(e1: int, n1: int, e0: int, n0: int, z: float = _Z_975) -> tuple[float, float]:
+    """KTC của hiệu p1 − p0 theo Newcombe hybrid score (phương pháp 10, Stat Med 1998;17:873–90, PMID 9595617).
+
+    L = d − √((p1 − l1)² + (u0 − p0)²), U = d + √((u1 − p1)² + (p0 − l0)²) với (l, u) là khoảng Wilson từng nhóm.
+    Kiểm bằng ví dụ của chính bài gốc (bảng II): 56/70 − 48/80 ⇒ 0,0524 đến 0,3339; 9/10 − 3/10 ⇒ 0,1705 đến 0,8090.
+    Khác Wald: không vượt ra ngoài [−1, 1] và vẫn tính được khi một nhóm 0 % hoặc 100 % biến cố."""
+    if n1 <= 0 or n0 <= 0:
+        raise ValueError("KTC Newcombe cần mỗi nhóm n > 0")
+    p1, p0 = e1 / n1, e0 / n0
+    l1, u1 = _khoang_wilson(e1, n1, z)
+    l0, u0 = _khoang_wilson(e0, n0, z)
+    d = p1 - p0
+    return d - math.sqrt((p1 - l1) ** 2 + (u0 - p0) ** 2), d + math.sqrt((u1 - p1) ** 2 + (p0 - l0) ** 2)
+
+
+#: 23/11/2026 — phương pháp biến cố hiếm G6 TỰ CHẠY khi rào EPV chặn hồi quy logistic (mã khớp g4_quality_gate.
+#: BIEN_CO_HIEM mục «G6 tự chạy»; Firth chạy qua phân tích bổ sung loai_bo_sung firth của chay_sap_g6).
+BIEN_CO_HIEM_G6 = {"mo_ta_chinh_xac": "mô tả số biến cố từng nhóm + KTC chính xác Clopper–Pearson + p chính xác Fisher"}
+
+
+def ktc_clopper_pearson(e: int, n: int, alpha: float = 0.05) -> tuple[float, float]:
+    """KTC chính xác Clopper–Pearson của tỷ lệ e/n (phân vị beta); e = 0 ⇒ cận dưới 0, e = n ⇒ cận trên 1."""
+    lo = 0.0 if e == 0 else float(sp_stats.beta.ppf(alpha / 2, e, n - e + 1))
+    hi = 1.0 if e == n else float(sp_stats.beta.ppf(1 - alpha / 2, e + 1, n - e))
+    return lo, hi
+
+
+def mo_ta_bien_co_hiem(df: pd.DataFrame, outcome_col: str, group_col: str) -> dict:
+    """Phương pháp biến cố hiếm «mo_ta_chinh_xac» (SAP §5, khi rào EPV chặn hồi quy logistic — 23/11/2026): số biến
+    cố từng nhóm + KTC 95% chính xác Clopper–Pearson + p chính xác Fisher hai phía (bảng 2×2). Cùng quần thể và cùng
+    quy ước biến cố (giá trị LỚN của kết cục 2 mức) như compare_primary_outcome. Không có mô hình, không hiệu chỉnh."""
+    if not HAS_SCIPY:
+        return {"error": "scipy chưa cài — không tính được KTC chính xác/Fisher"}
+    d = df[[outcome_col, group_col]].dropna()
+    muc_y = sorted(d[outcome_col].unique())
+    if len(muc_y) != 2:
+        return {"error": f"kết cục «{outcome_col}» có {len(muc_y)} giá trị (cần đúng 2)"}
+    bc = muc_y[-1]
+    nhom = []
+    for g in sorted(d[group_col].unique()):
+        y = d.loc[d[group_col] == g, outcome_col]
+        n, e = int(len(y)), int((y == bc).sum())
+        lo, hi = ktc_clopper_pearson(e, n)
+        nhom.append({"gia_tri": str(g), "n": n, "so_bien_co": e, "ty_le": round(e / n, 4),
+                     "ci_95_clopper_pearson": [round(lo, 4), round(hi, 4)]})
+    ra = {"phuong_phap": "mo_ta_chinh_xac", "ten": BIEN_CO_HIEM_G6["mo_ta_chinh_xac"], "outcome": outcome_col,
+          "group": group_col, "bien_co": str(bc), "nhom": nhom}
+    if len(nhom) == 2:
+        bang = [[nhom[i]["so_bien_co"], nhom[i]["n"] - nhom[i]["so_bien_co"]] for i in (0, 1)]
+        ra["fisher_p_hai_phia"] = round(float(sp_stats.fisher_exact(bang, alternative="two-sided")[1]), 4)
+    return ra
+
+
+def format_bien_co_hiem_text(bch: dict) -> str:
+    """Bảng 4b — phương pháp biến cố hiếm thay cho mô hình hồi quy bị rào EPV chặn."""
+    dong = ["BẢNG 4b — BIẾN CỐ HIẾM (thay mô hình hồi quy bị rào EPV chặn — theo SAP §5)", "=" * 70,
+            f"  Phương pháp: {bch.get('ten')}", f"  Lý do: {bch.get('ly_do', '')}"]
+    if bch.get("error"):
+        return "\n".join(dong + [f"  Lỗi: {bch['error']}"]) + "\n"
+    for g in bch.get("nhom") or []:
+        lo, hi = g["ci_95_clopper_pearson"]
+        dong.append(f"  Nhóm {g['gia_tri']}: {g['so_bien_co']}/{g['n']} ({g['ty_le']}); KTC 95% chính xác {lo}–{hi}")
+    if "fisher_p_hai_phia" in bch:
+        dong.append(f"  p chính xác Fisher (hai phía) = {bch['fisher_p_hai_phia']}")
+    return "\n".join(dong) + "\n"
+
+
+def kc_hieu_so(e1: int, n1: int, e0: int, n0: int, phuong_phap: str) -> tuple[float, float]:
+    """KTC 95 % của hiệu nguy cơ p1 − p0 theo ĐÚNG phương pháp được khai — tên lạ ⇒ ValueError (không tự lùi Wald)."""
+    if phuong_phap not in KC_HIEU_SO:
+        raise ValueError(f"phương pháp KTC hiệu số nguy cơ «{phuong_phap}» chưa được G6 hỗ trợ "
+                         f"(hỗ trợ: {', '.join(KC_HIEU_SO)}) — không tự lùi về Wald")
+    if phuong_phap == "newcombe":
+        return kc_hieu_so_newcombe(e1, n1, e0, n0)
+    p1, p0 = e1 / n1, e0 / n0
+    se = math.sqrt(p0 * (1 - p0) / n0 + p1 * (1 - p1) / n1)
+    return p1 - p0 - 1.96 * se, p1 - p0 + 1.96 * se
+
+
 def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
                              group_col: str, outcome_type: str = "auto",
-                             cluster_col: str | None = None) -> dict:
+                             cluster_col: str | None = None, kc_hieu_so_pp: str = "wald") -> dict:
     """Tính crude effect (OR/MD) + 95%CI cho kết cục chính.
 
     Có ``cluster_col`` (28/09/2026, N7) ⇒ thêm khoá ``cum`` chứa ước lượng thô với SE sandwich theo cụm
     (``_so_sanh_hai_nhom_cum``). Các khoá cũ KHÔNG đổi (golden GOLDEN-G6-001 là hợp đồng); p Chi-square/t-test cũ
     vẫn giả định độc lập và được dán nhãn như vậy trong Bảng 2.
+    ``kc_hieu_so_pp`` (23/11/2026): phương pháp KTC của hiệu nguy cơ do SAP khai (``KC_HIEU_SO``); tên lạ ⇒ ValueError
+    ngay cả khi kết cục không nhị phân (không âm thầm bỏ qua lời khai của SAP).
     """
+    if kc_hieu_so_pp not in KC_HIEU_SO:
+        raise ValueError(f"phương pháp KTC hiệu số nguy cơ «{kc_hieu_so_pp}» chưa được G6 hỗ trợ "
+                         f"(hỗ trợ: {', '.join(KC_HIEU_SO)}) — không tự lùi về Wald")
     if outcome_type == "auto":
         outcome_type = detect_var_type(df[outcome_col])
 
@@ -580,10 +689,13 @@ def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
         # sánh margin (thang tỷ lệ) với CI của OR (thang log-odds, khác thang
         # hoàn toàn). RD cho phép interpret_hypothesis_type() bên dưới so
         # sánh ĐÚNG thang với margin từ G3.
+        # 23/11/2026: KTC theo phương pháp SAP khai (`kc_hieu_so`, mặc định Wald như cũ) + ghi tên phương pháp.
         rd = p1 - p0
-        se_rd = np.sqrt(p0 * (1 - p0) / n0 + p1 * (1 - p1) / n1)
+        lo_rd, hi_rd = kc_hieu_so(e1, n1, e0, n0, kc_hieu_so_pp)
         result["risk_diff"] = round(rd, 4)
-        result["risk_diff_ci_95"] = (round(rd - 1.96 * se_rd, 4), round(rd + 1.96 * se_rd, 4))
+        result["risk_diff_ci_95"] = (round(lo_rd, 4), round(hi_rd, 4))
+        result["risk_diff_ci_method"] = kc_hieu_so_pp
+        result["risk_diff_ci_ten"] = KC_HIEU_SO[kc_hieu_so_pp]
         if HAS_SCIPY:
             ct = pd.crosstab(df[outcome_col], df[group_col])
             _, p, _, _ = sp_stats.chi2_contingency(ct)
@@ -889,8 +1001,11 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
         n_events = int(min((y_raw == y_raw.unique()[0]).sum(), (y_raw != y_raw.unique()[0]).sum())) \
             if y_raw.nunique() == 2 else len(data)
         if n_events < len(predictors) * 10:
+            # 23/11/2026: đánh dấu rào EPV (khác cảnh báo cỡ mẫu của kết cục liên tục) — main() chạy phương pháp biến
+            # cố hiếm SAP §5 đã khai (`--bien-co-hiem`) thay cho mô hình bị chặn.
             return {"warning": f"Số biến cố (nhóm hiếm hơn) {n_events} có thể không đủ EPV "
-                                f"cho {len(predictors)} biến dự báo (cần ≥ 10 biến cố/biến — Peduzzi 1996)."}
+                                f"cho {len(predictors)} biến dự báo (cần ≥ 10 biến cố/biến — Peduzzi 1996).",
+                    "rao_epv": True, "so_bien_co": n_events, "so_tham_so": len(predictors)}
     elif len(data) < len(predictors) * 10:
         return {"warning": f"Cỡ mẫu {len(data)} có thể không đủ cho {len(predictors)} biến dự báo."}
 
@@ -1368,6 +1483,20 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
     n_total = len(sub)
     n_complete = int(sub.notna().all(axis=1).sum())
     n_missing_rows = n_total - n_complete
+    # 23/11/2026 (G7 phát hiện ở DN_ca_day_du của cohort_mi): đặc tả khai n_imputations = 0 nghĩa là phân tích CA ĐẦY
+    # ĐỦ (độ nhạy «complete case vs MI» của SAP §9) — bản cũ vẫn gọi MICE.fit(n_imputations=0) và ghi lỗi nội bộ
+    # statsmodels «cannot access local variable 'result'». Nay không gán đa trị; ước lượng là mô hình ca đầy đủ
+    # ở Bảng 4.
+    if int(n_imputations) < 0:
+        return {"error": f"n_imputations = {n_imputations} — phải ≥ 0 (0 = phân tích ca đầy đủ, không gán đa trị)"}
+    if int(n_imputations) == 0:
+        return {
+            "skipped": True, "ca_day_du": True, "n_imputations": 0,
+            "n_total": n_total, "n_complete_case": n_complete, "n_missing_rows": n_missing_rows,
+            "reason": f"đặc tả khai n_imputations = 0 — phân tích CA ĐẦY ĐỦ, không gán đa trị: ước lượng là mô hình "
+                      f"ca đầy đủ ở Bảng 4 ({n_complete}/{n_total} quan sát đủ dữ liệu ở {len(analysis_cols)} biến "
+                      "phân tích)",
+        }
     if n_missing_rows == 0:
         return {
             "skipped": True,
@@ -2310,6 +2439,8 @@ def format_outcome_text(res: dict, outcome_col: str, hypothesis_interp: dict = N
         if "risk_diff" in res:
             rd_ci = res["risk_diff_ci_95"]
             lines.append(f"  Risk difference = {res['risk_diff']} (95%CI {rd_ci[0]}–{rd_ci[1]})")
+            if res.get("risk_diff_ci_ten"):
+                lines.append(f"  Phương pháp KTC của hiệu số nguy cơ: {res['risk_diff_ci_ten']}")
     else:
         lines.append(f"  Nhóm {g[0]}: Mean={n0.get('mean','?')} ± SD={n0.get('sd','?')}")
         lines.append(f"  Nhóm {g[1]}: Mean={n1.get('mean','?')} ± SD={n1.get('sd','?')}")
@@ -2886,6 +3017,13 @@ def main():
                              "(proportional odds) — chỉ bật khi SAP khai tường minh, không tự đoán. "
                              "'poisson_pr' = Poisson log-link phương sai vững HC0 ⇒ tỷ số tỷ lệ hiện mắc (PR) cho "
                              "kết cục 0/1 (Zou 2004) — chỉ khi SAP khai")
+    parser.add_argument("--kc-hieu-so", default="wald", choices=sorted(KC_HIEU_SO),
+                        help="Phương pháp KTC 95%% của hiệu số nguy cơ ở kết cục chính nhị phân — ĐÚNG phương pháp "
+                             "SAP §4 khai (newcombe = Newcombe hybrid score, PMID 9595617; wald = mặc định cũ). "
+                             "Phương pháp khác chưa hỗ trợ ⇒ từ chối, không tự lùi về Wald (23/11/2026)")
+    parser.add_argument("--bien-co-hiem", default=None, choices=sorted(BIEN_CO_HIEM_G6),
+                        help="Phương pháp biến cố hiếm SAP §5 khai, chạy khi rào EPV chặn hồi quy logistic "
+                             "(mo_ta_chinh_xac = số biến cố từng nhóm + KTC Clopper–Pearson + p Fisher). 23/11/2026")
     parser.add_argument("--loc", default="",
                         help="Quần thể phân tích theo SAP — biểu thức ngôn ngữ công thức (docs/BIEN-PHAI-SINH.md), giữ "
                              "ca có giá trị = 1, vd \"PhieuHopLe == 1\". Cầu nối SPSS/R lọc y hệt")
@@ -3245,6 +3383,9 @@ def main():
         "hiep_bien_hang_sau_loc": hang_sau_loc,  # 16/11/2026: đã loại khỏi mô hình nhóm con (hằng sau lọc)
         # 22/11/2026 (việc G): tỷ lệ Wilson của Bảng 1b — cầu nối R tái lập đúng cột + ngưỡng SAP
         "ty_le": list(args.ty_le or []), "nguong_ty_le": args.nguong_ty_le,
+        # 23/11/2026: phương pháp KTC hiệu số nguy cơ — cầu nối R/SPSS tính lại ĐÚNG phương pháp này
+        "kc_hieu_so": args.kc_hieu_so,
+        "bien_co_hiem": args.bien_co_hiem,  # 23/11/2026: phương pháp biến cố hiếm SAP §5 (khi rào EPV chặn)
     }
     if args.loc.strip():
         summary["loc"] = {"bieu_thuc": args.loc.strip(), "n_truoc": n_truoc_loc, "n_sau": len(df)}
@@ -3391,7 +3532,8 @@ def main():
                                                   "hai nhóm (phơi nhiễm liên tục/nhiều mức); xem mô hình đa biến"}
             else:
                 res = compare_primary_outcome(df, args.outcome, args.group,
-                                              "binary" if poisson else args.outcome_type, cot_cum)
+                                              "binary" if poisson else args.outcome_type, cot_cum,
+                                              kc_hieu_so_pp=args.kc_hieu_so)
                 if design_code == "case_control":
                     res = bo_hieu_so_benh_chung(res)
         except (ZeroDivisionError, ValueError) as exc:
@@ -3428,6 +3570,16 @@ def main():
             (prefix.parent / f"{args.gate}_table4_multivariate.txt").write_text(mv_txt, encoding="utf-8",
                                                                                  newline="\n")
             summary["multivariate"] = mv
+            # 23/11/2026: rào EPV chặn hồi quy logistic ⇒ chạy ĐÚNG phương pháp biến cố hiếm SAP §5 khai (không để bảng
+            # đa biến trống im lặng). Không khai ⇒ giữ cảnh báo; G6-AUTO-09 chặn khi SAP có khai mà lượt chạy thiếu.
+            if mv.get("rao_epv") and args.bien_co_hiem:
+                bch = mo_ta_bien_co_hiem(df, args.outcome, args.group)
+                bch["ly_do"] = mv.get("warning")
+                summary["bien_co_hiem"] = bch
+                mv["thay_the_theo_sap"] = "bien_co_hiem"
+                (prefix.parent / f"{args.gate}_table4b_bien_co_hiem.txt").write_text(
+                    format_bien_co_hiem_text(bch), encoding="utf-8", newline="\n")
+                print(f"✓ Biến cố hiếm (rào EPV) — theo SAP §5: {bch.get('ten')}")
         if mv.get("error"):
             print(f"✗ Mô hình đa biến: {mv['error']}")
         elif mv.get("khong_hoi_tu") or mv.get("convergence") is False:

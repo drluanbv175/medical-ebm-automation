@@ -1420,6 +1420,25 @@ def doc_tom_tat_g6_hop_le(out_dir: Path) -> dict:
     return {"hop_le": True, "ly_do": "", "nguon": ten, "tom_tat": tt, "van_ban": van_ban}
 
 
+def _bang_bien_co_hiem_g6(b: Any, tien_to: str) -> list[str]:
+    """Phương pháp biến cố hiếm G6 chạy theo SAP §5 khi rào EPV chặn hồi quy (23/11/2026): số biến cố từng nhóm + KTC 95%
+    chính xác Clopper–Pearson + p chính xác Fisher — chép NGUYÊN VĂN từ tóm tắt G6 (`bien_co_hiem`)."""
+    if not isinstance(b, dict):
+        return []
+    tieu_de = f"Biến cố hiếm — {_mot_dong(b.get('ten') or '?')} (G6, `{tien_to}_table4b_bien_co_hiem.txt`)"
+    if b.get("error"):
+        return [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(b['error'])}]  ", ""]
+    # «95% CI» là cụm cố định bộ tự kiểm số bỏ qua (kiem_so_trich_g6) — viết «KTC 95%» sẽ bị coi là số chép sai
+    dong = [f"*{tieu_de}* {NHAN_DOI_CHIEU_G6}  ", "", "| Nhóm | Biến cố/n | Tỷ lệ | 95% CI chính xác |", "|---|---|---|---|"]
+    for g in b.get("nhom") or []:
+        dong.append(f"| `{_mot_dong(g.get('gia_tri'))}` | {_so_g6(g.get('so_bien_co'))}/{_so_g6(g.get('n'))} | "
+                    f"{_so_g6(g.get('ty_le'))} | {_ci_g6(g.get('ci_95_clopper_pearson'))} |")
+    dong.append("")
+    if "fisher_p_hai_phia" in b:
+        dong += [f"p chính xác Fisher (hai phía) = {_p_g6(b['fisher_p_hai_phia'])}  ", ""]
+    return dong
+
+
 def _bang_mo_hinh_g6(tieu_de: str, mh: Any) -> list[str]:
     """Bảng Markdown cho MỘT mô hình của G6 ({model, n, results:[{variable, OR_adj|beta, CI_95, p}]}). Mục G6 gắn cờ
     không hội tụ (số đã bị G6 gỡ khỏi khoá chính) ⇒ ô [CẦN THỐNG KÊ VIÊN], không in số «không tin cậy». Cảnh báo G6
@@ -1430,6 +1449,10 @@ def _bang_mo_hinh_g6(tieu_de: str, mh: Any) -> list[str]:
     if mh.get("error"):
         return [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(mh['error'])}]  ", ""]
     kq = [r for r in (mh.get("results") or []) if isinstance(r, dict)]
+    if mh.get("thay_the_theo_sap") and not kq:  # 23/11/2026: rào EPV chặn ⇒ G6 chạy phương pháp biến cố hiếm SAP §5
+        # không ghi «§5» trong câu: bộ tự kiểm số (kiem_so_trich_g6) coi mọi chữ số là số chép từ G6
+        return [f"{tieu_de}: không chạy hồi quy ({_trong_o(mh.get('warning') or 'rào EPV')}) — theo SAP (mục phân tích "
+                "đa biến) thay bằng phương pháp biến cố hiếm định trước (bảng ngay dưới).  ", ""]
     if mh.get("warning") and not kq:
         return [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — G6 không chạy mô hình: {_trong_o(mh['warning'])}]  ", ""]
     if not kq:
@@ -2279,6 +2302,7 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6", chinh: Optiona
     if isinstance(tt.get("multivariate"), dict):
         s3 += _bang_mo_hinh_g6((hoa if chinh == "multivariate" else "")
                                + f"Mô hình đa biến (G6, `{tien_to}_table4_multivariate.txt`)", tt["multivariate"])
+    s3 += _bang_bien_co_hiem_g6(tt.get("bien_co_hiem"), tien_to)
     s3 += _khoi_dac_thu_g6(tt.get("loai_dac_thu"), tt.get("dac_thu"), nguon, chinh=chinh, nhan=nhan)
     if not any(k in tt for k in _KHOA_UOC_LUONG_G6):
         s3 = [f"[CẦN KẾT QUẢ THẬT — tóm tắt G6 ({nguon}) chỉ ghi N phân tích; ước lượng nằm ở bảng đầu ra của "
