@@ -327,7 +327,8 @@ def test_ci_welch_doi_dau_tu_chuoi_effect():
 
 @pytest.mark.parametrize(
     "ten, so_dong",
-    [("cum_logistic", 7), ("cum_tuyen_tinh", 6), ("mann_whitney", 5), ("thu_tu", 13), ("cum_thu_tu", 13), ("cox", 6)],
+    # 23/11/2026: cum_logistic thêm dòng hiệu số nguy cơ thô + KTC (fixture R bổ sung bằng R thật trên cùng số đếm)
+    [("cum_logistic", 8), ("cum_tuyen_tinh", 6), ("mann_whitney", 5), ("thu_tu", 13), ("cum_thu_tu", 13), ("cox", 6)],
 )
 def test_doi_chieu_dau_ra_r_that_khop(ten, so_dong):
     py, r = _fx(ten)
@@ -670,7 +671,7 @@ def test_lenh_doi_chieu_ma_thoat(tmp_path, monkeypatch):
 
     assert ghi(py) == R.MA_OK
     md = (d / "G6_r_doi_chieu.md").read_text(encoding="utf-8")
-    assert "7 khớp" in md and "Cần bác sĩ kiểm chứng." in md
+    assert "8 khớp" in md and "Cần bác sĩ kiểm chứng." in md  # 23/11/2026: + dòng hiệu số nguy cơ
     lech = copy.deepcopy(py)
     lech["multivariate"]["results"][0]["OR_adj"] = 2.5
     assert ghi(lech) == R.MA_LECH

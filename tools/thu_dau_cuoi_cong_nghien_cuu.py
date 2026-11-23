@@ -209,6 +209,9 @@ def _evaluate_g3(tmp_path: Path, *, checkpoint=None, meta=None, artifact=None) -
 # ════════════════════════════════════════════════════════════════════════════
 
 _COMPARATIVE_FILLS: Sequence[tuple] = (
+    # 23/11/2026: SAP §5 khai phương pháp biến cố hiếm (G4-AUTO-04) — cùng đồ gá với tests/test_g4_quality_gate.py
+    (G4Q.DONG_KHUON_BIEN_CO_HIEM,
+     f"- **{G4Q.NHAN_BIEN_CO_HIEM}:** {G4Q.BIEN_CO_HIEM['mo_ta_chinh_xac'][0]}  "),
     ("- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  ", "- **Tiêu chí nhận:** Tuổi 18-75  "),
     ("- **Tiêu chí loại:** [CẦN BÁC SĨ ĐIỀN]  ", "- **Tiêu chí loại:** Chống chỉ định  "),
     ("- **Kết cục chính:** [CẦN BÁC SĨ ĐIỀN — ví dụ: tỷ lệ nhập viện tim mạch trong 12 tháng]  ",

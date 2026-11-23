@@ -10,7 +10,8 @@
   "outcome_type": "binary",
   "time": null,
   "event": null,
-  "cot_cum": "ban_kham"
+  "cot_cum": "ban_kham",
+  "kc_hieu_so": "wald"
  },
  "primary_outcome": {
   "outcome_type": "binary",
@@ -60,7 +61,9 @@
     0.1866
    ],
    "p_rd_cum": 0.014
-  }
+  },
+  "risk_diff_ci_method": "wald",
+  "risk_diff_ci_ten": "Wald (xấp xỉ chuẩn, z = 1,96)"
  },
  "multivariate": {
   "model": "logistic",

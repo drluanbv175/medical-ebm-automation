@@ -412,8 +412,11 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
                                                None, "", True),
     ("12d", "thuan_tap"): (("phan_tich",), "bat_buoc", "Nêu cách xử lý mất theo dõi.",
                            (_y("xử lý mất theo dõi", r"mất theo dõi|kiểm duyệt|censor"),)),
+    # 23/11/2026: ghép THEO TẦN SUẤT được «tính đến» bằng hiệu chỉnh theo các biến ghép trong logistic không điều kiện
+    # (khung_de_tai.KIEU_GHEP) — bản cũ chỉ nhận «có điều kiện» nên đề tài ghép tần suất buộc phải viết sai phương pháp.
     ("12d", "benh_chung"): (("phan_tich",), "bat_buoc", "Nghiên cứu ghép cặp: nêu cách phân tích có tính đến ghép cặp.",
-                            (_y("phân tích theo ghép cặp", r"có điều kiện|conditional|phân tầng theo cặp"),),
+                            (_y("phân tích theo ghép cặp", r"có điều kiện|conditional|phân tầng theo cặp|"
+                                                           r"hiệu chỉnh theo (?:các )?biến ghép"),),
                             GHEP_CAP, "có ghép cặp"),
     ("12d", "cat_ngang"): (("phan_tich", "co_mau", "chon_mau"), "bat_buoc",
                            "Chọn mẫu cụm/phân tầng hoặc dữ liệu gom cụm: nêu cách phân tích có tính đến chiến lược"

@@ -67,12 +67,19 @@ SAI_LECH_PI: Dict[str, List[Dict[str, str]]] = {
          "bien_phap": "Cùng bộ câu hỏi cho ca và chứng; người phỏng vấn không biết giả thuyết; đối chiếu với hồ sơ đơn "
                       "thuốc",
          "chieu": "Ca khai phơi nhiễm đầy đủ hơn chứng làm tỷ số chênh được ước lượng cao hơn thực tế"},
+        # 23/11/2026 (G7 phát hiện SAP «logistic có điều kiện» / G6 logistic không điều kiện): khâu sai đầu tiên là
+        # G1 — «ghép theo giới và nhóm tuổi» không nói ghép cặp cá thể hay theo tần suất, rồi biện pháp nhiễu ghi
+        # «logistic có điều kiện» trong khi dữ liệu không có mã bộ ghép. Thiết kế thật của kịch bản: ghép THEO TẦN SUẤT
+        # (phân bố giới–nhóm tuổi của chứng như của ca; dữ liệu mô phỏng sinh tuổi/giới độc lập với nhóm ca/chứng) ⇒
+        # logistic KHÔNG điều kiện, hiệu chỉnh theo các biến ghép.
         {"sai_lech": "Sai lệch chọn nhóm chứng từ người khám ngoại trú",
-         "bien_phap": "Chọn chứng cùng cơ sở và cùng tuần với ca, ghép theo giới và nhóm tuổi 5 năm",
+         "bien_phap": "Chọn chứng cùng cơ sở và cùng tuần với ca, ghép theo tần suất theo giới và nhóm tuổi 5 năm "
+                      "(không ghép cặp cá thể)",
          "chieu": "Nếu người khám ngoại trú dùng NSAID nhiều hơn quần thể nguồn, tỷ số chênh được ước lượng thấp hơn "
                   "thực tế"},
         {"sai_lech": "Nhiễu do thuốc chống đông, chống kết tập tiểu cầu và tiền sử loét",
-         "bien_phap": "Thu thập và hiệu chỉnh trong mô hình hồi quy logistic có điều kiện",
+         "bien_phap": "Thu thập và hiệu chỉnh trong mô hình hồi quy logistic không điều kiện, cùng các biến ghép "
+                      "theo tần suất (giới, tuổi)",
          "chieu": "Nhiễu còn sót có thể làm tỷ số chênh được ước lượng cao hơn thực tế"},
     ],
     "cross_sectional": [
@@ -283,10 +290,12 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "case_definition": ("Người từ 60 tuổi nhập viện vì nôn máu hoặc đi ngoài phân đen, nội soi xác định "
                                     "tổn thương chảy máu ở thực quản, dạ dày hoặc tá tràng"),
                 # 21/11/2026 (K17 STROBE 6a): PI nêu lý do chọn chứng ngay trong nguồn chọn chứng
-                "control_source": ("Người khám ngoại trú cùng cơ sở trong cùng tuần với ca, ghép theo giới và nhóm "
-                                   "tuổi "
-                                   "5 năm, tỷ lệ 2 chứng : 1 ca, để nhóm chứng đại diện cho phân bố phơi nhiễm NSAID "
-                                   "của quần thể nguồn sinh ra ca trong cùng thời gian"),
+                "control_source": ("Người khám ngoại trú cùng cơ sở trong cùng tuần với ca, ghép theo tần suất theo "
+                                   "giới và nhóm tuổi 5 năm (phân bố giới–nhóm tuổi của nhóm chứng như của nhóm ca, "
+                                   "không ghép cặp cá thể), tỷ lệ 2 chứng : 1 ca, để nhóm chứng đại diện cho phân bố "
+                                   "phơi nhiễm NSAID của quần thể nguồn sinh ra ca trong cùng thời gian"),
+                # 23/11/2026: PI chốt kiểu ghép (khung_de_tai.kieu_ghep_benh_chung) ⇒ SAP §4 logistic không điều kiện
+                "matching_type": "frequency",
                 "recruitment_strategy": "Tuyển liên tiếp ca đủ tiêu chuẩn; chọn chứng theo danh sách khám cùng tuần",
                 "follow_up_schedule": "Không theo dõi — phỏng vấn một lần và trích hồ sơ",
                 "estimand": {"population": "Người từ 60 tuổi tại cơ sở",
@@ -304,8 +313,8 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                                        "với ibuprofen là 1,84 (KTC 95%: 1,54–2,20)"),
                 "knowledge_gap": vi("Thiếu số liệu phơi nhiễm theo loại NSAID ở người cao tuổi Việt Nam"),
                 "benefit_risk_rationale": vi("Không can thiệp; chỉ phỏng vấn và trích hồ sơ"),
-                "study_schema_timeline": "Xác định ca → chọn 2 chứng ghép → phỏng vấn phơi nhiễm → trích hồ sơ đơn "
-                                         "thuốc",
+                "study_schema_timeline": "Xác định ca → chọn 2 chứng ghép theo tần suất giới–nhóm tuổi → phỏng vấn "
+                                         "phơi nhiễm → trích hồ sơ đơn thuốc",
                 "intervention_dose_adherence": "Không can thiệp; phơi nhiễm đo bằng phỏng vấn có hình thuốc và hồ sơ",
                 "stopping_rescue_rules": "Không áp dụng — nghiên cứu quan sát",
                 "critical_to_quality": vi("Người phỏng vấn không biết giả thuyết; cùng bộ câu hỏi cho ca và chứng"),
@@ -885,6 +894,10 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                  "Phỏng vấn có hình thuốc + hồ sơ", "§4"),
                 ("1", "Thuốc chống đông", "hiep_bien", "chong_dong", "nhi_phan", "PN2", "Phỏng vấn + hồ sơ", "§5"),
                 ("1", "Tiền sử loét", "hiep_bien", "tien_su_loet", "nhi_phan", "HB1", "Phỏng vấn + hồ sơ", "§5"),
+                # 23/11/2026: biến ghép theo tần suất — bắt buộc vào mô hình logistic không điều kiện (G1 matching_type)
+                ("1", "Tuổi (biến ghép theo tần suất)", "hiep_bien", "tuoi", "lien_tuc", "HB2", "Phỏng vấn + hồ sơ",
+                 "§5"),
+                ("1", "Giới (biến ghép theo tần suất)", "hiep_bien", "gioi", "nhi_phan", "HB3", "Phỏng vấn", "§5"),
             ],
         },
         "chan_doan": {
@@ -1408,17 +1421,19 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
         "benh_chung": {
             "tra_loi_G4": _tra_loi_sap(
                 "Không áp dụng — nghiên cứu bệnh–chứng, không có can thiệp", "thuốc chống đông/chống kết tập và "
-                "tiền sử loét liên quan cả việc dùng NSAID lẫn xuất huyết (gây nhiễu)",
+                "tiền sử loét liên quan cả việc dùng NSAID lẫn xuất huyết (gây nhiễu); giới và tuổi là biến ghép theo "
+                "tần suất nên bắt buộc có trong mô hình logistic không điều kiện",
                 "Kiểm dạng tuyến tính của tuổi; VIF < 5", nhom_gioi, "Loại người dùng thuốc chống đông"),
             "g6": [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
                     "mo_ta": "NSAID 30 ngày và xuất huyết tiêu hoá trên (OR hiệu chỉnh)",
                     "tham_so": {"outcome": "nhom_ca", "group": "nsaid_30ngay",
-                                "covariates": ["chong_dong", "tien_su_loet"]}},
+                                "covariates": ["chong_dong", "tien_su_loet", "tuoi", "gioi"]}},
                    *_nhom_gioi(1, 0), _CC_MI,
                    _sd_khong_ap_dung("phơi nhiễm và kết cục nhị phân — định nghĩa thay thế chưa khai cụ thể"),
                    {"id": "DN_khong_chong_dong", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Loại người dùng thuốc chống đông", "mo_ta": "Chỉ người không dùng chống đông",
-                    "ke_thua": True, "tham_so": {"loc": "chong_dong == 0", "covariates": ["tien_su_loet"]}}],
+                    "ke_thua": True, "tham_so": {"loc": "chong_dong == 0",
+                                                 "covariates": ["tien_su_loet", "tuoi", "gioi"]}}],
         },
         "chan_doan": {"tra_loi_G4": _tra_loi_sap(
             "Không áp dụng — nghiên cứu chẩn đoán, chỉ lấy máu xét nghiệm thường quy", "Không áp dụng — mục tiêu "

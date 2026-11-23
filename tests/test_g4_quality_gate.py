@@ -55,6 +55,9 @@ _G3_SONG_PASS = {"gate": "G3", "status": "PASS_G3_CONFIRMED", "muc": "PASS", "da
 # ════════════════════════════════════════════════════════════════════════════
 
 _COMPARATIVE_FILLS = [
+    # 23/11/2026: SAP §5 khai phương pháp biến cố hiếm (G4-AUTO-04) — thống kê viên chọn MỘT phương pháp
+    (G4Q.DONG_KHUON_BIEN_CO_HIEM,
+     f"- **{G4Q.NHAN_BIEN_CO_HIEM}:** {G4Q.BIEN_CO_HIEM['mo_ta_chinh_xac'][0]}  "),
     ("- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  ", "- **Tiêu chí nhận:** Tuổi 18-75  "),
     ("- **Tiêu chí loại:** [CẦN BÁC SĨ ĐIỀN]  ", "- **Tiêu chí loại:** Chống chỉ định  "),
     ("- **Kết cục chính:** [CẦN BÁC SĨ ĐIỀN — ví dụ: tỷ lệ nhập viện tim mạch trong 12 tháng]  ",

@@ -338,8 +338,9 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                    "mục 6b (tiêu chí bắt cặp nhóm chứng), mục 12d (xử lý bắt cặp trong phân tích)"),
         dac_ta=_dac_ta_g10(
             bias_risks="Sai lệch nhớ lại về phơi nhiễm; nhiễu do chỉ định; chọn nhóm chứng không đại diện",
-            bias_controls=("Phơi nhiễm lấy từ hồ sơ kê đơn; hiệu chỉnh chống đông và tiền sử loét theo DAG; độ nhạy "
-                           "loại người dùng chống đông"),
+            bias_controls=("Phơi nhiễm lấy từ hồ sơ kê đơn; chứng ghép theo tần suất (giới, nhóm tuổi) và phân tích "
+                           "bằng hồi quy logistic không điều kiện hiệu chỉnh chống đông, tiền sử loét cùng các biến "
+                           "ghép; độ nhạy loại người dùng chống đông"),
             timeline=("15 tháng: chuẩn bị và đạo đức 3 tháng; thu thập 6 tháng; phân tích 2 tháng; viết và công bố "
                       "4 tháng"),
             literature_review=("Masclee 2014 (PMID 24937265) ghi nhận NSAID tăng nguy cơ xuất huyết tiêu hoá trên; "

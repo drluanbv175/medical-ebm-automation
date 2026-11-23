@@ -89,6 +89,13 @@ THAM_SO = {
     "event": ("--event", "s"),
     "n_imputations": ("--n-imputations", "nguyen"),
     "loc": ("--loc", "bt"),
+    # 23/11/2026 (G7 phát hiện G6 lệch SAP — thử nghiệm không kém hơn): phương pháp KTC hiệu số nguy cơ ĐÚNG như SAP §4
+    # khai (newcombe | wald). `kiem` từ chối đặc tả lệch SAP và SAP khai phương pháp G6 chưa tính (không tự lùi Wald).
+    "kc_hieu_so": ("--kc-hieu-so", "kc_hieu_so"),
+    # 23/11/2026 (G7 phát hiện ở rct_cum — tổn hại 2 biến cố, rào EPV chặn logistic, bảng bản thảo trống): phương pháp
+    # biến cố hiếm SAP §5 khai; engine chạy nó khi rào EPV chặn. `kiem` đòi mọi phân tích có kết cục khai đúng phương
+    # pháp SAP; SAP khai Firth ⇒ khai phân tích loai_bo_sung firth (engine chưa tự chạy Firth khi rào EPV chặn).
+    "bien_co_hiem": ("--bien-co-hiem", "bien_co_hiem"),
     # 16/11/2026 (giả lập 8 thiết kế): phân tích ĐẶC THÙ — chẩn đoán · dự báo · tổng quan–gộp · định tính — chạy bằng
     # phan_tich_thiet_ke_dac_thu.py (run_stats_analysis chưa có đường); cùng nhật ký/tóm tắt/kiểm chéo SPSS–R.
     "loai_dac_thu": ("--loai", "loai"),
@@ -212,6 +219,18 @@ def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
         lo, hi = KHOANG_NGUYEN.get(ten, (0, 200))
         if isinstance(v, bool) or not isinstance(v, int) or not lo <= v <= hi:
             return [f"{ten}: cần số nguyên {lo}–{hi}"]
+    elif kieu == "kc_hieu_so":
+        import g6_quality_gate as G6Q  # noqa: PLC0415
+
+        ho_tro = [ma for ma, _ in G6Q.KC_HIEU_SO_HO_TRO]
+        if v not in ho_tro:
+            return [f"{ten}: phải thuộc {ho_tro} (phương pháp khác G6 chưa tính — không tự lùi về Wald)"]
+    elif kieu == "bien_co_hiem":
+        import g4_quality_gate as G4Q  # noqa: PLC0415
+
+        tu_chay = [ma for ma, (_ten, co) in G4Q.BIEN_CO_HIEM.items() if co]
+        if v not in tu_chay:
+            return [f"{ten}: phải thuộc {tu_chay} (phương pháp engine tự chạy khi rào EPV chặn)"]
     elif kieu == "bang_chung":
         import bang_chung_dinh_tinh as BCD  # noqa: PLC0415
 
@@ -369,6 +388,10 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         canh_bao += [f"{pid}: cụm neo «{neo}» chỉ nằm trong câu PHỦ ĐỊNH của SAP («{cau}») — SAP có thể đã LOẠI phân "
                      "tích này; thống kê viên xem lại: bỏ mục khỏi đặc tả, hoặc neo vào câu khẳng định"
                      for pid, neo, cau in phu["neo_phu_dinh"]]
+        loi_kc, canh_kc = kiem_kc_hieu_so_sap(ds, sap.read_text(encoding="utf-8"))
+        loi += loi_kc
+        canh_bao += canh_kc
+        loi += kiem_bien_co_hiem_sap(ds, sap.read_text(encoding="utf-8"))
         qt = quan_the_chinh_sap(sap.read_text(encoding="utf-8"))
         for pt in ds:
             if not qt or not isinstance(pt, dict) or not isinstance(pt.get("tham_so"), dict):
@@ -390,6 +413,70 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
                         f"(ghi nguoi_duyet «<VAI>:<tham chiếu>:<YYYY-MM-DD>:{dau}»)")
     return {"loi": loi, "canh_bao": canh_bao, "dau": dau, "duyet": duyet, "sap_khop": sap_khop, "phan_tich": ds,
             "phu_sap": phu}
+
+
+def kiem_kc_hieu_so_sap(ds: list, sap_text: str) -> tuple[list[str], list[str]]:
+    """(lỗi, cảnh báo) — phương pháp KTC hiệu số nguy cơ của đặc tả ↔ SAP §4 (23/11/2026).
+
+    SAP §4 khai phương pháp G6 chưa tính ⇒ LỖI (chốt đỏ, không tự lùi về Wald). SAP khai Newcombe/Wald ⇒ phân tích
+    CHÍNH và mọi phân tích run_stats_analysis CÙNG kết cục chính phải khai `kc_hieu_so` đúng phương pháp đó — thiếu
+    hoặc khác ⇒ LỖI. SAP không khai mà đặc tả tự chọn ⇒ cảnh báo (lựa chọn của thống kê viên, ghi trong tóm tắt)."""
+    import g6_quality_gate as G6Q  # noqa: PLC0415
+
+    kc = G6Q.phuong_phap_kc_hieu_so_sap(G6Q._sec(sap_text, 4))
+    loi: list[str] = []
+    canh: list[str] = []
+    if kc["chua_ho_tro"]:
+        loi.append(f"SAP §4 khai KTC hiệu số nguy cơ theo {', '.join(kc['chua_ho_tro'])} — G6 chưa tính được phương "
+                   "pháp này (hỗ trợ: newcombe, wald); không tự lùi về Wald")
+    ts_chinh = next((pt.get("tham_so") for pt in ds if isinstance(pt, dict) and pt.get("vai") == "chinh"
+                     and isinstance(pt.get("tham_so"), dict)), None) or {}
+    kc_chinh = ts_chinh.get("outcome")
+    for pt in ds:
+        ts = pt.get("tham_so") if isinstance(pt, dict) else None
+        if not isinstance(ts, dict) or any(ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to",
+                                                                 "bang_chung")):
+            continue
+        cung_kc = pt.get("vai") == "chinh" or (kc_chinh and ts.get("outcome") == kc_chinh)
+        if kc["phuong_phap"] and cung_kc and ts.get("kc_hieu_so") != kc["phuong_phap"]:
+            khai = (f"khai «{ts['kc_hieu_so']}»" if ts.get("kc_hieu_so")
+                    else "không khai kc_hieu_so (engine sẽ tính Wald)")
+            loi.append(f"{pt.get('id')}: SAP §4 khai KTC hiệu số nguy cơ theo «{kc['phuong_phap']}» nhưng đặc tả "
+                       f"{khai} — sửa đặc tả theo SAP")
+        elif not kc["phuong_phap"] and ts.get("kc_hieu_so"):
+            canh.append(f"{pt.get('id')}: SAP §4 không khai phương pháp KTC hiệu số nguy cơ — đặc tả chọn "
+                        f"«{ts['kc_hieu_so']}» (ghi trong tóm tắt; thống kê viên xác nhận lựa chọn)")
+    return loi, canh
+
+
+def kiem_bien_co_hiem_sap(ds: list, sap_text: str) -> list[str]:
+    """Lỗi đặc tả ↔ phương pháp biến cố hiếm SAP §5 (23/11/2026). SAP khai phương pháp engine tự chạy ⇒ MỌI phân tích
+    run_stats_analysis có kết cục (`outcome`) phải khai `bien_co_hiem` đúng mã đó (rào EPV có thể chặn bất kỳ phân tích
+    nhị phân nào — nhóm con, tổn hại); SAP khai Firth ⇒ phải có phân tích loai_bo_sung firth (R logistf) — engine
+    không tự chạy Firth. SAP không có dòng biến cố hiếm (SAP cũ) ⇒ không đòi (chốt G4-AUTO-04 lo phần khai)."""
+    import g4_quality_gate as G4Q  # noqa: PLC0415
+
+    bch = G4Q.phuong_phap_bien_co_hiem_sap(G4Q._section_body(sap_text, "§5"))
+    pp = bch["phuong_phap"]
+    if not pp:
+        return [f"SAP §5 có dòng biến cố hiếm nhưng chưa nêu phương pháp nhận ra được: «{bch['dong'][:120]}»"
+                ] if bch["co_dong"] else []
+    if not G4Q.BIEN_CO_HIEM[pp][1]:
+        co_bo_sung = any(isinstance(pt, dict) and (pt.get("tham_so") or {}).get("loai_bo_sung") == pp for pt in ds)
+        return [] if co_bo_sung else [
+            f"SAP §5 khai biến cố hiếm theo «{G4Q.BIEN_CO_HIEM[pp][0]}» — engine chưa tự chạy phương pháp này khi rào "
+            f"EPV chặn: khai phân tích loai_bo_sung «{pp}» (phan_tich_sap_bo_sung) cho kết cục có biến cố hiếm"]
+    loi = []
+    for pt in ds:
+        ts = pt.get("tham_so") if isinstance(pt, dict) else None
+        if not isinstance(ts, dict) or not ts.get("outcome") or any(
+                ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to", "bang_chung")):
+            continue
+        if ts.get("bien_co_hiem") != pp:
+            loi.append(f"{pt.get('id')}: SAP §5 khai biến cố hiếm «{pp}» nhưng đặc tả "
+                       f"{'khai «' + str(ts['bien_co_hiem']) + '»' if ts.get('bien_co_hiem') else 'không khai'}"
+                       " bien_co_hiem — rào EPV chặn thì bảng sẽ trống")
+    return loi
 
 
 # ─────────── Giai đoạn 7 «Phân tích số liệu» (15/11/2026): đặc tả ↔ SAP HAI CHIỀU ───────────

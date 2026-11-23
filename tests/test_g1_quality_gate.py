@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR))
 
@@ -447,8 +449,26 @@ def test_case_control_template_uses_case_control_analysis_not_survival():
     artifact = _generated_artifact("harm", "Tác hại hiếm của phơi nhiễm X")
     analysis = artifact.split("### SAP §4", 1)[1].split("### SAP §5", 1)[0]
 
-    assert "conditional logistic regression" in analysis
+    # 23/11/2026: khung SAP theo KIỂU GHÉP G1 đã chốt — meta rỗng (không nhắc ghép) ⇒ logistic KHÔNG điều kiện; bản
+    # cũ in cả hai nhánh nên SAP sau chép nhầm «conditional logistic» cho đề tài không có bộ ghép
+    assert "Hồi quy logistic không điều kiện" in analysis
+    assert "conditional logistic" not in analysis.casefold()
     assert "không dùng Cox/Kaplan-Meier" in analysis
+
+
+@pytest.mark.parametrize("kieu, co, khong", [
+    ("individual", "conditional logistic regression", "logistic không điều kiện"),
+    ("frequency", "hiệu chỉnh theo các biến ghép", "conditional logistic"),
+    ("none", "Hồi quy logistic không điều kiện", "conditional logistic"),
+])
+def test_case_control_template_theo_kieu_ghep_20261123(kieu, co, khong):
+    design = G1.infer_study_design("harm", {}, "Tác hại hiếm của phơi nhiễm X")
+    meta = {"gate_params": {"G1": {"matching_type": kieu}}}
+    artifact = G1.generate_g1_artifact("Tác hại hiếm của phơi nhiễm X", "METHOD-CHECK",
+                                       design["resolved_question_type"], design, [], {}, "2026-11-23 10:00", meta=meta)
+    analysis = artifact.split("### SAP §4", 1)[1].split("### SAP §5", 1)[0]
+    assert co.casefold() in analysis.casefold()
+    assert khong.casefold() not in analysis.casefold()
 
 
 def test_diagnostic_template_is_not_prediction_model_template():

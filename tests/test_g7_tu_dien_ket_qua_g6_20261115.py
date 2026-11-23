@@ -687,7 +687,10 @@ def test_dau_cuoi_g7_doc_tu_dien_g5_that_va_dung_nhap_tu_g6(tmp_path, monkeypatc
     from tests.test_g6_hoan_thien_20261004 import _de_tai_g6_that
     from tests.test_g7_hoan_thien_20261004 import _cham, _chay_g7, _ck, _xac_nhan_g6
 
-    study, out, goc = _de_tai_g6_that(tmp_path, monkeypatch, "rct")
+    # 23/11/2026: chuỗi THUẦN TẬP (SAP §4 Poisson/logistic — kết cục nhị phân) để khớp tóm tắt nhị phân + logistic ghi
+    # bên dưới. Chuỗi RCT của helper khoá SAP «t-test/ANCOVA» (MD) — tóm tắt logistic trên SAP đó là LỆCH SAP mà
+    # G6-AUTO-09 (phần lượt chạy) nay chặn đúng; fixture cũ không nhất quán, sửa fixture, không nới cổng.
+    study, out, goc = _de_tai_g6_that(tmp_path, monkeypatch, "cohort")
     _xac_nhan_g6(out, study)
     assert _chay_g7(goc, study, monkeypatch) == GC.EXIT_BLOCKED
     khung = (out / f"G7_A8_MANUSCRIPT_{study}.md").read_text(encoding="utf-8")

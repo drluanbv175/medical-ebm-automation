@@ -3452,7 +3452,8 @@ def _is_cox_like(design_code, effect_type):
 
 _SCRIPT03_INFO = {
     "cross_sectional": ("Logistic/Linear regression + MI (m=20)", "stats, mice, gtsummary"),
-    "case_control":    ("Conditional logistic regression + MI (m=20)", "survival (clogit), mice"),
+    # 23/11/2026: bệnh–chứng chọn theo họ SAP §4 ở _mo_ta_benh_chung (dòng này chỉ là mặc định không điều kiện)
+    "case_control":    ("Hồi quy logistic KHÔNG điều kiện (glm binomial) + MI (m=20)", "stats, mice"),
     "diagnostic":      ("ROC/AUC + Se-Sp (Youden) + CI bootstrap + Calibration", "pROC"),
     "sr_ma":           ("Random/fixed-effects meta-analysis (forest/funnel/Egger)", "meta"),
     "prediction":      ("Mô hình đa biến + shrinkage + internal validation + DCA (TRIPOD+AI)",
@@ -3499,8 +3500,18 @@ def _khoi_chay_py_a7(study, design_code, v, exposure, outcome, time_col, covars)
                   "```"]
 
 
+def _mo_ta_benh_chung(logistic_dk: bool) -> tuple[str, str]:
+    """(mô tả, thư viện) của phân tích chính bệnh–chứng theo họ SAP §4 (23/11/2026): có điều kiện ⇒ clogit theo bộ ghép
+    (cần mã bộ ghép; engine G6 chưa có đường — G6-AUTO-09 chặn); không điều kiện ⇒ glm logistic, hiệu chỉnh biến ghép."""
+    if logistic_dk:
+        return ("Hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép (survival::clogit, cần mã bộ ghép) + MI (m=20)",
+                "survival (clogit), mice")
+    return ("Hồi quy logistic KHÔNG điều kiện (glm binomial; hiệu chỉnh các biến ghép nếu ghép theo tần suất) + MI "
+            "(m=20)", "stats, mice")
+
+
 def _script03_row(design_code, effect_type, exposure, outcome, time_col,
-                  outcome_ordinal=False):
+                  outcome_ordinal=False, logistic_dk=False):
     """Dòng '03_analysis.R' của PHẦN 3 — khớp ĐÚNG phương pháp thật dùng cho
     từng thiết kế (xem các hàm _r03_*_with_vars và nhánh Cox/regression trong
     _RUN_CLI_TEMPLATE), tránh mâu thuẫn đã bị vòng 5 phát hiện."""
@@ -3511,6 +3522,8 @@ def _script03_row(design_code, effect_type, exposure, outcome, time_col,
     elif design_code in ("rct", "cohort") and effect_type in _KET_CUC_NHI_PHAN:
         desc, libs = ({"OR": "Hồi quy logistic (OR)", "RR": "Poisson sai số robust (RR)"}.get(
             effect_type, "Hiệu nguy cơ + 95%CI (ARR%)") + " + MI (m=20)", "stats, sandwich, lmtest, mice")
+    elif design_code == "case_control":
+        desc, libs = _mo_ta_benh_chung(logistic_dk)
     elif design_code == "cross_sectional" and outcome_ordinal:
         # THÊM 2026-09-01: mô tả phải khớp script thứ bậc THẬT sinh ra —
         # cùng luật chống "2 lớp tách rời" của vòng 5.
@@ -3615,6 +3628,9 @@ def generate_artifact(study, topic, design_code, reporting_std,
     # trung lập [CẦN] thay vì bịa loại phân tích không khớp thiết kế thật.
     if outcome_ordinal:
         tables = TABLE_SHELLS_CROSS_ORDINAL
+    elif design_code == "case_control":  # 23/11/2026: tiêu đề Bảng 2 theo họ SAP §4 (không in cứng «Conditional»)
+        tables = [(t.replace("(Conditional logistic)", "(logistic có điều kiện theo bộ ghép)" if v.get("logistic_dk")
+                             else "(logistic không điều kiện)"), r) for t, r in TABLE_SHELLS["case_control"]]
     else:
         tables = TABLE_SHELLS.get(design_code) or [
             ("Bảng kết quả — [CẦN] chưa có mẫu bảng cho thiết kế '{}'".format(design_code), [
@@ -3654,7 +3670,8 @@ def generate_artifact(study, topic, design_code, reporting_std,
                             "kết cục giữ nguyên thang thứ bậc, SE robust theo cụm"
                             if outcome_ordinal
                             else "Logistic regression (OR 95%CI) / Linear regression (β 95%CI)"),
-        "case_control":    "Conditional logistic regression (OR 95%CI)",
+        "case_control":    ("Hồi quy logistic có điều kiện theo bộ ghép (OR 95%CI)" if v.get("logistic_dk")
+                            else "Hồi quy logistic không điều kiện (OR 95%CI)"),
         "diagnostic":      "ROC/AUC + Calibration + DCA",
         "sr_ma":           "Random effects meta-analysis REML (meta::metagen/metabin)",
         # THÊM 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction"
@@ -3726,7 +3743,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "tidyverse |",
         f"| `02_tables.R` | Table 1 theo nhóm {exposure} | {', '.join(covars[:4]) if covars else 'age,sex,dm,htn'} | gtsummary, flextable |",
         _script03_row(design_code, effect_type, exposure, outcome, time_col,
-                      outcome_ordinal=outcome_ordinal),
+                      outcome_ordinal=outcome_ordinal, logistic_dk=bool(v.get("logistic_dk"))),
         *(_dong_py_a7(design_code, exposure, outcome, time_col)),
         "",
         "**Thứ tự chạy (R, từ gốc repo — 00_setup.R dừng nếu dữ liệu chưa khoá):**",
@@ -3984,6 +4001,11 @@ def main():
     # không suy từ mã số mức trong dictionary. Đặt TRƯỚC R_ANALYSIS_MAP_FUNC
     # và generate_artifact để script + artifact rẽ nhánh CÙNG một cờ.
     v["outcome_ordinal"] = _sap_declares_ordinal(out, study)
+    # 23/11/2026 (G7 phát hiện G6 lệch SAP bệnh–chứng): nhãn A7/bảng khung của bệnh–chứng theo HỌ MÔ HÌNH SAP §4 (cùng
+    # hàm cổng G6-AUTO-09/12 dùng) — bản cũ in cứng «Conditional logistic» trong khi script chạy glm (không điều kiện).
+    _sap_p = out / f"G4_A5_SAP_FINAL_{study}.md"
+    v["logistic_dk"] = bool(design_code == "case_control" and _sap_p.is_file() and "logistic_dk" in
+                            G6Q._ho_mo_hinh_sap(G6Q._sec(_sap_p.read_text(encoding="utf-8"), 4)))
     # 16/11/2026: cắt ngang MÔ TẢ — SAP §4 khai ước lượng tỷ lệ ⇒ 03_analysis.R ước lượng tỷ lệ + KTC Wilson; thiết kế
     # không có phơi nhiễm nên dòng «không tự phát hiện exposure» không phải tham số chờ điền (G6-AUTO-07).
     v["mo_ta_ty_le"] = (design_code == "cross_sectional" and not v["outcome_ordinal"]

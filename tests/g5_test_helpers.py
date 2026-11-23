@@ -719,6 +719,11 @@ def bat_mo_hinh_chinh_g6(out_dir: Path) -> bool:
     if not p.is_file():
         return False
     dong = p.read_text(encoding="utf-8").split("\n")
+    # 23/11/2026: từ 22/11 bộ sinh G6 đã tự bật dòng mô hình chính ◆ (run_g6_auto.bat_dong_thi_hanh). Bật THÊM dòng chú
+    # thích đầu tiên khớp mẫu sẽ chạy song song một mô hình THAY THẾ (vd ◇ clogit của bệnh–chứng, nằm trước ◆ glm) —
+    # trước đây clogit bị tính là «logistic» nên lỗi này bị che; nay clogit là họ riêng (logistic_dk).
+    if any(not d.lstrip().startswith("#") and any(bt.search(d) for _, bt in G6Q._HO_SCRIPT) for d in dong):
+        return False
     for i, d in enumerate(dong):
         if not d.lstrip().startswith("#"):
             continue
