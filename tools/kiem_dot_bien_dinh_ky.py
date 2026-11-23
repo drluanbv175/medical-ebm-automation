@@ -15,14 +15,17 @@ LÀM GÌ
   2. Lượt nền: mọi test khai báo phải XANH khi chưa đột biến — nền đỏ ⇒ không đo được đột biến, báo ĐỎ.
   3. Từng đột biến: thay `cu` bằng `moi`, xoá __pycache__, chạy test; test đỏ = «bắt được», test xanh = «SỐNG SÓT» ⇒ ĐỎ.
      Tệp LUÔN được phục hồi nguyên byte (kể cả khi ngắt giữa chừng).
+  Mặc định đo trên một worktree TẠM của HEAD (rồi xoá) để không làm tiến trình khác trong cùng worktree nạp nhầm
+  mã đột biến; `--tai-cho` đột biến ngay trong repo — chỉ cho bản checkout dùng một lần (CI).
 Mã thoát: 0 mọi đột biến bị bắt · 1 có đột biến sống sót / sổ lệch / nền đỏ · 2 không đo được (thiếu sổ, thiếu pytest).
 
-Dùng:  python tools/kiem_dot_bien_dinh_ky.py [--chi MA[,MA…]] [--json] [--goc <thư mục repo>]
+Dùng:  python tools/kiem_dot_bien_dinh_ky.py [--chi MA[,MA…]] [--json] [--goc <thư mục repo>] [--tai-cho]
 Cần bác sĩ kiểm chứng.
 """
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import shutil
 import subprocess
@@ -121,6 +124,26 @@ def chay(goc: Path, chi: Optional[List[str]] = None) -> Dict[str, Any]:
     return ket
 
 
+def _git_ra(goc: Path, *args: str) -> str:
+    try:
+        r = subprocess.run(["git", "-C", str(goc), *args], capture_output=True, text=True, timeout=120)
+        return r.stdout.strip() if r.returncode == 0 else ""
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
+def tao_ban_sao(goc: Path, thu_muc: Optional[Path] = None) -> Optional[Path]:
+    """Worktree tách rời của HEAD ở `~/.ebm-worktrees/dot-bien-<giờ>` (ngoài OneDrive).
+
+    None khi `goc` không phải repo git."""
+    if not _git_ra(goc, "rev-parse", "--git-dir"):
+        return None
+    dich = (thu_muc or Path.home() / ".ebm-worktrees") / f"dot-bien-{dt.datetime.now():%Y%m%d-%H%M%S}"
+    r = subprocess.run(["git", "-C", str(goc), "worktree", "add", "--detach", "-q", str(dich), "HEAD"],
+                       capture_output=True, text=True)
+    return dich if r.returncode == 0 else None
+
+
 def ma_thoat(ket: Dict[str, Any]) -> int:
     if ket["loi_so"] or ket["nen_do"] or any(x["ket_qua"] != "bat_duoc" for x in ket["ket_qua"]):
         return 1
@@ -132,6 +155,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--chi", default="", help="chỉ các mã, ngăn bằng dấu phẩy")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--goc", type=Path, default=GOC, help="thư mục repo (mặc định: repo chứa công cụ)")
+    ap.add_argument("--tai-cho", action="store_true",
+                    help="đột biến NGAY trong thư mục repo (chỉ dùng cho bản checkout dùng một lần như CI)")
     a = ap.parse_args(argv)
     goc = a.goc.resolve()
     if not (goc / SO).is_file():
@@ -139,11 +164,28 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 2
     if shutil.which(sys.executable) is None:
         return 2
+    chi = [x.strip() for x in a.chi.split(",") if x.strip()] or None
+    noi_chay, ban_sao = goc, None
+    if not a.tai_cho:
+        # 23/11/2026: đột biến sửa mã TẠM THỜI — chạy tại chỗ trong worktree đang có tiến trình khác (giả lập, agent)
+        # làm các tiến trình đó nạp nhầm mã đã đột biến. Mặc định đo trên worktree tạm của HEAD rồi xoá.
+        ban_sao = tao_ban_sao(goc)
+        if ban_sao is None:
+            print("⚪ không tạo được worktree tạm (thư mục không phải repo git) — dùng --tai-cho nếu là bản checkout "
+                  "dùng một lần")
+            return 2
+        noi_chay = ban_sao
+        if _git_ra(goc, "status", "--porcelain", "--", "tools", "tests", "config"):
+            print("⚠ có thay đổi chưa commit ở tools/tests/config — lượt này đo bản HEAD, không gồm thay đổi đó")
     try:
-        ket = chay(goc, [x.strip() for x in a.chi.split(",") if x.strip()] or None)
+        ket = chay(noi_chay, chi)
     except (ValueError, json.JSONDecodeError) as e:
         print(f"✗ sổ đột biến hỏng: {e}")
         return 1
+    finally:
+        if ban_sao is not None:
+            subprocess.run(["git", "-C", str(goc), "worktree", "remove", "--force", str(ban_sao)],
+                           capture_output=True, text=True)
     if a.json:
         print(json.dumps(ket, ensure_ascii=False, indent=1))
         return ma_thoat(ket)

@@ -41,4 +41,4 @@ jobs:
           pip install -r requirements.lock.txt
 
       - name: Kiểm đột biến theo sổ
-        run: python tools/kiem_dot_bien_dinh_ky.py
+        run: python tools/kiem_dot_bien_dinh_ky.py --tai-cho   # bản checkout CI dùng một lần

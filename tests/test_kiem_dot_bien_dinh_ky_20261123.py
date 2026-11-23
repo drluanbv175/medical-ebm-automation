@@ -68,3 +68,14 @@ def test_nen_do_thi_ma_1(tmp_path):
 def test_so_that_cua_repo_hop_le():
     ds = KDB.doc_so(REPO_ROOT)
     assert len(ds) >= 8 and KDB.kiem_so(REPO_ROOT, ds) == []
+
+
+def test_mac_dinh_do_tren_worktree_tam_khong_dong_vao_cay(tmp_path):
+    import subprocess
+    goc = _repo(tmp_path / "r", [_db("M1", "    if x > 10:", "    if False:")])
+    for lenh in (["init", "-q", "-b", "main"], ["config", "user.email", "t@t.invalid"], ["config", "user.name", "t"],
+                 ["config", "core.hooksPath", "/dev/null"], ["add", "-A"], ["commit", "-q", "-m", "khoi tao"]):
+        subprocess.run(["git", "-C", str(goc), *lenh], check=True, capture_output=True)
+    bs = KDB.tao_ban_sao(goc, tmp_path / "wt")
+    assert bs is not None and (bs / "tools" / "mod.py").is_file() and bs != goc
+    assert KDB.tao_ban_sao(tmp_path / "khong-git") is None
