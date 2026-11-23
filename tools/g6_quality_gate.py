@@ -225,6 +225,9 @@ _THU_MUC_KET_QUA = ("", "06_ket_qua", "06_phan_tich_R/output")
 
 # G6-AUTO-09 — họ mô hình: từ khoá SAP §4 (đã bỏ dấu, chữ thường) và lời gọi hàm trong script (VÁ 04/10/2026, G6-04).
 _HO_SAP = (
+    # 23/11/2026 (PLS-SEM — bác sĩ: «tương tự SPSS/R»): họ RIÊNG và ĐỘC QUYỀN (xem _ho_mo_hinh_sap) — khối PLS-SEM của
+    # SAP nhắc «CB-SEM», «mô hình tuyến tính chuẩn» (PLSpredict)… không được kéo theo họ tuyến tính/logistic.
+    ("pls_sem", ("pls-sem", "pls path", "partial least squares", "binh phuong toi thieu tung phan")),
     ("ordinal", ("proportional odds", "thu bac", "logistic thu tu", "polr", "clmm", "ordinal")),
     ("cox", ("cox", "hazard", "log-rank", "log rank", "thoi gian den bien co", "time-to-event", "kaplan")),
     ("poisson", ("poisson", "log-binomial", "log binomial", "nguy co tuong doi", "relative risk")),
@@ -242,6 +245,7 @@ _HO_SAP = (
     ("proportion", ("uoc luong ty le", "wilson", "ty le hien mac", "prevalence")),
 )
 _HO_SCRIPT = (
+    ("pls_sem", re.compile(r"\bestimate_pls\s*\(|\bcsem\s*\(", re.I)),
     ("cox", re.compile(r"\bcoxph\s*\(|coxphfitter|\bsurv\s*\(", re.I)),
     ("ordinal", re.compile(r"\bpolr\s*\(|\bclmm?\s*\(|\borm\s*\(", re.I)),
     ("poisson", re.compile(r"family\s*=\s*poisson|\bpoisson\s*\(\s*link", re.I)),
@@ -543,6 +547,10 @@ def _ho_mo_hinh_sap(sap4: str) -> set[str]:
     # định tính) và đổi hành vi G6-AUTO-09 ngoài phạm vi vá này.
     bd_d = bd.replace("đ", "d")
     ho = {ten for ten, tu in _HO_SAP if any(t in (bd_d if ten == "logistic_dk" else bd) for t in tu)}
+    # 23/11/2026: PLS-SEM là phân tích chính DUY NHẤT của SAP khai nó (khối mô hình đo lường/cấu trúc) — mọi họ khác mà
+    # từ khoá trong khối đó kích hoạt (PLSpredict so với «mô hình tuyến tính chuẩn») KHÔNG phải phương pháp thay thế
+    if "pls_sem" in ho:
+        return {"pls_sem"}
     # «logistic thứ tự»/«proportional odds» là họ THỨ BẬC — không để chữ «logistic» trong đó cho qua logistic nhị phân.
     if "ordinal" in ho and not re.search(r"logistic\s+(?:nhi\s+phan|binary)|binomial", bd):
         ho.discard("logistic")
@@ -628,6 +636,9 @@ def ho_mo_hinh_tom_tat(tom: dict) -> set[str]:
         if po.get("outcome_type") == "continuous" and po.get("md_crude") is not None:
             ho.add("linear")
     ho |= _HO_DAC_THU.get(str(tom.get("loai_dac_thu") or ""), set())
+    pls = tom.get("pls_sem")
+    if isinstance(pls, dict) and pls.get("danh_gia") and not (pls.get("loi") or {}).get("seminr"):
+        ho.add("pls_sem")
     return ho
 
 
@@ -658,7 +669,7 @@ def _doi_chieu_luot_chay_vao_auto09(ket: list[dict], thu_muc: Path, sap: str, tr
 
 #: khối phân tích chính trong G6_analysis_summary.json (run_stats_analysis / phan_tich_thiet_ke_dac_thu)
 KHOI_PHAN_TICH = ("primary_outcome", "multivariate", "poisson_pr", "ordinal", "survival", "ty_le", "loai_dac_thu",
-                  "dac_thu")
+                  "dac_thu", "pls_sem")
 
 
 def co_khoi_phan_tich(tom) -> bool:
@@ -703,7 +714,11 @@ def doi_chieu_phuong_phap_da_chay(sap4: str, tom: dict | None, sap5: str = "") -
                      f"{sorted(ho_chay)})"
     if not ho_sap & ho_chay:
         them = (" — hồi quy logistic CÓ ĐIỀU KIỆN chạy khi đặc tả G6 khai bo_ghep (cột mã bộ ghép); không tự lùi về "
-                "logistic không điều kiện" if "logistic_dk" in ho_sap else "")
+                "logistic không điều kiện" if "logistic_dk" in ho_sap else
+                " — PLS-SEM chạy khi đặc tả G6 khai tham_so.pls_sem (pls_sem.py: seminr + cSEM); không thay bằng hồi "
+                "quy trên điểm tổng" if "pls_sem" in ho_sap else
+                " — SAP §4 không khai PLS-SEM; lượt chạy PLS-SEM là phương pháp ngoài SAP" if "pls_sem" in ho_chay
+                else "")
         loi.append(f"SAP §4 khoá họ {sorted(ho_sap)} nhưng phân tích chính ĐÃ CHẠY họ {sorted(ho_chay)}{them}")
     po = tom.get("primary_outcome") if isinstance(tom.get("primary_outcome"), dict) else {}
     if kc["phuong_phap"]:

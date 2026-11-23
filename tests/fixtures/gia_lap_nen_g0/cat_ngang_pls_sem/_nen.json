@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-23T19:32:46+07:00",
+  "study": "ZZCANARY-CAT-NGANG-PLS-SEM",
+  "topic": "Giao tiếp bác sĩ – người bệnh, hiểu biết về bệnh, niềm tin vào điều trị và tuân thủ điều trị ở người tăng huyết áp điều trị ngoại trú: nghiên cứu cắt ngang phân tích bằng mô hình PLS-SEM",
+  "query_en": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab])",
+  "base_query": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab])"
+}

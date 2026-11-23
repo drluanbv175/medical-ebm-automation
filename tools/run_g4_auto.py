@@ -31,6 +31,7 @@ import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6,
 import g4_quality_gate as G4Q  # noqa: E402  (khung §12 dùng chung với bộ chấm — G4-06)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import hon_hop as HH  # noqa: E402  (thiết kế hỗn hợp — §17, 17/11/2026)
+import pls_sem as PLS  # noqa: E402  (khối PLS-SEM của §4 — 23/11/2026)
 import skill_standards as S  # noqa: E402  (đặc tả thiết kế khoá ở G1, chuẩn báo cáo theo thiết kế)
 import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
@@ -439,7 +440,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
              hypothesis_type="superiority", margin=None, n_statistical_min=None, *,
              g3=None, estimand=None, giai_trinh_thieu_luc=None, ket_cuc_chinh_da_chot=None, gia_thuyet_phu=None,
-             khung=None, muc_tieu=None, kinh_te=None, hon_hop=None):
+             khung=None, muc_tieu=None, kinh_te=None, hon_hop=None, pls_sem=None):
     """Sinh SAP Final + chứng chỉ khoá (DRAFT — CHỜ KÝ).
 
     Tham số vị trí giữ nguyên hợp đồng cũ. Từ khoá mới (VÁ 04/10/2026, soát từng cổng):
@@ -452,6 +453,9 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             phần G1/G0 + biến của ma trận, kết cục phụ, biến phân tích §5/§6 từ ma trận mục tiêu–biến — điền sẵn ô mà bản
             cũ bắt thống kê viên gõ lại lần thứ ba (lý do lâm sàng/DAG vẫn là [CẦN …] của người).
       muc_tieu — gate_params.G1.objectives (15/11/2026): §11 thêm MỖI mục tiêu một bảng giả gắn nhãn «MTk» (MT-11).
+      pls_sem — (23/11/2026) gate_params.G1.pls_sem: mô hình PLS-SEM PI chốt ở G1 (cấu trúc, chỉ báo, Mode A/B, đường
+            dẫn, biện minh chọn PLS-SEM thay CB-SEM, bootstrap, PLSpredict, xử lý thiếu) ⇒ §4 in khối PLS-SEM máy đọc được
+            (pls_sem.dong_sap — G6 đọc lại đúng khối này bằng pls_sem.doc_sap); §5/§6 theo PLS-SEM.
       gia_thuyet_phu — gate_params.G0.hypothesis_secondary: giả thuyết định trước của MỤC TIÊU PHỤ phân tích ở đề tài
             mô tả theo độ chính xác (25/10/2026, hội đồng G1 C1a DP-G1-2) — §12 không còn nói cả đề tài «không kiểm
             định giả thuyết».
@@ -566,6 +570,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
 
     # ── §4: phân tích chính; RCT có estimand + quần thể phân tích CHÍNH ──
     dong_muc4 = [f"- **Phương pháp:** {main_method}  "]
+    if pls_sem:  # 23/11/2026: đề tài PLS-SEM — khối mô hình máy đọc được thay dòng phương pháp chung theo thiết kế
+        dong_muc4 = PLS.dong_sap(pls_sem)
     if design_code == "rct":
         # VÁ 04/10/2026 (soát từng cổng, G4-03 ≡ G1-08): SAP RCT từng in cứng «ITT, PP» mà không nói cái nào CHÍNH và
         # không có estimand dù STANDARDS_BASIS tuyên bố đối chiếu ICH E9(R1). Nay in ĐÚNG estimand PI đã khai ở G1 (đặc
@@ -709,9 +715,18 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         sap_sections_5_to_9 = [
             "### §5 PHÂN TÍCH ĐA BIẾN",
             "",
-            "- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  ",
+            # «§N» trần bị bộ sinh đề cương nộp gỡ (còn câu cụt) ⇒ viết «SAP §N» (đổi thành «kế hoạch phân tích …»)
+            *(["- **Biến độc lập đưa vào:** các cấu trúc tiền tố theo mô hình cấu trúc của SAP §4 (mô hình lý thuyết chốt "
+               "trước khi thu thập — không chọn biến theo dữ liệu)  ",
+               "- **Kiểm soát nhiễu:** mỗi hệ số đường dẫn được ước lượng đồng thời với các cấu trúc tiền tố còn lại của "
+               "cùng cấu trúc nội sinh (hiệu chỉnh lẫn nhau theo mô hình lý thuyết); biến gây nhiễu ngoài mô hình không "
+               "đưa vào mô hình chính — đặc điểm nền mô tả ở Bảng 1, nhóm nhỏ tiền định phân tích riêng  ",
+               "- **Đa cộng tuyến:** VIF của chỉ báo cấu tạo và VIF của các cấu trúc tiền tố, ngưỡng ghi ở SAP §4  ",
+               "- **Giả định:** PLS-SEM không giả định phân phối chuẩn của chỉ báo; suy luận bằng KTC bootstrap phân vị  "]
+              if pls_sem else []),
+            *([] if pls_sem else ["- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  "]),
             "- **Phương pháp chọn biến:** Đưa vào toàn bộ (không stepwise)  ",
-            "- **Giả định:** [CẦN kiểm tra PH / normality theo thiết kế]  ",
+            *([] if pls_sem else ["- **Giả định:** [CẦN kiểm tra PH / normality theo thiết kế]  "]),
             # 23/11/2026 (G7 phát hiện ở rct_cum: tổn hại 2 biến cố ⇒ rào EPV chặn logistic, bảng đa biến bản thảo để
             # trống): khai TRƯỚC phương pháp khi số biến cố không đủ cho hồi quy — G6 chạy đúng phương pháp này.
             # 23/11/2026: ghép cặp cá thể ⇒ khuôn chỉ có phương pháp có điều kiện (firth_dk)
@@ -720,18 +735,24 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "",
             "### §6 DỮ LIỆU THIẾU",
             "",
-            "- **Chiến lược:** Multiple Imputation (MI, m=20, method=pmm)  ",
-            "- **Giả định:** MAR (missing at random)  ",
-            "- **Biến đưa vào mô hình imputation:** [CẦN BÁC SĨ ĐIỀN]  ",
+            *(["- **Chiến lược:** theo dòng «Dữ liệu thiếu (PLS-SEM)» của SAP §4 (seminr và cSEM nhận CÙNG ma trận đã "
+               "xử lý)  ",
+               "- **Giả định:** loại ca thiếu hoặc thay trung bình chỉ hợp lý khi ô thiếu ít và thiếu hoàn toàn ngẫu nhiên "
+               "(MCAR); nếu nghi MAR/MNAR thì diễn giải thận trọng, đối chiếu phân tích độ nhạy của SAP §9  ",
+               "- **Báo cáo:** số ô thiếu từng chỉ báo và số ca phân tích  "] if pls_sem else [
+                "- **Chiến lược:** Multiple Imputation (MI, m=20, method=pmm)  ",
+                "- **Giả định:** MAR (missing at random)  ",
+                "- **Biến đưa vào mô hình imputation:** [CẦN BÁC SĨ ĐIỀN]  "]),
             # 23/11/2026: bệnh–chứng ghép cặp cá thể — gán giữ cấu trúc ghép, phân tích có điều kiện trong từng bộ
             *([DONG_MI_GHEP_CAP] if design_code == "case_control" and (khung or {}).get("kieu_ghep") == "ca_the"
               else []),
-            "- **Phân tích hoàn chỉnh (complete case):** báo cáo song song với MI  ",
+            *([] if pls_sem else ["- **Phân tích hoàn chỉnh (complete case):** báo cáo song song với MI  "]),
             "",
             "### §7 PHÂN TÍCH NHÓM NHỎ (Subgroup Analysis)",
             "",
             "- **Nhóm nhỏ tiền định:** [CẦN BÁC SĨ — phải ghi TRƯỚC khi xem dữ liệu]  ",
-            "- **Kiểm định tương tác:** Mô hình với interaction term  ",
+            ("- **So sánh nhóm:** mô hình PLS-SEM riêng từng nhóm, mô tả hệ số đường dẫn kèm KTC (thăm dò — không kiểm "
+             "định khác biệt giữa nhóm)  " if pls_sem else "- **Kiểm định tương tác:** Mô hình với interaction term  "),
             "- **Cảnh báo:** Phân tích nhóm nhỏ chỉ diễn giải thăm dò  ",
             "",
             "### §8 ĐA SO SÁNH",
@@ -742,16 +763,22 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "### §9 PHÂN TÍCH ĐỘ NHẠY",
             "",
             # 17/11/2026 (phản biện máy, 9/16 đề tài): «±1 SD» vô nghĩa với phơi nhiễm/kết cục nhị phân.
-            "- Định nghĩa thay thế của phơi nhiễm/kết cục, khai trước khi xem dữ liệu  ",
-            "- Complete case vs MI  ",
-            "- [CẦN BÁC SĨ thêm kịch bản cụ thể]  ",
+            # 23/11/2026: PLS-SEM — độ nhạy theo cách xử lý ô thiếu (pls_sem.py --du-lieu-thieu); không có MI
+            *(["- **Dữ liệu thiếu:** ước lượng lại mô hình với ô thiếu thay bằng trung bình chỉ báo (phân tích chính xử "
+                "lý theo dòng dữ liệu thiếu của SAP §4) — so sánh hệ số đường dẫn và R²  "] if pls_sem else [
+                "- Định nghĩa thay thế của phơi nhiễm/kết cục, khai trước khi xem dữ liệu  ",
+                "- Complete case vs MI  ",
+                "- [CẦN BÁC SĨ thêm kịch bản cụ thể]  "]),
             "",
         ]
         muc_10 = [
             "### §10 PHẦN MỀM + SEED",
             "",
-            "- **Phần mềm:** [CẦN — R v4.x / Stata v18 / SPSS v29]  ",
-            "- **Packages:** [CẦN — survival, lme4, mice, gtsummary...]  ",
+            *(["- **Phần mềm:** R v4.3 trở lên; seminr v2.6.0 trở lên (ước lượng chính; bản sửa lỗi lặp fold của "
+               "PLSpredict), cSEM v0.7.1 (kiểm chéo độc lập); phiên bản thực chạy ghi trong tóm tắt G6  ",
+               "- **Packages:** seminr, cSEM, jsonlite  "] if pls_sem else [
+                "- **Phần mềm:** [CẦN — R v4.x / Stata v18 / SPSS v29]  ",
+                "- **Packages:** [CẦN — survival, lme4, mice, gtsummary...]  "]),
             "- **Random seed:** [CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]  ",
             "",
         ]
@@ -1499,6 +1526,7 @@ def main():
                         kinh_te=(((meta_cp.get("gate_params") or {}).get("G1") or {}).get("economic_evaluation")
                                  if isinstance(meta_cp, dict) else None),
                         hon_hop=meta_cp if isinstance(meta_cp, dict) else None,
+                        pls_sem=PLS.khoi_g1(meta_cp if isinstance(meta_cp, dict) else None),
                         gia_thuyet_phu=(((meta_cp.get("gate_params") or {}).get("G0") or {}).get("hypothesis_secondary")
                                         if isinstance(meta_cp, dict) else None))
     md = out / f"G4_A5_SAP_FINAL_{study}.md"

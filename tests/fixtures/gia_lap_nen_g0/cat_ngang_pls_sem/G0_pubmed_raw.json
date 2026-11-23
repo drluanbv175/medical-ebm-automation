@@ -1,0 +1,378 @@
+{
+  "sr_ma": [],
+  "rct": [
+    {
+      "pmid": "32128865",
+      "title": "Factors influencing health behaviour, blood pressure control, and disability in hypertensive ischaemic stroke patients after a comprehensive reminder intervention.",
+      "year": "2020",
+      "journal": "Journal of advanced nursing",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32128865/",
+      "authors": "Zhang XP, Pan JH, Wan LH, Liu ZY, Mo MM"
+    }
+  ],
+  "guideline": [],
+  "recent": [],
+  "observational": [
+    {
+      "pmid": "42337710",
+      "title": "Factors associated with COVID-19 preventive behaviors among patients with hypertension and type 2 diabetes in southern Iran: a structural equation modeling study.",
+      "year": "2026",
+      "journal": "BMC public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42337710/",
+      "authors": "Shamsnia SA, Mobasheri N, Kaveh MH, Nazari M, Karimi M"
+    },
+    {
+      "pmid": "42047149",
+      "title": "Predicting Medication Adherence Using Psychosocial Factors: A Comprehensive Analysis through Regression and Path Models.",
+      "year": "2026",
+      "journal": "La Clinica terapeutica",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42047149/",
+      "authors": "Saggah AMA"
+    },
+    {
+      "pmid": "39987031",
+      "title": "Exploring the impact of three-dimensional patient satisfaction structure on adherence to medication and non-pharmaceutical treatment: a cross-sectional study among patients with hypertension in rural China.",
+      "year": "2025",
+      "journal": "BMC primary care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39987031/",
+      "authors": "Zhang M, Chen W, Xu Y, Fang J, Liu Y"
+    },
+    {
+      "pmid": "39842923",
+      "title": "Knowledge, attitudes and practices of healthcare professionals in the management of patients with hypertension and concurrent bronchial asthma: a cross-sectional study in the Yellow River Delta region of China.",
+      "year": "2025",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39842923/",
+      "authors": "Yu F, Xu W, Ma X, Yang Y, Gao J"
+    },
+    {
+      "pmid": "36803662",
+      "title": "Impact of health literacy and social support on medication adherence in patients with hypertension: a cross-sectional community-based study.",
+      "year": "2023",
+      "journal": "BMC cardiovascular disorders",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36803662/",
+      "authors": "Guo A, Jin H, Mao J, Zhu W, Zhou Y"
+    },
+    {
+      "pmid": "35501793",
+      "title": "Analyzing the effects of barriers to and facilitators of medication adherence among patients with cardiometabolic diseases: a structural equation modeling approach.",
+      "year": "2022",
+      "journal": "BMC health services research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35501793/",
+      "authors": "Quaschning K, Koerner M, Wirtz MA"
+    },
+    {
+      "pmid": "35309202",
+      "title": "Effects of the Two-Dimensional Structure of Trust on Patient Adherence to Medication and Non-pharmaceutical Treatment: A Cross-Sectional Study of Rural Patients With Essential Hypertension in China.",
+      "year": "2022",
+      "journal": "Frontiers in public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35309202/",
+      "authors": "Feng Y, Guan S, Xu Y, Chen W, Huang X"
+    },
+    {
+      "pmid": "34112122",
+      "title": "The effect of high blood pressure-health literacy, self-management behavior, self-efficacy and social support on the health-related quality of life of Kazakh hypertension patients in a low-income rural area of China: a structural equation model.",
+      "year": "2021",
+      "journal": "BMC public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34112122/",
+      "authors": "Zhang Q, Huang F, Zhang L, Li S, Zhang J"
+    },
+    {
+      "pmid": "31900018",
+      "title": "The influence of value reference point and risk preference on adherence in hypertensive patients in a low-income area of China.",
+      "year": "2020",
+      "journal": "Postgraduate medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31900018/",
+      "authors": "Wang C, Wang P, Dong H, Zhang L, Wu T"
+    },
+    {
+      "pmid": "27378081",
+      "title": "Determinants of antihypertensive adherence among patients in Beijing: Application of the health belief model.",
+      "year": "2016",
+      "journal": "Patient education and counseling",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/27378081/",
+      "authors": "Yang S, He C, Zhang X, Sun K, Wu S"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "42337710",
+      "title": "Factors associated with COVID-19 preventive behaviors among patients with hypertension and type 2 diabetes in southern Iran: a structural equation modeling study.",
+      "year": "2026",
+      "journal": "BMC public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42337710/"
+    },
+    {
+      "pmid": "42047149",
+      "title": "Predicting Medication Adherence Using Psychosocial Factors: A Comprehensive Analysis through Regression and Path Models.",
+      "year": "2026",
+      "journal": "La Clinica terapeutica",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42047149/"
+    },
+    {
+      "pmid": "41357882",
+      "title": "Knowledge, attitudes, and practices of inpatients with chronic cardiovascular comorbidities regarding polypharmacy: a cross-sectional study.",
+      "year": "2025",
+      "journal": "Frontiers in pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41357882/"
+    },
+    {
+      "pmid": "40969234",
+      "title": "Health literacy and guideline-adherent lifestyle in people with chronic kidney disease: exploring factors associated with usage intention of a structured m-health program and pilot data on actual behavior change.",
+      "year": "2025",
+      "journal": "Frontiers in nephrology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40969234/"
+    },
+    {
+      "pmid": "40567828",
+      "title": "Knowledge, attitudes, and practices regarding the prevention of intracerebral hemorrhage among hypertensive patients.",
+      "year": "2025",
+      "journal": "Frontiers in cardiovascular medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40567828/"
+    },
+    {
+      "pmid": "40546292",
+      "title": "Knowledge, Attitudes, and Practices of Healthcare Professionals Toward Internet-Based Hypertension Management: A Cross-Sectional Study.",
+      "year": "2025",
+      "journal": "Journal of multidisciplinary healthcare",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40546292/"
+    },
+    {
+      "pmid": "39987031",
+      "title": "Exploring the impact of three-dimensional patient satisfaction structure on adherence to medication and non-pharmaceutical treatment: a cross-sectional study among patients with hypertension in rural China.",
+      "year": "2025",
+      "journal": "BMC primary care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39987031/"
+    },
+    {
+      "pmid": "39842923",
+      "title": "Knowledge, attitudes and practices of healthcare professionals in the management of patients with hypertension and concurrent bronchial asthma: a cross-sectional study in the Yellow River Delta region of China.",
+      "year": "2025",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39842923/"
+    },
+    {
+      "pmid": "36803662",
+      "title": "Impact of health literacy and social support on medication adherence in patients with hypertension: a cross-sectional community-based study.",
+      "year": "2023",
+      "journal": "BMC cardiovascular disorders",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36803662/"
+    },
+    {
+      "pmid": "35501793",
+      "title": "Analyzing the effects of barriers to and facilitators of medication adherence among patients with cardiometabolic diseases: a structural equation modeling approach.",
+      "year": "2022",
+      "journal": "BMC health services research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35501793/"
+    },
+    {
+      "pmid": "35309202",
+      "title": "Effects of the Two-Dimensional Structure of Trust on Patient Adherence to Medication and Non-pharmaceutical Treatment: A Cross-Sectional Study of Rural Patients With Essential Hypertension in China.",
+      "year": "2022",
+      "journal": "Frontiers in public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35309202/"
+    },
+    {
+      "pmid": "34112122",
+      "title": "The effect of high blood pressure-health literacy, self-management behavior, self-efficacy and social support on the health-related quality of life of Kazakh hypertension patients in a low-income rural area of China: a structural equation model.",
+      "year": "2021",
+      "journal": "BMC public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34112122/"
+    },
+    {
+      "pmid": "32128865",
+      "title": "Factors influencing health behaviour, blood pressure control, and disability in hypertensive ischaemic stroke patients after a comprehensive reminder intervention.",
+      "year": "2020",
+      "journal": "Journal of advanced nursing",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32128865/"
+    },
+    {
+      "pmid": "31900018",
+      "title": "The influence of value reference point and risk preference on adherence in hypertensive patients in a low-income area of China.",
+      "year": "2020",
+      "journal": "Postgraduate medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31900018/"
+    },
+    {
+      "pmid": "30519131",
+      "title": "A longitudinal inquiry into directionality of effects between coping and information needs in hypertensive patients.",
+      "year": "2018",
+      "journal": "Psychology research and behavior management",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30519131/"
+    },
+    {
+      "pmid": "30410312",
+      "title": "Integrating factors associated with hypertensive patients' self-management using structural equation modeling: a cross-sectional study in Guangdong, China.",
+      "year": "2018",
+      "journal": "Patient preference and adherence",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30410312/"
+    },
+    {
+      "pmid": "28964558",
+      "title": "It's all a matter of necessity and concern: A structural equation model of adherence to antihypertensive medication.",
+      "year": "2018",
+      "journal": "Patient education and counseling",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/28964558/"
+    },
+    {
+      "pmid": "27378081",
+      "title": "Determinants of antihypertensive adherence among patients in Beijing: Application of the health belief model.",
+      "year": "2016",
+      "journal": "Patient education and counseling",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/27378081/"
+    },
+    {
+      "pmid": "27086432",
+      "title": "HEALTH LITERACY, MEDICATION ADHERENCE, AND BLOOD PRESSURE LEVEL AMONG HYPERTENSIVE OLDER ADULTS TREATED AT PRIMARY HEALTH CARE CENTERS.",
+      "year": "2016",
+      "journal": "The Southeast Asian journal of tropical medicine and public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/27086432/"
+    },
+    {
+      "pmid": "23204839",
+      "title": "Structural equation modeling of the proximal-distal continuum of adherence drivers.",
+      "year": "2012",
+      "journal": "Patient preference and adherence",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/23204839/"
+    },
+    {
+      "pmid": "18316489",
+      "title": "Improving hypertension control in diabetes mellitus: the effects of collaborative and proactive health communication.",
+      "year": "2008",
+      "journal": "Circulation",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/18316489/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 0,
+    "rct": 1,
+    "guideline": 0,
+    "observational": 11,
+    "recent": 0
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-11-23T19:32:32",
+    "truy_van_goc": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 0,
+        "pmid_lay_ve": []
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 1,
+        "so_bai_lay_ve": 1,
+        "pmid_lay_ve": [
+          "32128865"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 0,
+        "pmid_lay_ve": []
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 11,
+        "so_bai_lay_ve": 11,
+        "pmid_lay_ve": [
+          "42337710",
+          "42047149",
+          "39987031",
+          "39842923",
+          "36803662",
+          "35501793",
+          "35309202",
+          "34112122",
+          "32128865",
+          "31900018",
+          "27378081"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 0,
+        "pmid_lay_ve": []
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"medication adherence\"[MeSH] OR adherence[tiab]) AND (\"physician-patient relations\"[MeSH] OR communication[tiab] OR \"health literacy\"[tiab] OR knowledge[tiab]) AND (\"structural equation\"[tiab] OR \"path analysis\"[tiab] OR \"partial least squares\"[tiab]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 21,
+        "so_bai_lay_ve": 21,
+        "pmid_lay_ve": [
+          "42337710",
+          "42047149",
+          "41357882",
+          "40969234",
+          "40567828",
+          "40546292",
+          "39987031",
+          "39842923",
+          "36803662",
+          "35501793",
+          "35309202",
+          "34112122",
+          "32128865",
+          "31900018",
+          "30519131",
+          "30410312",
+          "28964558",
+          "27378081",
+          "27086432",
+          "23204839",
+          "18316489"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "41357882",
+          "40969234",
+          "40567828",
+          "40546292",
+          "30519131",
+          "30410312",
+          "28964558",
+          "27086432",
+          "23204839",
+          "18316489"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}

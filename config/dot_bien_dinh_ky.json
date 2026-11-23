@@ -64,6 +64,22 @@
    "cu": "    g1 = {k: v for k, v in _g1_meta(meta).items() if k not in _KHOA_XAC_NHAN_G1}",
    "moi": "    g1 = {k: v for k, v in _g1_meta(meta).items() if k not in _KHOA_XAC_NHAN_G1 and k != \"objectives\"}",
    "test": "tests/test_ho_so_don_vi_dau_cong_20261123.py::test_doi_quyet_dinh_g1_van_doi_dau"
+  },
+  {
+   "ma": "G6-HO-PLS-SEM",
+   "chot": "SAP §4 khai PLS-SEM ⇒ họ mô hình duy nhất là pls_sem (G6-AUTO-09 chặn lượt chạy họ khác)",
+   "tep": "tools/g6_quality_gate.py",
+   "cu": "    if \"pls_sem\" in ho:\n        return {\"pls_sem\"}",
+   "moi": "    if False:\n        return {\"pls_sem\"}",
+   "test": "tests/test_pls_sem_20261123.py::test_ho_sap_pls_doc_quyen"
+  },
+  {
+   "ma": "G6-DAC-TA-PLS-SEM",
+   "chot": "đặc tả G6 ↔ SAP: SAP khoá PLS-SEM thì phân tích vai «chinh» phải là PLS-SEM (chay_sap_g6 kiem)",
+   "tep": "tools/chay_sap_g6.py",
+   "cu": "    if co_pls and chinh is not None and not (chinh.get(\"tham_so\") or {}).get(\"pls_sem\"):",
+   "moi": "    if False:",
+   "test": "tests/test_pls_sem_20261123.py::test_dac_ta_lech_sap_bi_chan"
   }
  ]
 }
