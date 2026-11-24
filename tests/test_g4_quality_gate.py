@@ -207,6 +207,13 @@ def _evaluate(_chot=True, **overrides):
         dac_ta={"estimand": _ESTIMAND},
     )
     kwargs.update(overrides)
+    if "hop_dong_loi" not in overrides:
+        # 23/11/2026: SAP đem ký đã qua bước lập hợp đồng SAP máy đọc (băm trong chứng chỉ khoá — G4-AUTO-13)
+        import hop_dong_sap as HD
+
+        co_bam, _hd = HD.gan_vao_sap(kwargs["artifact_text"], kwargs["study"], None)
+        kwargs["artifact_text"] = co_bam if co_bam is not None else kwargs["artifact_text"]
+        kwargs["hop_dong_loi"] = HD.loi_bam_van_ban(kwargs["artifact_text"], kwargs["study"])
     if _chot:
         meta = json.loads(json.dumps(kwargs["meta"]))
         meta.setdefault("gate_params", {}).setdefault("G4", {}).setdefault(

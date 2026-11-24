@@ -51,7 +51,7 @@ def test_diem_manh_tu_du_kien_da_chot_khong_o_cho():
     assert dm[1] == ("*(3)* Mỗi nguồn sai lệch tiềm ẩn xác định ở thiết kế có biện pháp kiểm soát định trước (G1, "
                      "xem §6b) — nhiễu do chỉ định: hiệu chỉnh đa biến theo DAG, phân tích độ nhạy; sai lệch thông tin "
                      "do mã chẩn đoán: kiểm 10% hồ sơ biến cố bằng phim X-quang.  ")
-    assert dm[2] == ("*(4)* Độ đầy đủ dữ liệu đo trên tập dữ liệu phân tích: 3448/4396 người (78.4%) đủ dữ liệu "
+    assert dm[2] == ("*(4)* Độ đầy đủ dữ liệu đo trên tập dữ liệu phân tích: 3448/4396 người (78,4%) đủ dữ liệu "
                      "mọi biến phân tích (G6); dữ liệu thiếu xử lý theo SAP: Multiple Imputation (MI, m=20, "
                      f"method=pmm). {G7.NHAN_DOI_CHIEU_G6}  ")
     # câu (4) không thành khẳng định trần «đã khoá dữ liệu/SAP» khi cổng trước chưa có bằng chứng (G7-AUTO-06)
@@ -75,7 +75,7 @@ def test_thieu_du_kien_thi_o_cho_va_du_lieu_day_du_khong_in_cach_xu_ly():
                                                                  "pct_complete": 100.0}},
                                     sap_tom_tat={"du_lieu_thieu": "MI"})
     assert dm[0].startswith("*(2)* [CẦN thêm điểm mạnh")
-    assert dm[2].startswith("*(4)* Độ đầy đủ dữ liệu đo trên tập dữ liệu phân tích: 577/577 người (100.0%)")
+    assert dm[2].startswith("*(4)* Độ đầy đủ dữ liệu đo trên tập dữ liệu phân tích: 577/577 người (100,0%)")
     assert "xử lý theo SAP" not in dm[2], "đủ dữ liệu ⇒ không nói xử lý dữ liệu thiếu"
     g6_loi = G7.diem_manh_tu_du_kien_g7(**KHUNG, bias_controls=[], tom_tat_g6={"missing_data": {"error": "x"}},
                                         sap_tom_tat={})

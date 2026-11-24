@@ -381,6 +381,24 @@ def dien_sap_g4(text: str) -> str:
     return dien_chung_chi(text[:dau] + khoi + text[cuoi:])
 
 
+def lap_hop_dong_g4(out_dir: Path, study: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Thống kê viên lập/làm mới hợp đồng SAP máy đọc cho SAP hiện tại của đề tài tổng hợp trong thư mục tạm (ghi băm
+    vào chứng chỉ khoá + tệp hợp đồng). Không có SAP hoặc SAP sai khuôn ⇒ None."""
+    import hop_dong_sap as HD
+
+    out_dir = Path(out_dir)
+    study = study or out_dir.name
+    sap_p = out_dir / HD.ten_sap(study)
+    if not sap_p.is_file():
+        return None
+    moi, hd = HD.gan_vao_sap(sap_p.read_text(encoding="utf-8"), study, out_dir)
+    if moi is None:
+        return None
+    sap_p.write_text(moi, encoding="utf-8", newline="\n")
+    HD.luu(out_dir, study, hd)
+    return hd
+
+
 def sinh_sap_g4_that(out_dir: Path, study: str) -> Path:
     """Chạy run_g4_auto.main() THẬT (BASE = thư mục chứa exports/ của out_dir); trả đường dẫn SAP đã sinh."""
     import contextlib
@@ -409,8 +427,14 @@ def sinh_sap_g4_that(out_dir: Path, study: str) -> Path:
 
 
 def xac_nhan_g4(out_dir: Path, artifact_text: str, **them: Any) -> Dict[str, Any]:
-    """Thống kê viên xác nhận G4 (EPV/VIF, dữ liệu thiếu, nhóm nhỏ, vai trò) GẮN DẤU nội dung SAP hiện tại."""
+    """Thống kê viên xác nhận G4 (EPV/VIF, dữ liệu thiếu, nhóm nhỏ, vai trò) GẮN DẤU nội dung SAP hiện tại.
+
+    23/11/2026 (hợp đồng SAP máy đọc): như thống kê viên thật, điền xong SAP thì LẬP LẠI hợp đồng
+    `G4_SAP_CONTRACT_<mã>.json` và băm vào chứng chỉ khoá (`hop_dong_sap`) — G4-AUTO-13 chặn ký khi hợp đồng cũ; G6/G7
+    đọc hợp đồng. Dòng băm nằm ở PHẦN 5 nên dấu nội dung PHẦN 3 (G4-HUMAN-08) không đổi."""
     import g4_quality_gate as G4Q
+
+    lap_hop_dong_g4(out_dir)
 
     p = Path(out_dir) / "study_meta.json"
     meta = json.loads(p.read_text(encoding="utf-8"))

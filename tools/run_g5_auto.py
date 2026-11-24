@@ -1877,7 +1877,10 @@ def _muc_van_hanh_2026_2() -> dict:
             "evidence_ref": "[CẦN MÃ BIÊN BẢN ĐỐI CHIẾU, KHÔNG PII]",
             "not_applicable_reason": None,
             "huong_dan": ("Điền method, fraction_or_n, completed=true và evidence_ref; HOẶC xoá bốn trường đó và ghi "
-                          "not_applicable_reason (vd dữ liệu nhập thẳng vào eCRF, không có hồ sơ nguồn giấy)."),
+                          "not_applicable_reason (vd dữ liệu nhập thẳng vào eCRF, không có hồ sơ nguồn giấy). Nhập kép "
+                          "bằng hệ nhập liệu cục bộ (tools/nhap_lieu_cuc_bo.py) hoặc Excel (tools/nhap_lieu_excel.py): "
+                          "evidence_ref trỏ tóm tắt KHÔNG giá trị ở nhap_lieu/NHAP_LIEU_CUC_BO_bang_chung_*.json hoặc "
+                          "nhap_lieu/NHAP_KEP_tom_tat_*.json."),
         },
     }
 
@@ -2300,7 +2303,8 @@ def generate_artifact(
         # 15/11/2026 (giả lập trọn vòng): chữ hướng dẫn KHÔNG được chứa ký hiệu ô trống «[CẦN...]» — sau khi khoá, G5-AUTO-03
         # (dmp_o_trong_muc_song) đếm nó là ô chưa điền dù việc đã làm và đã đánh dấu ⇒ quản lý dữ liệu phải sửa câu hướng dẫn.
         "- [ ] **[CẦN BÁC SĨ]** Điền tất cả ô còn trống trong CRF (biến phơi nhiễm/kết cục cụ thể)",
-        "- [ ] **[CẦN BÁC SĨ]** Import REDCap dictionary CSV vào REDCap cơ sở",
+        "- [ ] **[CẦN BÁC SĨ]** Nhập liệu theo đúng từ điển G5: import vào REDCap cơ sở, hoặc (chưa có REDCap) hệ nhập "
+        "liệu cục bộ `tools/nhap_lieu_cuc_bo.py` / Excel-SPSS `tools/nhap_lieu_excel.py`",
         "- [ ] **[CẦN BÁC SĨ + ĐỘI NC]** Thu thập dữ liệu thật (chỉ sau G2 = LOCKED)",
         "- [ ] **[CẦN BÁC SĨ]** Spot-check 10% phiếu CRF",
         "- [ ] **[CẦN BÁC SĨ]** Chạy `data_cleaning.py` + `data_quality_report.py` → PASS",
@@ -2906,7 +2910,10 @@ def main():
         "automation_level": "DRAFT_AUTOMATED_HUMAN_CONTROLLED",
         "pending_doctor_actions": [
             "Điền tất cả ô còn trống trong CRF (biến phơi nhiễm/kết cục cụ thể)",
-            "Import REDCap dictionary CSV vào REDCap cơ sở",
+            # 23/11/2026: bệnh viện chưa có REDCap ⇒ hai đường nhập liệu ngang hàng theo ĐÚNG từ điển này.
+            "Nhập liệu theo đúng từ điển G5: import REDCap dictionary CSV vào REDCap cơ sở — chưa có REDCap thì hệ "
+            "nhập liệu cục bộ tools/nhap_lieu_cuc_bo.py (nhập kép hai người, khoá phiếu, xuất CSV khuôn REDCap + tóm "
+            "tắt bằng chứng không giá trị) hoặc Excel/SPSS tools/nhap_lieu_excel.py",
             # VÁ 04/10/2026 (G5-07): hồ sơ G5-OPS-2026.2 gồm cả rà audit trail và đối chiếu dữ liệu nguồn (SDV).
             f"Hoàn tất {G5Q.OPERATIONAL_READINESS_JSON} ({G5Q.OPERATIONAL_SCHEMA_VERSION}) bằng bằng chứng tại "
             "đơn vị: quyền truy cập, thử phục hồi, lưu trữ, sai lệch đề cương, RÀ AUDIT TRAIL, đối chiếu dữ liệu nguồn "

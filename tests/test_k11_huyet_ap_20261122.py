@@ -125,6 +125,7 @@ def test_gia_lap_soat_moi_van_ban_de_tai_va_cong_phan_bao_do(tmp_path):
 
     o = _O()
     o.out = out
+    o.study = "X"  # 23/11/2026: _soat_so_do soát thêm báo cáo tổng hợp của đề tài (cần mã đề tài như TronVong thật)
     sai = o._soat_so_do()
     assert len(sai) == 1 and sai[0].startswith("G4_A5_SAP_FINAL_X.md: K11 dòng 3: dấu so sánh dính số «>3»"), sai
     bc = tmp_path / "bc.json"

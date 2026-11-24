@@ -1,0 +1,1710 @@
+{
+ "schema": "de_tai/so_dinh_danh_tltk/v1",
+ "study": "btm-dtd2-ngoai-tru-BVQY175",
+ "luc": "2026-11-23T04:22:29",
+ "nguon": "Crossref /works, NCBI PMC ID Converter",
+ "muc": [
+  {
+   "so": 1,
+   "bam_dong": "bf465703cbfbff94",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.52389/ydls.v20i0.2832",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Phân tích thực trạng sử dụng thuốc trong điều trị đái tháo đường típ 2 tại Bệnh viện Thanh Nhàn 2024",
+    "nam": [
+     "2025"
+    ],
+    "tap": null,
+    "so": null,
+    "trang": null,
+    "tap_chi": "Journal of 108 - Clinical Medicine and Phamarcy"
+   }
+  },
+  {
+   "so": 2,
+   "bam_dong": "f680055ba9deb8f3",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.51298/vmj.v534i2.8190",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "KIỂM SOÁT ĐƯỜNG HUYẾT TRÊN NGƯỜI BỆNH ĐÁI THÁO ĐƯỜNG TYPE 2 ĐIỀU TRỊ NGOẠI TRÚ TẠI BỆNH VIỆN NHÂN DÂN GIA ĐỊNH",
+    "nam": [
+     "2024"
+    ],
+    "tap": "534",
+    "so": "2",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Việt Nam"
+   }
+  },
+  {
+   "so": 3,
+   "bam_dong": "0ceb9dda31e7e93d",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.51298/vmj.v542i3.11221",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "TỶ LỆ CÁC LOẠI THUỐC ĐƯỢC KÊ CHO BỆNH NHÂN SUY THẬN MẠN  CÓ ĐÁI THÁO ĐƯỜNG ĐIỀU TRỊ NGOẠI TRÚ TẠI BỆNH VIỆN  ĐA KHOA TỈNH LONG AN NĂM 2023",
+    "nam": [
+     "2024"
+    ],
+    "tap": "542",
+    "so": "3",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Việt Nam"
+   }
+  },
+  {
+   "so": 4,
+   "bam_dong": "226f6d8efc376581",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.34071/jmp.2026.5.914",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "168-175",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Nghiên cứu tỷ lệ, đặc điểm và các yếu tố liên quan của bệnh thận đái tháo đường ở bệnh nhân đái tháo đường típ 2 đang điều trị ngoại trú",
+    "nam": [
+     "2026"
+    ],
+    "tap": "16",
+    "so": "5",
+    "trang": "168-175",
+    "tap_chi": "Tạp chí Y Dược Huế"
+   }
+  },
+  {
+   "so": 5,
+   "bam_dong": "4d6e9542d1f509ad",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.51298/vmj.v531i1b.7074",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "TỶ LỆ ĐÁI THÁO ĐƯỜNG TÝP 2 CÓ BIẾN CHỨNG THẬN VÀ THỰC TRẠNG PHÒNG, CHỐNG BIẾN CHỨNG THẬN Ở BỆNH NHÂN ĐÁI THÁO ĐƯỜNG TÝP 2 TẠI BỆNH VIỆN ĐA KHOA CÁI NƯỚC NĂM 2022-2023",
+    "nam": [
+     "2023"
+    ],
+    "tap": "531",
+    "so": "1B",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Việt Nam"
+   }
+  },
+  {
+   "so": 6,
+   "bam_dong": "fd5a0f27f8157f0d",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.56283/1859-0381/390",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "55-61",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "NỒNG ĐỘ MICROALBUMIN NIỆU VÀ MỘT SỐ YẾU TỐ LIÊN QUAN Ở BỆNH NHÂN ĐÁI THÁO ĐƯỜNG TÝP 2 ĐIỀU TRỊ NGOẠI TRÚ",
+    "nam": [
+     "2023"
+    ],
+    "tap": "18",
+    "so": "5",
+    "trang": "55-61",
+    "tap_chi": "Tạp chí Dinh dưỡng và Thực phẩm"
+   }
+  },
+  {
+   "so": 7,
+   "bam_dong": "57684c79752fec75",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.51298/vmj.v548i3.13725",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "SO SÁNH CÁC PHƯƠNG PHÁP CHẨN ĐOÁN BỆNH THẬN MẠN TRÊN BỆNH NHÂN ĐÁI THÁO ĐƯỜNG: NGHIÊN CỨU THỰC HIỆN TRONG CỘNG ĐỒNG",
+    "nam": [
+     "2025"
+    ],
+    "tap": "548",
+    "so": "3",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Việt Nam"
+   }
+  },
+  {
+   "so": 8,
+   "bam_dong": "efd8a842ebbb748d",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.32895/hcjm.m.2025.11.21",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "172",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Khảo sát tỷ lệ bệnh thận mạn và các yếu tố liên quan ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Lê Văn Thịnh năm 2025",
+    "nam": [
+     "2025"
+    ],
+    "tap": "28",
+    "so": "11",
+    "trang": "172",
+    "tap_chi": "Y HOC TP HO CHI MINH"
+   }
+  },
+  {
+   "so": 9,
+   "bam_dong": "a5a47c3474e6341a",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.51298/vmj.v556i1.16273",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "TỶ SỐ ALBUMIN/CREATININE NIỆU Ở NGƯỜI BỆNH ĐÁI THÁO ĐƯỜNG TYPE 2 TẠI BỆNH VIỆN ĐẠI HỌC Y HÀ NỘI 2025",
+    "nam": [
+     "2025"
+    ],
+    "tap": "556",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Việt Nam"
+   }
+  },
+  {
+   "so": 10,
+   "bam_dong": "7e2bfff1b0914bf6",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.51298/vmj.v556i3.16531",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "KHẢO SÁT TỈ LỆ BỆNH NHÂN MẮC BỆNH THẬN MẠN VÀ YẾU TỐ NGUY CƠ BỆNH THẬN MẠN Ở BỆNH NHÂN ĐÁI THÁO ĐƯỜNG TÍP 2 ĐIỀU TRỊ NGOẠI TRÚ",
+    "nam": [
+     "2025"
+    ],
+    "tap": "556",
+    "so": "3",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Việt Nam"
+   }
+  },
+  {
+   "so": 11,
+   "bam_dong": "40bd72d572a227a6",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.51298/vmj.v545i1.12165",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "KHẢO SÁT TÌNH HÌNH SỬ DỤNG THUỐC TRÊN BỆNH NHÂN ĐÁI THÁO ĐƯỜNG TYP 2 MẮC KÈM BỆNH THẬN MẠN TẠI BỆNH VIỆN NỘI TIẾT TRUNG ƯƠNG",
+    "nam": [
+     "2024"
+    ],
+    "tap": "545",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Việt Nam"
+   }
+  },
+  {
+   "so": 12,
+   "bam_dong": "0dfb057b1739f91f",
+   "loai": "bai_bao",
+   "pmid": "41345917",
+   "pmcid": "PMC12781434",
+   "doi": "10.1186/s12882-025-04672-5",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Underutilization of albuminuria screening in adults with diabetes mellitus or hypertension: a systematic review and meta-analysis",
+    "nam": [
+     "2025"
+    ],
+    "tap": "27",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "BMC Nephrology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 13,
+   "bam_dong": "61dbd08f2e283ac9",
+   "loai": "bai_bao",
+   "pmid": "41358881",
+   "pmcid": "PMC12690176",
+   "doi": "10.2337/dc26-s011",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "S246-S260",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "11. Chronic Kidney Disease and Risk Management: Standards of Care in Diabetes—2026",
+    "nam": [
+     "2026"
+    ],
+    "tap": "49",
+    "so": "Supplement_1",
+    "trang": "S246-S260",
+    "tap_chi": "Diabetes Care"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 14,
+   "bam_dong": "8101dfd8869cde23",
+   "loai": "bai_bao",
+   "pmid": "41358893",
+   "pmcid": "PMC12690183",
+   "doi": "10.2337/dc26-s002",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "S27-S49",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes—2026",
+    "nam": [
+     "2026"
+    ],
+    "tap": "49",
+    "so": "Supplement_1",
+    "trang": "S27-S49",
+    "tap_chi": "Diabetes Care"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 15,
+   "bam_dong": "970d5bce6373caca",
+   "loai": "bai_bao",
+   "pmid": "41358900",
+   "pmcid": "PMC12690185",
+   "doi": "10.2337/dc26-s009",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "S183-S215",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes—2026",
+    "nam": [
+     "2026"
+    ],
+    "tap": "49",
+    "so": "Supplement_1",
+    "trang": "S183-S215",
+    "tap_chi": "Diabetes Care"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 16,
+   "bam_dong": "23ba1403658fabe5",
+   "loai": "bai_bao",
+   "pmid": "42575755",
+   "pmcid": null,
+   "doi": "10.1016/j.pcd.2026.07.013",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "620-628",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "A cross-regional initiative for improving type 2 diabetes mellitus care quality measurement in Spain – The Diabetes Lighthouse project",
+    "nam": [
+     "2026"
+    ],
+    "tap": "20",
+    "so": "5",
+    "trang": "620-628",
+    "tap_chi": "Primary Care Diabetes"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 17,
+   "bam_dong": "2733818eac5177c4",
+   "loai": "bai_bao",
+   "pmid": "39507052",
+   "pmcid": "PMC11538071",
+   "doi": "10.3389/fendo.2024.1359904",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Temporal trend in quality indicators of diabetes care performance among persons with type 2 diabetes in primary care practice: a serial cross-sectional analytical study, 2013/14 to 2021/22",
+    "nam": [
+     "2024"
+    ],
+    "tap": "15",
+    "so": null,
+    "trang": null,
+    "tap_chi": "Frontiers in Endocrinology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 18,
+   "bam_dong": "8c0b43d0f4cf848b",
+   "loai": "bai_bao",
+   "pmid": "14567763",
+   "pmcid": "PMC521200",
+   "doi": "10.1186/1471-2288-3-21",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Alternatives for logistic regression in cross-sectional studies: an empirical comparison of models that directly estimate the prevalence ratio",
+    "nam": [
+     "2003"
+    ],
+    "tap": "3",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "BMC Medical Research Methodology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 19,
+   "bam_dong": "fed38f4287bd0705",
+   "loai": "bai_bao",
+   "pmid": "41276836",
+   "pmcid": "PMC12750594",
+   "doi": "10.1186/s12875-025-03117-0",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Chronic kidney disease screening in primary care: a descriptive analysis of the Girona Sud health region",
+    "nam": [
+     "2025"
+    ],
+    "tap": "26",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "BMC Primary Care"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 20,
+   "bam_dong": "502c5ac5b1ce462b",
+   "loai": "bai_bao",
+   "pmid": "26440803",
+   "pmcid": "PMC4595218",
+   "doi": "10.1371/journal.pmed.1001885",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "e1001885",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "The REporting of studies Conducted using Observational Routinely-collected health Data (RECORD) Statement",
+    "nam": [
+     "2015"
+    ],
+    "tap": "12",
+    "so": "10",
+    "trang": "e1001885",
+    "tap_chi": "PLOS Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 21,
+   "bam_dong": "0f65e2c1dab911f3",
+   "loai": "bai_bao",
+   "pmid": "2868172",
+   "pmcid": null,
+   "doi": null,
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": null
+  },
+  {
+   "so": 22,
+   "bam_dong": "c3126b9acb72c804",
+   "loai": "bai_bao",
+   "pmid": "41916900",
+   "pmcid": "PMC13140622",
+   "doi": "10.1111/jch.70241",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Diagnostic Testing Patterns Influence the Detected Burden of Hypertension‐Mediated Organ Damage in Hospitalized Hypertensive Patients",
+    "nam": [
+     "2026"
+    ],
+    "tap": "28",
+    "so": "4",
+    "trang": null,
+    "tap_chi": "The Journal of Clinical Hypertension"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 23,
+   "bam_dong": "ff0503762a08bac2",
+   "loai": "bai_bao",
+   "pmid": "8501467",
+   "pmcid": null,
+   "doi": "10.1016/0895-4356(93)90018-v",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "423-429",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Bias, prevalence and kappa",
+    "nam": [
+     "1993"
+    ],
+    "tap": "46",
+    "so": "5",
+    "trang": "423-429",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 24,
+   "bam_dong": "caed647138e268ab",
+   "loai": "bai_bao",
+   "pmid": "41741270",
+   "pmcid": null,
+   "doi": "10.1016/j.pcd.2026.02.007",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "298-305",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Undiagnosed chronic kidney disease in people with type 2 diabetes in Spain: Prevalence, treatment patterns and associated factors in a multicentre cross-sectional study",
+    "nam": [
+     "2026"
+    ],
+    "tap": "20",
+    "so": "3",
+    "trang": "298-305",
+    "tap_chi": "Primary Care Diabetes"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 25,
+   "bam_dong": "80db43e8e02d8720",
+   "loai": "bai_bao",
+   "pmid": "40335370",
+   "pmcid": null,
+   "doi": "10.1016/j.pcd.2025.05.002",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "368-374",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Evaluating risk stratification according to Type 2 diabetes guidelines in primary care – Insights from the Danish DIAGRAM project",
+    "nam": [
+     "2025"
+    ],
+    "tap": "19",
+    "so": "4",
+    "trang": "368-374",
+    "tap_chi": "Primary Care Diabetes"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 26,
+   "bam_dong": "ce20b865527ae276",
+   "loai": "bai_bao",
+   "pmid": "2189948",
+   "pmcid": null,
+   "doi": "10.1016/0895-4356(90)90159-m",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "551-558",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "High agreement but low kappa: II. Resolving the paradoxes",
+    "nam": [
+     "1990"
+    ],
+    "tap": "43",
+    "so": "6",
+    "trang": "551-558",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 27,
+   "bam_dong": "9a3672d3ac683f22",
+   "loai": "bai_bao",
+   "pmid": "39391521",
+   "pmcid": "PMC11462144",
+   "doi": "10.5114/pm.2024.141090",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "75-82",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Optimising antidiabetic medication management for type 2 diabetes and renal dysfunction in Can Tho City, Vietnam",
+    "nam": [
+     "2024"
+    ],
+    "tap": "23",
+    "so": "2",
+    "trang": "75-82",
+    "tap_chi": "Menopausal Review"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 28,
+   "bam_dong": "9329ed048bf0ce4c",
+   "loai": "bai_bao",
+   "pmid": "30238781",
+   "pmcid": null,
+   "doi": "10.1177/1479164118795559",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "47-56",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Guidelines and clinical practice at the primary level of healthcare in patients with type 2 diabetes mellitus with and without kidney disease in five European countries",
+    "nam": [
+     "2019"
+    ],
+    "tap": "16",
+    "so": "1",
+    "trang": "47-56",
+    "tap_chi": "Diabetes and Vascular Disease Research"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 29,
+   "bam_dong": "99396577d2538b0f",
+   "loai": "bai_bao",
+   "pmid": "38922613",
+   "pmcid": "PMC11208975",
+   "doi": "10.1001/jamanetworkopen.2024.18808",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "e2418808",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Concordance With Screening and Treatment Guidelines for Chronic Kidney Disease in Type 2 Diabetes",
+    "nam": [
+     "2024"
+    ],
+    "tap": "7",
+    "so": "6",
+    "trang": "e2418808",
+    "tap_chi": "JAMA Network Open"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 30,
+   "bam_dong": "226e080489ffc7b4",
+   "loai": "bai_bao",
+   "pmid": "2348207",
+   "pmcid": null,
+   "doi": "10.1016/0895-4356(90)90158-l",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "543-549",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "High agreement but low Kappa: I. the problems of two paradoxes",
+    "nam": [
+     "1990"
+    ],
+    "tap": "43",
+    "so": "6",
+    "trang": "543-549",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 31,
+   "bam_dong": "dd1a9600428ed631",
+   "loai": "bai_bao",
+   "pmid": "41541781",
+   "pmcid": "PMC12799545",
+   "doi": "10.1016/j.ekir.2025.09.027",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "6-16",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "From Evidence to Action: Advancing Timely Implementation of Triple Therapy in Type 2 Diabetes Mellitus and CKD",
+    "nam": [
+     "2026"
+    ],
+    "tap": "11",
+    "so": "1",
+    "trang": "6-16",
+    "tap_chi": "Kidney International Reports®"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 32,
+   "bam_dong": "675d5cbdc6ba706b",
+   "loai": "bai_bao",
+   "pmid": "33722396",
+   "pmcid": null,
+   "doi": "10.1016/j.mayocp.2020.07.037",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "975-986",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Adherence to Chronic Kidney Disease Screening Guidelines Among Patients With Type 2 Diabetes in a US Administrative Claims Database",
+    "nam": [
+     "2021"
+    ],
+    "tap": "96",
+    "so": "4",
+    "trang": "975-986",
+    "tap_chi": "Mayo Clinic Proceedings"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 33,
+   "bam_dong": "a3746b16a8ae431b",
+   "loai": "bai_bao",
+   "pmid": "8599488",
+   "pmcid": null,
+   "doi": "10.1016/s0196-0644(96)70264-0",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "305-308",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Chart Reviews In Emergency Medicine Research: Where Are The Methods?",
+    "nam": [
+     "1996"
+    ],
+    "tap": "27",
+    "so": "3",
+    "trang": "305-308",
+    "tap_chi": "Annals of Emergency Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 34,
+   "bam_dong": "d105895d9dceead9",
+   "loai": "bai_bao",
+   "pmid": "42031191",
+   "pmcid": null,
+   "doi": "10.1016/j.amjmed.2026.04.022",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "1228-1236",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Electronic alert-based computerized decision support for detection of chronic kidney disease in type 2 diabetes mellitus: CKD-DETECT",
+    "nam": [
+     "2026"
+    ],
+    "tap": "139",
+    "so": "9",
+    "trang": "1228-1236",
+    "tap_chi": "The American Journal of Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 35,
+   "bam_dong": "adf636baed9b84ae",
+   "loai": "bai_bao",
+   "pmid": "35606699",
+   "pmcid": "PMC9128222",
+   "doi": "10.1186/s12875-022-01731-w",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Underuse of cardiorenal protective agents in high-risk diabetes patients in primary care: a cross-sectional study",
+    "nam": [
+     "2022"
+    ],
+    "tap": "23",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "BMC Primary Care"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 36,
+   "bam_dong": "f467f3ea22e76bab",
+   "loai": "bai_bao",
+   "pmid": "34554658",
+   "pmcid": "PMC8822996",
+   "doi": "10.1056/nejmoa2102953",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "1737-1749",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "New Creatinine- and Cystatin C–Based Equations to Estimate GFR without Race",
+    "nam": [
+     "2021"
+    ],
+    "tap": "385",
+    "so": "19",
+    "trang": "1737-1749",
+    "tap_chi": "New England Journal of Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 37,
+   "bam_dong": "871a2289a5d440d0",
+   "loai": "bai_bao",
+   "pmid": "35177470",
+   "pmcid": "PMC8860071",
+   "doi": "10.1136/fmch-2021-001006",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "e001006",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Using electronic medical record data to assess chronic kidney disease, type 2 diabetes and cardiovascular disease testing, recognition and management as documented in Australian general practice: a cross-sectional analysis",
+    "nam": [
+     "2022"
+    ],
+    "tap": "10",
+    "so": "1",
+    "trang": "e001006",
+    "tap_chi": "Family Medicine and Community Health"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 38,
+   "bam_dong": "7958ed6ea1243cca",
+   "loai": "bai_bao",
+   "pmid": "35101868",
+   "pmcid": "PMC8804706",
+   "doi": "10.1136/bmjoq-2021-001591",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "e001591",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Improving annual albuminuria testing for individuals with diabetes",
+    "nam": [
+     "2022"
+    ],
+    "tap": "11",
+    "so": "1",
+    "trang": "e001591",
+    "tap_chi": "BMJ Open Quality"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 39,
+   "bam_dong": "74e4f81232e9a63f",
+   "loai": "bai_bao",
+   "pmid": "38490803",
+   "pmcid": null,
+   "doi": "10.1016/j.kint.2023.10.018",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "S117-S314",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease",
+    "nam": [
+     "2024"
+    ],
+    "tap": "105",
+    "so": "4",
+    "trang": "S117-S314",
+    "tap_chi": "Kidney International"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 40,
+   "bam_dong": "2f242f9579418d36",
+   "loai": "bai_bao",
+   "pmid": "36272764",
+   "pmcid": null,
+   "doi": "10.1016/j.kint.2022.06.008",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "S1-S127",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "KDIGO 2022 Clinical Practice Guideline for Diabetes Management in Chronic Kidney Disease",
+    "nam": [
+     "2022"
+    ],
+    "tap": "102",
+    "so": "5",
+    "trang": "S1-S127",
+    "tap_chi": "Kidney International"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 41,
+   "bam_dong": "6ea5872282d659e3",
+   "loai": "bai_bao",
+   "pmid": "27330520",
+   "pmcid": "PMC4913118",
+   "doi": "10.1016/j.jcm.2016.02.012",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "155-163",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "A Guideline of Selecting and Reporting Intraclass Correlation Coefficients for Reliability Research",
+    "nam": [
+     "2016"
+    ],
+    "tap": "15",
+    "so": "2",
+    "trang": "155-163",
+    "tap_chi": "Journal of Chiropractic Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 42,
+   "bam_dong": "d85be80cdc29f293",
+   "loai": "bai_bao",
+   "pmid": "40428801",
+   "pmcid": "PMC12113003",
+   "doi": "10.3390/medicina61050843",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "843",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "The Underdiagnosis of Chronic Kidney Disease in Patients with a Documented Estimated Glomerular Filtration Rate and/or Urine Albumin–Creatinine Ratio in Germany",
+    "nam": [
+     "2025"
+    ],
+    "tap": "61",
+    "so": "5",
+    "trang": "843",
+    "tap_chi": "Medicina"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 43,
+   "bam_dong": "fa37e203d47eea4a",
+   "loai": "bai_bao",
+   "pmid": "21130355",
+   "pmcid": null,
+   "doi": "10.1016/j.jclinepi.2010.03.002",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "96-106",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Guidelines for Reporting Reliability and Agreement Studies (GRRAS) were proposed",
+    "nam": [
+     "2011"
+    ],
+    "tap": "64",
+    "so": "1",
+    "trang": "96-106",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 44,
+   "bam_dong": "3b1248bdfd8f19e1",
+   "loai": "bai_bao",
+   "pmid": "37153973",
+   "pmcid": null,
+   "doi": "10.1111/nep.14167",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "415-424",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Practical considerations for the use of <scp>SGLT</scp>‐2 inhibitors in the <scp>A</scp>sia–<scp>P</scp>acific countries—An expert consensus statement",
+    "nam": [
+     "2023"
+    ],
+    "tap": "28",
+    "so": "8",
+    "trang": "415-424",
+    "tap_chi": "Nephrology"
+   },
+   "lech_tham_khao": [
+    "tiêu đề khác nguồn — Crossref: «Practical considerations for the use of <scp>SGLT</scp>‐2 inhibitors in the <scp>A</scp>sia–<scp>P</scp>acific countries»"
+   ]
+  },
+  {
+   "so": 45,
+   "bam_dong": "49c993ac3deb4fff",
+   "loai": "bai_bao",
+   "pmid": "40814615",
+   "pmcid": "PMC12348363",
+   "doi": "10.1016/j.ekir.2025.06.010",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "2551-2565",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Kidney Disease: Improving Global Outcomes Summit Recommendations on Implementation of Diabetes Management in CKD: From Primary to Data-Driven Collaborative Care",
+    "nam": [
+     "2025"
+    ],
+    "tap": "10",
+    "so": "8",
+    "trang": "2551-2565",
+    "tap_chi": "Kidney International Reports"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 46,
+   "bam_dong": "0513170cfefc5bad",
+   "loai": "bai_bao",
+   "pmid": "39156845",
+   "pmcid": "PMC11328054",
+   "doi": "10.25259/ijn_451_23",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "332-337",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Using eGFR and Albumin Creatinine Ratio as an Initial Screening Tool in Trinidadian Primary Care to Identify High-risk Population for CKD: A Cross-Sectional Study",
+    "nam": [
+     "2024"
+    ],
+    "tap": "34",
+    "so": null,
+    "trang": "332-337",
+    "tap_chi": "Indian Journal of Nephrology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 47,
+   "bam_dong": "640f57a999ab7c7f",
+   "loai": "bai_bao",
+   "pmid": "42541306",
+   "pmcid": "PMC13427520",
+   "doi": "10.1016/j.pmedr.2026.103581",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "103581",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Current attitudes of primary care providers toward albuminuria testing in patients with diabetes in the United States",
+    "nam": [
+     "2026"
+    ],
+    "tap": "69",
+    "so": null,
+    "trang": "103581",
+    "tap_chi": "Preventive Medicine Reports"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 48,
+   "bam_dong": "7af61facc05aac61",
+   "loai": "bai_bao",
+   "pmid": "26964707",
+   "pmcid": "PMC5045274",
+   "doi": "10.1016/j.jclinepi.2016.02.031",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "175-182",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Adequate sample size for developing prediction models is not simply related to events per variable",
+    "nam": [
+     "2016"
+    ],
+    "tap": "76",
+    "so": null,
+    "trang": "175-182",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 49,
+   "bam_dong": "d3eb6f00db8755ce",
+   "loai": "bai_bao",
+   "pmid": "32111192",
+   "pmcid": "PMC7048110",
+   "doi": "10.1186/s12882-020-1705-3",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "The burden of unrecognised chronic kidney disease in patients with type 2 diabetes at a county hospital clinic in Kenya: implications to care and need for screening",
+    "nam": [
+     "2020"
+    ],
+    "tap": "21",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "BMC Nephrology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 50,
+   "bam_dong": "0a9ac0d4b5425755",
+   "loai": "bai_bao",
+   "pmid": "40037768",
+   "pmcid": "PMC12322385",
+   "doi": "10.1136/heartjnl-2024-325046",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "776-785",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Missed opportunities to manage complex comorbidity of heart failure, type 2 diabetes mellitus and chronic kidney disease: a retrospective cohort study",
+    "nam": [
+     "2025"
+    ],
+    "tap": "111",
+    "so": "16",
+    "trang": "776-785",
+    "tap_chi": "Heart"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 51,
+   "bam_dong": "0007e84ac2635621",
+   "loai": "bai_bao",
+   "pmid": "16977646",
+   "pmcid": null,
+   "doi": "10.1002/nur.20147",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "489-497",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "The content validity index: Are you sure you know what's being reported? critique and recommendations",
+    "nam": [
+     "2006"
+    ],
+    "tap": "29",
+    "so": "5",
+    "trang": "489-497",
+    "tap_chi": "Research in Nursing &amp; Health"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 52,
+   "bam_dong": "d8c817a5c1888807",
+   "loai": "bai_bao",
+   "pmid": "17654487",
+   "pmcid": null,
+   "doi": "10.1002/nur.20199",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "459-467",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Is the CVI an acceptable indicator of content validity? Appraisal and recommendations",
+    "nam": [
+     "2007"
+    ],
+    "tap": "30",
+    "so": "4",
+    "trang": "459-467",
+    "tap_chi": "Research in Nursing &amp; Health"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 53,
+   "bam_dong": "78d054bd1a141435",
+   "loai": "bai_bao",
+   "pmid": "39487060",
+   "pmcid": null,
+   "doi": "10.1016/j.pcd.2024.10.007",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "29-34",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Trends in type 2 diabetes medication use and guideline adherence in Belgian primary care (2019–2023)",
+    "nam": [
+     "2025"
+    ],
+    "tap": "19",
+    "so": "1",
+    "trang": "29-34",
+    "tap_chi": "Primary Care Diabetes"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 54,
+   "bam_dong": "9c705c11d0fb2001",
+   "loai": "bai_bao",
+   "pmid": "36352203",
+   "pmcid": "PMC10212863",
+   "doi": "10.1007/s11606-022-07863-0",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "1599-1605",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Care Gaps in Sodium-Glucose Cotransporter-2 Inhibitor and Renin Angiotensin System Inhibitor Prescriptions for Patients with Diabetic Kidney Disease",
+    "nam": [
+     "2023"
+    ],
+    "tap": "38",
+    "so": "7",
+    "trang": "1599-1605",
+    "tap_chi": "Journal of General Internal Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 55,
+   "bam_dong": "5aa2b276a9932f85",
+   "loai": "bai_bao",
+   "pmid": "40902917",
+   "pmcid": null,
+   "doi": "10.1016/j.amjmed.2025.08.029",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "207-213",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Optimizing guideline-directed medical therapy in chronic kidney disease and type 2 diabetes mellitus patients in primary care",
+    "nam": [
+     "2026"
+    ],
+    "tap": "139",
+    "so": "2",
+    "trang": "207-213",
+    "tap_chi": "The American Journal of Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 56,
+   "bam_dong": "2ea82ec4795ad86a",
+   "loai": "bai_bao",
+   "pmid": "42723263",
+   "pmcid": "PMC13731052",
+   "doi": "10.1111/dom.71298",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "11278-11287",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "The\n                    <scp>SGLT2i</scp>\n                    Treatment Gap in\n                    <scp>UK</scp>\n                    Primary Care: A Cross‐Sectional\n                    <scp>RWE</scp>\n                    Study of Prescribing in Clinical Practice",
+    "nam": [
+     "2026"
+    ],
+    "tap": "28",
+    "so": "12",
+    "trang": "11278-11287",
+    "tap_chi": "Diabetes, Obesity and Metabolism"
+   },
+   "lech_tham_khao": [
+    "tiêu đề khác nguồn — Crossref: «The\n                    <scp>SGLT2i</scp>\n                    Treatment Gap in\n                    <scp>UK</scp>\n       »"
+   ]
+  },
+  {
+   "so": 57,
+   "bam_dong": "c2e4cffee7ec2794",
+   "loai": "bai_bao",
+   "pmid": "19564179",
+   "pmcid": "PMC2714692",
+   "doi": "10.1136/bmj.b2393",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "b2393-b2393",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Multiple imputation for missing data in epidemiological and clinical research: potential and pitfalls",
+    "nam": [
+     "2009"
+    ],
+    "tap": "338",
+    "so": "jun29 1",
+    "trang": "b2393-b2393",
+    "tap_chi": "BMJ"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 58,
+   "bam_dong": "747cdaaad4f85ccf",
+   "loai": "bai_bao",
+   "pmid": "39023418",
+   "pmcid": null,
+   "doi": "10.1111/eci.14282",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Suboptimal monitoring and management in patients with unrecorded stage 3 chronic kidney disease in real‐world settings: Insights from\n                    <scp>REVEAL</scp>\n                    ‐\n                    <scp>CKD</scp>",
+    "nam": [
+     "2024"
+    ],
+    "tap": "54",
+    "so": "11",
+    "trang": null,
+    "tap_chi": "European Journal of Clinical Investigation"
+   },
+   "lech_tham_khao": [
+    "tiêu đề khác nguồn — Crossref: «Suboptimal monitoring and management in patients with unrecorded stage 3 chronic kidney disease in real‐world settings: »"
+   ]
+  },
+  {
+   "so": 59,
+   "bam_dong": "30187521df82312a",
+   "loai": "bai_bao",
+   "pmid": "27881078",
+   "pmcid": "PMC5122171",
+   "doi": "10.1186/s12874-016-0267-3",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "No rationale for 1 variable per 10 events criterion for binary logistic regression analysis",
+    "nam": [
+     "2016"
+    ],
+    "tap": "16",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "BMC Medical Research Methodology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 60,
+   "bam_dong": "eccb65501f75f73e",
+   "loai": "bai_bao",
+   "pmid": "40667713",
+   "pmcid": "PMC12409226",
+   "doi": "10.1111/dom.16608",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "5599-5611",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Prevalence of\n                    <scp>SGLT2</scp>\n                    inhibitor and\n                    <scp>GLP1</scp>\n                    receptor agonist prescriptions in type 2 diabetes patients with and without chronic kidney disease: Analysis of an Australian primary care dataset",
+    "nam": [
+     "2025"
+    ],
+    "tap": "27",
+    "so": "10",
+    "trang": "5599-5611",
+    "tap_chi": "Diabetes, Obesity and Metabolism"
+   },
+   "lech_tham_khao": [
+    "tiêu đề khác nguồn — Crossref: «Prevalence of\n                    <scp>SGLT2</scp>\n                    inhibitor and\n                    <scp>GLP1</scp>»"
+   ]
+  },
+  {
+   "so": 61,
+   "bam_dong": "992a5fad1393064e",
+   "loai": "bai_bao",
+   "pmid": "21225900",
+   "pmcid": null,
+   "doi": "10.1002/sim.4067",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "377-399",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Multiple imputation using chained equations: Issues and guidance for practice",
+    "nam": [
+     "2011"
+    ],
+    "tap": "30",
+    "so": "4",
+    "trang": "377-399",
+    "tap_chi": "Statistics in Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 62,
+   "bam_dong": "8d6a32ec2392c522",
+   "loai": "bai_bao",
+   "pmid": "42838586",
+   "pmcid": "PMC13647024",
+   "doi": "10.1136/bmjopen-2026-121190",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "e121190",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Prevalence, risk factors and renoprotective treatment of chronic kidney disease among internal medicine outpatients at a Central European tertiary care centre: a cross-sectional study",
+    "nam": [
+     "2026"
+    ],
+    "tap": "16",
+    "so": "10",
+    "trang": "e121190",
+    "tap_chi": "BMJ Open"
+   },
+   "lech_tham_khao": []
+  }
+ ]
+}

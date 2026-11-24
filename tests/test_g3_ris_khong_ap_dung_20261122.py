@@ -109,4 +109,4 @@ def test_g10_khoi_co_mau_thiet_ke_thuong_giu_nguyen():
     cps = {"G1": {}, "G3": {"design_code": "rct", "alpha": 0.05, "power": 0.8, "n_total": 200, "n_adjusted": 222,
                            "n_per_group": 100, "dropout": 0.1, "formula_used": "Hai tỷ lệ"}}
     khoi = R10.sec_comau(cps, {"gate_params": {"G3": {}}})
-    assert "lực mẫu (power) = 0.8" in khoi and "Công thức áp dụng (tự động từ G3):** Hai tỷ lệ" in khoi
+    assert "lực mẫu (power) = 0,8" in khoi and "Công thức áp dụng (tự động từ G3):** Hai tỷ lệ" in khoi

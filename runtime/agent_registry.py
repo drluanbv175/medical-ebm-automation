@@ -223,6 +223,9 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # khối ký thứ ba theo đơn vị ngay trên Khoa (mã ở PR #419; cặp gốc EBM-drluanbv175#490) — vẫn 64.
 # 22/11/2026 (sổ phân công công cụ C1–C6): 23 agent nhận dòng «Công cụ `tools/x.py` (chủ|kiểm|dùng phụ)» theo
 # config/phan_cong_cong_cu.json, chép từ nhánh gốc claude/phan-cong-goc-20261122 — vẫn 64.
+# 23/11/2026 (chốt chung «điền sai kiểu»): viet-ban-thao (chủ) và tham-dinh-dau-ra (kiểm) nhận dòng
+# `tools/quet_dien_sai_kieu.py` theo config/phan_cong_cong_cu.json; khối trách nhiệm sinh tự động của dieu-phoi-g7 và
+# viet-ban-thao thêm G7-AUTO-09 — vẫn 64.
 # 23/11/2026: chép 2 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
 # 23/11/2026: chép 4 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
 # 24/11/2026 (đề tài đối chứng công khai): phan-tich-thong-ke (GENLINMIXED ↔ R RSPL cùng phương pháp, dòng công cụ
@@ -230,8 +233,15 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # phụ ⇒ dòng biến cố hiếm), dieu-phoi-nghien-cuu (dòng công cụ gia_lap_doi_chung.py), tong-quan-y-van (thông báo
 # biên tập luôn «khong» khi sàng lọc G0-T3) — vẫn 64.
 # 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
+# 23/11/2026 (hợp đồng SAP máy đọc): 4 agent nhận dòng `tools/hop_dong_sap.py` (thiet-ke-nghien-cuu chủ, dieu-phoi-g4
+# kiểm, phan-tich-thong-ke và viet-ban-thao dùng phụ) — vẫn 64.
+# 24/11/2026 (hợp đồng SAP v2): dòng hop_dong_sap.py của thiet-ke-nghien-cuu nêu thêm nơi đọc hợp đồng — vẫn 64.
+# 24/11/2026 (nhánh tích hợp 2): gộp dòng doctrine của nhánh hợp đồng SAP v2 và nhánh «điền sai kiểu» — vẫn 64.
+# 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
+# 23/11/2026: thêm dòng doctrine hệ nhập liệu cục bộ (tools/nhap_lieu_cuc_bo.py) vào quan-ly-du-lieu + dieu-phoi-g5.
+# 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "ad039b8dfc61adb0223ae685d45bfde239a3523fdc21dc141a691f8a92ab40f9"
+    "84079509e69c8dc76da81ddce45cceb09cf81b8751db08cab1965b1ca079be58"
 )
 
 MINIMUM_AGENT_COUNT = 64

@@ -69,7 +69,10 @@ def kiem_mot(p: Path) -> List[str]:
     if not str(g10.get("trang_thai") or "").startswith("PASS_G10"):
         loi.append(f"G10 = {g10.get('trang_thai')} {g10.get('chua_dat') or ''}".strip())
     if j.get("so_o_loi_may") not in (0, None) or j.get("so_o_loi_may") is None:
-        loi.append(f"ô lỗi máy = {j.get('so_o_loi_may')}")
+        # 23/11/2026: ô lỗi máy gồm cả lỗi KIỂU của văn bản đầu ra (chốt chung quet_dien_sai_kieu) — in vài chỗ đầu
+        dsk = j.get("dien_sai_kieu") or []
+        loi.append(f"ô lỗi máy = {j.get('so_o_loi_may')}"
+                   + (f" (điền sai kiểu {len(dsk)}: {' | '.join(map(str, dsk[:3]))[:300]})" if dsk else ""))
     dc = ((j.get("du_lieu") or {}).get("de_cuong_nop") or {})
     if dc.get("ma") != 0:
         loi.append(f"đề cương nộp mã {dc.get('ma')}: {'; '.join(map(str, dc.get('loi') or []))[:200]}")
