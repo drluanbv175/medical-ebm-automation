@@ -1658,7 +1658,16 @@ def tim_cong_cu_word() -> Optional[Path]:
         r = subprocess.run(["git", "-C", str(BASE), "rev-parse", "--path-format=absolute", "--git-common-dir"],
                            capture_output=True, text=True, encoding="utf-8", timeout=20)
         if r.returncode == 0 and r.stdout.strip():
-            ung.append(Path(r.stdout.strip()).parent.parent / "tools" / CONG_CU_WORD)
+            chung = Path(r.stdout.strip())
+            if chung.name == ".git":
+                ung.append(chung.parent.parent / "tools" / CONG_CU_WORD)
+            else:
+                # B1 (24/11/2026): `.git` dời ra `~/.ebm-git/<tên>.git` ngoài OneDrive — cha của common dir KHÔNG phải
+                # bản checkout chính; bản checkout chính khai ở config `ebm.cayChinh`.
+                k = subprocess.run(["git", "-C", str(BASE), "config", "--get", "ebm.cayChinh"],
+                                   capture_output=True, text=True, encoding="utf-8", timeout=20)
+                if k.returncode == 0 and k.stdout.strip():
+                    ung.append(Path(k.stdout.strip()).parent / "tools" / CONG_CU_WORD)
     except (OSError, subprocess.SubprocessError):
         pass
     return next((p for p in ung if p.is_file()), None)
