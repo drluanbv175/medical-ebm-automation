@@ -1567,14 +1567,18 @@ def doan_co_mau(n: Nguon) -> List[str]:
             + f"Cỡ mẫu tính được là {_n(c.get('n_total'))} người.")
     elif loai in ("PREVALENCE", "PROPORTION") or c.get("precision"):
         p = c.get("prevalence") or c.get("effect_val") or 0.5
+        # 24/11/2026 (đề tài đối chứng công khai): p ≠ 0,5 lấy từ y văn ⇒ in nguồn đã chốt ở G3 (prevalence_source) như
+        # các nhánh khác in nguồn hiệu quả — STROBE 10 «tham số có nguồn»; nguồn không phải PMID ⇒ in mô tả nguồn.
+        nguon_p, mo_ta_p = td.nguon(g3.get("prevalence_source"))
+        theo_p = f" theo {nguon_p}" if nguon_p else (f" ({_thuong(mo_ta_p)})" if _co(mo_ta_p) else "")
         dong.append(
             f"Cỡ mẫu được tính theo công thức ước lượng một tỷ lệ: n = Z²(1−α/2) × p(1 − p) / d², với độ tin cậy 95%, "
             f"tỷ lệ ước tính p = {_so(p)} (chọn p = 0,5 để có cỡ mẫu lớn nhất khi chưa có số liệu tại cơ sở) và sai "
             f"số tuyệt đối cho phép d = {_so(c.get('precision'))}. Cỡ mẫu tính được là {_n(c.get('n_total'))} người."
             if float(p) == 0.5 else
             f"Cỡ mẫu được tính theo công thức ước lượng một tỷ lệ: n = Z²(1−α/2) × p(1 − p) / d², với độ tin cậy 95%, "
-            f"tỷ lệ ước tính p = {_so(p)} và sai số tuyệt đối cho phép d = {_so(c.get('precision'))}. Cỡ mẫu tính "
-            f"được là {_n(c.get('n_total'))} người.")
+            f"tỷ lệ ước tính p = {_so(p)}{theo_p} và sai số tuyệt đối cho phép d = {_so(c.get('precision'))}. Cỡ mẫu "
+            f"tính được là {_n(c.get('n_total'))} người.")
     elif loai == "PLS_PATH":
         # 23/11/2026: PLS-SEM — căn bậc hai nghịch đảo (Kock & Hadaya 2018); |β_min| phải có nguồn (STROBE mục 10).
         # 24/11/2026: số in bằng hàm chung `quet_dien_sai_kieu.viet_so` (chốt K11/K22 dùng cùng quy ước)
@@ -1754,6 +1758,15 @@ def do_luong_nhu_nhau(n: "Nguon") -> List[str]:
         a, b = _NHOM_SO_SANH[n.thiet_ke]
         ra.append(f"- Đo lường như nhau giữa các nhóm: {a} và {b} được thu thập bằng cùng một phiếu (Phụ lục C), cùng "
                   "định nghĩa biến (Phụ lục D) và theo cùng lịch thu thập.")
+    else:
+        # 24/11/2026 (đề tài đối chứng công khai): cắt ngang có mục tiêu phân tích khai biến «phoi_nhiem» ⇒ bảng biến in
+        # «Phơi nhiễm/nhóm so sánh» và STROBE 8 đòi tính tương đồng cách đo giữa các nhóm — dựng từ CHÍNH biến đã khai.
+        pn = [_thuong(r.get("khai_niem")) for r in n.ma_tran if r.get("vai_tro") == "phoi_nhiem"
+              and _co(r.get("khai_niem"))]
+        if pn:
+            ra.append(f"- Đo lường như nhau giữa các nhóm so sánh theo {'; '.join(dict.fromkeys(pn))}: mọi người "
+                      "tham gia được thu thập bằng cùng một phiếu (Phụ lục C), cùng định nghĩa biến (Phụ lục D) "
+                      "và theo cùng lịch thu thập.")
     return ra
 
 

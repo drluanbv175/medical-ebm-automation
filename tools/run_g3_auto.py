@@ -121,16 +121,57 @@ def n_two_proportion(p1, p2, alpha=0.05, power=0.80, continuity_correction=False
 NGUON_DUPONT = "Dupont WD. Power calculations for matched case-control studies. Biometrics 1988;44:1157–68 (PMID 3233252)"
 
 
+def p1_ghep_cap_dupont(p0, odds_ratio, phi):
+    """Xác suất phơi nhiễm ở CA (p1) sao cho OR CÓ ĐIỀU KIỆN của cặp lệch p10/p01 = ψ (24/11/2026).
+
+    Bảng cặp ca–chứng: p11 = p1p0 + φs, p10 = p1q0 − φs, p01 = q1p0 − φs, p00 = q1q0 + φs với s = √(p1q1p0q0). ψ là OR
+    mà phân tích ghép cặp (hồi quy logistic có điều kiện / McNemar) ƯỚC LƯỢNG — đúng định nghĩa Dupont 1988 theo tài
+    liệu Stata [PSS] power mcc (Methods and formulas: θ = p1q0/p0q1 nếu ρ = 0 và θ = p10/p01 nếu ρ ≠ 0) và StatsDirect.
+    φ = 0 ⇒ nghiệm đóng p1 = ψp0/(1 + p0(ψ − 1)). φ > 0 ⇒ giải f(p1) = p10 − ψ·p01 = 0 bằng chia đôi trên miền mọi ô
+    bảng cặp > 0; quét lưới xác nhận nghiệm DUY NHẤT (không/nhiều nghiệm ⇒ InvalidEffectSizeError, không chọn bừa)."""
+    p0, psi, phi = float(p0), float(odds_ratio), float(phi)
+    q0 = 1 - p0
+    if phi == 0:
+        return psi * p0 / (1 + p0 * (psi - 1))
+
+    def o_bang(p1):
+        s = math.sqrt(p1 * (1 - p1) * p0 * q0)
+        return p1 * p0 + phi * s, p1 * q0 - phi * s, (1 - p1) * p0 - phi * s, (1 - p1) * q0 + phi * s
+
+    def f(p1):
+        o = o_bang(p1)
+        return o[1] - psi * o[2]
+
+    hop_le = [x / 4000 for x in range(1, 4000) if min(o_bang(x / 4000)) > 0]
+    doi_dau = [(a, b) for a, b in zip(hop_le, hop_le[1:]) if b - a < 0.0003 and (f(a) < 0) != (f(b) < 0)]
+    if len(doi_dau) != 1:
+        raise InvalidEffectSizeError(
+            f"φ = {phi}, p0 = {p0}, OR = {psi}: không có đúng một p1 làm p10/p01 = OR trên miền bảng cặp hợp lệ "
+            f"({len(doi_dau)} nghiệm) — kiểm lại φ và p0")
+    lo, hi = doi_dau[0]
+    for _ in range(200):
+        giua = (lo + hi) / 2
+        if (f(giua) < 0) == (f(lo) < 0):
+            lo = giua
+        else:
+            hi = giua
+    return (lo + hi) / 2
+
+
 def n_ghep_cap_dupont(p0, odds_ratio, so_chung, phi, alpha=0.05, power=0.80):
     """Số BỘ GHÉP (= số ca) cần cho bệnh–chứng ghép cặp CÁ THỂ 1 ca : M chứng (Dupont 1988, PMID 3233252).
 
-    Tham số: p0 = xác suất phơi nhiễm ở chứng, ψ = OR cần phát hiện, M = số chứng mỗi ca, φ = hệ số tương quan phơi
-    nhiễm giữa ca và chứng cùng bộ. p1 = ψ·p0/(1 + p0(ψ − 1)); xác suất chứng phơi nhiễm khi ca phơi nhiễm / không phơi
-    nhiễm p0+ = (p1·p0 + φ√(p1q1p0q0))/p1, p0− = (p0·q1 − φ√(p1q1p0q0))/q1. Với m = 1…M (bộ có m người phơi nhiễm, mang
-    thông tin): t_m = p1·C(M, m−1)·p0+^(m−1)·q0+^(M−m+1) + q1·C(M, m)·p0−^m·q0−^(M−m); kỳ vọng và phương sai số ca phơi
-    nhiễm trong các bộ đó dưới ψ và dưới H0 (ψ = 1) ⇒ n = [z_{α/2}√Σν₁ + z_β√Σν_ψ]² / (Σe₁ − Σe_ψ)².
-    Đối chiếu: ví dụ Dupont 1988 tr. 1164 (p0 = 0,6; φ = 0,2; ψ = 3; lực 0,8) ⇒ 80,16 cặp (81) và 50,60 bộ 1:3 (51) —
-    trùng epiR 3.0.1 epi.sscc(method = "matched"). Trả số bộ ghép KHÔNG làm tròn. Tham số ngoài miền ⇒
+    Tham số: p0 = xác suất phơi nhiễm ở chứng, ψ = OR CÓ ĐIỀU KIỆN cần phát hiện (p10/p01 — p1_ghep_cap_dupont), M = số
+    chứng mỗi ca, φ = hệ số tương quan phơi nhiễm giữa ca và chứng cùng bộ. Xác suất chứng phơi nhiễm khi ca phơi nhiễm /
+    không phơi nhiễm p0+ = (p1·p0 + φ√(p1q1p0q0))/p1, p0− = (p0·q1 − φ√(p1q1p0q0))/q1. Với m = 1…M (bộ có m người phơi
+    nhiễm, mang thông tin): t_m = p1·C(M, m−1)·p0+^(m−1)·q0+^(M−m+1) + q1·C(M, m)·p0−^m·q0−^(M−m); kỳ vọng và phương sai
+    số ca phơi nhiễm trong các bộ đó dưới ψ và dưới H0 (ψ = 1) ⇒ n = [z_{α/2}√Σν₁ + z_β√Σν_ψ]² / (Σe₁ − Σe_ψ)².
+    Đối chiếu (24/11/2026): 8 ví dụ đã công bố của Stata [PSS] power mcc (p0 0,22; OR 1,7: 285 · 1:2 ⇒ 210 · φ 0,56 ⇒
+    703 · φ 0,40–0,60 ⇒ 503/553/613/687/779) và 2 ví dụ StatsDirect (p0 0,3; OR 2; φ 0,2: 180 · 1:3 ⇒ 108) trùng TUYỆT
+    ĐỐI. epiR 3.0.1 epi.sscc(method = "matched") dùng p1 = ψp0/(1 + p0(ψ − 1)) cả khi φ ≠ 0 (OR biên, không phải OR mà
+    phân tích ghép cặp ước lượng) nên chỉ trùng khi φ = 0. Ví dụ Dupont 1988 tr. 1164 (p0 0,6; φ 0,2; ψ 3; lực 0,8) ⇒
+    79,73 cặp (80) và 49,94 bộ 1:3 (50) — epiR in 81/51; CHƯA đối chiếu được với bảng/ví dụ trong toàn văn bài gốc
+    (JSTOR, không bản truy cập mở, ngoài sổ uỷ quyền NXB). Trả số bộ ghép KHÔNG làm tròn. Tham số ngoài miền ⇒
     InvalidEffectSizeError (không kẹp)."""
     p0, psi, phi = float(p0), float(odds_ratio), float(phi)
     if not (0 < p0 < 1):
@@ -143,7 +184,7 @@ def n_ghep_cap_dupont(p0, odds_ratio, so_chung, phi, alpha=0.05, power=0.80):
         raise InvalidEffectSizeError(f"φ (tương quan phơi nhiễm trong bộ ghép) phải trong [0,1), nhận được {phi}")
     m_ = int(so_chung)
     q0 = 1 - p0
-    p1 = psi * p0 / (1 + p0 * (psi - 1))
+    p1 = p1_ghep_cap_dupont(p0, psi, phi)
     q1 = 1 - p1
     can = math.sqrt(p1 * q1 * p0 * q0)
     p0c, p0k = (p1 * p0 + phi * can) / p1, (p0 * q1 - phi * can) / q1
@@ -585,7 +626,8 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
             return kq
         n = math.ceil(n_ghep_cap_dupont(p0, effect_val, m_, phi, alpha, power))
         kq.update(n_per_group=n, n_total=n * (1 + int(m_)))
-        kq["formula"] = (f"Bệnh–chứng ghép cặp cá thể 1:{int(m_)} — {NGUON_DUPONT}: {effect_type}={_v(effect_val, 2)}, "
+        kq["formula"] = (f"Bệnh–chứng ghép cặp cá thể 1:{int(m_)} — {NGUON_DUPONT}: {effect_type} có điều kiện "
+                         f"(cặp lệch p10/p01)={_v(effect_val, 2)}, "
                          f"p0 (phơi nhiễm ở chứng)={_v(p0, 2)}, φ={_v(phi, 2)} ⇒ {n} bộ ghép ({n} ca + {n * int(m_)} chứng). "
                          "[CẦN — φ là tương quan phơi nhiễm trong bộ ghép, phải có nguồn; φ lớn hơn ⇒ cần nhiều bộ "
                          "hơn.]")

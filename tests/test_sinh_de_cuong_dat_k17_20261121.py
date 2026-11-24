@@ -131,9 +131,15 @@ def test_do_luong_nhu_nhau_va_chat_luong_do_tu_g1(tmp_path):
     assert dong[0] == ("- Bảo đảm chất lượng đo lường: Đo huyết áp chuẩn hoá bằng cùng một quy trình cho mọi người "
                        "tham gia.")
     assert dong[-1].startswith("- Đo lường như nhau giữa các nhóm: nhóm phơi nhiễm và nhóm không phơi nhiễm")
-    # 22/11/2026: đề tài thử nay có kế hoạch giám sát (K20) — «không khai chất lượng đo lường» là trống CẢ HAI trường
-    assert SDC.do_luong_nhu_nhau(_nguon(tmp_path / "c", "cross_sectional",
-                                        g1={"critical_to_quality": None, "monitoring_plan": None})) == []
+    # 22/11/2026: đề tài thử nay có kế hoạch giám sát (K20) — «không khai chất lượng đo lường» là trống CẢ HAI trường.
+    # 24/11/2026: ma trận của đề tài thử khai biến «nhóm» vai «phoi_nhiem» ⇒ cắt ngang phân tích vẫn có ĐÚNG một dòng
+    # tương đồng cách đo, dựng từ chính biến đó (STROBE 8); không có biến phơi nhiễm ⇒ rỗng.
+    cn = _nguon(tmp_path / "c", "cross_sectional", g1={"critical_to_quality": None, "monitoring_plan": None})
+    assert SDC.do_luong_nhu_nhau(cn) == [
+        "- Đo lường như nhau giữa các nhóm so sánh theo nhóm: mọi người tham gia được thu thập bằng cùng một phiếu "
+        "(Phụ lục C), cùng định nghĩa biến (Phụ lục D) và theo cùng lịch thu thập."]
+    cn.ma_tran = [r for r in cn.ma_tran if r.get("vai_tro") != "phoi_nhiem"]
+    assert SDC.do_luong_nhu_nhau(cn) == []
 
 
 # ───────────────────────────────────────── STROBE 9/19: sai lệch và chiều ảnh hưởng — không đoán thay PI

@@ -718,7 +718,9 @@ def loi_k13(out_dir: Path, md: str) -> List[str]:
         # tính vào quy tắc 6 tác giả). Dấu chú thích «*» PubMed gắn vào tên bị bỏ khi so.
         tong, sau = m.get("n_authors"), m.get("authors_6")
         if isinstance(tong, int) and isinstance(sau, list) and sau and tong > 0:
-            co_et_al = re.search(r"\bet al\b", noi_dung) is not None
+            # «et al.» chỉ xét ở PHẦN TÁC GIẢ (trước «. » đầu tiên, Vancouver/NLM) — 24/11/2026: tiêu đề «Erratum for
+            # Chee et al., …» từng bị đọc thành danh sách tác giả cắt cụt.
+            co_et_al = re.search(r"\bet al\b", noi_dung.split(". ", 1)[0]) is not None
             cuoi = str(sau[min(tong, 6) - 1]).rstrip("*").strip()
             if tong > 6 and not co_et_al:
                 sai.append(f"bài có {tong} tác giả cá nhân — ghi 6 tác giả đầu rồi «et al.»")

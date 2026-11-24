@@ -15,6 +15,7 @@ Số tham chiếu R ghi trong tệp đo 23/11/2026 trên cùng dữ liệu sinh 
 from __future__ import annotations
 
 import json
+import math
 import subprocess
 import sys
 from pathlib import Path
@@ -40,24 +41,44 @@ import run_g3_auto as G3  # noqa: E402
 import run_stats_analysis as RSA  # noqa: E402
 
 # ───────────────────────────── (c) Dupont 1988 ─────────────────────────────
-#: (p0, OR, M, φ, lực) ⇒ số bộ ghép — epiR 3.0.1 epi.sscc(method = "matched", nfractional = TRUE), đo 23/11/2026
-EPIR_DUPONT = [((0.6, 3, 1, 0.2, 0.8), 80.156754), ((0.6, 3, 3, 0.2, 0.8), 50.603337),
-               ((0.15, 1.84, 2, 0.2, 0.8), 239.075014), ((0.15, 4.3, 4, 0.2, 0.8), 26.382025),
-               ((0.2, 2, 1, 0.01, 0.8), 172.207301), ((0.3, 2, 5, 0, 0.8), 81.665371),
-               ((0.4, 1.5, 2, 0.3, 0.9), 506.206774)]
+#: 24/11/2026 — ψ là OR CÓ ĐIỀU KIỆN p10/p01 (OR mà phân tích ghép cặp ước lượng). Ví dụ ĐÃ CÔNG BỐ, số nguyên đã làm
+#: tròn lên: Stata [PSS] power mcc (Example 1–4) và StatsDirect «Sample Size for Matched Case-control Studies».
+#: (p0, OR, M, φ) ⇒ số bộ ghép (lực 0,8; α 0,05 hai phía)
+VI_DU_CONG_BO = [((0.22, 1.7, 1, 0.0), 285), ((0.22, 1.7, 2, 0.0), 210), ((0.22, 1.7, 1, 0.56), 703),
+                 ((0.22, 1.7, 1, 0.40), 503), ((0.22, 1.7, 1, 0.45), 553), ((0.22, 1.7, 1, 0.50), 613),
+                 ((0.22, 1.7, 1, 0.55), 687), ((0.22, 1.7, 1, 0.60), 779),
+                 ((0.3, 2.0, 1, 0.2), 180), ((0.3, 2.0, 3, 0.2), 108)]
+#: φ = 0: epiR 3.0.1 epi.sscc(method = "matched", nfractional = TRUE) trùng (đo 23/11/2026) — φ > 0 epiR dùng OR biên
+EPIR_PHI_0 = [((0.3, 2, 5, 0, 0.8), 81.665371)]
 
 
-@pytest.mark.parametrize("tham_so, n_r", EPIR_DUPONT)
-def test_dupont_trung_epir(tham_so, n_r):
+@pytest.mark.parametrize("tham_so, n_cong_bo", VI_DU_CONG_BO)
+def test_dupont_trung_vi_du_cong_bo_stata_statsdirect(tham_so, n_cong_bo):
+    assert math.ceil(G3.n_ghep_cap_dupont(*tham_so)) == n_cong_bo
+
+
+@pytest.mark.parametrize("tham_so, n_r", EPIR_PHI_0)
+def test_dupont_phi_0_trung_epir(tham_so, n_r):
     p0, or_, m_, phi, luc = tham_so
     assert G3.n_ghep_cap_dupont(p0, or_, m_, phi, 0.05, luc) == pytest.approx(n_r, abs=1e-5)
 
 
+@pytest.mark.parametrize("p0, or_, phi", [(0.22, 1.7, 0.56), (0.6, 3.0, 0.2), (0.15, 4.3, 0.2), (0.4, 0.5, 0.3)])
+def test_dupont_or_co_dieu_kien_dung_p10_p01(p0, or_, phi):
+    p1 = G3.p1_ghep_cap_dupont(p0, or_, phi)
+    s = math.sqrt(p1 * (1 - p1) * p0 * (1 - p0))
+    assert (p1 * (1 - p0) - phi * s) / ((1 - p1) * p0 - phi * s) == pytest.approx(or_, rel=1e-9)
+    # φ > 0 ⇒ OR biên p1q0/(p0q1) KHÁC OR có điều kiện (chỗ epiR lệch)
+    assert p1 * (1 - p0) / (p0 * (1 - p1)) != pytest.approx(or_, rel=1e-3)
+    assert G3.p1_ghep_cap_dupont(p0, or_, 0.0) == pytest.approx(or_ * p0 / (1 + p0 * (or_ - 1)))
+
+
 def test_dupont_vi_du_bai_goc_va_mien_tham_so():
-    # Dupont 1988 tr. 1164 (như epiR tái lập): p0 = 0,6; φ = 0,2; OR = 3; lực 0,8 ⇒ 81 cặp; 1:3 ⇒ 51 bộ (152–153 chứng)
+    # Dupont 1988 tr. 1164 (kịch bản như epiR tái lập; CHƯA đối chiếu được toàn văn gốc): p0 0,6; φ 0,2; OR 3; lực 0,8
+    # ⇒ 79,73 cặp (80); 1:3 ⇒ 49,94 bộ (50). epiR in 81/51 vì dùng OR biên.
     kq1 = G3.tinh_n_loi("case_control", "OR", 3.0, 0.05, 0.8, p0=0.6, ghep_ca_the={"so_chung": 1, "phi": 0.2})
     kq3 = G3.tinh_n_loi("case_control", "OR", 3.0, 0.05, 0.8, p0=0.6, ghep_ca_the={"so_chung": 3, "phi": 0.2})
-    assert (kq1["n_per_group"], kq1["n_total"]) == (81, 162) and (kq3["n_per_group"], kq3["n_total"]) == (51, 204)
+    assert (kq1["n_per_group"], kq1["n_total"]) == (80, 160) and (kq3["n_per_group"], kq3["n_total"]) == (50, 200)
     assert "Dupont" in kq3["formula"] and "1:3" in kq3["formula"]
     # φ lớn ⇒ cần nhiều bộ hơn (Dupont: mất lực khi tương quan phơi nhiễm trong bộ tăng)
     assert G3.n_ghep_cap_dupont(0.3, 2, 2, 0.3) > G3.n_ghep_cap_dupont(0.3, 2, 2, 0.1)
@@ -66,14 +87,18 @@ def test_dupont_vi_du_bai_goc_va_mien_tham_so():
     khong_ghep = G3.tinh_n_loi("case_control", "OR", 3.0, 0.05, 0.8, p0=0.6)
     assert "Two-proportion" in khong_ghep["formula"]  # ghép tần suất / không ghép: công thức cũ giữ nguyên
     for xau in ((0.6, 1.0, 1, 0.2), (0.6, 3, 0, 0.2), (0.6, 3, 1.5, 0.2), (0.6, 3, 1, 1.0), (1.2, 3, 1, 0.2),
-                (0.6, 3, 1, 0.95)):
+                (0.6, 3, 1, -0.1)):
         with pytest.raises(G3.InvalidEffectSizeError):
             G3.n_ghep_cap_dupont(*xau)
+    # OR có điều kiện: φ < 1 nào cũng có bảng cặp hợp lệ — φ rất cao chỉ làm số bộ tăng vọt (không còn lỗi «φ quá lớn»)
+    assert G3.n_ghep_cap_dupont(0.6, 3, 1, 0.95) > 10 * G3.n_ghep_cap_dupont(0.6, 3, 1, 0.2)
 
 
 @pytest.mark.skipif(not R.ung_vien_rscript(), reason="máy không có Rscript")
-def test_that_dupont_trung_epir_chay_song():
-    ma = ('suppressMessages(library(epiR)); for (a in list(c(0.25,2.5,3,0.15), c(0.5,1.7,2,0.05))) '
+def test_that_dupont_phi_0_trung_epir_chay_song():
+    """φ = 0: epiR (bản R độc lập) trùng tới 1e-6. φ > 0: epiR dùng OR biên ⇒ KHÔNG dùng làm chuẩn (đã đối chiếu ví dụ
+    công bố của Stata/StatsDirect ở test trên)."""
+    ma = ('suppressMessages(library(epiR)); for (a in list(c(0.25,2.5,3,0), c(0.5,1.7,2,0))) '
           'cat(format(epi.sscc(N=NA, OR=a[2], p1=NA, p0=a[1], n=NA, power=0.8, r=a[3], phi.coef=a[4], design=1, '
           'sided.test=2, nfractional=TRUE, conf.level=0.95, method="matched", fleiss=FALSE)$n.case, digits=15), "\\n")')
     try:
@@ -83,7 +108,7 @@ def test_that_dupont_trung_epir_chay_song():
     if ra.returncode != 0:
         pytest.skip("thiếu gói epiR")
     so = [float(x) for x in ra.stdout.split()]
-    assert so == pytest.approx([G3.n_ghep_cap_dupont(0.25, 2.5, 3, 0.15), G3.n_ghep_cap_dupont(0.5, 1.7, 2, 0.05)],
+    assert so == pytest.approx([G3.n_ghep_cap_dupont(0.25, 2.5, 3, 0), G3.n_ghep_cap_dupont(0.5, 1.7, 2, 0)],
                                abs=1e-6)
 
 
@@ -287,27 +312,26 @@ def _df_ghep_thieu(seed: int = 5) -> "pd.DataFrame":
 
 
 def test_mi_ghep_cap_mo_hinh_gan_co_bien_ghep_va_phan_tich_co_dieu_kien(monkeypatch):
-    from statsmodels.imputation.mice import MICEData
+    du_bao, so_lan = {}, {"clogit": 0}
+    goc_fit = RSA._fit_clogit
 
-    cong_thuc, so_lan = {}, {"clogit": 0}
-    goc_set, goc_fit = MICEData.set_imputer, RSA._fit_clogit
-
-    def ghi(self, name, formula=None, **kw):
-        cong_thuc[name] = formula
-        return goc_set(self, name, formula=formula, **kw)
+    class BatBoGan(RSA.BoGanPMM):  # 24/11/2026: bộ gán BoGanPMM thay MICEData — ghi biến dự báo của từng cột
+        def __init__(self, *a, **k):
+            super().__init__(*a, **k)
+            du_bao.update(self.du_bao)
 
     def dem(*a, **k):
         so_lan["clogit"] += 1
         return goc_fit(*a, **k)
 
-    monkeypatch.setattr(MICEData, "set_imputer", ghi)
+    monkeypatch.setattr(RSA, "BoGanPMM", BatBoGan)
     monkeypatch.setattr(RSA, "_fit_clogit", dem)
     d = _df_ghep_thieu()
     mi = RSA.multiple_imputation_model(d, "y", "x", ["z", "a"], "binary", 12, bo_ghep="bo", bien_ghep=["gioi", "tuoi"])
     assert mi["model"] == "logistic_dk_mi" and mi["bo_may"] == "ghep_cap" and so_lan["clogit"] == 12
     assert mi["bien_mo_hinh_gan"] == ["y", "x", "z", "a", "gioi", "tuoi"]
-    # cột z (v2) được gán theo ca/chứng (v0), phơi nhiễm, hiệp biến VÀ hai biến ghép — mã bộ ghép không vào mô hình gán
-    assert set(cong_thuc["v2"].split(" + ")) == {"v0", "v1", "v3", "v4", "v5"}
+    # cột z được gán theo ca/chứng, phơi nhiễm, hiệp biến VÀ hai biến ghép — mã bộ ghép không vào mô hình gán
+    assert set(du_bao["z"]) == {"y", "x", "a", "gioi", "tuoi"}
     assert [r["variable"] for r in mi["results"]] == ["x", "z", "a"] and all(r["mcse"] >= 0 for r in mi["results"])
     cc = RSA.conditional_logit_model(d.dropna(), "y", "x", ["z", "a"], "bo")["results"][0]
     assert abs(np.log(mi["results"][0]["OR_adj"]) - np.log(cc["OR_adj"])) < 0.3  # cùng đại lượng, không lệch họ
@@ -315,21 +339,21 @@ def test_mi_ghep_cap_mo_hinh_gan_co_bien_ghep_va_phan_tich_co_dieu_kien(monkeypa
 
 
 def test_mi_ghep_cap_gan_dung_gia_tri_goc_bang_mo_hinh_co_dieu_kien(monkeypatch):
-    """Bộ gán trả đúng giá trị thật (MICEData bị thay) ⇒ mọi bộ trùng dữ liệu đủ ⇒ ước lượng gộp PHẢI bằng hồi quy có
-    điều kiện trên dữ liệu đủ (B = 0): phân tích trong từng bộ đúng là có điều kiện theo bộ ghép, không phải
+    """Bộ gán trả đúng giá trị thật (BoGanPMM.mot_bo bị thay) ⇒ mọi bộ trùng dữ liệu đủ ⇒ ước lượng gộp PHẢI bằng hồi
+    quy có điều kiện trên dữ liệu đủ (B = 0): phân tích trong từng bộ đúng là có điều kiện theo bộ ghép, không phải
     logistic thường."""
-    from statsmodels.imputation.mice import MICEData
-
     goc = _df_ghep_thieu()
     that = goc.copy()
     that["z"] = np.random.default_rng(1).binomial(1, 0.4, len(goc)).astype(float)
     thieu = that.copy()
     thieu.loc[goc["z"].isna(), "z"] = np.nan
 
-    def that_hoa(self, n_iter=1):
-        self.data["v2"] = that["z"].to_numpy()
+    def that_hoa(self):
+        bo = pd.DataFrame(self.goc.copy(), columns=self.cot)
+        bo["z"] = that["z"].to_numpy()
+        return bo
 
-    monkeypatch.setattr(MICEData, "update_all", that_hoa)
+    monkeypatch.setattr(RSA.BoGanPMM, "mot_bo", that_hoa)
     mi = RSA.multiple_imputation_model(thieu, "y", "x", ["z", "a"], "binary", 5, bo_ghep="bo", bien_ghep=["gioi"])
     du_lieu_du = RSA.conditional_logit_model(that, "y", "x", ["z", "a"], "bo")["results"]
     assert [(r["OR_adj"], r["CI_95"], r["p"]) for r in mi["results"]] == [
@@ -412,14 +436,22 @@ def test_gia_lap_bien_the_thieu_hiem():
     kb = BTK.kich_ban_kho()
     th, hi = kb["benh_chung_ghep_cap_thieu"], kb["benh_chung_ghep_cap_hiem"]
     assert th["ho_so_tron_vong"]["g6"][0]["tham_so"]["n_imputations"] == 20 and "thieu" in th["bien_the"]
-    assert hi["bien_the"]["ghep_cap"]["so_chung"] == 4 and hi["pi"]["G3"]["so_chung_moi_ca"] == 4
+    assert hi["bien_the"]["ghep_cap"]["so_chung"] == 5 and hi["pi"]["G3"]["so_chung_moi_ca"] == 5
+    # 24/11/2026: biến thể phải THẬT SỰ chạm rào EPV — số ca sau hiệu chỉnh mất mẫu < 10 × 3 tham số (nsaid + 2 hiệp
+    # biến); đổi công thức cỡ mẫu làm số ca chạm 30 thì G6 không còn chạy Firth (đã xảy ra với 1:4)
+    g3 = hi["pi"]["G3"]
+    bo = math.ceil(G3.n_ghep_cap_dupont(g3["p0"], g3["effect_size"], g3["so_chung_moi_ca"], g3["phi"], g3["alpha"],
+                                        g3["power"]))
+    n_hc = math.ceil(bo * (1 + g3["so_chung_moi_ca"]) / (1 - g3["dropout"]))
+    # bộ giả lập sinh đủ N_hc hàng, bộ cuối có thể thiếu chứng ⇒ số ca = trần(N_hc / (1 + M)) (1:4 ⇒ 148 hàng, 30 ca)
+    assert math.ceil(n_hc / (1 + g3["so_chung_moi_ca"])) < 30, (bo, n_hc)
     assert kb["benh_chung_ghep_cap"]["pi"]["G3"]["phi"] == 0.2 and kb["benh_chung_ghep_cap"]["pi"]["G3"]["phi_source"]
     for k in (kb["benh_chung_ghep_cap"], hi):
         assert G4Q.phuong_phap_bien_co_hiem_sap(
             f"- **{G4Q.NHAN_BIEN_CO_HIEM}:** {k['ho_so_tron_vong']['tra_loi_G4'][0][1]}")["phuong_phap"] == "firth_dk"
     d = pd.DataFrame(GTV.sinh_du_lieu("case_control", hi["bien_so"], hi["pi"]["G3"], 2000, bien_the=hi["bien_the"]))
     g = d.groupby("ma_bo_ghep")
-    assert (g["nhom_ca"].sum() == 1).all() and g.size().max() == 5 and (g["gioi"].nunique() == 1).all()
+    assert (g["nhom_ca"].sum() == 1).all() and g.size().max() == 6 and (g["gioi"].nunique() == 1).all()
     ty_le = d.groupby("nhom_ca")["nsaid_30ngay"].mean()
     # phơi nhiễm sinh theo giả định G3: p0 = 0,15 ở chứng, OR 4,3 ⇒ p1 ≈ 0,43 ở ca
     assert abs(ty_le[0] - 0.15) < 0.04 and abs(ty_le[1] - 0.43) < 0.08, ty_le.to_dict()

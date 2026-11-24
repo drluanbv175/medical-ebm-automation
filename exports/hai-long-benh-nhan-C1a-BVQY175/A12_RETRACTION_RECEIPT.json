@@ -1,10 +1,11 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "checked_at_utc": "2026-11-21T13:58:57.738051+00:00",
+  "checked_at_utc": "2026-11-22T21:16:57.444791+00:00",
   "pmids_checked": [
     "12210625",
     "15485730",
     "16279131",
+    "16943232",
     "17161752",
     "17402810",
     "17654487",
@@ -44,10 +45,10 @@
     "8970487",
     "9762873"
   ],
-  "pmids_hash": "c5b4d191fcf18d63f8fc084de89a134c698f98352e8cf687779f0a3f830eab6a",
+  "pmids_hash": "7ea502c567bf3a5e855f668400f8cf366a45c56dfca729400bfafc242afb3cbf",
   "all_clean": true,
   "results": {
-    "12210625": {
+    "27094345": {
       "status": "ok",
       "sources_tried": [
         "pubmed"
@@ -61,63 +62,7 @@
       ],
       "source": "pubmed"
     },
-    "16279131": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "17161752": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "17402810": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "17654487": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "18313558": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "19564179": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "20494804": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "20954780": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "23883565": {
+    "35155757": {
       "status": "ok",
       "sources_tried": [
         "pubmed"
@@ -131,42 +76,7 @@
       ],
       "source": "pubmed"
     },
-    "26653405": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "26776715": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "27094345": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "27881078": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "28690831": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "29550964": {
+    "9762873": {
       "status": "ok",
       "sources_tried": [
         "pubmed"
@@ -180,126 +90,7 @@
       ],
       "source": "pubmed"
     },
-    "31703089": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "32584904": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "32946537": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "32992600": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "33886027": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "34017606": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "34053882": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "34445940": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "34546296": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "35155757": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "36292392": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "36439278": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "39944421": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "40295132": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "40432693": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "40995744": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "41645935": {
-      "status": "ok",
-      "sources_tried": [
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "42582692": {
+    "16279131": {
       "status": "ok",
       "sources_tried": [
         "pubmed"
@@ -313,7 +104,105 @@
       ],
       "source": "pubmed"
     },
-    "8134732": {
+    "40295132": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "36439278": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "16943232": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "26776715": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "12210625": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "32584904": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "34053882": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "20954780": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "34546296": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "32992600": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "39944421": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "17402810": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "20494804": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "36292392": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "32946537": {
       "status": "ok",
       "sources_tried": [
         "pubmed"
@@ -327,7 +216,126 @@
       ],
       "source": "pubmed"
     },
-    "9762873": {
+    "17654487": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "34017606": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "33886027": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "41645935": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "19564179": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "17161752": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "29550964": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "34445940": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "40432693": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "42582692": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "23883565": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "31703089": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "28690831": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "40995744": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "26653405": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "27881078": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "18313558": {
+      "status": "ok",
+      "sources_tried": [
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "8134732": {
       "status": "ok",
       "sources_tried": [
         "pubmed"
@@ -335,5 +343,5 @@
       "source": "pubmed"
     }
   },
-  "receipt_signature": "v4:shared:6809f5949ba540ff9a1f5e36fb03c0a715114ae8c92295f6247262ec15480db9"
+  "receipt_signature": "v4:shared:fabbc64b9461d956d351e8b382abf2d7915a5baaebb0ffce2102d4be9015530c"
 }

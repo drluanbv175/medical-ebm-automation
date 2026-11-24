@@ -92,11 +92,11 @@ def test_khau10_kiem_day_du_noi_luat_moi(tmp_path):
 
 
 def test_khau10_moi_kich_ban_gia_lap_dat_chuan_han_che():
-    """28 kịch bản giả lập (gốc + khó + chân thực; 23/11/2026 thêm bệnh–chứng ghép cặp cá thể và hai biến thể — giá trị
-    thiếu, biến cố hiếm — và cắt ngang PLS-SEM) phải viết mục 4–5 đạt chuẩn của thiết kế — văn bản này chảy vào ô «hạn
-    chế»/«tác động thực hành» của bản thảo G7."""
+    """29 kịch bản giả lập (gốc + khó + chân thực; 23/11/2026 thêm bệnh–chứng ghép cặp cá thể và hai biến thể — giá trị
+    thiếu, biến cố hiếm — và cắt ngang PLS-SEM; 24/11/2026 thêm đề tài đối chứng công khai) phải viết mục 4–5 đạt
+    chuẩn của thiết kế — văn bản này chảy vào ô «hạn chế»/«tác động thực hành» của bản thảo G7."""
     kb = {**TV.GL.KICH_BAN, **TV._kich_ban_kho()}
-    assert len(kb) == 28 and "cat_ngang_pls_sem" in kb
+    assert len(kb) == 29 and "cat_ngang_pls_sem" in kb and "cat_ngang_doi_chung_qft" in kb
     truot = {}
     for ma, v in kb.items():
         dg = (v.get("ho_so_tron_vong") or {}).get("dien_giai") or {}

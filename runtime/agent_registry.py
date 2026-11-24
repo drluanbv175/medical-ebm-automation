@@ -228,14 +228,22 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # viet-ban-thao thêm G7-AUTO-09 — vẫn 64.
 # 23/11/2026: chép 2 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
 # 23/11/2026: chép 4 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
+# 24/11/2026 (đề tài đối chứng công khai): phan-tich-thong-ke (GENLINMIXED ↔ R RSPL cùng phương pháp, dòng công cụ
+# doi_chung_cong_khai.py), co-mau-nghien-cuu (Dupont với OR có điều kiện), thiet-ke-nghien-cuu (cắt ngang có mục tiêu
+# phụ ⇒ dòng biến cố hiếm), dieu-phoi-nghien-cuu (dòng công cụ gia_lap_doi_chung.py), tong-quan-y-van (thông báo
+# biên tập luôn «khong» khi sàng lọc G0-T3) — vẫn 64.
+# 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
 # 23/11/2026 (hợp đồng SAP máy đọc): 4 agent nhận dòng `tools/hop_dong_sap.py` (thiet-ke-nghien-cuu chủ, dieu-phoi-g4
 # kiểm, phan-tich-thong-ke và viet-ban-thao dùng phụ) — vẫn 64.
 # 24/11/2026 (hợp đồng SAP v2): dòng hop_dong_sap.py của thiet-ke-nghien-cuu nêu thêm nơi đọc hợp đồng — vẫn 64.
 # 24/11/2026 (nhánh tích hợp 2): gộp dòng doctrine của nhánh hợp đồng SAP v2 và nhánh «điền sai kiểu» — vẫn 64.
 # 24/11/2026 (PLS-SEM): phan-tich-thong-ke (chủ tools/pls_sem.py), thiet-ke-nghien-cuu (kiểm) và viet-ban-thao nhận dòng
 # PLS-SEM (hợp đồng SAP v3 trường pls_sem, quy ước số tiếng Việt) — vẫn 64.
+# 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
+# 23/11/2026: thêm dòng doctrine hệ nhập liệu cục bộ (tools/nhap_lieu_cuc_bo.py) vào quan-ly-du-lieu + dieu-phoi-g5.
+# 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "71f5a10fbde33d2bedc7d396e53d92c7075e6d1e3549ec5e5aa11d5c4667bd96"
+    "71fd8bab88e9b5131f6b2a42d420c45d825781ddaa514262e6f28f76a5ce7290"
 )
 
 MINIMUM_AGENT_COUNT = 64

@@ -515,6 +515,34 @@ gop_rubin <- function(Q, U, df_t = Inf) {
 # <<< ham-kiem-thu
 vc_cum <- function(fit, cum) sandwich::vcovCL(fit, cluster = cum, type = "HC1", cadjust = TRUE)
 df_cum <- function(cum) max(length(unique(cum)) - 1, 1)  # suy luận t(G−1) như Python (use_t=True, N11)
+# 24/11/2026 — phương pháp gán tự định nghĩa của mice (method = "pmmboot"): PMM kiểu 1 tham số BOOTSTRAP, k = 10 người
+# cho chọn RIÊNG từng ca, phá thế trùng ngẫu nhiên — cùng phương pháp với BoGanPMM của Python (cài đặt độc lập, dãy ngẫu
+# nhiên khác ⇒ đối chiếu theo sai số Monte Carlo). Thay "pmm" mặc định của mice: matchindex tách đồng hạng theo thứ tự
+# cố định và tham số không bootstrap; với dự báo rời rạc (vài ô trung bình dự đoán) cách này quy về ABB theo ô (Rubin &
+# Schenker 1986). k = 10 theo Morris, White & Royston 2014 (PMID 24903709).
+mice.impute.pmmboot <- function(y, ry, x, wy = NULL, donors = 10L, ...) {
+  if (is.null(wy)) wy <- !ry
+  yy <- as.numeric(y)
+  x <- cbind(1, as.matrix(x))
+  obs <- which(ry)
+  b <- obs[sample.int(length(obs), length(obs), replace = TRUE)]  # mẫu bootstrap của người cho
+  beta <- qr.coef(qr(x[b, , drop = FALSE]), yy[b])
+  beta[is.na(beta)] <- 0
+  thang <- sqrt(mean((yy[obs] - mean(yy[obs]))^2))
+  if (!is.finite(thang) || thang == 0) thang <- 1
+  dcho <- round(drop(x[b, , drop = FALSE] %*% beta) / thang, 10)
+  dnhan <- round(drop(x[wy, , drop = FALSE] %*% beta) / thang, 10)
+  vcho <- yy[b]
+  k <- min(as.integer(donors), length(b))
+  vapply(dnhan, function(r) {
+    dd <- abs(dcho - r)
+    dk <- sort(dd, partial = k)[k]
+    gan <- which(dd < dk)
+    bang <- which(dd == dk)
+    if (stats::runif(1) * k < length(gan)) vcho[gan[sample.int(length(gan), 1L)]]
+    else vcho[bang[sample.int(length(bang), 1L)]]
+  }, numeric(1))
+}
 """
 
 MAU_R = r"""# ══════════════════════════════════════════════════════════════════════════════════════════════════
@@ -889,8 +917,8 @@ if (co(KET_CUC) && co(NHOM) && LOAI == "ordinal") {
 # sandwich theo cụm CR1 (vc_cum) + suy luận t(G−1); không cụm ⇒ z — đúng quy ước Python (Poisson không cụm: HC0).
 # Gán theo NHÁNH (như _mi_tu_lap của Python): cột nguồn có Branching Logic không làm biến dự báo cho cột khác, giá trị
 # ở hàng nhánh không thoả không vào dữ liệu gán, sau mỗi bộ trở lại «không áp dụng» rồi TÍNH LẠI biến phái sinh từ công
-# thức đã duyệt. Thuật toán gán của R (mice) khác Python (statsmodels) ⇒ đối chiếu theo sai số Monte Carlo
-# (cau_noi_r.doi_chieu), không đòi khớp từng bộ gán.
+# thức đã duyệt. 24/11/2026: gán bằng mice + phương pháp "pmmboot" (cùng phương pháp với BoGanPMM của Python, cài
+# đặt độc lập, mỗi bộ một chuỗi) ⇒ đối chiếu theo sai số Monte Carlo (cau_noi_r.doi_chieu), không đòi khớp từng bộ.
 if (!is.na(MI_KHONG_DUNG_DUOC)) KET$mi_khong_dung_duoc <- MI_KHONG_DUNG_DUOC
 if (MI_CO && co(KET_CUC) && co(NHOM)) {
   KET$mi <- khoi("mi", {
@@ -920,12 +948,11 @@ if (MI_CO && co(KET_CUC) && co(NHOM)) {
     pred <- mice::make.predictorMatrix(k)
     for (s in nhanh) pred[rownames(pred) != an[[s]], an[[s]]] <- 0
     for (s in nhanh) kiem_nhanh[[s]]$so_cot_dung_lam_du_bao <- sum(pred[, an[[s]]])
-    # use.matcher = TRUE (23/11/2026): vẫn PMM như SAP/Python (MICEData) nhưng rút người cho NGẪU NHIÊN khi trung bình
-    # dự đoán bằng nhau. matchindex mặc định của mice 3.19 tách đồng hạng theo thứ tự cố định ⇒ khi mọi biến dự báo
-    # rời rạc (vài ô trung bình dự đoán) cùng vài người cho bị dùng lại ⇒ phương sai giữa bộ phồng: đo 1.200 ca, x1
-    # thiếu 17 %, dự báo nhị phân — SD giữa bộ 0,068 (mặc định) · 0,025 (use.matcher) · 0,023 (norm) · 0,022 (Python).
-    imp <- mice::mice(k, m = MI_M, method = "pmm", predictorMatrix = pred, maxit = 10, seed = MI_HAT,
-                      printFlag = FALSE, use.matcher = TRUE)
+    # 24/11/2026: "pmmboot" (PMM kiểu 1 tham số bootstrap, k = 10 người cho chọn riêng từng ca — hàm ở khối dùng chung)
+    # thay "pmm" + use.matcher: phân xử bằng độ phủ KTC 95 % qua mô phỏng 500 lần lặp (dự báo rời rạc/liên tục, có/không
+    # cụm) — xem tests/test_mi_pmm_do_phu_20261124.py.
+    imp <- mice::mice(k, m = MI_M, method = "pmmboot", predictorMatrix = pred, maxit = 10, seed = MI_HAT,
+                      printFlag = FALSE)
     bo <- lapply(seq_len(MI_M), function(i) {
       di <- d0
       ci <- mice::complete(imp, i)
@@ -2666,8 +2693,9 @@ def _kaplan_meier(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
 
 
 # ── Bảng 5 (gán đa trị) — dung sai theo SAI SỐ MONTE CARLO (22/11/2026) ──
-# Python (statsmodels MICEData/MICE, pmm) và R (mice, pmm) gán bằng thuật toán khác nhau, hạt giống khác nhau ⇒ KHÔNG
-# đòi khớp từng bộ gán; đòi khớp KẾT LUẬN GỘP. Căn cứ: sai số Monte Carlo của ước lượng gộp là √(B/m) (White, Royston &
+# Python (BoGanPMM) và R (mice + "pmmboot") gán bằng CÙNG phương pháp (PMM kiểu 1 tham số bootstrap, 24/11/2026) nhưng
+# cài đặt độc lập, dãy ngẫu nhiên khác ⇒ KHÔNG đòi khớp từng bộ gán; đòi khớp KẾT LUẬN GỘP. Căn cứ: sai số
+# Monte Carlo của ước lượng gộp là √(B/m) (White, Royston &
 # Wood, Stat Med 2011, PMID 21225900); B ước lượng với m − 1 bậc tự do (B̂ ~ B·χ²(m−1)/(m−1)) nên dao động rộng ⇒ lấy B
 # LỚN hơn của hai phía và lượng tử t(m−1).
 #   • ước lượng gộp b (thang mô hình: log PR/OR, β):  |b_R − b_Py| ≤ c·√(B*/m_Py + B*/m_R),  c = t(1 − α/2; m − 1)
@@ -2677,6 +2705,9 @@ def _kaplan_meier(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
 #     ca phải trùng.
 # Hiệu chỉnh trên mô phỏng Poisson theo cụm (72 phép so Python ↔ R, m = 20): |Δb|/√(2B*/m) độ lệch chuẩn 1,11, lớn nhất
 # 2,9; lệch SE/σ lớn nhất 2,66; hệ số FMI thấp lệch SE ≤ 0,98 % — dưới ngưỡng c ≈ 4,9 (α = 10⁻⁴, m = 20).
+# Kiểm lại 24/11/2026 với bộ gán mới hai phía (BoGanPMM ↔ mice "pmmboot"): 2.000 phép so (500 lần lặp × 2 kịch bản cụm
+# — dự báo rời rạc / liên tục, MAR — × 2 hệ số, cùng dữ liệu, dãy ngẫu nhiên độc lập): |Δb|/√(2B*/m) SD 0,91–1,03, lớn
+# nhất 3,35; 0 phép vượt dung sai b hoặc SE (lớn nhất 68 % và 79 % dung sai).
 # m < MI_M_TOI_THIEU ⇒ B không chặn được ⇒ «không so được».
 MI_M_TOI_THIEU = 10
 MI_ALPHA = 1e-4
@@ -3070,7 +3101,7 @@ if (bt %in% c("thuong", "yeu_to", "gop_muc")) {
     if (!isTRUE(CH$x_phan_loai) && co(CH$x_don_vi)) dd[[x]] <- suppressWarnings(as.numeric(dd[[x]])) / CH$x_don_vi
     cot_gan <- unique(c(CH$outcome, bien))
     pm <- mice::make.predictorMatrix(dd[, cot_gan, drop = FALSE])
-    phuong_phap <- stats::setNames(ifelse(colSums(is.na(dd[, cot_gan, drop = FALSE])) > 0, "pmm", ""), cot_gan)
+    phuong_phap <- stats::setNames(ifelse(colSums(is.na(dd[, cot_gan, drop = FALSE])) > 0, "pmmboot", ""), cot_gan)
     phuong_phap[CH$outcome] <- ""
     gan <- mice::mice(dd[, cot_gan, drop = FALSE], m = CH$mi, method = phuong_phap, predictorMatrix = pm,
                       seed = CH$hat_giong, printFlag = FALSE)
@@ -3091,7 +3122,8 @@ if (bt %in% c("thuong", "yeu_to", "gop_muc")) {
                   hat_giong = CH$hat_giong,
                   x = lapply(stats::setNames(seq_along(qb), ten_x), function(j) mot_he_so(qb[[j]], sqrt(tt[[j]]),
                                                                                          df_mi[[j]])),
-                  cach = paste("mice pmm cho biến nền/phơi nhiễm có thiếu, kết cục làm biến dự báo không gán;",
+                  cach = paste("mice pmmboot (PMM tham số bootstrap, 10 người cho) cho biến nền/phơi nhiễm có thiếu,",
+                               "kết cục làm biến dự báo không gán;",
                                "mỗi bộ: clm + sandwich theo cụm; gộp Rubin, bậc tự do min(Rubin, G−1)"))
   }
 } else if (bt == "anh_huong") {

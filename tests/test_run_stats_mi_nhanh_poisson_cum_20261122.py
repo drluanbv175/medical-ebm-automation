@@ -53,11 +53,15 @@ def _uoc(mi: dict, bien: str) -> dict:
 
 
 def test_mi_poisson_cum_tim_lai_tham_so_that():
-    np.random.seed(20261122)  # MICEData dùng bộ sinh số ngẫu nhiên toàn cục của numpy
-    # 23/11/2026: m = 40 (trước 10). Ước lượng tỷ lệ thông tin thiếu với m = 10 dao động 0,06–0,40 theo hạt giống;
-    # trên CI Ubuntu (OpenBLAS đa luồng lệch dãy ngẫu nhiên) từng ra 0,593 ⇒ đỏ dù phương pháp đúng. Quy tắc
-    # m ≥ 100 × tỷ lệ thông tin thiếu (White, Royston & Wood 2011, PMID 21225900) ⇒ ~25; m = 40 cho 0,18–0,29 và
-    # đạt mọi khẳng định dưới đây ở 16/16 hạt giống đo trên máy. Ngưỡng giữ nguyên.
+    # 24/11/2026 — nguyên nhân THẬT của λ_x1 = 0,594 trên CI Ubuntu (Haswell), 0,147 (SkylakeX), 0,294 (Mac): bước PMM
+    # của statsmodels MICEData (argsort không ổn định trên trung bình dự đoán chỉ 4 mức — sắp xếp SIMD theo CPU; cửa sổ
+    # searchsorted ± k chung cho cả nhóm trùng; so khớp kiểu 2), KHÔNG phải nhiễu Monte Carlo hay OpenBLAS đa luồng như
+    # chú thích 23/11 (m = 40 vẫn ra 0,594 trên Haswell). Bộ gán mới BoGanPMM (PMM kiểu 1 tham số bootstrap, người cho
+    # chọn riêng từng ca, phá thế trùng ngẫu nhiên) cho λ đúng lý thuyết ≈ 0,2 (= tỷ lệ thiếu: bộ gán không thêm thông
+    # tin về x1) và tất định theo hạt giống trên mọi máy: 16 hạt giống ⇒ λ 0,10–0,29, TB 0,193, SD 0,045
+    # (≈ 0,2·√(2/39)).
+    # m = 40 giữ để λ̂ đủ chính xác cho khẳng định dưới (m ≥ 100·λ ≈ 20 — White, Royston & Wood 2011, PMID 21225900);
+    # ngưỡng giữ nguyên.
     mi = RSA.multiple_imputation_model(_mo_phong_cum(3000, 60, 1), "y", "x2", ["x1"], "poisson_pr", 40, "cum", {})
     assert mi["model"] == "poisson_cluster_mi" and mi["cluster"] == {"cot": "cum", "so_cum": 60}
     assert mi["bo_may"] == "tu_lap" and "PMID 21225900" in mi["phuong_phap_gop"]
@@ -179,12 +183,14 @@ def test_gan_theo_nhanh_khong_gan_muc_khong_lam_cho_nguoi_da_lam(tmp_path):
     assert "Gán theo nhánh «hba1c_3muc»" in van and "[co_hba1c] = '1'" in van
 
 
-def test_khong_ke_hoach_giu_nguyen_mice_dung_san(tmp_path):
+def test_khong_ke_hoach_thi_khong_gan_theo_nhanh(tmp_path):
+    """Không có kế hoạch gán thụ động ⇒ không gán theo nhánh. 24/11/2026: mọi gán đa trị không ghép cặp đi qua bộ máy
+    tự lập (BoGanPMM) — MICE dựng sẵn của statsmodels đã bỏ (kết quả phụ thuộc CPU và thứ tự hàng)."""
     _kh, df = _ke_hoach_va_df(tmp_path)
     df, bg = RSA.mo_rong_bien_gia(df, ["hba1c_3muc"])
-    np.random.seed(5)
     mi = RSA.multiple_imputation_model(df, "y", "tuoi", ["hba1c_3muc"], "poisson_pr", 3, None, bg)
-    assert mi["model"] == "poisson_hc0_mi" and "bo_may" not in mi and "gan_theo_nhanh" not in mi
+    assert mi["model"] == "poisson_hc0_mi" and mi["bo_may"] == "tu_lap" and "gan_theo_nhanh" not in mi
+    assert mi["phuong_phap_gan"] == RSA.NGUON_PMM
 
 
 def test_bien_phai_sinh_chi_xac_dinh_trong_nhom_con_khong_bi_gan_ngoai_nhom(tmp_path):
@@ -286,8 +292,6 @@ def test_mi_poisson_cum_dung_sai_so_chuan_theo_cum_va_t_g_tru_1():
 def test_cot_nguon_co_nhanh_khong_lam_bien_du_bao_va_an_gia_tri_ngoai_nhanh(tmp_path, monkeypatch):
     """Cột nguồn có nhánh: (1) giá trị ở hàng nhánh không thoả không vào dữ liệu gán; (2) không làm biến dự báo cho cột
     khác (ngoài nhóm con nó không có nghĩa)."""
-    import statsmodels.imputation.mice as M
-
     kh, df = _ke_hoach_va_df(tmp_path)
     df.loc[df.index[:40], "tuoi"] = np.nan
     an = df.index[(df["co_hba1c"] == 0)][:5]
@@ -295,17 +299,15 @@ def test_cot_nguon_co_nhanh_khong_lam_bien_du_bao_va_an_gia_tri_ngoai_nhanh(tmp_
     df, bg = RSA.mo_rong_bien_gia(df, ["hba1c_3muc"])
     bat: dict = {}
 
-    class BatMICEData(M.MICEData):
-        def __init__(self, data, *a, **k):
-            bat["khung"] = data.copy()
-            super().__init__(data, *a, **k)
-            bat["md"] = self
+    class BatBoGan(RSA.BoGanPMM):  # 24/11/2026: bộ gán BoGanPMM thay MICEData
+        def __init__(self, khung, *a, **k):
+            bat["khung"] = khung.copy()
+            super().__init__(khung, *a, **k)
+            bat["bg"] = self
 
-    monkeypatch.setattr(M, "MICEData", BatMICEData)
-    np.random.seed(2)
+    monkeypatch.setattr(RSA, "BoGanPMM", BatBoGan)
     mi = RSA.multiple_imputation_model(df, "y", "tuoi", ["hba1c_3muc"], "poisson_pr", 2, None, bg, kh)
     assert mi.get("bo_may") == "tu_lap", mi
-    ten = {c: f"v{i}" for i, c in enumerate(["y", "tuoi", "co_hba1c", "hba1c_gt"])}
-    assert bat["khung"].loc[an, ten["hba1c_gt"]].isna().all()
-    assert ten["hba1c_gt"] not in bat["md"].conditional_formula[ten["tuoi"]].split("~")[1]
-    assert ten["co_hba1c"] in bat["md"].conditional_formula[ten["tuoi"]].split("~")[1]
+    assert bat["khung"].loc[an, "hba1c_gt"].isna().all()
+    assert "hba1c_gt" not in bat["bg"].du_bao["tuoi"]
+    assert "co_hba1c" in bat["bg"].du_bao["tuoi"]
