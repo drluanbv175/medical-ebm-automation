@@ -192,6 +192,166 @@
    "cu": "    return int(math.ceil(inch * 914400 - 1e-6))",
    "moi": "    return int(inch * 914400)",
    "test": "tests/test_goi_bao_ve_pptx_20261122.py"
+  },
+  {
+   "ma": "QDSK-Q1-SO-LE",
+   "chot": "số đứng lẻ thành câu cuối đoạn («… [1][2][3]. 2.») là lỗi điền sai kiểu",
+   "tep": "tools/quet_dien_sai_kieu.py",
+   "cu": "_SO_LE_CUOI_RE = re.compile(r\"(?:[.!?…]|\\])\\s+(\\d{1,3})\\.?\\s*$\")",
+   "moi": "_SO_LE_CUOI_RE = re.compile(r\"(?!)\")",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "QDSK-Q2-O-HOI-CHU",
+   "chot": "ô hỏi người/vai trò/mô tả điền mã số đơn lẻ là lỗi điền sai kiểu",
+   "tep": "tools/quet_dien_sai_kieu.py",
+   "cu": "        if len(o) >= 2 and hoi_chu(bo_dau(o[0])):",
+   "moi": "        if False:",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "QDSK-Q4-DAU-CHAM",
+   "chot": "dấu chấm thập phân trong câu tiếng Việt (Q4) — ngoại lệ số hiệu/phiên bản không được nuốt số đo",
+   "tep": "tools/quet_dien_sai_kieu.py",
+   "cu": "    return bool(_THAM_CHIEU_TRUOC_RE.search(truoc) or _PHIEN_BAN_RE.search(truoc))",
+   "moi": "    return True",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "QDSK-K22-DE-CUONG-NOP",
+   "chot": "đề cương nộp chặn lỗi điền sai kiểu (K22)",
+   "tep": "tools/kiem_de_cuong_nop_hoi_dong.py",
+   "cu": "    loi.extend(loi_k22(md))\n",
+   "moi": "    pass\n",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "QDSK-G7-AUTO-09",
+   "chot": "bản thảo G7 còn lỗi điền sai kiểu thì cổng G7 chặn (G7-AUTO-09)",
+   "tep": "tools/g7_quality_gate.py",
+   "cu": "            \"BLOCK\" if dien_sai_kieu else \"PASS\",",
+   "moi": "            \"PASS\",",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "QDSK-G7-HIEN-SO",
+   "chot": "số G6 in vào bản thảo theo quy ước tiếng Việt sau tự kiểm nguyên văn (hien_so_g6)",
+   "tep": "tools/run_g7_auto.py",
+   "cu": "    if isinstance(dong, str):\n        return QDSK.viet_hoa_so(dong)\n    return [QDSK.viet_hoa_so(x) if isinstance(x, str) else x for x in dong]",
+   "moi": "    return dong",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "QDSK-GIA-LAP-SO-LON",
+   "chot": "giả lập soát luật K11 số nguyên từ 5 chữ số cho bản thảo G7 và báo cáo tổng hợp",
+   "tep": "tools/gia_lap_tron_vong.py",
+   "cu": "                    if KDN.la_loi_so_do(x) or (so_lon and KDN.la_loi_so_lon(x))]",
+   "moi": "                    if KDN.la_loi_so_do(x)]",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "QDSK-GIA-LAP-O-LOI-MAY",
+   "chot": "lỗi điền sai kiểu của văn bản đầu ra tính là ô lỗi máy của giả lập",
+   "tep": "tools/gia_lap_tron_vong.py",
+   "cu": "        loi_may += [f\"{self.ma}:dien_sai_kieu_van_ban:{x}\" for x in dsk]\n",
+   "moi": "        pass\n",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "QDSK-K11-PHAN-SO",
+   "chot": "số nguyên từ 5 chữ số ở tử/mẫu số phân số («1001/39887») cũng phải nhóm nghìn (K11)",
+   "tep": "tools/quet_dien_sai_kieu.py",
+   "cu": "(?:(?<=\\d/)|(?<!/))\\d{5,}(?![\\w.-])(?!,\\d)(?:(?=/\\d)|(?!/))",
+   "moi": "(?<!/)\\d{5,}(?![\\w.-])(?!,\\d)(?!/)",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "G4-N-NHOM-NGHIN-DOC",
+   "chot": "bộ đọc SAP duy nhất (hop_dong_sap, bí danh g4_quality_gate.parse_signed_numbers) đọc N đã ký ở cả dạng nhóm nghìn («25.462») lẫn SAP ký trước («25462»)",
+   "tep": "tools/hop_dong_sap.py",
+   "cu": "NGUYEN_KY = r\"(\\d{1,3}(?:\\.\\d{3})+(?!\\d)|\\d+)\"",
+   "moi": "NGUYEN_KY = r\"(\\d+)\"",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "G4-N-NHOM-NGHIN-IN",
+   "chot": "SAP in N, số cụm, số ca, quần thể FPC theo nhóm nghìn kiểu Việt (K11)",
+   "tep": "tools/run_g4_auto.py",
+   "cu": "    return QDSK.viet_so(gia_tri) if isinstance(gia_tri, int) and not isinstance(gia_tri, bool) else str(gia_tri)",
+   "moi": "    return str(gia_tri)",
+   "test": "tests/test_quet_dien_sai_kieu_20261123.py"
+  },
+  {
+   "ma": "HD-SO-KY-DAU-PHAY",
+   "chot": "bộ đọc SAP duy nhất (hop_dong_sap) đọc số thập phân đã ký viết dấu phẩy («0,05» — SAP sinh từ 23/11/2026) lẫn dấu chấm (SAP ký trước)",
+   "tep": "tools/hop_dong_sap.py",
+   "cu": "SO_KY = r\"(\\d+(?:[.,]\\d+)?)\"",
+   "moi": "SO_KY = r\"(\\d+(?:\\.\\d+)?)\"",
+   "test": "tests/test_hop_dong_sap_20261123.py::test_hop_dong_doc_hai_quy_uoc_so_cua_sap"
+  },
+  {
+   "ma": "NQ-MAU-SO-MOI-NHOM",
+   "chot": "nhat_quan_xuyen_cong nhận N trong văn bản ở mọi nhóm nghìn («1.234.567»), không chỉ nhóm cuối",
+   "tep": "tools/nhat_quan_xuyen_cong.py",
+   "cu": "    nhom = [s[max(0, i - 3):i] for i in range(len(s), 0, -3)][::-1]",
+   "moi": "    nhom = [s[:-3], s[-3:]] if len(s) > 3 else [s]",
+   "test": "tests/test_hop_dong_sap_20261123.py::test_hop_dong_doc_hai_quy_uoc_so_cua_sap"
+  },
+  {
+   "ma": "HD-V1-SO-KHOA-V1",
+   "chot": "hợp đồng v1 (ebm.g4_sap_contract/1) vẫn hợp lệ — kiem chỉ so các khoá v1, không đòi trường v2",
+   "tep": "tools/hop_dong_sap.py",
+   "cu": "            moi = {k: moi.get(k) for k in KHOA_V1}",
+   "moi": "            moi = dict(moi)",
+   "test": "tests/test_hop_dong_sap_20261123.py::test_v1_van_doc_duoc_va_nang_cap_tu_chinh_van_ban"
+  },
+  {
+   "ma": "HD-G6-SEED",
+   "chot": "G6-AUTO-02 đọc seed đã chốt từ hợp đồng SAP (không tự dò chữ SAP)",
+   "tep": "tools/g6_quality_gate.py",
+   "cu": "    seed_sap = sd.get(\"gia_tri\")",
+   "moi": "    seed_sap = None",
+   "test": "tests/test_g6_quality_gate_20260815.py::test_sapdrift_seed_bi_bat"
+  },
+  {
+   "ma": "HD-NQ-TRUC-HOP-DONG",
+   "chot": "nhat_quan_xuyen_cong: SAP có mà hợp đồng không dùng được ⇒ trục hop_dong_sap LỆCH CỨNG",
+   "tep": "tools/nhat_quan_xuyen_cong.py",
+   "cu": "    if loi_hop_dong:",
+   "moi": "    if False:",
+   "test": "tests/test_hop_dong_sap_20261123.py::test_nhat_quan_truc_hop_dong_va_doc_so_lieu_tu_hop_dong"
+  },
+  {
+   "ma": "HD-QD-HOP-LE",
+   "chot": "quyet_dinh_da_chot.rut (G9/G10) chỉ lấp từ hợp đồng SAP HỢP LỆ — SAP đổi sau khi lập hợp đồng ⇒ không lấp",
+   "tep": "tools/quyet_dinh_da_chot.py",
+   "cu": "    hd = HD.doc_hop_le(out_dir, study)",
+   "moi": "    hd = HD.doc(out_dir, study)[0]",
+   "test": "tests/test_hop_dong_sap_20261123.py::test_quyet_dinh_da_chot_rut_doc_hop_dong"
+  },
+  {
+   "ma": "HD-GC-HOP-LE",
+   "chot": "gate_contract.sap_declares_ordinal/proportion chỉ tin hợp đồng SAP HỢP LỆ (hợp đồng bị sửa ⇒ False)",
+   "tep": "tools/gate_contract.py",
+   "cu": "    hd = _HD_SAP.doc_hop_le(Path(out_dir), study)",
+   "moi": "    hd = _HD_SAP.doc(Path(out_dir), study)[0]",
+   "test": "tests/test_hop_dong_sap_20261123.py::test_gate_contract_khai_bao_doc_hop_dong"
+  },
+  {
+   "ma": "G7-BIEN-NI-SO-VIET",
+   "chot": "phụ lục CONSORT-NI của bản thảo G7 in biên Δ theo quy ước số tiếng Việt («0,1»), không float thô",
+   "tep": "tools/run_g7_auto.py",
+   "cu": "        margin_note = (f\"margin Δ={QDSK.viet_so(margin)}\" if margin is not None",
+   "moi": "        margin_note = (f\"margin Δ={margin}\" if margin is not None",
+   "test": "tests/test_consort_ni_extension_g7_g8_g9_g10.py::TestG7ConsortNiChecklist::test_ni_extension_appended_for_rct_non_inferiority"
+  },
+  {
+   "ma": "G8-BIEN-NI-SO-VIET",
+   "chot": "văn bản A9 của G8 in biên Δ theo quy ước số tiếng Việt («0,1»)",
+   "tep": "tools/run_g8_auto.py",
+   "cu": "        margin_note = (f\"margin Δ={QDSK.viet_so(ni_ext['margin'])}\" if ni_ext.get(\"margin\") is not None",
+   "moi": "        margin_note = (f\"margin Δ={ni_ext['margin']}\" if ni_ext.get(\"margin\") is not None",
+   "test": "tests/test_consort_ni_extension_g7_g8_g9_g10.py::TestG8ConsortNiChecklist::test_a9_ghi_bien_theo_quy_uoc_so_tieng_viet"
   }
  ]
 }

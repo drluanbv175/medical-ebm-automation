@@ -47,13 +47,13 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G7 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
-của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (15) của
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (16) của
 `tools/g7_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
 (bảng dưới chép lại; test đối chiếu):
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
-| `G7-T1` — agent `viet-ban-thao` | G7-AUTO-00, G7-AUTO-04, G7-AUTO-05, G7-AUTO-06, G7-AUTO-08 |
+| `G7-T1` — agent `viet-ban-thao` | G7-AUTO-00, G7-AUTO-04, G7-AUTO-05, G7-AUTO-06, G7-AUTO-08, G7-AUTO-09 |
 | `G7-T3` — agent `kiem-chung-trich-dan` | G7-AUTO-07 |
 | `PI@G7-T1` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `viet-ban-thao` | G7-HUMAN-01, G7-HUMAN-02, G7-HUMAN-03, G7-HUMAN-04, G7-HUMAN-05 |
 | `^G0,G2,G3,G4` — cổng tiền đề G0, G2, G3, G4 (điều phối cổng đó chịu trách nhiệm) | G7-AUTO-02 |

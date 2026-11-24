@@ -372,10 +372,12 @@ def test_quan_the_chinh_sap_doc_dung_bien_va_gia_tri():
 def _dac_ta(tmp_path: Path, loc: str | None, loc_phu: str | None = None) -> dict:
     import chay_sap_g6 as CS6
 
-    (tmp_path / "SAP.md").write_text(SAP_QT, encoding="utf-8", newline="\n")
+    # 23/11/2026: SAP mang tên chuẩn G4_A5_SAP_FINAL_<mã>.md — `kiem` đọc hợp đồng SAP theo mã đề tài
+    sap = tmp_path / "G4_A5_SAP_FINAL_QT.md"
+    sap.write_text(SAP_QT, encoding="utf-8", newline="\n")
     ts = {"ty_le": ["xn_du"], **({"loc": loc} if loc else {})}
     ts_phu = {"ty_le": ["phan_loai_btm"], **({"loc": loc_phu} if loc_phu else {})}
-    dt = {"nguon_sap": "SAP.md", "sha256_sap": CS6.sha256_tep(tmp_path / "SAP.md"), "phan_tich": [
+    dt = {"nguon_sap": sap.name, "sha256_sap": CS6.sha256_tep(sap), "phan_tich": [
         {"id": "MT1", "vai": "chinh", "sap_muc": "§4", "mo_ta": "tỷ lệ", "sap_neo": "Kết cục chính", "tham_so": ts},
         {"id": "P1", "vai": "phu", "sap_muc": "§4", "mo_ta": "phụ", "sap_neo": "Kết cục phụ 1", "tham_so": ts_phu},
     ]}

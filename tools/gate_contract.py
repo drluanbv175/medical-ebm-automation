@@ -28,12 +28,15 @@ import hashlib
 import hmac
 import json
 import os
-import re
 import sys
 import unicodedata
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Tuple
+
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+import hop_dong_sap as _HD_SAP  # noqa: E402 — bộ đọc SAP duy nhất + hợp đồng SAP máy đọc (24/11/2026)
 
 
 def ensure_utf8_stdout() -> None:
@@ -835,63 +838,35 @@ def resolve_design_code(out_dir: Path, default: str = "cohort") -> Tuple[str, Op
     return (g2 or g1 or default), None
 
 
+def _hop_dong_sap(out_dir: Path, study: str) -> Dict[str, Any]:
+    """Nội dung hợp đồng SAP máy đọc HỢP LỆ (tools/hop_dong_sap.py); thiếu SAP/hợp đồng lỗi ⇒ {} (fail-closed về hành vi
+    mặc định của từng cổng, không đoán)."""
+    hd = _HD_SAP.doc_hop_le(Path(out_dir), study)
+    nd = (hd or {}).get("noi_dung")
+    return nd if isinstance(nd, dict) else {}
+
+
 def sap_declares_ordinal(out_dir: Path, study: str) -> bool:
     """SAP đã khoá (G4) có khai mô hình CHÍNH là hồi quy logistic THỨ TỰ không?
 
-    ★ NGUỒN DUY NHẤT dùng chung cho G6 (sinh script R) và G7 (gợi ý phương pháp
-    trong bản thảo) — thêm 2026-09-01 khi chuyển từ run_g6_auto.py về đây để
-    hai cổng không giữ hai bản chép tay của cùng một regex (hai bản là nguồn
-    trôi dạt: sửa một bên thì bên kia âm thầm rẽ nhánh khác — đúng lớp lỗi
-    "2 lớp xử lý tách rời nhau" đã vá nhiều lần ở G6).
-
-    Vì sao đọc SAP thay vì suy từ dữ liệu: số mức mã nguyên trong REDCap là
-    điều kiện CẦN chứ không ĐỦ cho tính thứ bậc (biến danh định nhiều mức cũng
-    mã số nguyên) — suy từ mã số là ĐOÁN. SAP §4 là nơi thống kê viên/chủ nhiệm
-    ĐÃ TUYÊN BỐ mô hình và bị khoá bằng chữ ký G4, nên nó là thẩm quyền duy
-    nhất; các cổng sau chỉ THI HÀNH SAP. Thiếu file SAP → False (fail-closed
-    về hành vi mặc định của từng cổng), không đoán.
-    """
-    sap_path = Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md"
-    if not sap_path.exists():
-        return False
-    try:
-        sap = sap_path.read_text(encoding="utf-8")
-    except OSError:
-        return False
-    return bool(re.search(
-        r"proportional\s+odds|logistic\s+th[ưứ]\s*t[ựụ]|h[ồo]i\s+quy\s+th[ưứ]\s+b[ậa]c|ordinal\s+logistic",
-        sap, re.I))
+    ★ NGUỒN DUY NHẤT dùng chung cho G6 (sinh script R) và G7 (gợi ý phương pháp trong bản thảo). Vì sao đọc SAP thay vì
+    suy từ dữ liệu: số mức mã nguyên trong REDCap là điều kiện CẦN chứ không ĐỦ cho tính thứ bậc — SAP §4 là nơi thống
+    kê viên/chủ nhiệm ĐÃ TUYÊN BỐ mô hình và bị khoá bằng chữ ký G4. 24/11/2026: đọc HỢP ĐỒNG SAP máy đọc
+    (`khai_bao.thu_bac`) — không tự dò chữ SAP; thiếu SAP/hợp đồng lỗi ⇒ False."""
+    return bool((_hop_dong_sap(out_dir, study).get("khai_bao") or {}).get("thu_bac"))
 
 
-# Phương pháp chính là ƯỚC LƯỢNG TỶ LỆ (đề tài MÔ TẢ theo độ chính xác) — chỉ đọc dòng «Phương pháp» của SAP §4.
-PHUONG_PHAP_TY_LE_RE = re.compile(r"ư[ớo]c\s+l[ưượ]+ng\s+t[ỷỉy]\s+l[ệe]|wilson|t[ỷỉy]\s+l[ệe]\s+hi[ệe]n\s+m[ắa]c|"
-                                  r"\bprevalence\b|\bproportion\s+estimat", re.I)
-
-
-def phuong_phap_la_ty_le(dong_phuong_phap: str) -> bool:
-    """Dòng «Phương pháp» khai ước lượng tỷ lệ (Wilson/tỷ lệ hiện mắc) và KHÔNG khai mô hình hồi quy làm phân tích
-    chính. Dùng chung cho G4 (khuôn §4), G6 (sinh 03_analysis.R) và cổng G6 (G6-AUTO-09) — 16/11/2026."""
-    t = str(dong_phuong_phap or "")
-    return bool(PHUONG_PHAP_TY_LE_RE.search(t)) and not re.search(r"h[ồo]i\s+quy|regression|logistic|poisson|cox",
-                                                                    t, re.I)
+# Phương pháp chính là ƯỚC LƯỢNG TỶ LỆ (đề tài MÔ TẢ theo độ chính xác) — mẫu và hàm sống ở bộ đọc SAP duy nhất
+# (hop_dong_sap); tên dưới đây là bí danh (G4 khuôn §4, G6 sinh 03_analysis.R, cổng G6).
+PHUONG_PHAP_TY_LE_RE = _HD_SAP.PHUONG_PHAP_TY_LE_RE
+phuong_phap_la_ty_le = _HD_SAP.phuong_phap_la_ty_le
 
 
 def sap_declares_proportion(out_dir: Path, study: str) -> bool:
-    """SAP đã khoá khai phân tích CHÍNH là ước lượng tỷ lệ + KTC (cắt ngang MÔ TẢ)?
-
-    Cùng nguyên tắc sap_declares_ordinal: SAP là thẩm quyền, thiếu SAP/không đọc được ⇒ False (giữ hành vi mặc định),
-    không đoán. Chỉ xét dòng «Phương pháp» của §4 — chữ «Wilson» ở mục khác (vd KTC trên n hiệu dụng của mô hình có
-    trọng số) không biến SAP thành mô tả."""
-    sap_path = Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md"
-    try:
-        sap = sap_path.read_text(encoding="utf-8")
-    except OSError:
-        return False
-    m4 = re.search(r"^#{2,4}\s*§\s*4\b[^\n]*\n(.*?)(?=^#{2,4}\s*§\s*\d|^#{1,2}\s|\Z)", sap, re.M | re.S)
-    if not m4:
-        return False
-    m = re.search(r"\*\*Phương pháp:\*\*\s*([^\n]+)", m4.group(1))
-    return bool(m) and phuong_phap_la_ty_le(m.group(1))
+    """SAP đã khoá khai phân tích CHÍNH là ước lượng tỷ lệ + KTC (cắt ngang MÔ TẢ)? Chỉ xét dòng «Phương pháp» của §4 —
+    chữ «Wilson» ở mục khác không biến SAP thành mô tả. 24/11/2026: đọc HỢP ĐỒNG SAP (`khai_bao.ty_le`); thiếu
+    SAP/hợp đồng lỗi ⇒ False."""
+    return bool((_hop_dong_sap(out_dir, study).get("khai_bao") or {}).get("ty_le"))
 
 
 def load_study_meta(out_dir: Path) -> Dict[str, Any]:

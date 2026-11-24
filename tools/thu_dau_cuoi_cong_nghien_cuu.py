@@ -68,6 +68,7 @@ import g2_quality_gate as G2Q  # noqa: E402
 import g3_quality_gate as G3Q  # noqa: E402
 import g4_quality_gate as G4Q  # noqa: E402
 import g8_quality_gate as G8Q  # noqa: E402
+import hop_dong_sap as HD  # noqa: E402 — hợp đồng SAP máy đọc (G4-AUTO-13)
 import run_g4_auto as G4  # noqa: E402
 
 STUDY = "CANARY-NC-6.1"
@@ -339,6 +340,10 @@ def _evaluate_g4(**overrides) -> Dict[str, Any]:
         dac_ta={"estimand": _G4_ESTIMAND},
     )
     kwargs.update(overrides)
+    # 23/11/2026: SAP đem ký đã qua bước lập hợp đồng SAP máy đọc (băm trong chứng chỉ khoá — G4-AUTO-13)
+    co_bam, _hd = HD.gan_vao_sap(kwargs["artifact_text"], kwargs["study"], None)
+    kwargs["artifact_text"] = co_bam if co_bam is not None else kwargs["artifact_text"]
+    kwargs.setdefault("hop_dong_loi", HD.loi_bam_van_ban(kwargs["artifact_text"], kwargs["study"]))
     meta = json.loads(json.dumps(kwargs["meta"]))
     meta.setdefault("gate_params", {}).setdefault("G4", {}).setdefault(
         "dau_van_tay_chot", G4Q.dau_van_tay_g4(kwargs["artifact_text"]))

@@ -50,6 +50,7 @@ import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import ho_so_g2_da_soan as HSG  # noqa: E402  (văn bản G2 đã soạn — tái lập khi sinh lại, 22/11/2026)
 import hon_hop as HH  # noqa: E402  (thiết kế hỗn hợp — cấu phần định tính, 17/11/2026)
 import pii_van_ban as PII  # noqa: E402  (bộ dò PII dùng chung — CHUNG-G)
+import quet_dien_sai_kieu as QDSK  # noqa: E402  (quy ước số tiếng Việt — K11 nhóm nghìn, 23/11/2026)
 import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G0)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
@@ -1074,7 +1075,8 @@ def _icf_en(meta: Optional[dict], design_code: str, n_display: str) -> Dict[str,
     if str(adm.get("principal_investigator") or "").strip() and "[" not in str(adm.get("principal_investigator")):
         ra.setdefault("pi", str(adm["principal_investigator"]).strip())
     if n_display and str(n_display).isdigit():
-        ra.setdefault("participants", f"about {n_display}")
+        # 23/11/2026: phiếu TIẾNG ANH nhóm nghìn kiểu Anh («about 25,462»), không để dãy số trần (K11)
+        ra.setdefault("participants", f"about {int(n_display):,}")
     if str(adm.get("sponsor") or "").strip().lower() in ("không có tài trợ bên ngoài", "không có tài trợ ngoài",
                                                          "no external funding"):
         ra.setdefault("funding", "no external funding")
@@ -1253,8 +1255,9 @@ def generate_g2_full_package(
     # nếu bác sĩ đã chạy G3 TRƯỚC G2, N thật đã có sẵn — không cần để cứng
     # [CẦN] trong khi dữ liệu đã có trong tay): hiển thị N thật nếu đã có,
     # nếu chưa vẫn giữ nguyên placeholder [CẦN] như cũ.
-    n_display = str(n_adjusted) if n_adjusted and n_adjusted > 0 else "[CẦN — chờ kết quả G3]"
-    n_display_inline = str(n_adjusted) if n_adjusted and n_adjusted > 0 else "[CẦN — từ G3]"
+    # 23/11/2026 (K11): văn bản tiếng Việt in N nhóm nghìn kiểu Việt («25.462»); bản đăng ký JSON giữ số nguyên
+    n_display = QDSK.viet_so(n_adjusted) if n_adjusted and n_adjusted > 0 else "[CẦN — chờ kết quả G3]"
+    n_display_inline = QDSK.viet_so(n_adjusted) if n_adjusted and n_adjusted > 0 else "[CẦN — từ G3]"
 
     # SỬA 2026-07-17 (bình duyệt agent `dao-duc-dang-ky` cho đề tài hài lòng
     # bệnh nhân C1a phát hiện thật): ICF trước đây LUÔN in sẵn "Bước 3: ví dụ

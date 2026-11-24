@@ -36,6 +36,7 @@ from tests._chuoi_da_chot import (  # noqa: E402,E501
     dien_sap_g4,
     dung_g0_g1_da_chot,
     dung_g0_g3_da_chot,
+    lap_hop_dong_g4,
     sinh_sap_g4_that,
     xac_nhan_g4,
 )
@@ -195,8 +196,12 @@ def test_truc_gia_thuyet_va_sai_so_d_thiet_ke_mo_ta(tmp_path, monkeypatch):
     gt = _truc(out, "S-CX", "loai_gia_thuyet")
     assert gt["muc"] == NQ.MUC_KHOP, gt
     # SAP ký một sai số d khác G3 đã tính ⇒ N trong SAP không còn do d đó quyết định.
-    sap.write_text(sap.read_text(encoding="utf-8").replace("cho phép (d):** ±0.05", "cho phép (d):** ±0.03"),
-                   encoding="utf-8", newline="\n")
+    # 24/11/2026: bộ sinh G4 in số theo quy ước tiếng Việt («±0,05» — quet_dien_sai_kieu); chuỗi cần thay PHẢI có
+    # trong SAP, không thì phép thay lặng lẽ không đổi gì và test đo nhầm
+    van = sap.read_text(encoding="utf-8")
+    assert "cho phép (d):** ±0,05" in van
+    sap.write_text(van.replace("cho phép (d):** ±0,05", "cho phép (d):** ±0,03"), encoding="utf-8", newline="\n")
+    lap_hop_dong_g4(out, "S-CX")  # 24/11/2026: SAP sửa ⇒ hợp đồng SAP máy đọc lập lại (trục đọc số liệu từ hợp đồng)
     d = _truc(out, "S-CX", "sai_so_d")
     assert d["muc"] == NQ.MUC_LECH_CUNG, d
     assert NQ.tieu_chi_g10(NQ.doi_chieu(out, "S-CX"))[0] == "BLOCK"

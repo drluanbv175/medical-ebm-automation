@@ -203,7 +203,11 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
   Việt; số đo sai chuẩn (`loi_so_do`, bác sĩ 22/11/2026 «tất cả phải đúng chuẩn»): huyết áp ghi «≥ 180/110 mmHg»
   (thiếu mmHg, «≥180/110», «140 / 90» đều bị chặn), một khoảng trắng giữa số và đơn vị («100 mg», «37,5 °C»; riêng
   «%» viết liền «48,3%»), ký hiệu đơn vị đúng chữ (mL, mg/dL, mmol/L, g/dL, kg/m² — không «ml», «mg/dl», «kg/m2»), dấu
-  so sánh cách số («≥ 18 tuổi», «p < 0,001»). Bộ giả lập soát luật số đo trên MỌI văn bản đề tài sinh ra. K9 chặn bảng dồn nhiều mức/biến vào một ô («Giới | Nam; Nữ») — mỗi biến một hàng, mỗi mức một dòng. Máy
+  so sánh cách số («≥ 18 tuổi», «p < 0,001»). Bộ giả lập soát luật số đo trên MỌI văn bản đề tài sinh ra.
+  Điền sai kiểu — K22 / G7-AUTO-09 (bác sĩ duyệt 23/11/2026): chốt chung `tools/quet_dien_sai_kieu.py` chặn số đứng lẻ
+  thành câu («… [1][2][3]. 2.»), ô hỏi người/vai trò điền mã số («ai thực hiện can thiệp: 6»), số chưa làm tròn
+  (từ 5 chữ số lẻ), dấu chấm thập phân trong câu tiếng Việt và ký hiệu nội bộ của khuôn; bộ sinh in số bằng
+  `viet_so`/`viet_hoa_so` của chính mô-đun đó, sửa ở bộ sinh rồi sinh lại, không vá tay. K9 chặn bảng dồn nhiều mức/biến vào một ô («Giới | Nam; Nữ») — mỗi biến một hàng, mỗi mức một dòng. Máy
   KHÔNG đo được, agent tự soát trước khi trả: (a) bảng đa biến và forest plot cùng biến, cùng nhóm tham chiếu với mô
   hình chính của SAP (biến có/không lấy «Không» làm tham chiếu, biến khác lấy mã nhỏ nhất); (b) bước tăng của biến
   liên tục đúng SAP («mỗi 10 năm», «mỗi 15 phút», biến thứ bậc đưa dạng số ghi «mỗi mức tăng»); (c) cột phân tích chính
@@ -322,7 +326,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G7-T1` — Bản thảo theo chuẩn báo cáo của thiết kế | `G7_A8_MANUSCRIPT_<mã>.md`, `G7_checkpoint.json` | G7-AUTO-00, G7-AUTO-04, G7-AUTO-05, G7-AUTO-06, G7-AUTO-08 | PI: G7-HUMAN-01, G7-HUMAN-02, G7-HUMAN-03, G7-HUMAN-04, G7-HUMAN-05 |
+| `G7-T1` — Bản thảo theo chuẩn báo cáo của thiết kế | `G7_A8_MANUSCRIPT_<mã>.md`, `G7_checkpoint.json` | G7-AUTO-00, G7-AUTO-04, G7-AUTO-05, G7-AUTO-06, G7-AUTO-08, G7-AUTO-09 | PI: G7-HUMAN-01, G7-HUMAN-02, G7-HUMAN-03, G7-HUMAN-04, G7-HUMAN-05 |
 | `G10-T4` — Đề cương NỘP HỘI ĐỒNG: viết lại thành văn bản khoa học người đọc được từ quyết định đã chốt (chỉ khi gói phát hành trình Hội đồng hoặc cập nhật đăng ký (ETHICS_SUBMISSION/REGISTRY_UPDATE)) | `DE_CUONG_NOP_HOI_DONG_<mã>.md`, `DE_CUONG_NOP_HOI_DONG_<mã>.docx` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: đề cương nộp Hội đồng: đủ cặp .md/.docx khớp nhau · đủ chương · không ký hiệu nội bộ/tên biến trong văn xuôi · cỡ mẫu khớp G3 · PMID trong biên nhận A12 · không PII liên lạc (kiem_de_cuong_nop_hoi_dong.py); nội dung bảo đảm bằng đánh giá chéo) | — |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G7-T2` (hieu-dinh-song-ngu). Không bao giờ chấm đầu ra do chính bạn làm.
@@ -342,6 +346,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/gen_research_docx.py` (chủ) — tạo Word chuẩn cho bộ artifact G0→G9; chốt kiểm `tools/xuat_docx_chuan.py`; nguyên tắc: tái lập.
 - Công cụ `tools/goi_bao_ve_hoi_dong.py` (chủ) — gói bảo vệ đề cương trước Hội đồng (dàn slide + câu hỏi phản biện); chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: trung thực–minh bạch · kiểm soát chất lượng.
 - Công cụ `tools/md2docx_vn.py` (chủ) — chuyển Markdown sang Word theo chuẩn luận văn/đề cương Việt Nam; chốt kiểm `tools/xuat_docx_chuan.py`; nguyên tắc: tái lập.
+- Công cụ `tools/quet_dien_sai_kieu.py` (chủ) — chốt chung «điền sai kiểu» mọi văn bản đầu ra + quy ước số tiếng Việt cho bộ sinh; chốt kiểm `K22`, `G7-AUTO-09`; nguyên tắc: trung thực–minh bạch · kiểm soát chất lượng liên tục · đạt chuẩn định trước.
 - Công cụ `tools/protocol_checklist_items.py` (chủ) — danh mục mục SPIRIT 2025/PRISMA-P 2015 nguyên văn (sinh tự động); chốt kiểm `tools/check_de_cuong.py`; nguyên tắc: trung thực–minh bạch.
 - Công cụ `tools/sinh_chuan_bao_cao_items.py` (chủ) — sinh chuan_bao_cao_items.py từ XML Europe PMC; chốt kiểm `tests/test_k17_chuan_them_20261121.py`; nguyên tắc: tái lập.
 - Công cụ `tools/tieu_chi_chuan_de_cuong.py` (chủ) — tiêu chí từng mục của 12 chuẩn ngoài STROBE/RECORD/CROSS cho K17; chốt kiểm `K17`; nguyên tắc: khoa học · trung thực–minh bạch.
@@ -349,6 +354,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/xuat_docx_chuan.py` (chủ) — xuất .docx chuẩn từ artifact .md hiện có, không sinh lại nội dung; chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: trung thực–minh bạch.
 - Công cụ `tools/tam_nguyen_tac_de_cuong.py` (chủ) — ma trận phần đề cương × chuẩn áp dụng × 8 nguyên tắc và trục tổng 5 tiêu chí (K20 của `kiem_de_cuong_nop_hoi_dong.py`); chốt kiểm `tests/test_tam_nguyen_tac_de_cuong_20261122.py`; nguyên tắc: ô chưa có phép đo là ⚪ «chưa đo được», không bao giờ xanh · kiểm soát chất lượng liên tục.
 - Công cụ `tools/so_doc_de_cuong.py` (dùng phụ) — sửa đơn vị nào của đề cương thì mã băm đổi, đơn vị đó phải được đọc lại trước khi giao; chốt kiểm `tests/test_so_doc_de_cuong_20261122.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/hop_dong_sap.py` (dùng phụ, 23/11/2026) — bộ sinh G7 lấy điều SAP đã khoá (α/số phía, phần mềm, dữ liệu thiếu, độ nhạy, phương pháp chính, §13/§15/§16, thay đổi sau khoá) từ HỢP ĐỒNG SAP máy đọc, không dò chữ SAP; hợp đồng lệch ⇒ G7-AUTO-05/06/08 CHẶN, sửa ở G4 (lập lại hợp đồng) chứ không sửa bản thảo; chốt kiểm `tools/g7_quality_gate.py`; nguyên tắc: trung thực–minh bạch.
 - Công cụ `tools/tieu_chi_chuan_de_cuong.py` (chủ, SANRA 22/11/2026) — K17 chấm chương Tổng quan của đề cương theo SANRA 2019 khi đề cương có chương «TỔNG QUAN TÀI LIỆU»; bộ sinh dựng bảng «Nguồn và chiến lược tìm kiếm» từ dữ kiện G0 (PubMed, nguồn bổ sung, ClinicalTrials.gov, phiếu ICTRP) và chỉ giữ câu tóm lược G0 khi mọi PMID trong câu đã qua A12; chốt kiểm `tests/test_sanra_tong_quan_20261122.py`; nguyên tắc: khoa học.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra

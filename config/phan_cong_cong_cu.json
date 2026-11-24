@@ -605,6 +605,20 @@
     "dct:phuong_phap": "thiết kế và kế hoạch phân tích nhất quán"
    }
   },
+  "doi_chung_cong_khai.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "đề tài đối chứng công khai — đối chiếu số G6 với ước lượng đã công bố trên dữ liệu thật CC0 (Dryad)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_doi_chung_cong_khai_20261124.py"],
+   "nguyen_tac": {
+    "nt:tai_lap": "tìm lại ước lượng đã công bố từ dữ liệu gốc trong sai số làm tròn",
+    "tong:kiem_chung": "lệch chỉ được chấp nhận ở ô đã chứng minh nguyên nhân"
+   }
+  },
   "dung_goi_ky.py": {
    "pham_vi": "nghien_cuu",
    "chu": "dieu-phoi-nghien-cuu",
@@ -894,6 +908,19 @@
     "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
    }
   },
+  "gia_lap_doi_chung.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dieu-phoi-nghien-cuu",
+   "cong": ["*"],
+   "viec": "kịch bản đối chứng công khai của giả lập trọn vòng (dữ liệu thật đã khử định danh)",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": [],
+   "chot_kiem": ["tools/kiem_gia_lap_16.py", "tests/test_doi_chung_cong_khai_20261124.py"],
+   "nguyen_tac": {
+    "tong:kiem_chung": "chạy trọn chuỗi trên dữ liệu thật có ước lượng đã công bố",
+    "nt:kiem_soat_cl": "lượt giả lập đỏ chặn CI"
+   }
+  },
   "gia_lap_ho_so_sau_g6.py": {
    "pham_vi": "nghien_cuu",
    "chu": "dieu-phoi-nghien-cuu",
@@ -1144,6 +1171,21 @@
     "nt:khach_quan": "nhiều ghế chấm độc lập theo thể thức Hội đồng Khoa học",
     "dct:gia_tri": "chấm tính cấp thiết, ý nghĩa của đề tài",
     "nt:khoa_hoc": "chấm mục tiêu và phương pháp"
+   }
+  },
+  "hop_dong_sap.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "thiet-ke-nghien-cuu",
+   "cong": ["G4"],
+   "nhiem_vu": ["G4-T1"],
+   "viec": "hợp đồng SAP máy đọc G4_SAP_CONTRACT_<mã>.json — bộ đọc SAP duy nhất cho G6/G7, băm vào chứng chỉ khoá",
+   "nguoi_dung_phu": ["phan-tich-thong-ke", "viet-ban-thao"],
+   "nguoi_kiem": ["dieu-phoi-g4"],
+   "chot_kiem": ["tools/g4_quality_gate.py", "tools/g6_quality_gate.py", "tools/g7_quality_gate.py", "tests/test_hop_dong_sap_20261123.py"],
+   "nguyen_tac": {
+    "nt:khach_quan": "G6 và G7 hiểu SAP như nhau — đọc một hợp đồng, không mỗi công cụ một bộ dò chữ",
+    "nt:tai_lap": "hợp đồng bằng đúng bộ đọc chạy lại trên văn bản SAP; lệch thì chặn",
+    "tong:kiem_chung": "băm hợp đồng nằm trong chứng chỉ khoá mà chữ ký G4 khoá"
    }
   },
   "hon_hop.py": {
@@ -1782,6 +1824,21 @@
    "nguyen_tac": {
     "nt:ton_trong": "bảng ánh xạ tách riêng, chỉ chủ đọc",
     "nt:tai_lap": "mã thay thế ổn định giữa các lần nạp"
+   }
+  },
+  "quet_dien_sai_kieu.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "viet-ban-thao",
+   "cong": ["G7", "G10"],
+   "nhiem_vu": ["G7-T1", "G10-T4"],
+   "viec": "K22/G7-AUTO-09 — chốt chung «điền sai kiểu» của mọi văn bản đầu ra (số đứng lẻ, mã số ở ô hỏi người, số chưa làm tròn, dấu chấm thập phân, ký hiệu nội bộ) + quy ước số tiếng Việt cho bộ sinh",
+   "nguoi_dung_phu": ["dieu-phoi-nghien-cuu"],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["K22", "G7-AUTO-09", "tests/test_quet_dien_sai_kieu_20261123.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "số in đúng giá trị đã chốt/đã tính, không số rời rạc vô nghĩa",
+    "nt:kiem_soat_cl": "lỗi kiểu sửa ở bộ sinh, chốt chạy trên mọi văn bản của mọi kịch bản",
+    "tong:dat_chuan": "văn bản chỉ nộp khi không còn lỗi kiểu"
    }
   },
   "quy_trinh_du_lieu.py": {

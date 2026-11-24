@@ -456,6 +456,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/gia_lap_bien_the_kho.py` (chủ) — kịch bản biến thể khó của giả lập trọn vòng; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
 - Công cụ `tools/gia_lap_chan_thuc.py` (chủ) — kịch bản giả lập chân thực (dữ liệu, sai sót nhập liệu); chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
 - Công cụ `tools/gia_lap_dinh_ky.py` (chủ) — giả lập định kỳ (canary tháng) hệ nghiên cứu; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
+- Công cụ `tools/gia_lap_doi_chung.py` (chủ) — kịch bản đối chứng công khai của giả lập trọn vòng: đề tài cắt ngang chạy G0→G10 trên dữ liệu thật đã khử định danh do nguồn công bố; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
 - Công cụ `tools/gia_lap_ho_so_sau_g6.py` (chủ) — hồ sơ vai G6.5→G10 cho các thiết kế ngoài thuần tập trong giả lập; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
 - Công cụ `tools/gia_lap_kich_ban_them.py` (chủ) — các kịch bản giả lập bổ sung để phủ đủ 8 thiết kế; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
 - Công cụ `tools/gia_lap_tron_vong.py` (chủ) — giả lập trọn vòng G0→G10 như một đề tài thật cho 8 thiết kế; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.

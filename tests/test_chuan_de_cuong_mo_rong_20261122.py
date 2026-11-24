@@ -402,7 +402,8 @@ def test_sap_ni_neu_khoang_tin_cay_hai_phia_tuong_ung_alpha_mot_phia():
     sap = G4.generate("T", "NI", "rct", "RCT", "CONSORT", 888, 0.025, 0.8, 0.6, "NI_PROPORTION", "2026-11-22",
                       hypothesis_type="non_inferiority", margin=0.1)
     dong = next(d for d in sap.split("\n") if "Kết luận không kém hơn" in d)
-    assert "khoảng tin cậy hai phía 95% (tương ứng kiểm định một phía α = 0.025)" in dong
+    # 24/11/2026: bộ sinh G4 in số theo quy ước tiếng Việt (dấu phẩy thập phân — chốt «điền sai kiểu» Q4)
+    assert "khoảng tin cậy hai phía 95% (tương ứng kiểm định một phía α = 0,025)" in dong
 
 
 def test_tripod_16_chi_ap_khi_muc_tieu_co_kiem_dinh_ngoai():

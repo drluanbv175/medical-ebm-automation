@@ -3923,8 +3923,8 @@ def cu_phap_bo_sung(
             )
             phu["hon_hop"] = {"loai": loai}
             canh_bao.append(
-                "Mô hình hỗn hợp: GENLINMIXED (giả khả dĩ tuyến tính hoá) ≠ R clmm/glmer (Laplace) ⇒ ước lượng "
-                "lệch nhỏ là bình thường"
+                "Mô hình hỗn hợp: GENLINMIXED chỉ ước lượng bằng giả khả dĩ phần dư (RSPL) ⇒ tham chiếu R dùng "
+                "đúng RSPL và phải KHỚP; bản Laplace của phân tích chính (clmm/glmer) in kèm, không so với SPSS"
             )
 
     # (2) Complex Samples: trọng số hậu phân tầng theo SAP §4 (tầng đã gộp tính sẵn — dt["trong_so_tang"])
@@ -4114,31 +4114,109 @@ hs_ra <- function(est, se, ten) {
   }
   out
 }
+# Giả khả dĩ PHẦN DƯ theo cá thể (RSPL — Wolfinger & O'Connell 1993) cho logit (tích luỹ) + intercept ngẫu nhiên theo
+# cụm: CÙNG phương pháp ước lượng của SPSS GENLINMIXED (SPSS 31 không có tuỳ chọn Laplace/cầu phương — đặc tả cú pháp
+# GENLINMIXED.xml không có từ khoá phương pháp ước lượng). Mỗi vòng: tuyến tính hoá quanh (β, θ, u) hiện tại ⇒ giả đáp
+# ứng z = η + D⁻¹(y* − γ) với y*_j = 1{Y ≤ j}, γ_j = P(Y ≤ j), D = diag(γ(1 − γ)), phương sai phần dư D⁻¹ V D⁻¹ (V =
+# hiệp phương sai đa thức tích luỹ, thang đo cố định 1) ⇒ mô hình hỗn hợp tuyến tính z = Xβ − u + e; σ² ước lượng bằng
+# REML (Woodbury theo cụm), β, θ bằng GLS, u bằng BLUP; lặp tới hội tụ. p theo t bậc tự do phần dư n − (số ngưỡng + số
+# hệ số) như DF_METHOD=RESIDUAL. Đo 24/11/2026: khớp SPSS 31.0.1 tới ≥ 7 chữ số (thứ bậc 5 mức và nhị phân).
+# Hội tụ: thay đổi lớn nhất của (θ, β) và thay đổi TƯƠNG ĐỐI của σ² < 1e-6 (như PCONVERGE mặc định 1e-6 của SPSS);
+# ngưỡng chặt hơn vô nghĩa vì σ² từ optimize() dao động ~1e-7 tương đối (đo 24/11/2026).
+pl_rspl <- function(y, X, cum, max_it = 300, tol = 1e-6) {
+  y <- as.integer(factor(y, ordered = TRUE)); K <- max(y) - 1L
+  X <- as.matrix(X); p <- ncol(X); n <- length(y); q <- K + p
+  cum <- as.integer(factor(cum)); C <- max(cum)
+  if (K > 1) {
+    f0 <- ordinal::clm(factor(y, ordered = TRUE) ~ X); th <- unname(f0$alpha); be <- unname(f0$beta)
+  } else {
+    g0 <- stats::glm((y == 2L) ~ X, family = stats::binomial)
+    th <- -unname(stats::coef(g0)[1]); be <- unname(stats::coef(g0)[-1])
+  }
+  u <- rep(0, C); s2 <- 0.1; hoi_tu <- FALSE; jj <- seq_len(K)
+  for (vong in seq_len(max_it)) {
+    A <- array(0, c(q, q, C)); b <- matrix(0, q, C); a <- numeric(C)
+    zR1 <- numeric(C); XRz <- matrix(0, q, C); zRz <- numeric(C); ldR <- 0
+    for (i in seq_len(n)) {
+      eta <- th - sum(X[i, ] * be) - u[cum[i]]
+      g <- stats::plogis(eta); dg <- g * (1 - g)
+      z <- eta + (as.numeric(y[i] <= jj) - g) / dg
+      V <- outer(jj, jj, function(r, s) g[pmin(r, s)] * (1 - g[pmax(r, s)]))
+      Ri <- dg * t(dg * solve(V))
+      ldR <- ldR - as.numeric(determinant(Ri)$modulus)
+      Xi <- cbind(diag(K), matrix(-X[i, ], K, p, byrow = TRUE))
+      R1 <- rowSums(Ri); k <- cum[i]
+      A[, , k] <- A[, , k] + crossprod(Xi, Ri %*% Xi)
+      b[, k] <- b[, k] + drop(crossprod(Xi, R1)); a[k] <- a[k] + sum(R1)
+      zR1[k] <- zR1[k] + sum(R1 * z); XRz[, k] <- XRz[, k] + drop(crossprod(Xi, Ri %*% z))
+      zRz[k] <- zRz[k] + sum(z * (Ri %*% z))
+    }
+    tong <- function(s2) {
+      den <- 1 + s2 * a
+      XVX <- apply(A, c(1, 2), sum) - s2 * (b %*% (t(b) / den))
+      XVz <- rowSums(XRz) - s2 * drop(b %*% (zR1 / den))
+      bh <- solve(XVX, XVz)
+      rVr <- sum(zRz) - s2 * sum(zR1^2 / den) - 2 * sum(bh * XVz) + sum(bh * (XVX %*% bh))
+      list(bh = bh, XVX = XVX, ld = ldR + sum(log(den)), rVr = rVr, den = den)
+    }
+    nll <- function(l) { G <- tong(exp(l)); 0.5 * (G$ld + G$rVr + as.numeric(determinant(G$XVX)$modulus)) }
+    o <- stats::optimize(nll, c(log(1e-8), log(100)), tol = 1e-12)
+    s2n <- exp(o$minimum); G <- tong(s2n)
+    un <- -s2n * (zR1 - drop(crossprod(b, G$bh))) / G$den
+    dlt <- max(abs(G$bh - c(th, be)), abs(s2n - s2) / max(s2n, 1e-4))
+    th <- G$bh[jj]; be <- G$bh[(K + 1):q]; s2 <- s2n; u <- un
+    if (dlt < tol) { hoi_tu <- TRUE; break }
+  }
+  se <- sqrt(diag(solve(G$XVX)))[(K + 1):q]
+  list(beta = stats::setNames(be, colnames(X)), se = stats::setNames(se, colnames(X)), s2 = s2, n = n, df = n - q,
+       hoi_tu = hoi_tu, so_vong = vong)
+}
+hs_ra_t <- function(est, se, ten, df) {
+  z <- qnorm(0.975); out <- list()
+  for (v in ten) if (v %in% names(est) && v %in% names(se)) {
+    b <- unname(est[[v]]); s <- unname(se[[v]])
+    out[[v]] <- list(uoc_luong = exp(b), ci = c(exp(b - z * s), exp(b + z * s)),
+                     p = 2 * stats::pt(-abs(b / s), df), b = b, se = s)
+  }
+  out
+}
 ra <- list(phien_ban_r = R.version.string)
 du_bao <- c(P$group, P$covariates)
-if (isTRUE(P$hon_hop)) ra$hon_hop <- tryCatch({
+if (isTRUE(P$hon_hop)) {
   X <- data.frame(.y = d[[P$outcome]], .cum = d[[P$cot_cum]])
   for (v in du_bao) X[[v]] <- if (is.numeric(d[[v]])) d[[v]] else factor(d[[v]])
   if (!is.null(P$don_vi_phoi_nhiem)) X[[P$group]] <- X[[P$group]] / P$don_vi_phoi_nhiem
   X <- X[stats::complete.cases(X), , drop = FALSE]
   X$.cum <- factor(X$.cum)
   vp <- paste(sprintf("`%s`", du_bao), collapse = " + ")
-  if (P$loai == "ordinal") {
-    suppressPackageStartupMessages(library(ordinal))
-    X$.y <- factor(X$.y, ordered = TRUE)
-    m <- clmm(stats::as.formula(paste(".y ~", vp, "+ (1 | .cum)")), data = X)
-    est <- coef(m); se <- sqrt(diag(stats::vcov(m)))
-    list(phuong_phap = "ordinal::clmm (Laplace)", he_so = hs_ra(est, se, du_bao),
-         phuong_sai_ngau_nhien = as.numeric(ordinal::VarCorr(m)[[1]][1]), n = nrow(X))
-  } else {
-    suppressPackageStartupMessages(library(lme4))
-    lv <- sort(unique(X$.y)); X$.y <- as.integer(X$.y == lv[length(lv)])
-    m <- glmer(stats::as.formula(paste(".y ~", vp, "+ (1 | .cum)")), data = X, family = stats::binomial)
-    est <- lme4::fixef(m); v <- as.matrix(stats::vcov(m)); se <- stats::setNames(sqrt(diag(v)), rownames(v))
-    list(phuong_phap = "lme4::glmer (Laplace)", he_so = hs_ra(est, se, du_bao),
-         phuong_sai_ngau_nhien = as.numeric(lme4::VarCorr(m)[[1]][1]), n = nrow(X))
-  }
-}, error = function(e) list(loi = conditionMessage(e)))
+  if (P$loai != "ordinal") { lv <- sort(unique(X$.y)); X$.y <- as.integer(X$.y == lv[length(lv)]) }
+  ra$hon_hop <- tryCatch({
+    MM <- stats::model.matrix(stats::as.formula(paste("~", vp)), X)[, -1, drop = FALSE]
+    f <- pl_rspl(X$.y, MM, X$.cum)
+    if (!f$hoi_tu) stop(sprintf("RSPL chưa hội tụ sau %d vòng", f$so_vong))
+    list(phuong_phap = "giả khả dĩ phần dư RSPL (Wolfinger–O'Connell 1993) — cùng phương pháp GENLINMIXED",
+         he_so = hs_ra_t(f$beta, f$se, du_bao, f$df), phuong_sai_ngau_nhien = f$s2, n = f$n, df = f$df,
+         so_vong = f$so_vong)
+  }, error = function(e) list(loi = conditionMessage(e)))
+  # Laplace — phương pháp của phân tích chính theo SAP (ordinal::clmm / lme4::glmer): KHÔNG so với SPSS (khác phương
+  # pháp); in kèm để người đọc thấy chênh lệch do phương pháp ước lượng.
+  ra$hon_hop_laplace <- tryCatch({
+    if (P$loai == "ordinal") {
+      suppressPackageStartupMessages(library(ordinal))
+      X$.y <- factor(X$.y, ordered = TRUE)
+      m <- clmm(stats::as.formula(paste(".y ~", vp, "+ (1 | .cum)")), data = X)
+      est <- coef(m); se <- sqrt(diag(stats::vcov(m)))
+      list(phuong_phap = "ordinal::clmm (Laplace)", he_so = hs_ra(est, se, du_bao),
+           phuong_sai_ngau_nhien = as.numeric(ordinal::VarCorr(m)[[1]][1]), n = nrow(X))
+    } else {
+      suppressPackageStartupMessages(library(lme4))
+      m <- glmer(stats::as.formula(paste(".y ~", vp, "+ (1 | .cum)")), data = X, family = stats::binomial)
+      est <- lme4::fixef(m); v <- as.matrix(stats::vcov(m)); se <- stats::setNames(sqrt(diag(v)), rownames(v))
+      list(phuong_phap = "lme4::glmer (Laplace)", he_so = hs_ra(est, se, du_bao),
+           phuong_sai_ngau_nhien = as.numeric(lme4::VarCorr(m)[[1]][1]), n = nrow(X))
+    }
+  }, error = function(e) list(loi = conditionMessage(e)))
+}
 if (!is.null(P$trong_so)) ra$trong_so <- tryCatch({
   suppressPackageStartupMessages(library(survey))
   source(P$ham_r, encoding = "UTF-8")
@@ -4351,12 +4429,18 @@ def doi_chieu_bo_sung(tom: dict, kq: dict, dt: dict, *, r: dict | None = None, t
                 )
             )
 
-    # (1) Mô hình hỗn hợp: SPSS GENLINMIXED ↔ R clmm/glmer
+    # (1) Mô hình hỗn hợp: SPSS GENLINMIXED ↔ R RSPL — CÙNG phương pháp (24/11/2026). SPSS 31 GENLINMIXED chỉ ước lượng
+    # bằng giả khả dĩ phần dư (đặc tả cú pháp không có tuỳ chọn Laplace/cầu phương) ⇒ R mô phỏng đúng RSPL (pl_rspl
+    # trong R_DOI_CHIEU) và hai bên phải KHỚP như mọi dòng khác. Bản Laplace (clmm/glmer — phương pháp phân tích chính
+    # theo SAP) chỉ in kèm, không so với SPSS. Tham chiếu R không phải RSPL (bản R cũ) ⇒ «không so được».
     if dt.get("hon_hop_da_sinh"):
         hh_r, hh_sp = r.get("hon_hop") or {}, bs.get("hon_hop") or {}
         ten_hh = f"Mô hình hỗn hợp — intercept ngẫu nhiên theo {dt.get('cot_cum')}"
         if r.get("loi") or hh_r.get("loi") or not hh_r:
             dong.append(_khong_so(ten_hh, f"chưa có tham chiếu R: {r.get('loi') or hh_r.get('loi') or 'không chạy'}"))
+        elif "RSPL" not in str(hh_r.get("phuong_phap") or ""):
+            dong.append(_khong_so(ten_hh, f"tham chiếu R «{hh_r.get('phuong_phap')}» không cùng phương pháp "
+                                          "GENLINMIXED (RSPL) — chạy lại với bản cầu nối hiện hành"))
         elif not hh_sp:
             dong.append(_khong_so(ten_hh, "SPSS thiếu bảng GENLINMIXED (xem nhật ký bổ sung)"))
         else:
@@ -4367,18 +4451,27 @@ def doi_chieu_bo_sung(tom: dict, kq: dict, dt: dict, *, r: dict | None = None, t
                     continue
                 dong.append(
                     so_mot(
-                        f"{ten_hh} — {v} (tham chiếu R)",
+                        f"{ten_hh} — {v} (tham chiếu R cùng phương pháp RSPL)",
                         {"uoc_luong": a["uoc_luong"], "ci": a["ci"], "p": a["p"]},
                         {"uoc_luong": b["uoc_luong"], "ci": b["ci"], "p": b["p"]},
-                        phuong_phap_khac=f"GENLINMIXED (giả khả dĩ) ≠ {hh_r.get('phuong_phap')}",
                         ty_so=True,
                     )
                 )
-            tt.append(
-                f"Phương sai intercept ngẫu nhiên ({dt.get('cot_cum')}): "
-                f"SPSS {_fmt(hh_sp.get('phuong_sai_ngau_nhien'))}"
-                f" · R {_fmt(hh_r.get('phuong_sai_ngau_nhien'))}"
+            dong.append(
+                so_mot(
+                    f"{ten_hh} — phương sai intercept ngẫu nhiên (tham chiếu R cùng phương pháp RSPL)",
+                    {"uoc_luong": hh_r.get("phuong_sai_ngau_nhien")},
+                    {"uoc_luong": hh_sp.get("phuong_sai_ngau_nhien")},
+                )
             )
+            lap = r.get("hon_hop_laplace") or {}
+            if lap.get("he_so"):
+                hs = "; ".join(f"{v} OR {_fmt(x.get('uoc_luong'))}" for v, x in lap["he_so"].items())
+                tt.append(
+                    f"Mô hình hỗn hợp — {lap.get('phuong_phap')} (phương pháp phân tích chính theo SAP; KHÁC phương "
+                    f"pháp GENLINMIXED nên không so với SPSS): {hs}; phương sai intercept "
+                    f"{_fmt(lap.get('phuong_sai_ngau_nhien'))}"
+                )
 
     # (2) Trọng số hậu phân tầng: bảng tầng Python ↔ R 04a; SPSS CS ↔ R (cố định: phải khớp; postStratify: lệch nhỏ)
     if dt.get("trong_so_tang"):

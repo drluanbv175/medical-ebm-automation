@@ -483,6 +483,10 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     kb["benh_chung_ghep_cap"] = _ghep_cap(GL.KICH_BAN["benh_chung"], _ky_g2, _tra_loi_sap)
     kb["benh_chung_ghep_cap_thieu"] = _ghep_cap_thieu(kb["benh_chung_ghep_cap"])
     kb["benh_chung_ghep_cap_hiem"] = _ghep_cap_hiem(kb["benh_chung_ghep_cap"])
+    # 24/11/2026: đề tài ĐỐI CHỨNG CÔNG KHAI — G5 nhập dữ liệu THẬT đã công bố (tools/gia_lap_doi_chung.py)
+    import gia_lap_doi_chung as GDC  # noqa: PLC0415
+
+    kb.update(GDC.kich_ban_doi_chung())
     return kb
 
 
@@ -622,30 +626,31 @@ def _ghep_cap_thieu(gc: Dict[str, Any]) -> Dict[str, Any]:
 
 def _ghep_cap_hiem(gc: Dict[str, Any]) -> Dict[str, Any]:
     """BỆNH–CHỨNG GHÉP CẶP CÁ THỂ ÍT CA — BIẾN CỐ HIẾM (23/11/2026 chiều — điều phối giao: «biến thể biến cố hiếm»):
-    1 ca : 4 chứng, OR giả định 4,3 (NSAID không chọn lọc đơn trị, Masclee 2014, PMID 24937265) ⇒ Dupont 1988 cho ~27
-    bộ ⇒ số ca dưới 10 × số tham số ⇒ rào EPV chặn hồi quy có điều kiện ⇒ G6 chạy phương pháp SAP §5 khai: hồi quy
-    logistic có điều kiện có phạt Firth (Heinze & Puhr 2010, PMID 20213709); R đối chiếu, SPSS ghi không đối chiếu
-    được."""
+    1 ca : 5 chứng, OR giả định 4,3 (NSAID không chọn lọc đơn trị, Masclee 2014, PMID 24937265) ⇒ Dupont 1988 (OR có
+    điều kiện, 24/11/2026) cho 26 bộ ⇒ số ca dưới 10 × số tham số (1:4 cho 28 bộ ⇒ 30 ca sau hiệu chỉnh mất mẫu, chạm
+    đúng ngưỡng EPV nên không còn là biến thể biến cố hiếm) ⇒ rào EPV chặn hồi quy có điều kiện ⇒ G6 chạy phương pháp
+    SAP §5 khai: hồi quy logistic có điều kiện có phạt Firth (Heinze & Puhr 2010, PMID 20213709); R đối chiếu, SPSS
+    ghi không đối chiếu được."""
     k = _sao(gc, id_test="case_control_ghep_cap_hiem",
-             mo_ta="Bệnh–chứng ghép cặp cá thể 1:4 ít ca (biến cố hiếm — Firth có điều kiện)")
-    k["bien_the"] = {"ghep_cap": {**k["bien_the"]["ghep_cap"], "so_chung": 4}}
+             mo_ta="Bệnh–chứng ghép cặp cá thể 1:5 ít ca (biến cố hiếm — Firth có điều kiện)")
+    k["bien_the"] = {"ghep_cap": {**k["bien_the"]["ghep_cap"], "so_chung": 5}}
     bs = k["bien_so"]
-    bs["bo_bien"] = [(b[0], b[1], "Mã bộ ghép (một ca và 4 chứng ghép cặp với ca đó)", *b[3:]) if b[0] == "ma_bo_ghep"
+    bs["bo_bien"] = [(b[0], b[1], "Mã bộ ghép (một ca và 5 chứng ghép cặp với ca đó)", *b[3:]) if b[0] == "ma_bo_ghep"
                      else b for b in bs["bo_bien"]]
-    bs["ma_tran"] = [(*d[:1], "Bộ ghép (một ca cùng 4 chứng ghép cặp theo giới và tuổi ± 2 năm)", *d[2:])
+    bs["ma_tran"] = [(*d[:1], "Bộ ghép (một ca cùng 5 chứng ghép cặp theo giới và tuổi ± 2 năm)", *d[2:])
                      if d[3] == "ma_bo_ghep" else d for d in bs["ma_tran"]]
     g1 = k["pi"]["G1"]
     g1.update({
         "control_source": g1["control_source"].replace("với 2 chứng (2 chứng cho mỗi ca; mỗi ca cùng 2 chứng",
-                                                       "với 4 chứng (4 chứng cho mỗi ca; mỗi ca cùng 4 chứng"),
-        "study_schema_timeline": g1["study_schema_timeline"].replace("chọn 2 chứng", "chọn 4 chứng"),
+                                                       "với 5 chứng (5 chứng cho mỗi ca; mỗi ca cùng 5 chứng"),
+        "study_schema_timeline": g1["study_schema_timeline"].replace("chọn 2 chứng", "chọn 5 chứng"),
         "bias_controls": [dict(g1["bias_controls"][0]),
                           {**g1["bias_controls"][1],
                            "bien_phap": g1["bias_controls"][1]["bien_phap"].replace("2 chứng : 1 ca",
-                                                                                    "4 chứng : 1 ca")},
+                                                                                    "5 chứng : 1 ca")},
                           dict(g1["bias_controls"][2])]})
     g3 = k["pi"]["G3"]
-    g3.update({"effect_size": 4.3, "so_chung_moi_ca": 4,
+    g3.update({"effect_size": 4.3, "so_chung_moi_ca": 5,
                "effect_source": ("PMID: 24937265 (Masclee 2014, Gastroenterology) — đơn trị NSAID không chọn lọc làm "
                                  "tăng nguy cơ xuất huyết tiêu hoá trên (IRR 4,3, phân tích chuỗi ca); dùng làm OR giả "
                                  "định cho phơi nhiễm NSAID không chọn lọc")})

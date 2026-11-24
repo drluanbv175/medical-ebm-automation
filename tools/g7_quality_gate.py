@@ -517,6 +517,25 @@ def muc_do_nhay_ban_thao(text: str) -> Optional[str]:
     return m.group(1) if m else None
 
 
+def _neo_dac_ta(pt: Dict[str, Any]) -> List[str]:
+    """Cụm neo SAP của một mục đặc tả G6 (`sap_neo`: chuỗi cách « | » hoặc danh sách) — luật chay_sap_g6.neo_cua."""
+    import chay_sap_g6 as CS6  # noqa: PLC0415
+
+    return CS6.neo_cua(pt)
+
+
+def loi_hop_dong_sap(out_dir: Path, study: str) -> List[str]:
+    """Lỗi hợp đồng SAP máy đọc (G4_SAP_CONTRACT_<mã>.json) — G7 đọc SAP QUA hợp đồng (23/11/2026, bác sĩ duyệt), nên
+    hợp đồng thiếu/cũ/lệch văn bản SAP ⇒ các chốt dựa SAP (G7-AUTO-05/06/08) CHẶN. Đề tài chưa có SAP ⇒ [] (không có
+    gì để đối chiếu — tiêu chí khác báo thiếu SAP)."""
+    import hop_dong_sap as HD  # noqa: PLC0415
+
+    out_dir = Path(out_dir)
+    if not (out_dir / HD.ten_sap(study)).is_file():
+        return []
+    return HD.doc(out_dir, study)[1]
+
+
 def doi_chieu_do_nhay_g6(out_dir: Path, manuscript_text: str) -> Optional[Dict[str, str]]:
     """{status, evidence} — §5 bản thảo có ĐÚNG và ĐỦ mọi phân tích độ nhạy SAP cam kết (G7-AUTO-08, 23/11/2026).
 
@@ -539,6 +558,22 @@ def doi_chieu_do_nhay_g6(out_dir: Path, manuscript_text: str) -> Optional[Dict[s
         return {"status": "REVIEW",
                 "evidence": f"SAP đã ĐỔI sau khi soạn {TEP_DAC_TA_G6} — danh sách phân tích độ nhạy chưa đối chiếu "
                             "được; soạn lại đặc tả, chạy lại chay_sap_g6"}
+    # 23/11/2026 (hợp đồng SAP máy đọc): danh sách phân tích độ nhạy SAP cam kết đọc từ HỢP ĐỒNG SAP — mỗi mục phải
+    # có ít nhất một mục đặc tả G6 neo vào (cùng luật phủ của chay_sap_g6 `kiem`); hợp đồng lỗi ⇒ CHẶN.
+    import hop_dong_sap as HD  # noqa: PLC0415
+
+    m_ten = re.fullmatch(r"G4_A5_SAP_FINAL_(.+)\.md", str(dt.get("nguon_sap") or ""))
+    if m_ten:
+        hd, loi_hd = HD.doc(out_dir, m_ten.group(1))
+        if loi_hd:
+            return {"status": "BLOCK", "evidence": "hợp đồng SAP máy đọc không dùng được — " + " | ".join(loi_hd[:3])}
+        neo = [n.casefold() for x in ds if isinstance(x, dict) for n in _neo_dac_ta(x)]
+        chua_phu = [str(x.get("mo_ta") or "") for x in HD.truong(hd, "do_nhay") or []
+                    if isinstance(x, dict) and not any(n in str(x.get("mo_ta") or "").casefold() for n in neo)]
+        if chua_phu:
+            return {"status": "BLOCK",
+                    "evidence": f"hợp đồng SAP cam kết {len(HD.truong(hd, 'do_nhay') or [])} phân tích độ nhạy; đặc tả "
+                                "G6 không có mục nào neo vào: " + " | ".join(f"«{x[:80]}»" for x in chua_phu[:3])}
     can = [str(x["id"]) for x in ds if isinstance(x, dict) and x.get("vai") == "do_nhay" and x.get("id")]
     s5 = muc_do_nhay_ban_thao(manuscript_text)
     if s5 is None:
@@ -583,6 +618,8 @@ def o_cho_co_du_kien(out_dir: Path, study: str, text: str, design_code: Optional
     co_mau = bool(g3.get("n_adjusted") or g3.get("confirmed_n"))
     sai_lech = [x for x in G7.bang_sai_lech_chot_g7(out_dir) if G7._gia_tri_chot(x.get("bien_phap"))]
     sap = G7._sap_tom_tat(out_dir, study)
+    # 23/11/2026: G7 đọc SAP qua hợp đồng — hợp đồng lỗi thì mọi quy tắc «nguồn SAP» dưới đây không đo được ⇒ báo lỗi
+    loi_hd = [f"Hợp đồng SAP máy đọc: {x}" for x in loi_hop_dong_sap(out_dir, study)]
     quy_tac = (
         ("Bàn luận §4 điểm mạnh (2) — cỡ mẫu đã chốt ở G3", "*(2)* [CẦN thêm điểm mạnh", co_mau),
         ("Bàn luận §4 điểm mạnh (3) — biện pháp kiểm soát sai lệch đã chốt ở G1", "*(3)* [CẦN — điểm mạnh khác",
@@ -619,8 +656,8 @@ def o_cho_co_du_kien(out_dir: Path, study: str, text: str, design_code: Optional
          dinh_tinh),
         ("Tóm tắt — N kế hoạch = 0 dù G3 đã chốt cỡ mẫu", "N kế hoạch = 0;", co_mau),
     )
-    return [f"{ten}: «{dau_hieu}»" for ten, dau_hieu, co in (*quy_tac, *khong_ap_dung)
-            if co and dau_hieu in (text or "")]
+    return loi_hd + [f"{ten}: «{dau_hieu}»" for ten, dau_hieu, co in (*quy_tac, *khong_ap_dung)
+                     if co and dau_hieu in (text or "")]
 
 
 def lech_alpha_g7(out_dir: Path, study: str, text: str) -> List[str]:
@@ -631,6 +668,10 @@ def lech_alpha_g7(out_dir: Path, study: str, text: str) -> List[str]:
     import run_g7_auto as G7  # noqa: PLC0415 — import lười
 
     out_dir = Path(out_dir)
+    # 23/11/2026: α/số phía đã chốt đọc từ HỢP ĐỒNG SAP — hợp đồng lỗi ⇒ không đối chiếu được ⇒ báo lỗi (chặn)
+    loi_hd = loi_hop_dong_sap(out_dir, study)
+    if loi_hd:
+        return [f"α/số phía chưa đối chiếu được — hợp đồng SAP máy đọc: {x}" for x in loi_hd]
     g3 = _read_json(out_dir / "G3_checkpoint.json")
     a, phia, _khung = G7.alpha_theo_sap_g7(G7._sap_tom_tat(out_dir, study), g3.get("alpha"),
                                            str(g3.get("hypothesis_type") or ""))
@@ -666,6 +707,7 @@ def evaluate_g7_quality(
     do_nhay_g6: Optional[Mapping[str, str]] = None,
     o_cho_du_kien: Optional[List[str]] = None,
     lech_alpha: Optional[List[str]] = None,
+    dien_sai_kieu: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Chấm G7 theo hai tầng: máy kiểm được vs người thật phải chốt.
 
@@ -676,7 +718,8 @@ def evaluate_g7_quality(
     (tiêu chí không áp dụng). `o_cho_du_kien` (23/11/2026): ô chờ ở chỗ bộ sinh đã có dữ kiện để viết (o_cho_co_du_kien,
     gộp bản thảo hiện tại với bản bộ sinh vừa sinh — ghi ở G7_checkpoint) — có ⇒ G7-AUTO-05 CHẶN. `lech_alpha`
     (23/11/2026, lech_alpha_g7): α/số phía ghi trong bản thảo trái α SAP §12/G3 đã chốt — khẳng định trái cổng trước
-    ⇒ G7-AUTO-06 CHẶN.
+    ⇒ G7-AUTO-06 CHẶN. `dien_sai_kieu` (23/11/2026): lỗi của chốt chung `quet_dien_sai_kieu.quet` trên bản thảo — có
+    tham số ⇒ thêm G7-AUTO-09 (còn lỗi ⇒ CHẶN); None ⇒ người gọi không quét (kiểm đơn vị), tiêu chí không có dòng.
     """
     artifact_paths = artifact_paths or {}
     automatic: List[Dict[str, str]] = []
@@ -838,6 +881,19 @@ def evaluate_g7_quality(
             str(do_nhay_g6.get("status") or "REVIEW"), str(do_nhay_g6.get("evidence") or ""),
             "Chạy `chay_sap_g6.py chay` đủ đặc tả trên dữ liệu đã khoá rồi sinh lại bản thảo (run_g7_auto.py) — §5 "
             "phải có mọi mục vai «do_nhay», không bỏ mục nào, không thêm mục ngoài đặc tả.",
+        ))
+
+    # ── Điền sai kiểu (23/11/2026 — chốt chung quet_dien_sai_kieu) ─────────────
+    if dien_sai_kieu is not None:
+        automatic.append(_criterion(
+            "G7-AUTO-09", "Không điền sai kiểu (số đứng lẻ, mã số ở ô hỏi người, số chưa làm tròn, dấu chấm thập phân, "
+                          "ký hiệu nội bộ)",
+            "BLOCK" if dien_sai_kieu else "PASS",
+            "; ".join(dien_sai_kieu[:6]) + (f" (+{len(dien_sai_kieu) - 6} lỗi)" if len(dien_sai_kieu) > 6 else "")
+            if dien_sai_kieu else "không có lỗi điền sai kiểu",
+            "Sửa bộ sinh (run_g7_auto.py: số G6 qua `hien_so_g6`, số khác qua `quet_dien_sai_kieu.viet_so`) hoặc "
+            "câu trả lời của ô rồi sinh lại — không sửa tay số trong bản thảo. Đo: python3 "
+            "tools/quet_dien_sai_kieu.py --tep <bản thảo>.",
         ))
 
     # ── Tầng HUMAN — giá trị phải là NỘI DUNG THẬT (G7-06) ──────────────────
@@ -1105,12 +1161,20 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True,
         citation_detail=citation_detail,
         do_nhay_g6=doi_chieu_do_nhay_g6(out_dir, text),
         lech_alpha=lech_alpha_g7(out_dir, study, text),
+        dien_sai_kieu=_quet_dien_sai_kieu(text),
         o_cho_du_kien=o_cho_co_du_kien(out_dir, study, text)
         + [str(x) for x in ((checkpoints.get("G7") or {}).get("o_cho_co_du_kien_khi_sinh") or [])],
     )
     if write:
         write_quality_report(study, out_dir, report)
     return report
+
+
+def _quet_dien_sai_kieu(text: str) -> List[str]:
+    """Lỗi điền sai kiểu của bản thảo (G7-AUTO-09); bản thảo vắng ⇒ rỗng (G7-AUTO-04 đã chặn việc thiếu bản thảo)."""
+    import quet_dien_sai_kieu as QDSK  # noqa: PLC0415 — import lười (mô-đun dùng chung, không phụ thuộc vòng)
+
+    return QDSK.quet(text) if text.strip() else []
 
 
 def main() -> int:

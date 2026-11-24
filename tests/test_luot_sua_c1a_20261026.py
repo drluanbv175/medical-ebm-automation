@@ -256,7 +256,8 @@ def test_dong_luc_muc_tieu_phu_lam_tron_he_so_thiet_ke():
           "n_hieu_dung": 612.5, "khoang_or_hieu_dung": [1.09, 1.2], "khoang_or_chieu_giam_hieu_dung": [0.84, 0.92],
           "khoang_or_danh_nghia": [1.07, 1.15]}
     dong = R3.dong_luc_muc_tieu_phu(kq)
-    assert "÷ DE 1.39)" in dong and "1.38784" not in dong, dong
+    # 23/11/2026: dấu phẩy thập phân (chốt «điền sai kiểu»)
+    assert "÷ DE 1,39)" in dong and "1.38784" not in dong and "1,38784" not in dong, dong
 
 
 # ── 8. A2: không ghi trạng thái chốt G3; số sai lệch + trạng thái; cách bàn luận không đáp ứng ──────────────────────

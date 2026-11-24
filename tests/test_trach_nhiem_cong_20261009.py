@@ -89,7 +89,8 @@ def test_tong_so_tieu_chi_da_gan():
     # 17/11/2026: 210 → 211 — thêm G1-AUTO-02e (khối thiết kế hỗn hợp đủ mục GRAMMS, giao G1-T1).
     # 18/11/2026: 211 → 212 — thêm G10-AUTO-12 (mọi trích dẫn đề tài có toàn văn, giao G10-T2 — bác sĩ 18/11).
     # 23/11/2026: 212 → 213 — thêm G7-AUTO-08 (§5 bản thảo đủ mọi phân tích vai «do_nhay» của đặc tả G6, giao G7-T1).
-    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 213
+    # 23/11/2026: 213 → 214 — thêm G7-AUTO-09 (bản thảo không còn lỗi «điền sai kiểu», giao G7-T1; quet_dien_sai_kieu).
+    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 214
 
 
 @pytest.mark.parametrize("gate", HD.CONG)
