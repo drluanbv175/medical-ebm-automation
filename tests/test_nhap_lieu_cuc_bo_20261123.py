@@ -323,8 +323,21 @@ def test_pin_bam_co_muoi_khong_luu_ro(kho, phien):
         hang = {r[0]: r for r in cn.execute("SELECT ma, pin_bam, pin_muoi, pin_vong FROM nguoi")}
     assert hang["NV1"][1] != hang["NV3"][1] and hang["NV1"][2] != hang["NV3"][2]  # cùng PIN, muối khác ⇒ băm khác
     assert hang["NV1"][3] == M.VONG_BAM_PIN and hang["NV2"][1] is None
-    du_lieu = kho.duong_dan.read_bytes()
-    assert b"1357" not in du_lieu and b"2468" not in du_lieu
+    # 24/11/2026: trước đây quét thô `b"1357" not in tệp` — đỏ giả ngẫu nhiên (CI #429) vì tệp chứa nhiều chuỗi băm hex
+    # (muối, chuỗi nhật ký) mà chữ số thập phân cũng là chữ số hex. Ý định giữ nguyên: PIN không được nằm DẠNG RÕ —
+    # (1) không ô nào của mọi bảng bằng PIN hay chứa PIN như một cụm riêng; (2) quét thô tệp (bắt cả trang trống) chỉ bỏ
+    # qua lần xuất hiện nằm lọt giữa một chuỗi hex.
+    import re  # noqa: PLC0415
+    with sqlite3.connect(kho.duong_dan) as cn:
+        bang = [r[0] for r in cn.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
+        o = [v for b in bang for hang_o in cn.execute(f'SELECT * FROM "{b}"') for v in hang_o]
+    for pin in ("1357", "2468"):
+        cum_rieng = re.compile(rf"(?<![0-9a-fA-F]){pin}(?![0-9a-fA-F])")
+        for v in o:
+            chu = v.decode("utf-8", "replace") if isinstance(v, bytes) else str(v)
+            assert chu != pin and not cum_rieng.search(chu), f"PIN {pin} nằm dạng rõ trong kho"
+        assert not re.search(rb"(?<![0-9a-fA-F])" + pin.encode() + rb"(?![0-9a-fA-F])",
+                             kho.duong_dan.read_bytes()), f"PIN {pin} nằm dạng rõ trong tệp kho"
     with pytest.raises(M.TuChoi):
         kho.dang_nhap("NV1", "0000")
     with pytest.raises(M.TuChoi):
