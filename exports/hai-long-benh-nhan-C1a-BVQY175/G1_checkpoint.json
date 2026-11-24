@@ -66,9 +66,9 @@
   "quality_gate": {
     "schema_version": "1.1",
     "contract_version": "G1-2026.1",
-    "status": "PASS_G1_CONFIRMED",
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
     "automated_checks_passed": true,
-    "human_confirmation_complete": true,
+    "human_confirmation_complete": false,
     "automatic_criteria": [
       {
         "id": "G1-AUTO-00",
@@ -222,35 +222,37 @@
       {
         "id": "G1-HUMAN-08",
         "label": "Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung",
-        "status": "PASS",
-        "evidence": "reviewed_by_role=pi; reviewed_at=2026-11-15T18:45:10+07:00; xác nhận gắn đúng nội dung hiện tại",
-        "action": "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"a1092035d7005539\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
+        "status": "REVIEW",
+        "evidence": "reviewed_by_role=pi; reviewed_at=2026-11-15T18:45:10+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận a1092035d7005539 ≠ hiện tại bc3d57b0d6e08644) — chủ nhiệm đọc lại rồi xác nhận lại",
+        "action": "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"bc3d57b0d6e08644\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
       }
     ],
-    "pending_actions": [],
+    "pending_actions": [
+      "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"bc3d57b0d6e08644\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
+    ],
     "artifact_manifest": {
+      "A1b": {
+        "path": "/Users/nguyenluan/.ebm-worktrees/hdkh-du-lieu-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "db4615e07ab2b5a58bbb27562e0deb83cfea4d7ac3d76927f1c45fc04f8ea8dd"
+      },
       "A2": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/hdkh-du-lieu-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "4c103d664dbf0ffb5fe4db60cc826f79dd959d8180d1cfd011a348b0c1bf1e94"
       },
-      "A1b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "18c1b210f3aab8753b6d47edd679e6a2a8599d722696955d0176dfeaafc5c506"
-      },
       "A2b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/hdkh-du-lieu-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "643ff508043b3baa9af7bd6e102889ea034961e62f24a27362fbbe5351cb76d8"
       },
       "A13": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/hdkh-du-lieu-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "b5447450de68773cb6885835d25b55247f24293ae6b1caf21890f6d667e99b9d"
       },
       "A13b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "ded3d82b9b4d6c7d68bfa57f703efcf29488998be89529fb247c0426afeee4ef"
+        "path": "/Users/nguyenluan/.ebm-worktrees/hdkh-du-lieu-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "233a0584ae77bccb1a2ca20550f07dbb9084da631cb6b44b99f74a135100f2bb"
       }
     },
-    "dau_van_tay_hien_tai": "a1092035d7005539",
+    "dau_van_tay_hien_tai": "bc3d57b0d6e08644",
     "standards_basis": [
       {
         "standard": "EQUATOR Network",
@@ -306,7 +308,8 @@
         "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "ded3d82b9b4d6c7d68bfa57f703efcf29488998be89529fb247c0426afeee4ef"
       }
-    }
+    },
+    "dau_van_tay_luc_cham": "bc3d57b0d6e08644"
   },
   "quality_contract_version": "G1-2026.1",
   "artifacts": {
