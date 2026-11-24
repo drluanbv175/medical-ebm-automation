@@ -111,7 +111,8 @@ EFFECT_TYPES_BY_DESIGN: Mapping[str, frozenset[str]] = {
     "cohort": frozenset({"HR", "OR", "RR", "ARR%", "MD"}),
     # (NI_PROPORTION / «p_test» cũ hợp lệ cho rct/cohort CHỈ khi hypothesis_type là NI/equivalence — xem G3-AUTO-03.)
     "case_control": frozenset({"OR", "RR", "ARR%"}),
-    "cross_sectional": frozenset({"PREVALENCE"}),
+    # 23/11/2026: PLS_PATH = |β_min| của PLS-SEM (Kock & Hadaya 2018, phương pháp căn bậc hai nghịch đảo)
+    "cross_sectional": frozenset({"PREVALENCE", "PLS_PATH"}),
     "diagnostic": frozenset({"AUC"}),
     "prediction": frozenset(),
     "qualitative": frozenset(),
@@ -1042,7 +1043,7 @@ def evaluate_g3_quality(
         nuisance_missing.append("SD (độ lệch chuẩn kết cục liên tục)")
     if (effect_type in {"OR", "RR", "ARR%"} or effect_type in NI_EFFECT_TYPES) and not _present(g3.get("p0_source")):
         nuisance_missing.append("p0 (tỷ lệ kết cục nhóm chứng)")
-    if design_code == "cross_sectional" and not _present(g3.get("prevalence_source")):
+    if design_code == "cross_sectional" and effect_type != "PLS_PATH" and not _present(g3.get("prevalence_source")):
         nuisance_missing.append("tỷ lệ hiện mắc p (quy ước thận trọng là p=0,5)")
     if design_code == "diagnostic" and not _present(g3.get("prevalence_source")):
         nuisance_missing.append("tỷ lệ hiện mắc để quy Se/Sp ra tổng N")

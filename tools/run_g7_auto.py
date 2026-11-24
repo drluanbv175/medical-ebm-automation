@@ -950,7 +950,8 @@ def build_pmid_meta(pubmed_raw: dict) -> dict:
 # ước lượng): số đã là số THẬT của G6 nhưng bác sĩ CHƯA đối chiếu — đối chiếu xong mới xoá nhãn và đặt results_final.
 NHAN_DOI_CHIEU_G6 = "[CẦN KẾT QUẢ THẬT — đối chiếu G6]"
 # Khoá của tóm tắt Python CLI (run_stats_analysis.py) mang ước lượng; tóm tắt khối cuối 03_analysis.R chỉ có n_total.
-_KHOA_UOC_LUONG_G6 = ("primary_outcome", "poisson_pr", "ordinal", "survival", "multivariate", "ty_le", "dac_thu")
+_KHOA_UOC_LUONG_G6 = ("primary_outcome", "poisson_pr", "ordinal", "survival", "multivariate", "ty_le", "dac_thu",
+                      "pls_sem")
 # Một số trong văn bản: không dính chữ/số phía trước (G6, sha256, q1_…), không dính chữ phía sau; dấu chấm cuối câu
 # không làm số «biến mất» («N = 218.» vẫn tách được 218).
 _SO_RE = re.compile(r"(?<!\w)(?<!\d\.)-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?(?!\w)(?!\.\d)")
@@ -2239,6 +2240,8 @@ def _phan_tich_chinh_g6(tt: dict, dac_ta: Optional[dict], sap: Optional[dict] = 
         return _mo_hinh_gop_chinh(sap.get("mo_hinh_gop"))
     if dac_ta.get("loai_dac_thu"):
         return None
+    if dac_ta.get("pls_sem"):  # 23/11/2026: PLS-SEM — phân tích chính là khối pls_sem của tóm tắt (nếu có)
+        return "pls_sem" if isinstance(tt.get("pls_sem"), dict) else None
     pp = str(sap.get("phuong_phap_chinh") or "")
 
     def model(khoa: str) -> Any:
@@ -2260,6 +2263,53 @@ def _phan_tich_chinh_g6(tt: dict, dac_ta: Optional[dict], sap: Optional[dict] = 
             and _ho_mo_hinh_khop_sap(model("multivariate"), pp)):
         return "multivariate"
     return None
+
+
+_HANG_PHAN_CACH_RE = re.compile(r"\|(?:\s*:?-{3,}:?\s*\|)+")
+
+
+def _hang_du_lieu_bang(dong: list) -> list[str]:
+    """Hàng DỮ LIỆU của các bảng Markdown trong `dong` (hàng nằm sau dòng phân cách «|---|») — hàng tiêu đề và văn
+    xuôi (nguồn trích, ngưỡng, chú thích) không tính."""
+    ra: list[str] = []
+    trong_bang = False
+    for d in dong:
+        s = str(d).strip()
+        if not s.startswith("|"):
+            trong_bang = False
+        elif _HANG_PHAN_CACH_RE.fullmatch(s):
+            trong_bang = True
+        elif trong_bang:
+            ra.append(s)
+    return ra
+
+
+def _khoi_pls_sem_g6(tt: dict, nguon: str, nhan_chinh: Optional[str] = None) -> list[str]:
+    """Kết quả PLS-SEM (23/11/2026) — CHÉP NGUYÊN VĂN các dòng trình bày G6 dựng (`pls_sem.trinh_bay_md`: thứ tự Hair và
+    cộng sự 2019, doi:10.1108/EBR-11-2018-0203; số kiểu Việt). Kiểm chéo cSEM không khớp ⇒ ô [CẦN THỐNG KÊ VIÊN] (số
+    chưa được dùng cho tới khi tìm ra nguyên nhân); lỗi seminr ⇒ ô [CẦN THỐNG KÊ VIÊN] thay bảng.
+
+    24/11/2026 (quy ước số tiếng Việt): bảng trình bày nằm TRONG chính tóm tắt G6, nên tự kiểm chung của bản nháp
+    (`kiem_so_trich_g6` trên cả tệp) luôn khớp với chính nó. Từng số ở hàng dữ liệu của bảng phải truy được về GIÁ TRỊ
+    tính (`danh_gia`, `seminr`, `q2_predict_csem`…) của tóm tắt đã bỏ `trinh_bay_md` — cách in là `hien_so_g6` của giá
+    trị đó (`pls_sem.so3`); số sửa tay, làm tròn lại hay tính lại ⇒ ô [CẦN THỐNG KÊ VIÊN] thay bảng."""
+    p = tt["pls_sem"]
+    loi = p.get("loi") or {}
+    if loi.get("seminr") or not p.get("trinh_bay_md"):
+        return [f"[CẦN THỐNG KÊ VIÊN — G6 PLS-SEM không ra kết quả: {_trong_o(loi.get('seminr') or loi or 'không rõ')}]  "]
+    goc = {**tt, "pls_sem": {k: v for k, v in p.items() if k != "trinh_bay_md"}}
+    lech = kiem_so_trich_g6("\n".join(_hang_du_lieu_bang(p["trinh_bay_md"])), json.dumps(goc, ensure_ascii=False))
+    if lech:
+        return [f"[CẦN THỐNG KÊ VIÊN — bảng PLS-SEM của G6 có số không truy được về giá trị tính trong tóm tắt "
+                f"({_trong_o(', '.join(lech[:6]))}) — chạy lại pls_sem.py, không dùng bảng]  "]
+    tieu_de = (f"*{nhan_chinh[:1].upper()}{nhan_chinh[1:]} — " if nhan_chinh else "*") + \
+        f"PLS-SEM (G6, `{nguon}`; seminr tính chính, cSEM kiểm chéo)* {NHAN_DOI_CHIEU_G6}  "
+    ra = [tieu_de, "", *[str(x) for x in p["trinh_bay_md"]], ""]
+    kc = tt.get("kiem_cheo") if isinstance(tt.get("kiem_cheo"), dict) else {}
+    if kc.get("trang_thai") != "KHOP":
+        ra.insert(1, f"[CẦN THỐNG KÊ VIÊN — kiểm chéo seminr ↔ cSEM: {_trong_o(kc.get('trang_thai') or 'chưa có')} — "
+                     "tìm nguyên nhân trước khi dùng số]  ")
+    return ra
 
 
 def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6", chinh: Optional[str] = None,
@@ -2369,6 +2419,8 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6", chinh: Optiona
                                + f"Mô hình đa biến (G6, `{tien_to}_table4_multivariate.txt`)", tt["multivariate"])
     s3 += _bang_bien_co_hiem_g6(tt.get("bien_co_hiem"), tien_to)
     s3 += _khoi_dac_thu_g6(tt.get("loai_dac_thu"), tt.get("dac_thu"), nguon, chinh=chinh, nhan=nhan)
+    if isinstance(tt.get("pls_sem"), dict):
+        s3 += _khoi_pls_sem_g6(tt, nguon, nhan[0] if chinh == "pls_sem" else None)
     if not any(k in tt for k in _KHOA_UOC_LUONG_G6):
         s3 = [f"[CẦN KẾT QUẢ THẬT — tóm tắt G6 ({nguon}) chỉ ghi N phân tích; ước lượng nằm ở bảng đầu ra của "
               "lượt phân tích (đường R: 06_phan_tich_R/output/) — chép số từ đó]  "]
@@ -4418,6 +4470,10 @@ def generate_manuscript(
     ) if n_adjusted > 0 else "N = [CẦN — từ G3]"
 
     # 23/11/2026 (chốt «điền sai kiểu» Q4): tham số G3 in dấu phẩy thập phân («RR = 0,7»)
+    # 23/11/2026 (PLS-SEM): mã nội bộ «PLS_PATH = 0.2» không vào bản thảo ⇒ tên đại lượng + số kiểu Việt hai chữ số
+    if str(effect_type).upper() == "PLS_PATH" and isinstance(effect_val, (int, float)) and not isinstance(effect_val,
+                                                                                                         bool):
+        effect_type, effect_val = "hệ số đường dẫn nhỏ nhất |β_min|", QDSK.viet_so(abs(float(effect_val)), 2)
     effect_text = (
         (f"với {effect_type} = {so_viet(effect_val)} "
          + (f"(theo {nguon_effect})" if str(nguon_effect).upper().startswith(("PMID", "DOI"))

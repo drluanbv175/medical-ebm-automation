@@ -4012,7 +4012,24 @@ def main():
     # không có phơi nhiễm nên dòng «không tự phát hiện exposure» không phải tham số chờ điền (G6-AUTO-07).
     v["mo_ta_ty_le"] = (design_code == "cross_sectional" and not v["outcome_ordinal"]
                         and GC.sap_declares_proportion(out, study))
-    if v["mo_ta_ty_le"] or design_code in ("sr_ma", "qualitative"):
+    # 23/11/2026: SAP §4 khai PLS-SEM ⇒ 03_analysis.R là PLS-SEM (seminr) dựng từ CHÍNH khối mô hình của SAP; khối hỏng
+    # ⇒ không đoán — script ghi lý do, G6-AUTO-09 không nhận ra họ mô hình. 24/11/2026: đọc trường `pls_sem` của HỢP
+    # ĐỒNG SAP (hop_dong_sap — bộ đọc SAP duy nhất, cùng nguồn pls_sem.py chạy), không dò chữ SAP
+    import hop_dong_sap as HD  # noqa: PLC0415
+    import pls_sem as PLS  # noqa: PLC0415
+
+    v["pls_sem"] = None
+    _hd_pls, _loi_hd_pls = HD.doc(out, study) if _sap_p.is_file() else (None, [])
+    if HD.truong(_hd_pls, "pls_sem") is not None:
+        if _loi_hd_pls:
+            v.setdefault("detection_log", []).append("⚠️  SAP §4 khai PLS-SEM nhưng hợp đồng SAP không dùng được — "
+                                                     + " | ".join(_loi_hd_pls[:2]))
+        else:
+            try:
+                v["pls_sem"] = PLS.mo_hinh_hop_dong(_hd_pls)
+            except PLS.TuChoi as e:
+                v.setdefault("detection_log", []).append(f"⚠️  SAP §4 khai PLS-SEM nhưng khối mô hình hỏng: {e}")
+    if v["mo_ta_ty_le"] or v["pls_sem"] or design_code in ("sr_ma", "qualitative"):
         v["detection_log"] = [("ℹ️  Thiết kế không có biến phơi nhiễm cấp cá nhân (mô tả/tổng hợp/định tính)"
                                if str(d).lstrip("⚠️ ").startswith("Không tự phát hiện exposure ") else d)
                               for d in v.get("detection_log") or []]
@@ -4273,6 +4290,8 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
     # như đau NRS/HbA1c/chất lượng sống). Ưu tiên effect_type TRƯỚC design_code
     # khi =MD, giống cách G3 đã làm ở sensitivity_table. Kiểm định đối kháng
     # vòng 2 xác nhận đây là bug thiếu sót (bug of omission) thật.
+    if v.get("pls_sem"):  # 23/11/2026: SAP §4 khoá PLS-SEM — mọi thiết kế, trước mọi nhánh theo effect_type
+        return _r03_pls_sem(v)
     if effect_type == "MD" and design_code in ("rct", "cohort"):
         return _r03_continuous_md_with_vars(v, design_code)
     if effect_type in _KET_CUC_NHI_PHAN and design_code in ("rct", "cohort"):
@@ -4540,6 +4559,49 @@ source(here::here("scripts", "00_setup.R"))
 
 message("03_analysis.R (Cross-sectional) — Biến: {exposure}/{outcome} | dữ liệu ĐÃ KHOÁ (G5)")
 """
+
+
+def _r03_pls_sem(v: dict) -> str:
+    """03_analysis.R của đề tài PLS-SEM (23/11/2026): mô hình đo lường/cấu trúc, bootstrap, PLSpredict CHÉP từ khối PLS-SEM
+    của SAP §4 (pls_sem.doc_sap). Dòng ước lượng mô hình chính THI HÀNH (◆) để G6-AUTO-09 đối chiếu họ mô hình; lượt
+    chạy chính thức của G6 là `pls_sem.py chay` (seminr + kiểm chéo cSEM) qua chay_sap_g6 — script này để tái lập tay."""
+    mh = v["pls_sem"]
+    ct = []
+    for c in mh["cau_truc"]:
+        muc = ['"' + m + '"' for m in c["muc"]]
+        it = "single_item(" + muc[0] + ")" if len(muc) == 1 else "c(" + ", ".join(muc) + ")"
+        ct.append('  composite("' + c["ma"] + '", ' + it + (", weights = mode_B" if c["mode"] == "B" else "") + ")")
+    dd = ['  paths(from = "' + a + '", to = "' + b + '")' for a, b in mh["duong_dan"]]
+    pp = mh.get("plspredict")
+    du_bao = (f"set.seed(SEED)\npred <- predict_pls(model = pls_model, technique = predict_DA, noFolds = {pp['k']}, "
+              f"reps = {pp['lap']})\nprint(summary(pred))" if pp else "# PLSpredict: SAP §4 — không thực hiện")
+    xu_ly = ("df <- df[stats::complete.cases(df[, ITEMS]), ]  # SAP §4: listwise" if mh["du_lieu_thieu"] == "listwise"
+             else "# SAP §4: thay ô thiếu bằng trung bình chỉ báo — estimate_pls(missing = mean_replacement)")
+    items_r = ", ".join('"' + m + '"' for c in mh["cau_truc"] for m in c["muc"])
+    ct_r, dd_r = ",\n".join(ct), ",\n".join(dd)
+    return (f"""\
+# 03_analysis.R — PLS-SEM theo SAP §4 (seminr; kiểm chéo cSEM do tools/pls_sem.py chạy)
+source(here::here("scripts", "00_setup.R"))
+library(seminr)
+# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
+SEED <- {mh['seed']}
+ITEMS <- c({items_r})
+{xu_ly}
+mm <- constructs(
+{ct_r}
+)
+sm <- relationships(
+{dd_r}
+)
+pls_model <- estimate_pls(data = df, measurement_model = mm, structural_model = sm, inner_weights = path_weighting, missing = mean_replacement, missing_value = NA)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
+summary(pls_model)
+boot <- bootstrap_model(seminr_model = pls_model, nboot = {mh['bootstrap']}, cores = 1, seed = SEED)
+summary(boot, alpha = {mh['alpha']})
+summary(boot, alpha = 0.10)  # KTC 90% hai phía cho HTMT
+{du_bao}
+
+message("03_analysis.R (PLS-SEM) — dữ liệu ĐÃ KHOÁ (G5)")
+""")
 
 
 def _r03_cross_ty_le_with_vars(v: dict) -> str:

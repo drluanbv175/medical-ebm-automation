@@ -457,6 +457,8 @@ def _ap_bien_the(rows: List[Dict[str, Any]], bien_the: Mapping[str, Any], kc: Op
             for b, lech in (gc.get("lech") or {}).items():
                 if isinstance(ca.get(b), (int, float)):
                     r[b] = ca[b] + rng.randint(-int(lech), int(lech))
+    if bien_the.get("pls_sem"):
+        _sinh_pls_sem(rows, bien_the["pls_sem"], rng)
     th = bien_the.get("thieu")
     if th:
         pt = th.get("phu_thuoc")
@@ -467,6 +469,49 @@ def _ap_bien_the(rows: List[Dict[str, Any]], bien_the: Mapping[str, Any], kc: Op
             for cot in th.get("cot") or []:
                 if rng.random() < nen:
                     r[cot] = None
+
+
+def _sinh_pls_sem(rows: List[Dict[str, Any]], ps: Mapping[str, Any], rng: random.Random) -> None:
+    """Dữ liệu MÔ PHỎNG cho kịch bản PLS-SEM (23/11/2026): biến tiềm ẩn chuẩn hoá theo mô hình cấu trúc khai ở `ps` —
+    cấu trúc ngoại sinh tương quan r_ngoai qua một nhân tố chung; cấu trúc cấu tạo (Mode B) = tổ hợp trọng số của chỉ
+    báo (chỉ báo tương quan với nhau); cấu trúc nội sinh = Σ β·tiền tố + nhiễu; chỉ báo kết quả (Mode A) = λ·η + nhiễu.
+    Mọi chỉ báo quy về thang Likert 1–5 theo ngưỡng `nguong`. Không dùng lâm sàng."""
+    nguong = list(ps.get("nguong") or (-1.5, -0.5, 0.5, 1.5))
+    r = float(ps.get("r_ngoai") or 0.3)
+    dd = list(ps["duong_dan"])  # [[nội sinh, {tiền tố: β}], …] theo thứ tự đệ quy
+    noi = {y for y, _b in dd}
+
+    def likert(x: float) -> int:
+        return 1 + sum(1 for t in nguong if x > t)
+
+    for row in rows:
+        z = rng.gauss(0, 1)
+        an: Dict[str, float] = {}
+        for c in ps["cau_truc"]:
+            if c["ma"] in noi:
+                continue
+            if c["mode"] == "B":
+                rc = float(c.get("r_chi_bao") or 0.3)
+                u = rng.gauss(0, 1)
+                x = [math.sqrt(r) * z + math.sqrt(1 - r) * (math.sqrt(rc) * u + math.sqrt(1 - rc) * rng.gauss(0, 1))
+                     for _ in c["muc"]]
+                w = list(c["trong_so"])
+                tuong_quan = r + (1 - r) * rc  # tương quan giữa hai chỉ báo cấu tạo
+                var = sum(a * a for a in w) + sum(w[i] * w[j] * tuong_quan for i in range(len(w))
+                                                  for j in range(len(w)) if i != j)
+                an[c["ma"]] = sum(a * b for a, b in zip(w, x)) / math.sqrt(var)
+                for m, v in zip(c["muc"], x):
+                    row[m] = likert(v)
+            else:
+                an[c["ma"]] = math.sqrt(r) * z + math.sqrt(1 - r) * rng.gauss(0, 1)
+        for y, beta in dd:
+            an[y] = sum(b * an[p] for p, b in beta.items()) + float(ps.get("sd_nhieu", 0.8)) * rng.gauss(0, 1)
+        for c in ps["cau_truc"]:
+            if c["mode"] == "B":
+                continue
+            lam = float(c.get("tai") or 0.8)
+            for m in c["muc"]:
+                row[m] = likert(lam * an[c["ma"]] + math.sqrt(1 - lam * lam) * rng.gauss(0, 1))
 
 
 def _kich_ban_kho() -> Dict[str, Dict[str, Any]]:
@@ -1631,6 +1676,12 @@ class TronVong:
         # định tính)
         if re.search(r"### §5 (?:CHIẾN LƯỢC MÃ HÓA|TỔNG HỢP ĐỊNH LƯỢNG)", s):
             return
+        # 23/11/2026: PLS-SEM không có EPV — đa cộng tuyến (VIF) đã định trước ở khối PLS-SEM §4/§5 (khối nhận bằng hàm
+        # của hợp đồng SAP — bộ đọc SAP duy nhất)
+        import hop_dong_sap as HD  # noqa: PLC0415
+
+        if HD.pls_sem_van_ban(s) is not None:
+            return
         than5 = re.search(r"(### §5[^\n]*\n)(.*?)(?=\n### §6|\Z)", s, re.S)
         if not than5 or re.search(r"\b(EPV|EPP|VIF|pmsampsize)\b", than5.group(2)):
             return
@@ -1728,7 +1779,8 @@ class TronVong:
             for pt in ds:
                 ts = pt.get("tham_so")
                 if isinstance(ts, dict) and ts.get("outcome") and not any(
-                        ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to", "bang_chung")):
+                        ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to", "bang_chung",
+                                            "pls_sem")):
                     ts.setdefault("bien_co_hiem", bch_sap)
         dt: Dict[str, Any] = {"nguon_sap": sap.name, "sha256_sap": CS6.sha256_tep(sap), "phan_tich": ds}
         if duoi_pytest_khoa_gia():
@@ -1990,7 +2042,7 @@ class TronVong:
     # engine ghi và dẫn ĐÚNG tệp kết quả chứa số đó (bản diễn giải đối chiếu số với tệp nguồn).
     THUOC_DO = ("pr_hieu_chinh", "pr_tho", "hieu_so_nguy_co", "or_hieu_chinh", "or_tho", "ty_le", "auc", "do_nhay",
                 "do_dac_hieu", "ppv", "npv", "c_statistic", "rr_gop", "rr_gop_co_dinh", "chu_de_1", "hr_hieu_chinh",
-                "hr_tho", "pr_mi", "or_tho_dk", "or_firth")
+                "hr_tho", "pr_mi", "or_tho_dk", "or_firth", "pls_beta")
 
     def _uoc_luong(self, lay: str, gate: str) -> Optional[Dict[str, Any]]:
         tom = _doc_json(self.out / f"{gate}_analysis_summary.json")
@@ -2052,6 +2104,11 @@ class TronVong:
         if lay == "chu_de_1":
             t = next(iter(dt.get("chu_de") or []), None) or {}
             return kq(t.get("ty_le"), t.get("ci_95_wilson"), None, tep_tom, 2)
+        if lay == "pls_beta":  # 23/11/2026: hệ số đường dẫn của giả thuyết chính (đường dẫn khai ở bien_the.pls_sem)
+            dd = ((self.kb.get("bien_the") or {}).get("pls_sem") or {}).get("duong_dan_chinh")
+            x = next((c for c in (((tom.get("pls_sem") or {}).get("danh_gia") or {}).get("cau_truc") or [])
+                      if c.get("duong_dan") == dd), None) or {}
+            return kq(x.get("he_so"), x.get("ktc"), None, tep_tom, 3)
         if lay in ("delta_c", "nmb"):  # kinh tế: VND, KTC 95% bootstrap
             return kq(dt.get("delta_c" if lay == "delta_c" else "nmb_tai_wtp"),
                       dt.get("ci_95_delta_c" if lay == "delta_c" else "ci_95_nmb"), None, tep_tom, 0)

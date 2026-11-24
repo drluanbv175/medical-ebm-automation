@@ -299,9 +299,9 @@
   },
   {
    "ma": "HD-V1-SO-KHOA-V1",
-   "chot": "hợp đồng v1 (ebm.g4_sap_contract/1) vẫn hợp lệ — kiem chỉ so các khoá v1, không đòi trường v2",
+   "chot": "hợp đồng v1/v2 (ebm.g4_sap_contract/1, /2) vẫn hợp lệ — kiem chỉ so các khoá của phiên bản đó, không đòi trường mới",
    "tep": "tools/hop_dong_sap.py",
-   "cu": "            moi = {k: moi.get(k) for k in KHOA_V1}",
+   "cu": "            moi = {k: moi.get(k) for k in khoa_cu}",
    "moi": "            moi = dict(moi)",
    "test": "tests/test_hop_dong_sap_20261123.py::test_v1_van_doc_duoc_va_nang_cap_tu_chinh_van_ban"
   },
@@ -352,6 +352,30 @@
    "cu": "        margin_note = (f\"margin Δ={QDSK.viet_so(ni_ext['margin'])}\" if ni_ext.get(\"margin\") is not None",
    "moi": "        margin_note = (f\"margin Δ={ni_ext['margin']}\" if ni_ext.get(\"margin\") is not None",
    "test": "tests/test_consort_ni_extension_g7_g8_g9_g10.py::TestG8ConsortNiChecklist::test_a9_ghi_bien_theo_quy_uoc_so_tieng_viet"
+  },
+  {
+   "ma": "G6-HO-PLS-SEM",
+   "chot": "SAP §4 khai PLS-SEM ⇒ họ mô hình duy nhất là pls_sem trong bộ đọc SAP (hợp đồng; G6-AUTO-09 chặn lượt chạy họ khác)",
+   "tep": "tools/hop_dong_sap.py",
+   "cu": "    if \"pls_sem\" in ho:\n        return {\"pls_sem\"}",
+   "moi": "    if False:\n        return {\"pls_sem\"}",
+   "test": "tests/test_pls_sem_20261123.py::test_ho_sap_pls_doc_quyen"
+  },
+  {
+   "ma": "G6-DAC-TA-PLS-SEM",
+   "chot": "đặc tả G6 ↔ SAP: SAP khoá PLS-SEM thì phân tích vai «chinh» phải là PLS-SEM (chay_sap_g6 kiem)",
+   "tep": "tools/chay_sap_g6.py",
+   "cu": "    if co_pls and chinh is not None and not (chinh.get(\"tham_so\") or {}).get(\"pls_sem\"):",
+   "moi": "    if False:",
+   "test": "tests/test_pls_sem_20261123.py::test_dac_ta_lech_sap_bi_chan"
+  },
+  {
+   "ma": "G7-PLS-SEM-TU-KIEM-SO",
+   "chot": "bảng PLS-SEM chép vào bản thảo G7: từng số ở hàng dữ liệu phải truy được về giá trị tính của tóm tắt G6 (đã bỏ chính bảng trình bày) — số sửa/làm tròn lại ⇒ [CẦN THỐNG KÊ VIÊN]",
+   "tep": "tools/run_g7_auto.py",
+   "cu": "    goc = {**tt, \"pls_sem\": {k: v for k, v in p.items() if k != \"trinh_bay_md\"}}",
+   "moi": "    goc = tt",
+   "test": "tests/test_pls_sem_20261123.py::test_g7_tu_kiem_bang_pls_voi_gia_tri_tinh_bat_so_sai"
   }
  ]
 }

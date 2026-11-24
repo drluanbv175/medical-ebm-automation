@@ -74,8 +74,11 @@ CAN_KIEM = S.CAN_KIEM
 TuChoi, KhongDoDuoc = S.TuChoi, S.KhongDoDuoc
 GOI_CAN = ("jsonlite", "sandwich", "lmtest", "survival", "ordinal", "mice",  # mice: chỉ khi có Bảng 5 (MI)
            "DescTools",  # DescTools: chỉ khi SAP khai KTC Newcombe cho hiệu số nguy cơ (23/11/2026)
-           "logistf")  # logistf: chỉ khi Python chạy Firth cho biến cố hiếm SAP §5 (23/11/2026)
-KHO_CRAN = "https://cloud.r-project.org"
+           "logistf",  # logistf: chỉ khi Python chạy Firth cho biến cố hiếm SAP §5 (23/11/2026)
+           "seminr", "cSEM")  # seminr + cSEM: chỉ khi SAP khai PLS-SEM — seminr tính chính, cSEM kiểm chéo (23/11/2026)
+# 23/11/2026: EBM_KHO_CRAN đổi kho cài gói (CI Ubuntu dùng kho NHỊ PHÂN Posit Package Manager — cài vài phút thay vì
+# biên dịch nguồn hàng chục phút); mặc định giữ CRAN chính thức.
+KHO_CRAN = os.environ.get("EBM_KHO_CRAN", "").strip() or "https://cloud.r-project.org"
 # keep_default_na của pandas 2.x — chỉ dùng khi máy sinh script không có pandas (bình thường đọc thẳng từ pandas).
 NA_PANDAS_DU_PHONG = (
     "",
@@ -3462,6 +3465,333 @@ def kich_ban_bo_sung(loai: str) -> str:
         phan.append(TS.R_HAM)
     phan.append(THAN_BO_SUNG[loai])
     return "\n".join(phan)
+
+
+# ═══════════════════════ Kịch bản R của PLS-SEM (tools/pls_sem.py) ═══════════════════════
+# 23/11/2026 (bác sĩ: «PLS-SEM tốt nhất, tương tự SPSS/R» — không có bản quyền SmartPLS): PLS path modeling chạy bằng
+# R `seminr` (ước lượng CHÍNH) và R `cSEM` (bản cài đặt ĐỘC LẬP, kiểm chéo) trong MỘT lượt Rscript, mỗi gói một khối
+# tryCatch — gói này lỗi không xoá kết quả gói kia. Cùng PLS-PM: chỉ báo kết quả Mode A, chỉ báo cấu tạo Mode B, sơ đồ
+# trọng số trong theo đường dẫn; cSEM đặt .disattenuate = FALSE (mặc định của cSEM là PLSc cho cấu trúc `=~`) và lấy ρA
+# Dijkstra–Henseler từ lượt PLSc trên CÙNG trọng số Mode A. Mốc chuẩn: seminr 2.6.0 tái lập đúng số in trong Hair và
+# cộng sự 2021 (doi:10.1007/978-3-030-80519-7, CC BY 4.0) — xem docs/PLS-SEM.md. Đối số: <dữ liệu CSV> <kết quả JSON>
+# <cấu hình JSON>; dữ liệu đã đủ (Python xử lý ô thiếu theo SAP trước khi gửi) và được kiểm SHA-256 trước khi đọc.
+
+#: Gói R mà PLS-SEM cần (kiểm trước khi chạy; thiếu ⇒ không đo được, không bao giờ «đạt»). Cùng có trong GOI_CAN.
+GOI_CAN_PLS_SEM = ("jsonlite", "seminr", "cSEM")
+
+R_PLS_SEM = r"""# ── PLS-SEM: seminr tính CHÍNH, cSEM kiểm chéo ĐỘC LẬP (tools/cau_noi_r.py kich_ban_pls_sem) ──
+# Đối số: <dữ liệu CSV> <kết quả JSON> <cấu hình JSON>. Dữ liệu đã đủ (Python xử lý ô thiếu theo SAP trước khi gửi).
+suppressPackageStartupMessages(library(jsonlite))
+.a <- commandArgs(trailingOnly = TRUE)
+if (length(.a) < 3) stop("cần 3 đối số: <dữ liệu CSV> <kết quả JSON> <cấu hình JSON>")
+CH <- jsonlite::fromJSON(.a[3], simplifyVector = FALSE)
+TEP_KQ <- .a[2]
+GOI <- c("jsonlite", "seminr", "cSEM")
+kq <- list(phien_ban_r = R.version.string, canh_bao = list(), loi = list(),
+           goi = lapply(stats::setNames(GOI, GOI), function(g)
+             if (requireNamespace(g, quietly = TRUE)) as.character(utils::packageVersion(g)) else NA_character_))
+ghi <- function() writeLines(jsonlite::toJSON(kq, auto_unbox = TRUE, digits = NA, na = "null", null = "null"),
+                             TEP_KQ, useBytes = TRUE)
+canh <- function(khoi) function(w) {
+  kq$canh_bao[[length(kq$canh_bao) + 1]] <<- list(khoi = khoi, thong_diep = conditionMessage(w))
+  invokeRestart("muffleWarning")
+}
+sha <- if (exists("sha256sum", envir = asNamespace("tools"), inherits = FALSE)) unname(tools::sha256sum(.a[1])) else
+  digest::digest(file = .a[1], algo = "sha256")
+if (!identical(tolower(sha), CH$sha256_du_lieu)) {
+  kq$loi$du_lieu <- "SHA-256 tap phan tich khong khop cau hinh - du lieu da doi sau khi chuan bi"
+  ghi(); quit(save = "no", status = 3)
+}
+D <- utils::read.csv(.a[1], check.names = FALSE)
+# Đường sản xuất: Python đã xử lý ô thiếu theo SAP ⇒ dữ liệu đủ, HAI gói nhận CÙNG ma trận. Chỉ lệnh `chuan` (mốc chuẩn
+# sách) bật thieu_trong_seminr: seminr nhận dữ liệu có NA và tự thay trung bình như sách (missing = mean_replacement —
+# seminr thay lại trong từng mẫu bootstrap); cSEM nhận bản đã thay trung bình toàn mẫu.
+THIEU_SEMINR <- isTRUE(CH$thieu_trong_seminr)
+D_DU <- D
+if (THIEU_SEMINR) for (c in names(D_DU)) if (anyNA(D_DU[[c]]))
+  D_DU[[c]][is.na(D_DU[[c]])] <- mean(D_DU[[c]], na.rm = TRUE)
+CT <- CH$cau_truc
+TEN <- vapply(CT, function(c) c$ma, "")
+MUC <- stats::setNames(lapply(CT, function(c) unlist(c$muc)), TEN)
+MODE <- stats::setNames(vapply(CT, function(c) c$mode, ""), TEN)
+DD <- lapply(CH$duong_dan, function(p) c(p[[1]], p[[2]]))
+NOI_SINH <- unique(vapply(DD, `[`, "", 2))
+B <- as.integer(CH$bootstrap); SEED <- as.integer(CH$seed); ALPHA <- as.numeric(CH$alpha)
+kq$n <- nrow(D)
+TEN_DD <- function(p) paste(p[1], "->", p[2])
+so <- function(x) if (is.null(x) || length(x) == 0 || is.na(x)) NA_real_ else as.numeric(x)
+theo_cau_truc <- function(f) stats::setNames(lapply(TEN, f), TEN)
+# Sai số Monte Carlo cần PHÂN PHỐI bootstrap của TỪNG gói, không chỉ SD: độ nhọn dư κ (Var(SD) ≈ SD²(2 + κ)/(4B)) và độ
+# thưa s(p) = [Q(p + h) − Q(p − h)]/(2h), h = max(0,01; 15/B) — ít nhất ~30 lần lặp trong cửa sổ để độ thưa không bị ước
+# lượng thấp khi B nhỏ (ước lượng Siddiqui–Bloch–Gastwirth; MCSE phân vị = s(p)·√(p(1−p)/B))
+mc1 <- function(x, al) {
+  x <- x[is.finite(x)]
+  if (length(x) < 20 || stats::sd(x) == 0) return(NULL)
+  m0 <- mean(x); s0 <- stats::sd(x); h <- max(0.01, 15 / length(x))
+  q <- function(p) stats::quantile(x, min(max(p, 0), 1), names = FALSE, type = 7)
+  sp <- function(p) (q(p + h) - q(p - h)) / (min(p + h, 1) - max(p - h, 0))
+  list(kurt_du = mean((x - m0)^4) / s0^4 - 3, thua = c(sp(al / 2), sp(1 - al / 2)))
+}
+# Đổi dấu cấu trúc trong bootstrap (thành phần PLS xác định tới một dấu): mẫu lặp mà MỌI tải của một cấu trúc Mode A
+# ngược dấu ước lượng gốc — thổi phồng SD/t, ít ảnh hưởng KTC phân vị; đếm cho cả hai gói để báo cáo
+doi_dau <- function(goc, lay) stats::setNames(lapply(TEN[MODE[TEN] == "A"], function(t) {
+  g <- sign(goc(t)); x <- lay(t)
+  if (is.null(x) || !length(g)) return(NA_real_)
+  as.numeric(sum(apply(sign(x), 1, function(r) all(r == -g))))
+}), TEN[MODE[TEN] == "A"])
+
+# ═══ 1. seminr — ước lượng CHÍNH ═══
+kq$seminr <- tryCatch(withCallingHandlers({
+  suppressPackageStartupMessages(library(seminr))
+  mm <- do.call(seminr::constructs, lapply(TEN, function(t) {
+    it <- if (length(MUC[[t]]) == 1) seminr::single_item(MUC[[t]]) else MUC[[t]]
+    if (MODE[[t]] == "B") seminr::composite(t, it, weights = seminr::mode_B) else seminr::composite(t, it)
+  }))
+  sm <- do.call(seminr::relationships, lapply(DD, function(p) seminr::paths(from = p[1], to = p[2])))
+  invisible(utils::capture.output(m <- seminr::estimate_pls(data = D, measurement_model = mm, structural_model = sm,
+                                                             inner_weights = seminr::path_weighting, maxIt = 300,
+                                                             stopCriterion = 7,
+                                                             missing = seminr::mean_replacement, missing_value = NA)))
+  s <- summary(m)
+  ra <- list(so_vong_lap = so(s$iterations), n_phan_tich = nrow(D))
+  ra$tai <- theo_cau_truc(function(t) as.list(stats::setNames(as.numeric(m$outer_loadings[MUC[[t]], t]), MUC[[t]])))
+  ra$trong_so <- theo_cau_truc(function(t) as.list(stats::setNames(as.numeric(m$outer_weights[MUC[[t]], t]),
+                                                                   MUC[[t]])))
+  rel <- unclass(s$reliability)
+  ra$tin_cay <- theo_cau_truc(function(t) list(alpha = so(rel[t, "alpha"]), rho_a = so(rel[t, "rhoA"]),
+                                               rho_c = so(rel[t, "rhoC"]), ave = so(rel[t, "AVE"])))
+  ht <- unclass(s$validity$htmt)
+  ra$htmt <- list()
+  for (i in seq_along(TEN)) for (j in seq_len(i - 1)) {
+    a <- TEN[i]; b <- TEN[j]
+    v <- suppressWarnings(as.numeric(ht[a, b]))
+    if (is.na(v)) v <- suppressWarnings(as.numeric(ht[b, a]))
+    ra$htmt[[paste(b, a, sep = " | ")]] <- so(v)
+  }
+  ra$vif_muc <- theo_cau_truc(function(t) as.list(stats::setNames(as.numeric(s$validity$vif_items[[t]]),
+                                                                  names(s$validity$vif_items[[t]]))))
+  ra$vif_cau_truc <- stats::setNames(lapply(NOI_SINH, function(y) {
+    v <- s$vif_antecedents[[y]]; as.list(stats::setNames(as.numeric(v), names(v)))
+  }), NOI_SINH)
+  pc <- m$path_coef; f2 <- unclass(s$fSquare); te <- unclass(s$total_effects)
+  ra$duong_dan <- stats::setNames(lapply(DD, function(p) list(he_so = so(pc[p[1], p[2]]), f2 = so(f2[p[1], p[2]]))),
+                                  vapply(DD, TEN_DD, ""))
+  ra$r2 <- stats::setNames(lapply(NOI_SINH, function(y) list(r2 = so(m$rSquared[1, y]), r2_hc = so(m$rSquared[2, y]))),
+                           NOI_SINH)
+  ra$hieu_ung_tong <- list()
+  for (x in TEN) for (y in TEN)
+    if (x != y && abs(so(te[x, y])) > 0) ra$hieu_ung_tong[[paste(x, "->", y)]] <- so(te[x, y])
+  # Tương quan THÔ (chưa hiệu chỉnh) giữa điểm hai cấu trúc của mỗi đường dẫn — STROBE 16a: ước lượng thô bên cạnh hệ số
+  # đường dẫn (đã hiệu chỉnh cho các tiền tố còn lại của cùng cấu trúc nội sinh)
+  CS <- m$construct_scores
+  ra$tuong_quan_tho <- stats::setNames(lapply(DD, function(p) so(stats::cor(CS[, p[1]], CS[, p[2]]))),
+                                       vapply(DD, TEN_DD, ""))
+  # Bootstrap — KTC phân vị (1 − α) cho đường dẫn/trọng số/tải; HTMT KTC 90% hai phía (= một phía 95%, Hair 2021 ch.4)
+  set.seed(SEED)
+  invisible(utils::capture.output(b <- seminr::bootstrap_model(seminr_model = m, nboot = B, cores = 1, seed = SEED)))
+  invisible(utils::capture.output(sb <- summary(b, alpha = ALPHA)))
+  invisible(utils::capture.output(sb10 <- summary(b, alpha = 0.10)))
+  bang <- function(tb) {
+    tb <- unclass(tb); ten <- gsub("\\s+", " ", trimws(rownames(tb)))
+    stats::setNames(lapply(seq_len(nrow(tb)), function(i) list(uoc_luong = so(tb[i, 1]), tb_bootstrap = so(tb[i, 2]),
+      sd = so(tb[i, 3]), t = so(tb[i, 4]), ktc = c(so(tb[i, 5]), so(tb[i, 6])))), ten)
+  }
+  mc_mang <- function(arr, al) {
+    ra_mc <- list()
+    if (is.null(arr) || length(dim(arr)) != 3) return(ra_mc)
+    for (i in seq_len(dim(arr)[1])) for (j in seq_len(dim(arr)[2])) {
+      v <- mc1(arr[i, j, ], al)
+      if (!is.null(v)) ra_mc[[paste(dimnames(arr)[[1]][i], "->", dimnames(arr)[[2]][j])]] <- v
+    }
+    ra_mc
+  }
+  ra$doi_dau_bootstrap <- doi_dau(function(t) m$outer_loadings[MUC[[t]], t],
+                                  function(t) t(matrix(b$boot_loadings[MUC[[t]], t, ], nrow = length(MUC[[t]]))))
+  ra$bootstrap_mc <- list(duong_dan = mc_mang(b$boot_paths, ALPHA), trong_so = mc_mang(b$boot_weights, ALPHA),
+                          tai = mc_mang(b$boot_loadings, ALPHA), hieu_ung_tong = mc_mang(b$boot_total_paths, ALPHA),
+                          htmt_ktc90 = mc_mang(b$boot_HTMT, 0.10))
+  ra$bootstrap <- list(B_yeu_cau = B, B_dung = so(sb$nboot), B_bo = so(sb$nboot_dropped), alpha = ALPHA,
+                       duong_dan = bang(sb$bootstrapped_paths), trong_so = bang(sb$bootstrapped_weights),
+                       tai = bang(sb$bootstrapped_loadings), hieu_ung_tong = bang(sb$bootstrapped_total_paths),
+                       htmt_ktc90 = bang(sb10$bootstrapped_HTMT))
+  # PLSpredict (Shmueli 2019): k phần × r lần lặp, cách tiếp cận tiền tố trực tiếp (predict_DA); J lượt độc lập để
+  # ước lượng sai số Monte Carlo. cores = 1: song song làm phép chia phần không tái lập theo set.seed.
+  # Khi r > 1 seminr lấy TRUNG BÌNH DỰ BÁO qua các lần lặp rồi mới tính RMSE/MAE (mean_over_reps), cSEM tính chỉ số TỪNG
+  # lần lặp rồi lấy trung bình — khác định nghĩa ⇒ kiểm chéo dùng thêm J lượt r = 1 (cùng định nghĩa) ở cả hai gói
+  pp <- CH$plspredict
+  if (!is.null(pp)) {
+    dich <- unlist(pp$dich); muc_dich <- unlist(MUC[dich])
+    du_doan <- function(j, lap) {
+      set.seed(SEED + j - 1L)
+      invisible(utils::capture.output(p <- seminr::predict_pls(m, technique = seminr::predict_DA,
+                                                                noFolds = as.integer(pp$k), reps = lap, cores = 1)))
+      sp <- summary(p)
+      lay <- function(bg, hang) as.list(stats::setNames(as.numeric(bg[hang, muc_dich]), muc_dich))
+      list(rmse_pls = lay(sp$PLS_out_of_sample, "RMSE"), mae_pls = lay(sp$PLS_out_of_sample, "MAE"),
+           rmse_lm = lay(sp$LM_out_of_sample, "RMSE"), mae_lm = lay(sp$LM_out_of_sample, "MAE"))
+    }
+    J <- seq_len(as.integer(pp$luot_mc))
+    # lượt r = 1 rẻ (k lần ước lượng) ⇒ ít nhất 20 lượt: SD Monte Carlo ước lượng từ 5 lượt quá dao động (đo 23/11/2026:
+    # SD thật giữa các lượt ≈ 0,003, 5 lượt từng cho 0,0014 ⇒ báo LỆCH giả; 30 lượt mỗi gói: |t| ≤ 1,95, không chênh hệ
+    # thống)
+    J1 <- seq_len(max(as.integer(pp$luot_mc), 20L))
+    ra$plspredict <- list(k = as.integer(pp$k), lap = as.integer(pp$lap), cach = "predict_DA", dich = dich,
+                          muc = muc_dich, luot = lapply(J, du_doan, lap = as.integer(pp$lap)),
+                          luot_doi_chieu = lapply(J1, du_doan, lap = 1L))
+  }
+  ra
+}, warning = canh("seminr")), error = function(e) { kq$loi$seminr <<- conditionMessage(e); NULL })
+ghi()
+
+# ═══ 2. cSEM — kiểm chéo ĐỘC LẬP (cùng PLS-PM: Mode A cho kết quả, Mode B cho cấu tạo; không hiệu chỉnh suy giảm) ═══
+if (isTRUE(CH$kiem_cheo)) kq$csem <- tryCatch(withCallingHandlers({
+  suppressPackageStartupMessages(library(cSEM))
+  dong <- c(vapply(TEN, function(t) paste(t, if (MODE[[t]] == "B") "<~" else "=~",
+                                          paste(MUC[[t]], collapse = " + ")), ""),
+            vapply(NOI_SINH, function(y) paste(y, "~", paste(vapply(Filter(function(p) p[2] == y, DD), `[`, "", 1),
+                                                              collapse = " + ")), ""))
+  MO <- paste(dong, collapse = "\n")
+  goi <- function(..., .mo = MO) cSEM::csem(.data = D_DU, .model = .mo, .PLS_weight_scheme_inner = "path",
+                                            .tolerance = 1e-10, .iter_max = 500, ...)
+  r <- goi(.disattenuate = FALSE)
+  ra <- list(mo_hinh = MO, so_vong_lap = so(r$Information$Weight_info$Number_iterations),
+             hop_le = paste(utils::capture.output(print(cSEM::verify(r))), collapse = "\n"))
+  L <- r$Estimates$Loading_estimates; W <- r$Estimates$Weight_estimates
+  ra$tai <- theo_cau_truc(function(t) as.list(stats::setNames(as.numeric(L[t, MUC[[t]]]), MUC[[t]])))
+  ra$trong_so <- theo_cau_truc(function(t) as.list(stats::setNames(as.numeric(W[t, MUC[[t]]]), MUC[[t]])))
+  a <- cSEM::assess(r)
+  rd <- goi(.disattenuate = TRUE)  # ρA Dijkstra–Henseler = hệ số hiệu chỉnh của PLSc, tính trên CÙNG trọng số Mode A
+  rho_a <- rd$Estimates$Reliabilities
+  ra$tin_cay <- theo_cau_truc(function(t) list(alpha = so(a$Reliability$Cronbachs_alpha[t]),
+                                               rho_a = so(rho_a[t]), rho_c = so(a$Reliability$Joereskogs_rho[t]),
+                                               ave = so(a$AVE[t])))
+  H <- a$HTMT$htmts
+  ra$htmt <- list()
+  ten_ht <- rownames(H)
+  for (i in seq_along(TEN)) for (j in seq_len(i - 1)) {
+    x <- TEN[j]; y <- TEN[i]
+    if (x %in% ten_ht && y %in% ten_ht) ra$htmt[[paste(x, y, sep = " | ")]] <- so(max(H[y, x], H[x, y]))
+  }
+  vb <- cSEM::calculateVIFModeB(r)
+  ra$vif_muc <- theo_cau_truc(function(t) if (MODE[[t]] == "B" && t %in% rownames(vb))
+    as.list(stats::setNames(as.numeric(vb[t, MUC[[t]]]), MUC[[t]])) else NULL)
+  V <- a$VIF
+  ra$vif_cau_truc <- stats::setNames(lapply(NOI_SINH, function(y) {
+    tu <- vapply(Filter(function(p) p[2] == y, DD), `[`, "", 1)
+    if (length(tu) < 2) return(as.list(stats::setNames(rep(1, length(tu)), tu)))
+    as.list(stats::setNames(as.numeric(V[y, tu]), tu))
+  }), NOI_SINH)
+  P <- r$Estimates$Path_estimates; F2 <- a$F2
+  # f²: seminr (seminr:::fSquared) ước lượng LẠI PLS-PM không có đường dẫn rồi lấy R² mới; cSEM::calculatef2 dùng CÙNG
+  # điểm cấu trúc của mô hình đầy đủ — hai định nghĩa khác nhau. Kiểm chéo ĐÚNG định nghĩa seminr (và sách Hair 2021
+  # dùng): cSEM ước lượng lại mô hình bỏ đường dẫn; f² gốc của cSEM ghi riêng (f2_csem_goc) để tham khảo.
+  f2_lai <- function(p) {
+    con <- Filter(function(q) !identical(q, p), DD)
+    r2_day <- so(a$R2[p[2]])
+    if (!any(vapply(con, function(q) q[2] == p[2], TRUE))) return((r2_day - 0) / (1 - r2_day))
+    co <- unique(unlist(con))
+    dong2 <- c(vapply(TEN[TEN %in% co], function(t) paste(t, if (MODE[[t]] == "B") "<~" else "=~",
+                                                         paste(MUC[[t]], collapse = " + ")), ""),
+               vapply(unique(vapply(con, `[`, "", 2)), function(y) paste(y, "~", paste(vapply(
+                 Filter(function(q) q[2] == y, con), `[`, "", 1), collapse = " + ")), ""))
+    r_bo <- goi(.disattenuate = FALSE, .mo = paste(dong2, collapse = "\n"))
+    r2_bo <- so(cSEM::assess(r_bo, .quality_criterion = "r2")$R2[p[2]])
+    (r2_day - r2_bo) / (1 - r2_day)
+  }
+  ra$duong_dan <- stats::setNames(lapply(DD, function(p) list(he_so = so(P[p[2], p[1]]), f2 = so(f2_lai(p)),
+                                                              f2_csem_goc = so(F2[p[2], p[1]]))),
+                                  vapply(DD, TEN_DD, ""))
+  ra$r2 <- stats::setNames(lapply(NOI_SINH, function(y) list(r2 = so(a$R2[y]), r2_hc = so(a$R2_adj[y]))), NOI_SINH)
+  te <- a$Effects$Total_effect
+  ra$hieu_ung_tong <- stats::setNames(as.list(te$Estimate),
+    vapply(strsplit(te$Name, " ~ "), function(x) paste(x[2], "->", x[1]), ""))
+  CV <- r$Estimates$Construct_VCV  # tương quan giữa điểm cấu trúc (thành phần, .disattenuate = FALSE)
+  ra$tuong_quan_tho <- stats::setNames(lapply(DD, function(p) so(CV[p[1], p[2]])), vapply(DD, TEN_DD, ""))
+  # Bootstrap độc lập (bộ sinh số của cSEM): sai số chuẩn + KTC phân vị (1 − α); HTMT KTC 90% hai phía
+  # HTMT bootstrap: seminr lấy TRỊ TUYỆT ĐỐI TỪNG tương quan (seminr:::HTMT); cSEM (calculateHTMT) dùng tương quan CÓ
+  # DẤU rồi lấy trị tuyệt đối của HTMT — trùng nhau khi mọi tương quan dương (đo: HTMT gốc khớp 10⁻⁸), khác nhau ở mẫu
+  # lặp có tương quan ≤ 0 (đo 23/11/2026, nhóm nữ 59 ca: 31% mẫu lặp; phân vị 5% HTMT GT–NT seminr 0,216 · cSEM 0,172 ·
+  # mã độc lập theo định nghĩa seminr 0,219–0,220). Kiểm chéo bootstrap HTMT vì vậy dùng MẪU LẶP CỦA cSEM (bộ sinh số
+  # độc lập) với công thức HTMT đúng định nghĩa seminr, và đếm số mẫu lặp có tương quan ≤ 0 để báo cáo
+  # cấu trúc MỘT chỉ báo: tương quan cùng nét = 1 (đúng seminr:::HTMT)
+  A_ <- TEN[MODE[TEN] == "A"]
+  CAP_A <- if (length(A_) >= 2) utils::combn(A_, 2, simplify = FALSE) else list()
+  mono <- function(X, m) if (length(m) < 2) 1 else { a <- abs(stats::cor(X[, m])); mean(a[upper.tri(a)]) }
+  hta <- function(X) unlist(lapply(CAP_A, function(p) {
+    v <- stats::cor(X[, c(MUC[[p[1]]], MUC[[p[2]]])])
+    c(mean(abs(stats::cor(X[, MUC[[p[1]]]], X[, MUC[[p[2]]]]))) /
+        sqrt(mono(X, MUC[[p[1]]]) * mono(X, MUC[[p[2]]])),
+      as.numeric(any(v[upper.tri(v)] <= 0)))
+  }))
+  rb <- goi(.disattenuate = FALSE, .resample_method = "bootstrap", .R = B, .seed = SEED,
+            .handle_inadmissibles = "replace",
+            .user_funs = list(HTA = function(.object) hta(as.matrix(.object$Information$Data))))
+  inf <- cSEM::infer(rb, .quantity = c("sd", "CI_percentile"), .alpha = ALPHA)
+  bt <- function(khoi, doi_ten) {
+    sdv <- inf[[khoi]]$sd; ci <- inf[[khoi]]$CI_percentile
+    stats::setNames(lapply(names(sdv), function(n) list(sd = so(sdv[[n]]), ktc = c(so(ci[1, n]), so(ci[2, n])))),
+                    vapply(names(sdv), doi_ten, ""))
+  }
+  dao <- function(n) { x <- strsplit(n, " ~ ")[[1]]; paste(x[2], "->", x[1]) }
+  dao_w <- function(n) { x <- strsplit(n, " <~ | =~ ")[[1]]; paste(x[2], "->", x[1]) }
+  # (không dùng cSEM::assess(.inference = "bootstrap") cho HTMT: lấy mẫu lại RIÊNG, mặc định 499 mẫu KHÔNG hạt giống —
+  # đo 23/11/2026: hai lượt cùng dữ liệu ra KHOP rồi LECH — và theo định nghĩa có dấu nói trên)
+  ER <- rb$Estimates$Estimates_resample$Estimates1
+  HX <- ER$HTA$Resampled; htmt_ci <- list(); htmt_mc <- list()
+  if (!is.null(HX)) for (k in seq_along(CAP_A)) {
+    p <- CAP_A[[k]]; x <- HX[, 2 * k - 1]; x <- x[is.finite(x)]
+    if (length(x) < 20) next
+    ten_ <- paste(p[1], "->", p[2])
+    htmt_ci[[ten_]] <- list(ktc = c(so(stats::quantile(x, 0.05, names = FALSE, type = 7)),
+                                    so(stats::quantile(x, 0.95, names = FALSE, type = 7))),
+                            so_mau = length(x), so_mau_tuong_quan_am = so(sum(HX[, 2 * k], na.rm = TRUE)))
+    v <- mc1(x, 0.10); if (!is.null(v)) htmt_mc[[ten_]] <- v
+  }
+  mc_ma <- function(khoi, doi_ten, al) {
+    X <- ER[[khoi]]$Resampled
+    if (is.null(X)) return(list())
+    v <- lapply(colnames(X), function(n) mc1(X[, n], al)); names(v) <- vapply(colnames(X), doi_ten, "")
+    v[!vapply(v, is.null, TRUE)]
+  }
+  ra$bootstrap_mc <- list(duong_dan = mc_ma("Path_estimates", dao, ALPHA),
+                          trong_so = mc_ma("Weight_estimates", dao_w, ALPHA),
+                          tai = mc_ma("Loading_estimates", dao_w, ALPHA),
+                          hieu_ung_tong = mc_ma("Total_effect", dao, ALPHA), htmt_ktc90 = htmt_mc)
+  LR <- ER$Loading_estimates
+  ra$doi_dau_bootstrap <- doi_dau(function(t) LR$Original[paste(t, "=~", MUC[[t]])],
+                                  function(t) LR$Resampled[, paste(t, "=~", MUC[[t]]), drop = FALSE])
+  ra$bootstrap <- list(B_yeu_cau = B, so_hop_le = so(rb$Information$Information_resample$Number_of_admissibles),
+                       so_hop_le_htmt = so(if (is.null(HX)) NA else sum(is.finite(HX[, 1]))),
+                       alpha = ALPHA, duong_dan = bt("Path_estimates", dao), trong_so = bt("Weight_estimates", dao_w),
+                       tai = bt("Loading_estimates", dao_w), hieu_ung_tong = bt("Total_effect", dao),
+                       htmt_ktc90 = htmt_ci,
+                       htmt_dinh_nghia = "trị tuyệt đối từng tương quan (như seminr) trên mẫu lặp của cSEM")
+  pp <- CH$plspredict
+  if (!is.null(pp)) {
+    dich <- unlist(pp$dich); muc_dich <- unlist(MUC[dich])
+    du_doan <- function(j, lap) {
+      set.seed(SEED + j - 1L)  # cSEM chỉ nhận .seed khi .r = 1 ⇒ đặt hạt giống cho bộ sinh số mặc định của R
+      pr <- cSEM::predict(r, .benchmark = "lm", .cv_folds = as.integer(pp$k), .r = lap,
+                          .approach_predict = "direct")
+      pm <- pr$Prediction_metrics; pm <- pm[pm$Name %in% muc_dich, , drop = FALSE]
+      lay <- function(cot) as.list(stats::setNames(as.numeric(pm[[cot]]), pm$Name))
+      list(rmse_pls = lay("RMSE_target"), mae_pls = lay("MAE_target"), rmse_lm = lay("RMSE_benchmark"),
+           mae_lm = lay("MAE_benchmark"), q2_predict = lay("Q2_predict"))
+    }
+    # một lượt đúng số lần lặp SAP để báo Q²predict; J lượt r = 1 để so với seminr cùng định nghĩa
+    ra$plspredict <- list(k = as.integer(pp$k), lap = as.integer(pp$lap), cach = "direct", dich = dich,
+                          muc = muc_dich, luot = list(du_doan(1L, as.integer(pp$lap))),
+                          luot_doi_chieu = lapply(seq_len(max(as.integer(pp$luot_mc), 20L)), du_doan, lap = 1L))
+  }
+  ra
+}, warning = canh("csem")), error = function(e) { kq$loi$csem <<- conditionMessage(e); NULL })
+ghi()
+"""
+
+
+def kich_ban_pls_sem() -> str:
+    """Script R đầy đủ của PLS-SEM (seminr chính + cSEM kiểm chéo) — tools/pls_sem.py ghi ra tệp, chạy bằng chay_r."""
+    return R_PLS_SEM
 
 
 # ───────────────────────────── CLI ─────────────────────────────

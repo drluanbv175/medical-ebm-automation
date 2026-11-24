@@ -1,0 +1,640 @@
+{
+ "nguon": "Hair JF Jr, Hult GTM, Ringle CM, Sarstedt M, Danks NP, Ray S. Partial least squares structural equation modeling (PLS-SEM) using R: a workbook. Cham: Springer; 2021. doi:10.1007/978-3-030-80519-7",
+ "giay_phep": "CC BY 4.0 (Crossref license + ghi chú bản quyền từng chương: Creative Commons Attribution 4.0 International)",
+ "phan_mem_cua_so_in": "SEMinR (R) — mã in trong chương dùng library(seminr); chú thích hình kết quả ghi «authors' screenshot from RStudio». KHÔNG phải số SmartPLS.",
+ "doc_luc": "23/11/2026 — văn bản chương 4, 5, 6 trên link.springer.com (truy cập mở); chỉ chép số có trong VĂN BẢN, số chỉ có trong ảnh chụp không chép",
+ "cai_dat_sach": {
+  "du_lieu": "seminr::corp_rep_data (344 quan sát), mã thiếu -99",
+  "thieu": "missing = mean_replacement",
+  "bootstrap": "bootstrap_model(nboot = 1000, seed = 123) — chương 5, 6; chương 4 không đặt hạt giống",
+  "plspredict": "predict_pls(technique = predict_DA, noFolds = 10, reps = 10) — không đặt hạt giống",
+  "alpha": "0,05 cho đường dẫn/trọng số; 0,10 cho KTC HTMT (chương 4)"
+ },
+ "so_in": [
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "so_vong_lap"
+   ],
+   "so_in": 4,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "COMP",
+    "alpha"
+   ],
+   "so_in": 0.776,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "CUSL",
+    "alpha"
+   ],
+   "so_in": 0.831,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "LIKE",
+    "alpha"
+   ],
+   "so_in": 0.831,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "COMP",
+    "rho_c"
+   ],
+   "so_in": 0.865,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "CUSL",
+    "rho_c"
+   ],
+   "so_in": 0.899,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "LIKE",
+    "rho_c"
+   ],
+   "so_in": 0.899,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "COMP",
+    "rho_a"
+   ],
+   "so_in": 0.832,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "CUSL",
+    "rho_a"
+   ],
+   "so_in": 0.839,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "LIKE",
+    "rho_a"
+   ],
+   "so_in": 0.836,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "COMP",
+    "ave"
+   ],
+   "so_in": 0.681,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "CUSL",
+    "ave"
+   ],
+   "so_in": 0.748,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tin_cay",
+    "LIKE",
+    "ave"
+   ],
+   "so_in": 0.747,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tai",
+    "COMP",
+    "comp_2"
+   ],
+   "so_in": 0.798,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "tai",
+    "CUSL",
+    "cusl_2"
+   ],
+   "so_in": 0.917,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "bootstrap",
+    "htmt_ktc90",
+    "COMP -> CUSA",
+    "ktc",
+    0
+   ],
+   "so_in": 0.366,
+   "loai": "bootstrap_khong_hat_giong"
+  },
+  {
+   "chuong": 4,
+   "mo_hinh": "don_gian",
+   "duong": [
+    "bootstrap",
+    "htmt_ktc90",
+    "COMP -> CUSA",
+    "ktc",
+    1
+   ],
+   "so_in": 0.554,
+   "loai": "bootstrap_khong_hat_giong"
+  },
+  {
+   "chuong": 5,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "so_vong_lap"
+   ],
+   "so_in": 8,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 5,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "vif_muc",
+    "QUAL",
+    "qual_3"
+   ],
+   "so_in": 2.269,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 5,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "tai",
+    "QUAL",
+    "qual_2"
+   ],
+   "so_in": 0.57,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 5,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "trong_so",
+    "csor_2 -> CSOR",
+    "ktc",
+    0
+   ],
+   "so_in": -0.097,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 5,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "trong_so",
+    "csor_2 -> CSOR",
+    "ktc",
+    1
+   ],
+   "so_in": 0.173,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "vif_cau_truc",
+    "COMP",
+    "QUAL"
+   ],
+   "so_in": 3.487,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "duong_dan",
+    "QUAL -> COMP",
+    "he_so"
+   ],
+   "so_in": 0.43,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "duong_dan",
+    "QUAL -> LIKE",
+    "he_so"
+   ],
+   "so_in": 0.38,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "duong_dan",
+    "CSOR -> COMP",
+    "he_so"
+   ],
+   "so_in": 0.059,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "duong_dan",
+    "CSOR -> LIKE",
+    "he_so"
+   ],
+   "so_in": 0.178,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "duong_dan",
+    "LIKE -> CUSA",
+    "he_so"
+   ],
+   "so_in": 0.436,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "duong_dan",
+    "LIKE -> CUSL",
+    "he_so"
+   ],
+   "so_in": 0.344,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "duong_dan",
+    "QUAL -> COMP",
+    "t"
+   ],
+   "so_in": 6.603,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "duong_dan",
+    "QUAL -> LIKE",
+    "t"
+   ],
+   "so_in": 5.699,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "duong_dan",
+    "PERF -> COMP",
+    "t"
+   ],
+   "so_in": 4.611,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "duong_dan",
+    "PERF -> LIKE",
+    "t"
+   ],
+   "so_in": 1.613,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "duong_dan",
+    "CSOR -> COMP",
+    "t"
+   ],
+   "so_in": 1.084,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "duong_dan",
+    "CSOR -> LIKE",
+    "t"
+   ],
+   "so_in": 3.205,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "duong_dan",
+    "ATTR -> COMP",
+    "t"
+   ],
+   "so_in": 1.565,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "duong_dan",
+    "ATTR -> LIKE",
+    "t"
+   ],
+   "so_in": 2.573,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "bootstrap",
+    "duong_dan",
+    "COMP -> CUSL",
+    "t"
+   ],
+   "so_in": 0.104,
+   "loai": "bootstrap_cung_hat_giong"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "hieu_ung_tong",
+    "QUAL -> CUSL"
+   ],
+   "so_in": 0.248,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "hieu_ung_tong",
+    "CSOR -> CUSL"
+   ],
+   "so_in": 0.105,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "hieu_ung_tong",
+    "ATTR -> CUSL"
+   ],
+   "so_in": 0.101,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "hieu_ung_tong",
+    "PERF -> CUSL"
+   ],
+   "so_in": 0.089,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "r2",
+    "COMP",
+    "r2"
+   ],
+   "so_in": 0.631,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "r2",
+    "CUSL",
+    "r2"
+   ],
+   "so_in": 0.562,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "r2",
+    "LIKE",
+    "r2"
+   ],
+   "so_in": 0.558,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "r2",
+    "CUSA",
+    "r2"
+   ],
+   "so_in": 0.292,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "duong_dan",
+    "LIKE -> CUSA",
+    "f2"
+   ],
+   "so_in": 0.159,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "duong_dan",
+    "LIKE -> CUSL",
+    "f2"
+   ],
+   "so_in": 0.138,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "duong_dan",
+    "COMP -> CUSA",
+    "f2"
+   ],
+   "so_in": 0.018,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "duong_dan",
+    "COMP -> CUSL",
+    "f2"
+   ],
+   "so_in": 0.0,
+   "loai": "tat_dinh"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "plspredict",
+    "rmse_pls",
+    "cusl_1"
+   ],
+   "so_in": 1.192,
+   "loai": "plspredict"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "plspredict",
+    "rmse_pls",
+    "cusl_2"
+   ],
+   "so_in": 1.239,
+   "loai": "plspredict"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "plspredict",
+    "rmse_pls",
+    "cusl_3"
+   ],
+   "so_in": 1.312,
+   "loai": "plspredict"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "plspredict",
+    "rmse_lm",
+    "cusl_1"
+   ],
+   "so_in": 1.228,
+   "loai": "plspredict"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "plspredict",
+    "rmse_lm",
+    "cusl_2"
+   ],
+   "so_in": 1.312,
+   "loai": "plspredict"
+  },
+  {
+   "chuong": 6,
+   "mo_hinh": "mo_rong",
+   "duong": [
+    "plspredict",
+    "rmse_lm",
+    "cusl_3"
+   ],
+   "so_in": 1.38,
+   "loai": "plspredict"
+  }
+ ]
+}

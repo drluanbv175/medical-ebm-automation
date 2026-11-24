@@ -664,6 +664,21 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
         kq.update(n_per_group=n, n_total=n * 2)
         kq["formula"] = (f"Two-proportion z-test: p1={_v(p1, 2)}, p2={_v(p2, 2)}"
                          + (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)." if fleiss else ""))
+    elif design_code == "cross_sectional" and effect_type == "PLS_PATH":
+        # 23/11/2026 (PLS-SEM): phương pháp căn bậc hai nghịch đảo — Kock & Hadaya 2018 (Inf Syst J 28(1):227-261,
+        # doi:10.1111/isj.12131): n > ((z_{1−α} + z_{1−β}) / |β_min|)² với α MỘT phía (công thức gốc). SAP kiểm hệ số
+        # đường dẫn bằng KTC bootstrap HAI phía ⇒ dùng z_{1−α/2} (thận trọng hơn, N lớn hơn) — ghi rõ trong công thức.
+        if not (0 < abs(effect_val) < 1):
+            raise InvalidEffectSizeError(
+                f"PLS-SEM cần --effect-size là HỆ SỐ ĐƯỜNG DẪN nhỏ nhất cần phát hiện |β_min| trong (0,1), nhận {effect_val}.")
+        n = math.ceil(((z(alpha / 2) + z(1 - power)) / abs(effect_val)) ** 2)
+        kq.update(n_per_group=n, n_total=n)
+        # số thập phân kiểu Việt (dấu phẩy) — bản thảo G7 chép nguyên chuỗi này; G7-AUTO-06 bắt «α = 0.05»
+        _vn = lambda x: f"{x}".replace(".", ",")  # noqa: E731
+        kq["formula"] = (f"PLS-SEM — phương pháp căn bậc hai nghịch đảo (Kock & Hadaya 2018, doi:10.1111/isj.12131): "
+                         f"n > ((z₁₋α/₂ + z₁₋β)/|β_min|)² với |β_min| = {_vn(f'{abs(effect_val):.2f}')}, "
+                         f"α = {_vn(alpha)} hai phía, lực {power:.0%} ⇒ n = {n}. Công thức gốc dùng α MỘT phía; SAP "
+                         "kiểm định hệ số đường dẫn bằng KTC bootstrap HAI phía nên dùng z₁₋α/₂ (thận trọng hơn)")
     elif design_code == "cross_sectional":
         if not (0 < effect_val < 1):
             raise InvalidEffectSizeError(
@@ -1168,7 +1183,7 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         if n_adjusted > 0:
             if confirmed_n >= n_adjusted:
                 margin = ""
-                if design_code == "cross_sectional":
+                if design_code == "cross_sectional" and effect_type != "PLS_PATH":
                     moe = 1.96 * math.sqrt(0.5 * 0.5 / confirmed_n) * 100
                     margin = (
                         f" Với N={confirmed_n} (giả định p=0.50, xấu nhất), sai số biên "
@@ -1297,7 +1312,13 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         # (effect_val ở đó là TỶ LỆ HIỆN MẮC GIẢ ĐỊNH p cho công thức Wilson,
         # không phải effect size từ 1 bài báo — ghi "lấy từ y văn [CẦN PMID]"
         # khiến bác sĩ tưởng cần trích dẫn nguồn cho con số quy ước thống kê).
-        if design_code == "cross_sectional":
+        if design_code == "cross_sectional" and effect_type == "PLS_PATH":
+            lines.append(f"với hệ số đường dẫn nhỏ nhất cần phát hiện |β_min| = {QDSK.viet_so(abs(effect_val), 2)} (nguồn: "
+                         f"{nguon_mo_ta.get('effect_source') or '[CẦN NGUỒN — PMID/DOI/nghiên cứu thử]'}), theo phương "
+                         "pháp căn bậc hai nghịch đảo (Kock & Hadaya 2018, doi:10.1111/isj.12131),")
+            lines.append(f"cần {n_total} người.")
+            lines.append(f"Tính thêm {int(dropout*100)}% không trả lời dự kiến, cỡ mẫu cuối = {n_adjusted} người.")
+        elif design_code == "cross_sectional":
             _ng_p = (nguon_mo_ta.get("prevalence_source") or
                      ("quy ước thận trọng khi chưa có ước tính" if str(nguon_hieu_qua or "").startswith("mặc định")
                       else "[CẦN NGUỒN — khảo sát tương tự/y văn]"))
@@ -1509,7 +1530,8 @@ def main():
     parser.add_argument("--power", type=float, default=None)
     parser.add_argument("--effect-size", type=float, default=None)
     # VÁ 04/10/2026 (G3-09): nhận cả PREVALENCE (run_pipeline chạy lại đề tài mô tả truyền đúng loại đã ghim).
-    parser.add_argument("--effect-type", default=None, choices=["HR", "OR", "RR", "ARR%", "AUC", "MD", "PREVALENCE"])
+    parser.add_argument("--effect-type", default=None,
+                        choices=["HR", "OR", "RR", "ARR%", "AUC", "MD", "PREVALENCE", "PLS_PATH"])
     parser.add_argument("--p0", type=float, default=None, help="Tỷ lệ biến cố nhóm chứng (mặc định 0.30)")
     # Hai tham số của cỡ mẫu theo ĐỘ CHÍNH XÁC (thiết kế mô tả). Cố ý TÁCH khỏi
     # --p0: p0 là "tỷ lệ nhóm chứng" trong so sánh hai nhóm, còn --prevalence là
@@ -1759,10 +1781,14 @@ def main():
             print(f"  → hypothesis_type={_tu_g0} từ G0 test_type (study_meta)")
     if args.hypothesis_type is None:
         # Mặc định MÁY (không phải quyết định): thiết kế cắt ngang tính theo độ chính xác ⇒ không kiểm định giả thuyết.
-        args.hypothesis_type = "descriptive_precision" if design_code == "cross_sectional" else "superiority"
+        # 23/11/2026: cắt ngang PLS-SEM (effect_type PLS_PATH) kiểm định hệ số đường dẫn ⇒ khung vượt trội hai phía
+        args.hypothesis_type = ("descriptive_precision" if design_code == "cross_sectional"
+                                and args.effect_type != "PLS_PATH" else "superiority")
         nguon_tham_so["hypothesis_type"] = "mặc định máy"
-    elif design_code == "cross_sectional" and args.hypothesis_type == "superiority":
+    elif design_code == "cross_sectional" and args.hypothesis_type == "superiority" and args.effect_type != "PLS_PATH":
         args.hypothesis_type = "descriptive_precision"
+    elif args.effect_type == "PLS_PATH" and args.hypothesis_type == "descriptive_precision":
+        args.hypothesis_type = "superiority"
     nguon_hieu_qua = nguon_tham_so.get("effect_size")
     # SỬA: "if args.effect_size and ..." coi 0.0 là falsy (Python) — nếu bác
     # sĩ cố tình/nhầm truyền --effect-size 0.0, điều kiện này bị bỏ qua âm

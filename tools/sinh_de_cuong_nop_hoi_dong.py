@@ -1073,7 +1073,12 @@ def chuong_muc_tieu(n: Nguon) -> List[str]:
     h0, h1 = _cau(n.g0.get("hypothesis_h0")), _cau(n.g0.get("hypothesis_h1"))
     gt = str(n.g3.get("hypothesis_type") or n.g3cp.get("hypothesis_type") or "")
     dong += ["## 2.3. Giả thuyết nghiên cứu", ""]
-    if n.thiet_ke in ("cross_sectional", "qualitative") or gt.startswith("descriptive"):
+    import pls_sem as PLS  # noqa: PLC0415
+
+    # 23/11/2026: cắt ngang PHÂN TÍCH bằng PLS-SEM (G1 chốt mô hình lý thuyết, G0 khai H0/H1 cho hệ số đường dẫn) có
+    # giả thuyết định trước (STROBE mục 3) — không phải nghiên cứu mô tả
+    pls_gt = n.thiet_ke == "cross_sectional" and PLS.khoi_g1(n.meta) and h1 and not gt.startswith("descriptive")
+    if (n.thiet_ke in ("cross_sectional", "qualitative") and not pls_gt) or gt.startswith("descriptive"):
         dong += ["Đây là nghiên cứu " + ("định tính" if n.thiet_ke == "qualitative" else "mô tả") +
                  ", không kiểm định giả thuyết thống kê; mục tiêu là "
                  + ("tìm hiểu sâu hiện tượng nghiên cứu." if n.thiet_ke == "qualitative" else
@@ -1574,6 +1579,18 @@ def doan_co_mau(n: Nguon) -> List[str]:
             f"Cỡ mẫu được tính theo công thức ước lượng một tỷ lệ: n = Z²(1−α/2) × p(1 − p) / d², với độ tin cậy 95%, "
             f"tỷ lệ ước tính p = {_so(p)}{theo_p} và sai số tuyệt đối cho phép d = {_so(c.get('precision'))}. Cỡ mẫu "
             f"tính được là {_n(c.get('n_total'))} người.")
+    elif loai == "PLS_PATH":
+        # 23/11/2026: PLS-SEM — căn bậc hai nghịch đảo (Kock & Hadaya 2018); |β_min| phải có nguồn (STROBE mục 10).
+        # 24/11/2026: số in bằng hàm chung `quet_dien_sai_kieu.viet_so` (chốt K11/K22 dùng cùng quy ước)
+        import quet_dien_sai_kieu as QDSK  # noqa: PLC0415
+
+        dong.append(
+            "Cỡ mẫu được tính theo phương pháp căn bậc hai nghịch đảo cho mô hình PLS-SEM (Kock và Hadaya 2018, "
+            "doi:10.1111/isj.12131): n > ((z₁₋α/₂ + z₁₋β)/|β_min|)², với α = " + an + " (hai phía), lực mẫu " + luc
+            + " và hệ số đường dẫn nhỏ nhất cần phát hiện |β_min| = "  # hai chữ số như G3/SAP («0,20»)
+            + QDSK.viet_so(abs(float(c.get('effect_val') or g3.get('effect_size') or 0)), 2)
+            + (f", dựa trên {nguon_hq}" if nguon_hq else "") + (f" ({mo_ta_hq.rstrip('.')})" if _co(mo_ta_hq) else "")
+            + f". Cỡ mẫu tính được là {_n(c.get('n_total'))} người.")
     elif loai == "AUC":
         dong.append(
             f"Cỡ mẫu được tính theo phương pháp Hanley và McNeil để kiểm định diện tích dưới đường cong ROC kỳ vọng "

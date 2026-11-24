@@ -312,6 +312,10 @@ Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation
   nhiên hoá như huyết áp tháng 6 không vào Bảng 1).
   - Giả lập trọn vòng (`kiem_gia_lap_16.py`) đỏ khi còn hình bắt buộc thiếu.
 
+## Kết quả PLS-SEM (23/11/2026; quy ước số 24/11/2026)
+
+Chép nguyên văn bảng `pls_sem.trinh_bay_md` của G6: đo lường trước, cấu trúc sau, có r thô và β hiệu chỉnh kèm KTC. Không làm tròn lại, không đổi cách ghi số (bảng đã theo quy ước tiếng Việt: dấu phẩy thập phân, tối đa 4 chữ số lẻ); G7 tự đối chiếu từng số với giá trị tính của tóm tắt G6 — lệch ⇒ ô [CẦN THỐNG KÊ VIÊN] thay bảng. Hệ số đường dẫn trên dữ liệu cắt ngang là liên quan có hướng, không phải nhân quả. Kiểm chéo không khớp thì để ô [CẦN THỐNG KÊ VIÊN].
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
 

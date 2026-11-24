@@ -1800,6 +1800,21 @@
     "tong:dat_chuan": "cổng không đạt khi còn ô chờ điền"
    }
   },
+  "pls_sem.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "phan-tich-thong-ke",
+   "cong": ["G6"],
+   "nhiem_vu": ["G6-T1"],
+   "viec": "PLS-SEM theo khối SAP §4: seminr ước lượng chính, cSEM kiểm chéo độc lập, mốc chuẩn sách Hair 2021",
+   "nguoi_dung_phu": [],
+   "nguoi_kiem": ["thiet-ke-nghien-cuu"],
+   "chot_kiem": ["tools/g6_quality_gate.py", "tools/chay_sap_g6.py", "tests/test_pls_sem_20261123.py"],
+   "nguyen_tac": {
+    "tong:bang_chung": "ngưỡng đánh giá định trước kèm DOI đã kiểm rút bài",
+    "nt:khach_quan": "kiểm chéo bằng gói độc lập (cSEM) với dung sai định trước, không nới",
+    "nt:tai_lap": "hạt giống từ SAP §10, phiên bản R và gói ghi trong tóm tắt"
+   }
+  },
   "protocol_checklist_items.py": {
    "pham_vi": "nghien_cuu",
    "chu": "viet-ban-thao",

@@ -147,6 +147,13 @@ THAM_SO = {
     # Quy tắc BỎ BIẾN THƯA định trước của SAP (vd C1a §5: `co_hen_gio`, `uu_tien_kham` bỏ khỏi mô hình nếu một nhóm
     # dưới 20 phiếu hợp lệ) — áp TRƯỚC khi gọi run_stats_analysis, chỉ dựa trên phân bố của chính biến; không thành cờ.
     "bien_thua": (None, "bien_thua"),
+    # 23/11/2026 (bác sĩ: «PLS-SEM tốt nhất, tương tự SPSS/R»): PLS-SEM chạy bằng pls_sem.py (R seminr chính + cSEM kiểm
+    # chéo); MÔ HÌNH (cấu trúc, chỉ báo, đường dẫn, PLSpredict) đọc từ SAP §4 — đặc tả chỉ khai loại + số mẫu bootstrap
+    # để `kiem` đối chiếu SAP (lệch ⇒ LỖI).
+    "pls_sem": ("--pls-sem", "pls_sem"),
+    "bootstrap_pls": ("--bootstrap", "nguyen_pls"),
+    # độ nhạy theo cách xử lý ô thiếu (SAP §9) — phân tích chính luôn theo dòng «Dữ liệu thiếu (PLS-SEM)» của SAP §4
+    "du_lieu_thieu": ("--du-lieu-thieu", "thieu_pls"),
     # Quy tắc GIẢM THAM SỐ khi EPV dưới ngưỡng, theo thứ tự định trước (vd BTM §5: gộp nhóm đối tượng → gộp phòng khám →
     # bỏ số nhóm thuốc, dừng ngay khi EPV ≥ 10) — áp trước khi gọi run_stats_analysis, chỉ đếm kết cục và số tham số.
     "quy_tac_epv": (None, "quy_tac_epv"),
@@ -156,6 +163,9 @@ MO_HINH_GOP = ("ngau_nhien", "co_dinh")  # gộp: ước lượng báo làm kế
 DAC_THU = ("chan_doan", "du_bao", "gop", "dinh_tinh", "kinh_te")
 NHAN_TO = ("efa_cfa",)
 KHOA_NHAN_TO = ("phan_tich_nhan_to", "tang", "thieu", "loc")
+KHOA_PLS = ("pls_sem", "bootstrap_pls", "du_lieu_thieu", "loc")
+#: tham số đánh dấu phân tích KHÔNG đi qua run_stats_analysis (không áp luật kết cục/KTC hiệu số/biến cố hiếm/bộ ghép)
+KHOA_DAC_BIET = ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to", "bang_chung", "pls_sem")
 LOAI_KC = ("auto", "binary", "continuous", "ordinal", "poisson_pr")
 TEN_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 
@@ -253,6 +263,17 @@ def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
     elif kieu == "nhan_to":
         if v not in NHAN_TO:
             return [f"{ten}: phải thuộc {NHAN_TO}"]
+    elif kieu == "pls_sem":
+        import pls_sem as PLS  # noqa: PLC0415
+
+        if v != PLS.MA_DAC_TA:
+            return [f"{ten}: phải là «{PLS.MA_DAC_TA}» (PLS path modeling — mô hình đọc từ SAP §4)"]
+    elif kieu == "thieu_pls":
+        if v not in ("listwise", "trung_binh"):
+            return [f"{ten}: phải là listwise hoặc trung_binh"]
+    elif kieu == "nguyen_pls":
+        if isinstance(v, bool) or not isinstance(v, int) or not 1 <= v <= 100000:
+            return [f"{ten}: cần số nguyên 1–100.000 (đúng số mẫu bootstrap SAP §4 khai)"]
     elif kieu == "thieu":
         if v not in ("listwise", "pairwise"):
             return [f"{ten}: phải là listwise hoặc pairwise"]
@@ -346,6 +367,12 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
             thua = [x for x in ts if x not in ("loai_bo_sung", "cau_hinh", "loc")]
             if thua:
                 loi.append(f"{pid}: tham số không áp dụng cho phân tích bổ sung: {', '.join(thua)}")
+        elif ts.get("pls_sem") or ts.get("bootstrap_pls"):
+            if not ts.get("pls_sem") or not ts.get("bootstrap_pls"):
+                loi.append(f"{pid}: PLS-SEM cần khai cả pls_sem lẫn bootstrap_pls (đúng số mẫu SAP §4)")
+            thua = [x for x in ts if x not in KHOA_PLS]
+            if thua:
+                loi.append(f"{pid}: tham số không áp dụng cho PLS-SEM (mô hình đọc từ SAP §4): {', '.join(thua)}")
         elif ts.get("phan_tich_nhan_to") or ts.get("tang") or ts.get("thieu"):
             # giá trị cấu trúc (EFA/CFA): tham số khác không có nghĩa với phan_tich_nhan_to_r.py — báo ngay khi kiểm
             if not ts.get("phan_tich_nhan_to"):
@@ -418,6 +445,7 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         loi += kiem_bien_co_hiem_sap(ds, hd)
         loi += kiem_bo_ghep_sap(ds, hd)
         loi += kiem_du_lieu_thieu_sap(ds, hd)
+        loi += kiem_pls_sap(ds, hd)
         qt = quan_the_chinh_sap(hd)
         for pt in ds:
             if not qt or not isinstance(pt, dict) or not isinstance(pt.get("tham_so"), dict):
@@ -468,8 +496,7 @@ def kiem_kc_hieu_so_sap(ds: list, sap_text: str) -> tuple[list[str], list[str]]:
     kc_chinh = ts_chinh.get("outcome")
     for pt in ds:
         ts = pt.get("tham_so") if isinstance(pt, dict) else None
-        if not isinstance(ts, dict) or any(ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to",
-                                                                 "bang_chung")):
+        if not isinstance(ts, dict) or any(ts.get(k) for k in KHOA_DAC_BIET):
             continue
         cung_kc = pt.get("vai") == "chinh" or (kc_chinh and ts.get("outcome") == kc_chinh)
         if kc["phuong_phap"] and cung_kc and ts.get("kc_hieu_so") != kc["phuong_phap"]:
@@ -505,8 +532,7 @@ def kiem_bien_co_hiem_sap(ds: list, sap_text: str) -> list[str]:
     loi = []
     for pt in ds:
         ts = pt.get("tham_so") if isinstance(pt, dict) else None
-        if not isinstance(ts, dict) or not ts.get("outcome") or any(
-                ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to", "bang_chung")):
+        if not isinstance(ts, dict) or not ts.get("outcome") or any(ts.get(k) for k in KHOA_DAC_BIET):
             continue
         if ts.get("bien_co_hiem") != pp:
             loi.append(f"{pt.get('id')}: SAP §5 khai biến cố hiếm «{pp}» nhưng đặc tả "
@@ -537,8 +563,7 @@ def kiem_bo_ghep_sap(ds: list, sap_text: str) -> list[str]:
     loi = []
     for pt in ds:
         ts = pt.get("tham_so") if isinstance(pt, dict) else None
-        if not isinstance(ts, dict) or any(ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to",
-                                                                 "bang_chung")):
+        if not isinstance(ts, dict) or any(ts.get(k) for k in KHOA_DAC_BIET):
             continue
         cung_kc = pt.get("vai") == "chinh" or (ts_chinh.get("outcome") and ts.get("outcome") == ts_chinh["outcome"])
         if ts.get("bo_ghep") and not ts.get("bien_ghep"):
@@ -566,6 +591,43 @@ muc_sap_bat_buoc = HD.muc_sap_bat_buoc
 menh_de_phan_tich_phu = HD.menh_de_phan_tich_phu
 _bi_phu_dinh = HD.bi_phu_dinh
 CUA_SO_PHU_DINH = HD.CUA_SO_PHU_DINH
+
+
+def kiem_pls_sap(ds: list, hd: dict | None) -> list[str]:
+    """Lỗi đặc tả ↔ PLS-SEM của SAP §4 (23/11/2026). SAP §4 khai PLS-SEM ⇒ phân tích CHÍNH phải là PLS-SEM, khối mô
+    hình của SAP phải đọc được, và mọi phân tích PLS-SEM khai đúng số mẫu bootstrap SAP; đặc tả khai PLS-SEM mà SAP
+    không khai ⇒ LỖI (lượt chạy sẽ ra phương pháp không có trong SAP). 24/11/2026: đọc trường `pls_sem` của HỢP ĐỒNG
+    SAP (hop_dong_sap) — không dò chữ SAP."""
+    import pls_sem as PLS  # noqa: PLC0415
+
+    khoi = HD.truong(hd, "pls_sem")
+    co_pls = khoi is not None
+    loi: list[str] = []
+    mh = None
+    if co_pls:
+        try:
+            mh = PLS.mo_hinh_hop_dong(hd)
+        except PLS.TuChoi as e:
+            loi.append(str(e))
+    chinh = next((pt for pt in ds if isinstance(pt, dict) and pt.get("vai") == "chinh"
+                  and isinstance(pt.get("tham_so"), dict)), None)
+    if co_pls and chinh is not None and not (chinh.get("tham_so") or {}).get("pls_sem"):
+        loi.append(f"{chinh.get('id')}: SAP §4 khoá PLS-SEM làm phân tích chính nhưng phân tích vai «chinh» của đặc tả "
+                   "không phải PLS-SEM (khai tham_so.pls_sem + bootstrap_pls) — lượt chạy sẽ ra họ khác SAP")
+    for pt in ds:
+        ts = pt.get("tham_so") if isinstance(pt, dict) else None
+        if not isinstance(ts, dict) or not ts.get("pls_sem"):
+            continue
+        if not co_pls:
+            loi.append(f"{pt.get('id')}: đặc tả khai PLS-SEM nhưng SAP §4 không có khối «Mô hình đo lường (PLS-SEM)» — "
+                       "không chạy phương pháp SAP không khai")
+        elif pt.get("vai") == "chinh" and ts.get("du_lieu_thieu") not in (None, mh and mh["du_lieu_thieu"]):
+            loi.append(f"{pt.get('id')}: phân tích CHÍNH phải xử lý ô thiếu đúng SAP §4 (không khai du_lieu_thieu khác "
+                       "SAP) — cách xử lý khác chỉ dành cho độ nhạy SAP §9")
+        elif mh is not None and ts.get("bootstrap_pls") != mh["bootstrap"]:
+            loi.append(f"{pt.get('id')}: bootstrap_pls {ts.get('bootstrap_pls')} lệch SAP §4 ({mh['bootstrap']} mẫu "
+                       "lặp) — sửa đặc tả theo SAP")
+    return loi
 
 
 def neo_cua(pt: dict) -> list[str]:
@@ -788,6 +850,12 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
                          **{k.replace(".", "_"): cs.get(k) for k in ("cfi.scaled", "tli.scaled", "rmsea.scaled",
                                                                      "srmr")},
                          "phan_loai": nt.get("phan_loai_theo_nguong_dinh_truoc")}
+    if isinstance(tom.get("pls_sem"), dict):  # 23/11/2026: PLS-SEM — hệ số đường dẫn + KTC, R², kiểm chéo cSEM
+        dg = tom["pls_sem"].get("danh_gia") or {}
+        ra["pls_sem"] = {"duong_dan": [{k: x.get(k) for k in ("duong_dan", "he_so", "ktc", "y_nghia")}
+                                       for x in dg.get("cau_truc") or []],
+                         "r2": {x["noi_sinh"]: x.get("r2") for x in dg.get("cau_truc") or []},
+                         "kiem_cheo_csem": (tom.get("kiem_cheo") or {}).get("trang_thai")}
     if tom.get("bo_sung") is not None:  # 22/11/2026: phân tích bổ sung — khoá chính đọc nhanh; bảng đủ ở tóm tắt
         bs = tom["bo_sung"]
         ra["bo_sung"] = {"loai": tom.get("loai_bo_sung"),
@@ -1008,7 +1076,10 @@ def lenh_chay(args) -> int:
                 continue
             muc["bien_thua"] = bt
             print(f"   quy tắc biến thưa: bỏ {bt['bo'] or 'không biến nào'} (ngưỡng {bt['toi_thieu']})")
-        if ts_pt.get("phan_tich_nhan_to"):  # R psych/lavaan — tự đọc bộ khoá bằng cùng hàm của cổng; không kiểm chéo
+        if ts_pt.get("pls_sem"):  # R seminr + cSEM (kiểm chéo nằm trong lượt) — tự đọc bộ khoá bằng cùng hàm của cổng
+            lenh = [sys.executable, str(TOOLS / "pls_sem.py"), "chay", "--study", args.study, "--gate", gate,
+                    *doi_so_run_stats(pt)]  # fmt: skip
+        elif ts_pt.get("phan_tich_nhan_to"):  # R psych/lavaan — tự đọc bộ khoá bằng cùng hàm của cổng; không kiểm chéo
             lenh = [sys.executable, str(TOOLS / "phan_tich_nhan_to_r.py"), "chay", "--study", args.study,
                     "--gate", gate, *doi_so_run_stats(pt)]  # fmt: skip
         elif ts_pt.get("loai_bo_sung"):  # phân tích SAP bổ sung — tự đọc bộ khoá bằng cùng hàm của cổng
@@ -1161,6 +1232,11 @@ def dinh_dang_uoc_luong(u: dict) -> str:
     if u.get("dinh_tinh"):
         x = u["dinh_tinh"]
         return f"{x.get('so_chu_de')} chủ đề từ {x.get('n')} bản ghi"
+    if u.get("pls_sem"):
+        x = u["pls_sem"]
+        return "PLS-SEM: " + "; ".join(f"{str(d.get('duong_dan')).replace(' -> ', ' → ')} β {_so(d.get('he_so'))}"
+                                       f"{_ktc(d.get('ktc'))}" for d in x.get("duong_dan") or [])[:300] + \
+            f" · kiểm chéo cSEM {x.get('kiem_cheo_csem')}"
     loi = next((v.get("loi") for v in u.values() if isinstance(v, dict) and v.get("loi")), None)
     return f"lỗi mô hình: {loi}" if loi else ""
 

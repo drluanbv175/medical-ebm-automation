@@ -14,6 +14,9 @@ Hợp đồng (schema `SCHEMA`):
   quần thể) · khoang_tin_cay (mức, phương pháp KTC hiệu số nguy cơ, phương pháp KTC tỷ lệ) · gia_thuyet (α, số phía,
   khung, biên) · du_lieu_thieu (phương pháp, m, phân tích chính) · bien_co_hiem · do_nhay[] · nhom_con[] · phan_mem ·
   phan_tich_bat_buoc[] · phan_tich_phu_trong_cau[] · thay_doi_sau_khoa[] · muc{§: tiêu đề, dòng, nhãn}.
+  v2 (24/11/2026) thêm so_lieu_ky · ket_cuc_sap · seed_sap · alpha_sap · khai_bao · dong_khai · nhac; v3 (24/11/2026)
+  thêm pls_sem (khối PLS-SEM của §4: mô hình đo lường/cấu trúc, bootstrap, PLSpredict, xử lý thiếu, hạt giống — None
+  khi SAP không khai). Hợp đồng v1/v2 vẫn hợp lệ: `kiem` chỉ so khoá của phiên bản đó.
 
 Khoá và băm:
   • `sha256_sap_noi_dung` = SHA-256 văn bản SAP (bỏ đúng dòng băm hợp đồng) — SAP đổi sau khi lập ⇒ hợp đồng cũ;
@@ -57,13 +60,19 @@ if str(TOOLS) not in sys.path:
 
 import placeholder_contract as PC  # noqa: E402
 
-SCHEMA = "ebm.g4_sap_contract/2"
+SCHEMA = "ebm.g4_sap_contract/3"
 #: phiên bản 1 (23/11/2026) — vẫn đọc được: kiểm đúng các khoá v1, các trường v2 suy từ CHÍNH văn bản SAP đã khớp băm
 SCHEMA_V1 = "ebm.g4_sap_contract/1"
 KHOA_V1 = ("thiet_ke", "kieu_ghep", "phan_tich_chinh", "khoang_tin_cay", "gia_thuyet", "du_lieu_thieu", "bien_co_hiem",
            "do_nhay", "nhom_con", "phan_mem", "phan_tich_bat_buoc", "phan_tich_phu_trong_cau", "thay_doi_sau_khoa",
            "muc")
-SCHEMA_HO_TRO = (SCHEMA, SCHEMA_V1)
+#: phiên bản 2 (24/11/2026) — vẫn đọc được (hợp đồng BTM/C1a suy từ bản ký): kiểm đúng các khoá v2; trường v3
+#: (`pls_sem`, 24/11/2026) suy từ CHÍNH văn bản SAP đã khớp băm
+SCHEMA_V2 = "ebm.g4_sap_contract/2"
+KHOA_V2 = KHOA_V1 + ("so_lieu_ky", "ket_cuc_sap", "seed_sap", "alpha_sap", "khai_bao", "dong_khai", "nhac")
+SCHEMA_HO_TRO = (SCHEMA, SCHEMA_V2, SCHEMA_V1)
+#: khoá nội dung mà mỗi phiên bản cũ khoá trong băm — `kiem` chỉ đối chiếu đúng các khoá đó
+KHOA_THEO_SCHEMA = {SCHEMA_V1: KHOA_V1, SCHEMA_V2: KHOA_V2}
 NGUON_SINH = "sinh_khi_dung"
 NGUON_SUY = "suy_tu_ban_ky"
 NGUON_HOP_LE = (NGUON_SINH, NGUON_SUY)
@@ -182,6 +191,9 @@ def cac_muc(sap: str) -> Dict[str, Tuple[str, str, str]]:
 # ─────────────────────────── họ mô hình (SAP §4) ───────────────────────────
 #: từ khoá SAP §4 (đã bỏ dấu, chữ thường) theo họ mô hình
 HO_SAP = (
+    # PLS-SEM (23/11/2026) là họ RIÊNG và ĐỘC QUYỀN (ho_mo_hinh): khối PLS-SEM nhắc «CB-SEM», «mô hình tuyến tính
+    # chuẩn» (PLSpredict)… không được kéo theo họ tuyến tính/logistic
+    ("pls_sem", ("pls-sem", "pls path", "partial least squares", "binh phuong toi thieu tung phan")),
     ("ordinal", ("proportional odds", "thu bac", "logistic thu tu", "polr", "clmm", "ordinal")),
     ("cox", ("cox", "hazard", "log-rank", "log rank", "thoi gian den bien co", "time-to-event", "kaplan")),
     ("poisson", ("poisson", "log-binomial", "log binomial", "nguy co tuong doi", "relative risk")),
@@ -206,6 +218,10 @@ def ho_mo_hinh(sap4: str) -> set:
     # trùng nghĩa («độ nhạy» của phân tích độ nhạy ⇒ ROC, «biến định tính» ⇒ định tính)
     bd_d = bd.replace("đ", "d")
     ho = {ten for ten, tu in HO_SAP if any(t in (bd_d if ten == "logistic_dk" else bd) for t in tu)}
+    # PLS-SEM là phân tích chính DUY NHẤT của SAP khai nó — mọi họ khác mà từ khoá trong khối đó kích hoạt không phải
+    # phương pháp thay thế
+    if "pls_sem" in ho:
+        return {"pls_sem"}
     # «logistic thứ tự»/«proportional odds» là họ THỨ BẬC — không để chữ «logistic» trong đó cho qua logistic nhị phân
     if "ordinal" in ho and not re.search(r"logistic\s+(?:nhi\s+phan|binary)|binomial", bd):
         ho.discard("logistic")
@@ -213,6 +229,157 @@ def ho_mo_hinh(sap4: str) -> set:
     if "logistic_dk" in ho and not re.search(r"logistic\s+khong\s+dieu\s+kien|unconditional\s+logistic", bd_d):
         ho.discard("logistic")
     return ho
+
+
+# ─────────────────────────── khối PLS-SEM (SAP §4) — 23/11/2026 ───────────────────────────
+#: nhãn mở khối máy đọc do run_g4_auto in (pls_sem.dong_sap); vắng ⇒ SAP không khai PLS-SEM
+PLS_NHAN_KHOI = "**Mô hình đo lường (PLS-SEM):**"
+#: cụm ngưỡng định trước phải còn nguyên trong SAP mới được PHÂN LOẠI (Hair 2019 — thiếu ⇒ chỉ in số)
+PLS_CUM_NGUONG = ("≥ 0,708", "0,70–0,95", "AVE ≥ 0,50", "HTMT < 0,90", "VIF < 3", "Q²predict > 0")
+PLS_TEN_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
+# Bộ chuẩn hoá văn phong của SAP (vn_prose_style) đổi « — » thành «. »/«, » ⇒ chỉ dựa vào MÃ trong backtick, cụm loại đo
+# lường cố định và danh sách chỉ báo trong backtick — không dựa vào dấu ngăn cách
+_PLS_DONG_CT = re.compile(r"^\s*-\s*`([A-Za-z][A-Za-z0-9_]*)`[\s.,;:—–-]*(.*?)[\s.,;:—–-]*"
+                          r"(kết quả \(reflective, Mode A\)|cấu tạo \(formative, Mode B\)):\s*(.+?)\s*$")
+_PLS_BIEN = re.compile(r"`([A-Za-z][A-Za-z0-9_]*)`")
+
+
+def kiem_mo_hinh_pls(mh: Dict[str, Any]) -> List[str]:
+    """Lỗi cấu trúc mô hình PLS-SEM (rỗng = hợp lệ): tên, chỉ báo, đường dẫn, chu trình, PLSpredict, bootstrap."""
+    loi: List[str] = []
+    ct, dd = mh.get("cau_truc") or [], mh.get("duong_dan") or []
+    ten = [c.get("ma") for c in ct]
+    if len(ct) < 2:
+        loi.append("cần ít nhất hai cấu trúc")
+    if len(set(ten)) != len(ten):
+        loi.append("mã cấu trúc trùng")
+    muc_tat_ca = [m for c in ct for m in c.get("muc") or []]
+    trung = sorted({m for m in muc_tat_ca if muc_tat_ca.count(m) > 1})
+    if trung:
+        loi.append(f"chỉ báo thuộc nhiều cấu trúc: {', '.join(trung)}")
+    for c in ct:
+        if not PLS_TEN_RE.match(str(c.get("ma") or "")):
+            loi.append(f"mã cấu trúc không hợp lệ: {c.get('ma')!r}")
+        if not c.get("muc"):
+            loi.append(f"{c.get('ma')}: không có chỉ báo")
+        if c.get("mode") == "B" and len(c.get("muc") or []) < 2:
+            loi.append(f"{c.get('ma')}: cấu tạo (Mode B) cần ≥ 2 chỉ báo")
+    if not dd:
+        loi.append("không có đường dẫn nào ở mô hình cấu trúc")
+    for a, b in dd:
+        if a not in ten or b not in ten:
+            loi.append(f"đường dẫn {a} → {b} dùng cấu trúc chưa khai ở mô hình đo lường")
+        if a == b:
+            loi.append(f"đường dẫn tự vòng {a} → {b}")
+    if len({tuple(p) for p in dd}) != len(dd):
+        loi.append("đường dẫn trùng")
+    co_dd = {x for p in dd for x in p}
+    loi += [f"{t}: không nằm trên đường dẫn nào" for t in ten if t not in co_dd]
+    ke = {t: [b for a, b in dd if a == t] for t in ten}  # chu trình: PLS-PM chỉ nhận mô hình đệ quy
+    trang: Dict[Any, int] = {}
+
+    def co_vong(u: Any) -> bool:
+        trang[u] = 1
+        for v in ke.get(u, []):
+            if trang.get(v) == 1 or (trang.get(v) is None and co_vong(v)):
+                return True
+        trang[u] = 2
+        return False
+
+    if any(trang.get(t) is None and co_vong(t) for t in ten):
+        loi.append("mô hình cấu trúc có chu trình — PLS-PM chỉ ước lượng mô hình đệ quy")
+    b = mh.get("bootstrap")
+    if b is not None and (isinstance(b, bool) or not isinstance(b, int) or not 1 <= b <= 100000):
+        loi.append(f"số mẫu bootstrap phải là số nguyên 1–100.000 (đang {b!r})")
+    pp = mh.get("plspredict")
+    if isinstance(pp, dict):
+        noi = {b_ for _a, b_ in dd}
+        if not pp.get("dich"):
+            loi.append("PLSpredict thiếu cấu trúc đích")
+        loi += [f"PLSpredict: cấu trúc đích {x} không phải cấu trúc nội sinh" for x in pp.get("dich") or []
+                if x not in noi]
+        if not isinstance(pp.get("k"), int) or pp["k"] < 2:
+            loi.append("PLSpredict: số phần k phải ≥ 2")
+        if not isinstance(pp.get("lap"), int) or pp["lap"] < 1:
+            loi.append("PLSpredict: số lần lặp phải ≥ 1")
+    return loi
+
+
+def pls_sem_sap(sap4: str, sap10: str) -> Optional[Dict[str, Any]]:
+    """Khối PLS-SEM của SAP §4 (+ hạt giống §10). None ⇒ SAP không khai PLS-SEM; có khối ⇒ {mo_hinh: dict|None, loi:
+    [..]} — mo_hinh chỉ có khi khối đọc trọn và hợp lệ (nơi tiêu thụ chặn khi `loi` khác rỗng)."""
+    if PLS_NHAN_KHOI not in (sap4 or ""):
+        return None
+    loi: List[str] = []
+    ct: List[Dict[str, Any]] = []
+    trong = False
+    for d in sap4.splitlines():
+        if PLS_NHAN_KHOI in d:
+            trong = True
+            continue
+        if trong:
+            if re.match(r"^\s*-\s*\*\*", d) or not d.strip():
+                if d.strip():
+                    trong = False
+                continue
+            m = _PLS_DONG_CT.match(d)
+            if not m:
+                loi.append(f"dòng mô hình đo lường không đọc được: «{d.strip()[:120]}»")
+                continue
+            ct.append({"ma": m.group(1), "ten": m.group(2).strip(), "mode": "B" if "Mode B" in m.group(3) else "A",
+                       "muc": _PLS_BIEN.findall(m.group(4))})
+    m_dd = re.search(r"\*\*Mô hình cấu trúc \(PLS-SEM\):\*\*\s*(.+)", sap4)
+    dd = [[a, b] for a, b in re.findall(r"`([A-Za-z][A-Za-z0-9_]*)`\s*→\s*`([A-Za-z][A-Za-z0-9_]*)`",
+                                        m_dd.group(1))] if m_dd else []
+    m_b = re.search(r"\*\*Bootstrap \(PLS-SEM\):\*\*\s*([\d.\s]+?)\s*mẫu lặp", sap4)
+    so_b = re.sub(r"[.\s]", "", m_b.group(1)) if m_b else ""
+    bootstrap = int(so_b) if so_b else None
+    m_ktc = re.search(r"\*\*Bootstrap \(PLS-SEM\):\*\*[^\n]*?KTC phân vị (\d+)%", sap4)
+    alpha = round(1 - int(m_ktc.group(1)) / 100, 6) if m_ktc else None
+    m_pp = re.search(r"\*\*PLSpredict \(PLS-SEM\):\*\*\s*(.+)", sap4)
+    pp: Optional[Dict[str, Any]] = None
+    if not m_pp:
+        loi.append("thiếu dòng «PLSpredict (PLS-SEM)» (khai cấu trúc đích hoặc «không thực hiện»)")
+    elif "không thực hiện" not in m_pp.group(1):
+        k_ = re.search(r"k\s*=\s*(\d+)\s*phần", m_pp.group(1))
+        lap = re.search(r"(\d+)\s*lần lặp", m_pp.group(1))
+        pp = {"k": int(k_.group(1)) if k_ else None, "lap": int(lap.group(1)) if lap else None,
+              "dich": _PLS_BIEN.findall(m_pp.group(1).split("cấu trúc đích", 1)[-1])
+              if "cấu trúc đích" in m_pp.group(1) else []}
+    m_th = re.search(r"\*\*Dữ liệu thiếu \(PLS-SEM\):\*\*\s*(.+)", sap4)
+    thieu = None
+    if m_th:
+        thieu = ("listwise" if "listwise" in m_th.group(1)
+                 else ("trung_binh" if "mean replacement" in m_th.group(1) else None))
+    nhan_ng = "**Ngưỡng đánh giá định trước (PLS-SEM):**"
+    m_ng = sap4[sap4.find(nhan_ng):] if nhan_ng in sap4 else ""
+    # hạt giống §10 — bỏ ví dụ nằm trong ô [CẦN …] chưa điền («ví dụ: set.seed(2026)» không phải quyết định)
+    s10 = re.sub(r"\[CẦN[^\]]*\]", "", sap10 or "")
+    hat = sorted({int(x) for x in re.findall(r"set\.seed\((\d+)\)", s10)}
+                 | {int(x) for x in re.findall(r"\*\*Random seed:\*\*\s*(\d+)\s*$", s10, re.M)})
+    mh = {"cau_truc": ct, "duong_dan": dd, "bootstrap": bootstrap, "alpha": alpha, "plspredict": pp,
+          "du_lieu_thieu": thieu, "seed": hat[0] if len(hat) == 1 else None,
+          "nguong_sap": bool(m_ng) and all(c in m_ng for c in PLS_CUM_NGUONG)}
+    if "[CẦN" in sap4.split(nhan_ng)[0]:
+        loi.append("khối PLS-SEM của SAP §4 còn ô [CẦN …]")
+    if bootstrap is None:
+        loi.append("không đọc được số mẫu bootstrap («Bootstrap (PLS-SEM): N mẫu lặp»)")
+    if alpha is None:
+        loi.append("không đọc được mức KTC phân vị bootstrap («KTC phân vị 95%»)")
+    if thieu is None:
+        loi.append("không đọc được cách xử lý dữ liệu thiếu («listwise» hoặc «mean replacement»)")
+    if len(hat) != 1:
+        loi.append(f"SAP §10 cần ĐÚNG một hạt giống set.seed(N) cho bootstrap/PLSpredict (thấy {hat or 'không có'})")
+    loi += kiem_mo_hinh_pls(mh)
+    return {"mo_hinh": None if loi else mh, "loi": loi}
+
+
+def pls_sem_van_ban(sap_text: str) -> Optional[Dict[str, Any]]:
+    """Khối PLS-SEM đọc thẳng từ VĂN BẢN SAP (cùng hàm `rut_noi_dung` dùng) — cho G4 chấm SAP trước khi lập hợp đồng
+    và cho bản nháp/đồ gá trong bộ nhớ."""
+    sap = unicodedata.normalize("NFC", bo_dong_bam(sap_text or ""))
+    muc = cac_muc(sap)
+    return pls_sem_sap(muc.get("4", ("", "", ""))[2], muc.get("10", ("", "", ""))[2])
 
 
 # ─────────────────────────── KTC hiệu số nguy cơ (SAP §4) ───────────────────────────
@@ -921,7 +1088,8 @@ def rut_noi_dung(sap_text: str, out_dir: Optional[Path] = None) -> Dict[str, Any
     def nh(so: int) -> Dict[str, str]:
         return cau_truc.get(str(so), {}).get("nhan", {})
 
-    ho = sorted(ho_mo_hinh(nguyen_van(4)))
+    pls = pls_sem_sap(nguyen_van(4), nguyen_van(10))
+    ho = ["pls_sem"] if pls is not None else sorted(ho_mo_hinh(nguyen_van(4)))
     kc = phuong_phap_kc_hieu_so(nguyen_van(4))
     bch = phuong_phap_bien_co_hiem(than(5))
     a = alpha_sap(than(12))
@@ -978,6 +1146,9 @@ def rut_noi_dung(sap_text: str, out_dir: Optional[Path] = None) -> Dict[str, Any
         "thay_doi_sau_khoa": _thay_doi_sau_khoa(sap),
         "muc": cau_truc,
         **_truong_v2(sap),
+        # v3 (24/11/2026): khối PLS-SEM máy đọc (None ⇒ SAP không khai) — pls_sem.py, G4-AUTO-10, chay_sap_g6 kiem,
+        # G6-AUTO-09 đọc trường này, không dò chữ SAP
+        "pls_sem": pls,
     }
 
 
@@ -1038,8 +1209,9 @@ def kiem(out_dir: Path, study: str, hd: Any, sap_text: Optional[str] = None) -> 
                    f"{study}` trước khi khoá/ký")
     else:
         moi = rut_noi_dung(sap_text, out_dir)
-        if hd.get("schema") == SCHEMA_V1:  # v1: chỉ các khoá v1 nằm trong băm — đối chiếu đúng các khoá đó
-            moi = {k: moi.get(k) for k in KHOA_V1}
+        khoa_cu = KHOA_THEO_SCHEMA.get(hd.get("schema"))
+        if khoa_cu:  # v1/v2: chỉ các khoá của phiên bản đó nằm trong băm — đối chiếu đúng các khoá đó
+            moi = {k: moi.get(k) for k in khoa_cu}
         if hd.get("noi_dung") != moi:
             loi.append(f"{ten_tep(study)} LỆCH văn bản SAP (bộ đọc chạy lại trên SAP cho nội dung khác) — lập lại hợp "
                        "đồng")
@@ -1088,9 +1260,9 @@ def doc(out_dir: Path, study: str) -> Tuple[Optional[Dict[str, Any]], List[str]]
         except (OSError, ValueError, UnicodeDecodeError):
             return None, [f"{ten_tep(study)} hỏng (không đọc được JSON)"]
         loi = kiem(out_dir, study, hd, sap_text)
-        if isinstance(hd, dict) and not loi and hd.get("schema") == SCHEMA_V1:
-            # v1 hợp lệ: nội dung đầy đủ v2 suy từ CHÍNH văn bản SAP vừa khớp băm (không bắt lập lại/ký lại)
-            hd = {**hd, "noi_dung": rut_noi_dung(sap_text, out_dir), "nang_cap_tu": SCHEMA_V1}
+        if isinstance(hd, dict) and not loi and hd.get("schema") in KHOA_THEO_SCHEMA:
+            # v1/v2 hợp lệ: nội dung đầy đủ bản hiện hành suy từ CHÍNH văn bản SAP vừa khớp băm (không lập lại/ký lại)
+            hd = {**hd, "noi_dung": rut_noi_dung(sap_text, out_dir), "nang_cap_tu": hd.get("schema")}
         return (hd if isinstance(hd, dict) else None), loi
     if bam_trong_sap(sap_text):
         return None, [f"thiếu {ten_tep(study)} dù chứng chỉ khoá SAP mang băm hợp đồng — lập lại bằng "

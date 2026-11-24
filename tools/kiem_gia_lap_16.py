@@ -29,6 +29,8 @@ KICH_BAN = {
     "rct_kinh_te": "rct_kinh_te", "rct_hon_hop": "rct_hon_hop", "case_control_ghep_cap": "benh_chung_ghep_cap",
     "case_control_ghep_cap_thieu": "benh_chung_ghep_cap_thieu",
     "case_control_ghep_cap_hiem": "benh_chung_ghep_cap_hiem",
+    # 23/11/2026 — PLS-SEM: khảo sát cắt ngang có cấu trúc tiềm ẩn (seminr chính + cSEM kiểm chéo; job CI cài R)
+    "cross_sectional_pls_sem": "cat_ngang_pls_sem",
     "cross_sectional_doi_chung": "cat_ngang_doi_chung_qft",
 }
 # 17/11/2026 — kịch bản CHÂN THỰC (gia_lap_chan_thuc): cùng cổng phán + ước lượng chính phải tìm lại tham số thật.

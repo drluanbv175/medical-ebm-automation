@@ -153,6 +153,8 @@ tầng) (+ `thieu`; `loc` như cũ) — tham số khác ⇒ `kiem` báo lỗi; m
 Ngoài phạm vi công cụ: phân bố điểm, Cronbach α (`kiem_tin_cay_thang_do.py`), omega, sàn–trần. Hướng dẫn:
 `medical-ebm-automation/docs/PHAN-TICH-NHAN-TO-R.md`.
 
+**PLS-SEM (23/11/2026; một bộ đọc SAP + quy ước số 24/11/2026):** SAP §4 có khối «Mô hình đo lường (PLS-SEM)» thì phân tích chính chạy bằng `python3 medical-ebm-automation/tools/pls_sem.py chay --study <mã>`, hoặc mục đặc tả `{"pls_sem": "pls_pm", "bootstrap_pls": <N của SAP>}` qua `chay_sap_g6.py`. Mô hình, bootstrap, hạt giống và cách xử lý thiếu đọc từ HỢP ĐỒNG SAP (`tools/hop_dong_sap.py`, schema `ebm.g4_sap_contract/3`, trường `pls_sem`) — không dò chữ SAP, không khai lại, không sửa SAP cho khớp công cụ; hợp đồng `kiem` lỗi ⇒ dừng. Kiểm chéo cSEM ra LỆCH thì ghi [CẦN THỐNG KÊ VIÊN], không dùng số, không nới dung sai. Không có R, thiếu gói, hoặc seminr < 2.6.0 là «không đo được», không phải đạt. Bảng `trinh_bay_md` in số bằng hàm chung (`pls_sem.so3` = cách `hien_so_g6` in giá trị: dấu phẩy thập phân, tối đa 4 chữ số lẻ, từ 10.000 nhóm nghìn) — không sửa tay số trong bảng: G7 đối chiếu từng số với giá trị tính của tóm tắt, lệch ⇒ bỏ bảng. Không viết «ngang SmartPLS». Hướng dẫn ở `medical-ebm-automation/docs/PLS-SEM.md`.
+
 ## 🔁 BƯỚC 0c — KIỂM CHÉO BẰNG SPSS (phần mềm thứ hai — thêm 14/11/2026, bác sĩ giao)
 
 **Một lệnh cho cả SPSS + R (14/11/2026):** `python3 medical-ebm-automation/tools/kiem_cheo_g6.py chay --study <mã>` ⇒
@@ -557,6 +559,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/kiem_cheo_g6.py` (chủ) — kiểm chéo G6 bằng phần mềm thứ hai (SPSS và R); chốt kiểm `tests/test_kiem_cheo_g6_20261114.py`; nguyên tắc: kiểm chứng khách quan · tái lập.
 - Công cụ `tools/normal_dist.py` (chủ) — CDF chuẩn và nghịch đảo dùng chung cho mọi máy tính thống kê; chốt kiểm `tests/test_normal_dist.py`; nguyên tắc: tái lập.
 - Công cụ `tools/phan_tich_sap_bo_sung.py` (chủ) — chạy bằng máy các phân tích SAP trước đây ghi «chờ làm tay»; chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: khách quan · tái lập.
+- Công cụ `tools/pls_sem.py` (chủ) — PLS-SEM theo khối SAP §4 (đọc qua hợp đồng SAP `tools/hop_dong_sap.py`, trường `pls_sem`): seminr ước lượng chính, cSEM kiểm chéo độc lập, mốc chuẩn sách Hair 2021; chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: bằng chứng · khách quan · tái lập.
 - Công cụ `tools/dinh_nghia_thay_the.py` (dùng phụ) — G6 dựng mục đặc tả định nghĩa thay thế đã định trước ở SAP §9 (phơi nhiễm liên tục ước lượng theo mỗi 1 SD, SD tính trên đúng tập ca của mô hình); kịch bản R của phân tích SAP bổ sung nay ở `tools/cau_noi_r.py` (`kich_ban_bo_sung`); chốt kiểm `tests/test_g6_tu_dong_khong_viec_tay_20261122.py`; nguyên tắc: tái lập · kiểm chứng khách quan.
 - Công cụ `tools/spss_chay_nen.py` (chủ) — trình chạy nền SPSS do Python đi kèm SPSS thực thi; chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: tái lập · kiểm chứng khách quan.
 - Công cụ `tools/ve_bieu_do.py` (chủ) — cửa vào duy nhất cho biểu đồ kết quả: danh mục hình theo thiết kế + kiểm thư mục hình; chốt kiểm `tests/test_ve_bieu_do_20261121.py`; nguyên tắc: tái lập · kiểm soát chất lượng.

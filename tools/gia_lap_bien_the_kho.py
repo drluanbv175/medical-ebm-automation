@@ -483,6 +483,7 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     kb["benh_chung_ghep_cap"] = _ghep_cap(GL.KICH_BAN["benh_chung"], _ky_g2, _tra_loi_sap)
     kb["benh_chung_ghep_cap_thieu"] = _ghep_cap_thieu(kb["benh_chung_ghep_cap"])
     kb["benh_chung_ghep_cap_hiem"] = _ghep_cap_hiem(kb["benh_chung_ghep_cap"])
+    kb["cat_ngang_pls_sem"] = _pls_sem(GL.KICH_BAN["cat_ngang_mo_ta"], vi, tt, _ky_g2, _tra_loi_sap, _nhom_gioi)
     # 24/11/2026: đề tài ĐỐI CHỨNG CÔNG KHAI — G5 nhập dữ liệu THẬT đã công bố (tools/gia_lap_doi_chung.py)
     import gia_lap_doi_chung as GDC  # noqa: PLC0415
 
@@ -943,3 +944,245 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
 def danh_sach() -> List[Tuple[str, str]]:
     """(mã kịch bản, id test) theo thứ tự — cho tệp test trọn vòng."""
     return [(ma, kb["id_test"]) for ma, kb in kich_ban_kho().items()]
+
+
+# ══ PLS-SEM — khảo sát cắt ngang có cấu trúc tiềm ẩn (23/11/2026) ════════════════════════════════════════════════════
+_LIKERT = "1, Rất không đồng ý | 2, Không đồng ý | 3, Phân vân | 4, Đồng ý | 5, Rất đồng ý"
+_CAU_PLS = (
+    ("GT", "Giao tiếp bác sĩ – người bệnh", "A", (
+        ("gt_1", "Bác sĩ giải thích rõ về bệnh và thuốc cho tôi"),
+        ("gt_2", "Bác sĩ lắng nghe điều tôi lo lắng"),
+        ("gt_3", "Tôi có đủ thời gian hỏi bác sĩ khi khám"))),
+    ("HB", "Hiểu biết về bệnh tăng huyết áp", "B", (
+        ("hb_1", "Tôi biết huyết áp mục tiêu của mình"),
+        ("hb_2", "Tôi biết tác hại của tăng huyết áp không kiểm soát"),
+        ("hb_3", "Tôi biết cách dùng và tác dụng phụ thường gặp của thuốc"))),
+    ("NT", "Niềm tin vào điều trị", "A", (
+        ("nt_1", "Thuốc hạ áp giúp tôi phòng biến chứng"),
+        ("nt_2", "Lợi ích của thuốc lớn hơn phiền toái khi dùng"),
+        ("nt_3", "Tôi tin điều trị hiện tại phù hợp với tôi"))),
+    ("TT", "Tuân thủ điều trị", "A", (
+        ("tt_1", "Tôi uống thuốc đúng giờ mỗi ngày"),
+        ("tt_2", "Tôi không tự ý bỏ thuốc khi thấy khoẻ"),
+        ("tt_3", "Tôi không quên uống thuốc trong tuần qua"))),
+)
+_DD_PLS = [["GT", "NT"], ["HB", "NT"], ["GT", "TT"], ["HB", "TT"], ["NT", "TT"]]
+
+
+def _pls_sem(cn: Dict[str, Any], vi: Callable[[str], str], tt: str, _ky_g2: Callable, _tra_loi_sap: Callable,
+             _nhom_gioi: Callable) -> Dict[str, Any]:
+    """CẮT NGANG PHÂN TÍCH BẰNG PLS-SEM (23/11/2026 — bác sĩ: «PLS-SEM tốt nhất, tương tự SPSS/R»).
+
+    Khảo sát người tăng huyết áp điều trị ngoại trú: bốn cấu trúc tiềm ẩn đo bằng câu hỏi Likert 1–5 — giao tiếp bác
+    sĩ – người bệnh (kết quả, Mode A), hiểu biết về bệnh (CẤU TẠO, Mode B), niềm tin vào điều trị (Mode A), tuân thủ
+    điều trị (Mode A); năm đường dẫn giả thuyết. PI chốt mô hình ở G1 (gate_params.G1.pls_sem) ⇒ SAP §4 in khối
+    PLS-SEM ⇒ G6 chạy pls_sem.py (seminr chính + cSEM kiểm chéo) ⇒ G7 chép bảng trình bày theo Hair 2019. Cỡ mẫu theo
+    căn bậc hai nghịch đảo (Kock & Hadaya 2018) với |β_min| = 0,20. Dữ liệu MÔ PHỎNG từ mô hình cấu trúc đã khai
+    (bien_the.pls_sem)."""
+    kb = _sao(cn, study=f"{tt}CAT-NGANG-PLS-SEM", id_test="cross_sectional_pls_sem", goc="cat_ngang_mo_ta",
+              mo_ta="Cắt ngang phân tích bằng PLS-SEM (4 cấu trúc tiềm ẩn, 1 cấu trúc cấu tạo)",
+              topic=("Giao tiếp bác sĩ – người bệnh, hiểu biết về bệnh, niềm tin vào điều trị và tuân thủ điều trị ở "
+                     "người tăng huyết áp điều trị ngoại trú: nghiên cứu cắt ngang phân tích bằng mô hình PLS-SEM"),
+              query_en=('(hypertension[MeSH] OR hypertension[tiab]) AND ("medication adherence"[MeSH] OR '
+                        'adherence[tiab]) AND ("physician-patient relations"[MeSH] OR communication[tiab] OR '
+                        '"health literacy"[tiab] OR knowledge[tiab]) AND ("structural equation"[tiab] OR "path '
+                        'analysis"[tiab] OR "partial least squares"[tiab])'),
+              bien_the={"pls_sem": {
+                  "cau_truc": [{"ma": "GT", "muc": ["gt_1", "gt_2", "gt_3"], "mode": "A", "tai": 0.82},
+                               {"ma": "HB", "muc": ["hb_1", "hb_2", "hb_3"], "mode": "B", "trong_so": [0.5, 0.4, 0.3],
+                                "r_chi_bao": 0.3},
+                               {"ma": "NT", "muc": ["nt_1", "nt_2", "nt_3"], "mode": "A", "tai": 0.8},
+                               {"ma": "TT", "muc": ["tt_1", "tt_2", "tt_3"], "mode": "A", "tai": 0.8}],
+                  "duong_dan": [["NT", {"GT": 0.35, "HB": 0.25}], ["TT", {"GT": 0.15, "HB": 0.15, "NT": 0.4}]],
+                  "duong_dan_chinh": "NT -> TT", "r_ngoai": 0.3, "sd_nhieu": 0.8},
+                  # phiếu tự điền: câu bỏ trống ghi mã thiếu dự án «BTR» (câu bắt buộc không để ô trống)
+                  "thieu": {"cot": ["gt_3", "nt_3", "tt_3"], "ty_le": 0.03, "phu_thuoc": "tuoi", "ma": "BTR",
+                            "nhan": "Bỏ trống — người trả lời không đánh dấu câu này"}})
+    muc = [(m, nhan) for _ma, _ten, _mode, ds in _CAU_PLS for m, nhan in ds]
+    kb["bien_so"] = {
+        "bo_bien": [("record_id", "text", "Mã nghiên cứu", "", "", "", ""),
+                    ("ngay_kham", "text", "Ngày khám khảo sát", "", "date_dmy", "", ""),
+                    ("tuoi", "text", "Tuổi (năm)", "", "integer", "18", "110"),
+                    ("gioi", "radio", "Giới", "1, Nam | 2, Nữ", "", "", ""),
+                    *[(m, "radio", nhan, _LIKERT, "", "", "") for m, nhan in muc],
+                    ("diem_tt", "calc", "Điểm tuân thủ trung bình 3 câu (1–5, máy tự tính)",
+                     "([tt_1] + [tt_2] + [tt_3]) / 3", "", "", "")],
+        "ma_tran": [("1", "tuân thủ điều trị (điểm trung bình thang tuân thủ)", "ket_cuc_chinh", "diem_tt",
+                     "lien_tuc", "D1", "thang tuân thủ 3 câu", "SAP §2 kết cục chính; cấu trúc TT ở SAP §4"),
+                    *[("1", f"{ten.lower()} — câu {m}", "yeu_to", m, "thu_tu", f"C{i + 1}", "phỏng vấn bộ câu hỏi",
+                       "SAP §4 mô hình đo lường PLS-SEM")
+                      for i, (ma, ten, _mode, ds) in enumerate(_CAU_PLS) for m, _nhan in ds],
+                    ("1", "tuổi", "mo_ta", "tuoi", "lien_tuc", "A1", "phiếu", "SAP §3 mô tả"),
+                    ("1", "giới", "mo_ta", "gioi", "nhi_phan", "A2", "phiếu", "SAP §3 mô tả")],
+    }
+    g0, g1 = kb["pi"]["G0"], kb["pi"]["G1"]
+    g0.update({
+        "intervention": "Không áp dụng — nghiên cứu quan sát (yếu tố khảo sát: giao tiếp, hiểu biết, niềm tin)",
+        "comparison": "Không áp dụng — mô hình cấu trúc trên một nhóm",
+        "outcomes": ["Tuân thủ điều trị thuốc hạ áp (cấu trúc tiềm ẩn đo bằng 3 câu)",
+                     "Ảnh hưởng của giao tiếp, hiểu biết và niềm tin lên tuân thủ (hệ số đường dẫn)"],
+        "primary_outcome": "Tuân thủ điều trị thuốc hạ áp",
+        "primary_outcome_measure": "Thang tuân thủ 3 câu Likert 1–5 (cấu trúc TT của mô hình PLS-SEM)",
+        "primary_outcome_timepoint": "Tại lần khám khảo sát",
+        "hypothesis_h0": "Hệ số đường dẫn từ niềm tin vào điều trị đến tuân thủ điều trị bằng 0",
+        "hypothesis_h1": "Hệ số đường dẫn từ niềm tin vào điều trị đến tuân thủ điều trị khác 0",
+        "expected_direction": "Niềm tin vào điều trị cao hơn đi kèm tuân thủ tốt hơn (hệ số dương)",
+        "test_type": "superiority", "question_type": "harm",
+        "novelty_justification": vi("Chưa có mô hình cấu trúc giao tiếp – hiểu biết – niềm tin – tuân thủ ở người "
+                                    "tăng huyết áp ngoại trú tại cơ sở này")})
+    g0.pop("descriptive_justification", None)
+    g1.update({
+        "design_rationale": vi("Câu hỏi về liên quan giữa các cấu trúc tiềm ẩn đo một lần — cắt ngang phân tích; "
+                               "mô hình cấu trúc ước lượng bằng PLS-SEM"),
+        # động từ mục tiêu theo khuôn STROBE mục 3 của K17 (Phân tích/Ước tính/Xác định…)
+        "objectives": ["Phân tích ảnh hưởng của giao tiếp bác sĩ – người bệnh, hiểu biết về bệnh và niềm tin vào "
+                       "điều trị lên tuân thủ điều trị ở người tăng huyết áp điều trị ngoại trú"],
+        "research_question": ("Ở người tăng huyết áp điều trị ngoại trú, giao tiếp bác sĩ – người bệnh, hiểu biết về "
+                              "bệnh và niềm tin vào điều trị ảnh hưởng thế nào đến tuân thủ điều trị?"),
+        "primary_outcome": {"name": "Tuân thủ điều trị thuốc hạ áp",
+                            "measure": "Thang tuân thủ 3 câu Likert 1–5 (cấu trúc TT của mô hình PLS-SEM)",
+                            "timepoint": "Tại lần khám khảo sát", "type": "liên tục"},
+        "secondary_outcomes": ["Ảnh hưởng của giao tiếp, hiểu biết và niềm tin lên tuân thủ (hệ số đường dẫn)"],
+        "intervention_or_exposure": "Giao tiếp bác sĩ – người bệnh, hiểu biết về bệnh, niềm tin vào điều trị",
+        "data_collection_method": "Phỏng vấn bộ câu hỏi 12 câu Likert tại phòng khám, ghi vào phiếu thu thập",
+        "critical_to_quality": "Bộ câu hỏi phỏng vấn chuẩn hoá, điều tra viên tập huấn, đọc nguyên văn câu hỏi",
+        "estimand": {
+            "population": "Người tăng huyết áp điều trị ngoại trú đủ tiêu chuẩn",
+            "treatment_condition": "Không áp dụng (quan sát)",
+            "variable": "Tuân thủ điều trị (cấu trúc tiềm ẩn TT)",
+            "intercurrent_events_strategy": "Không áp dụng (một lần đo)",
+            "population_summary_measure": "Hệ số đường dẫn PLS-SEM kèm KTC 95% bootstrap phân vị"},
+        "background_problem": vi("Tuân thủ điều trị thuốc hạ áp ở người điều trị ngoại trú chưa được đo cùng các yếu "
+                                 "tố giao tiếp, hiểu biết và niềm tin"),
+        "knowledge_gap": vi("Thiếu mô hình cấu trúc các yếu tố tâm lý – giao tiếp của tuân thủ điều trị tại cơ sở này"),
+        # câu bằng chứng chép đúng số trong abstract PubMed (PMID 36803662, BMC Cardiovasc Disord 2023) — kho A12
+        "evidence_summary": ("Nghiên cứu cắt ngang cộng đồng trên 1697 người tăng huyết áp tại Thượng Hải (PMID "
+                             "36803662) dùng mô hình phương trình cấu trúc ghi nhận tỷ lệ người bệnh tuân thủ thuốc "
+                             "ở mức thấp là 38,54%; hiểu biết sức khoẻ ảnh hưởng trực tiếp lên tuân thủ (β = 0,291) "
+                             "và hỗ trợ xã hội ảnh hưởng trực tiếp lên tuân thủ (β = 0,165)"),
+        "bias_controls": [
+            {"sai_lech": "Sai lệch chọn do chọn mẫu liên tiếp người đến khám",
+             "bien_phap": "Tuyển liên tiếp mọi người đủ tiêu chuẩn trong các ngày khám; ghi số người từ chối và lý do",
+             "chieu": "Người tái khám đều đặn thường tuân thủ tốt hơn nên mức tuân thủ có thể được ước lượng cao hơn"},
+            {"sai_lech": "Sai lệch mong muốn xã hội khi tự khai tuân thủ",
+             "bien_phap": ("Điều tra viên không phải bác sĩ điều trị; phỏng vấn riêng, nhắc không có câu trả lời "
+                           "đúng sai"),
+             "chieu": "Người bệnh có xu hướng khai tuân thủ tốt hơn thực tế nên hệ số đường dẫn có thể bị thu nhỏ"}],
+        "pls_sem": {
+            "cau_truc": [{"ma": ma, "ten": ten, "muc": [m for m, _n in ds], "mode": mode}
+                         for ma, ten, mode, ds in _CAU_PLS],
+            "duong_dan": [list(x) for x in _DD_PLS],
+            "bien_minh": ("Mục tiêu giải thích và dự báo tuân thủ (cấu trúc đích TT) trên mô hình có cấu trúc CẤU TẠO "
+                          "(hiểu biết về bệnh là chỉ số gộp ba hiểu biết riêng, không phải nhân tố chung) — tình huống "
+                          "Hair và cộng sự 2019 khuyến nghị PLS-SEM; CB-SEM giả định mọi cấu trúc là nhân tố chung"),
+            "bootstrap": 5000, "plspredict": {"k": 10, "lap": 10, "dich": ["TT"]}, "du_lieu_thieu": "listwise"},
+    })
+    g3 = kb["pi"]["G3"]
+    g3.clear()
+    g3.update({"effect_size": 0.2, "effect_type": "PLS_PATH", "alpha": 0.05, "power": 0.8, "dropout": 0.1,
+               "hypothesis_type": "superiority",
+               # nguồn |β_min| là nghiên cứu trước có số liệu thật trong abstract PubMed (kho A12): β 0,165 và 0,291
+               "effect_source": ("PMID: 36803662 (nghiên cứu cắt ngang tại Thượng Hải) — các hệ số đường dẫn trực tiếp "
+                                 "tới tuân thủ ghi nhận 0,165 và 0,291; chọn |β_min| = 0,20 trong khoảng này"),
+               "dropout_source": "Giả định 10% phiếu không dùng được — chưa có nguồn y văn",
+               "effect_source_confirmed": True, "assumptions_confirmed": True, "hypothesis_confirmed": True,
+               # tên kết cục chính G1 (G3-HUMAN-04): lực cho các hệ số đường dẫn tới cấu trúc tuân thủ, nhỏ nhất 0,20
+               "powered_for_outcome": "Tuân thủ điều trị thuốc hạ áp",
+               "recruitment_feasibility_confirmed": True,
+               "software": "run_g3_auto.py (PLS-SEM — căn bậc hai nghịch đảo, Kock & Hadaya 2018)"})
+    hs = kb["ho_so_tron_vong"]
+    hs["G2"] = {**hs["G2"], "public_title": "Giao tiếp, hiểu biết, niềm tin và tuân thủ điều trị tăng huyết áp"}
+    hs["ky_G2"] = _ky_g2(TIEN_CUU, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999979")
+    hs["tra_loi_G4"] = _tra_loi_sap(
+        "Không áp dụng — nghiên cứu cắt ngang quan sát, không có can thiệp", "các cấu trúc tiền tố theo mô hình lý "
+        "thuyết G1 — không thêm biến hiệu chỉnh ngoài mô hình", "VIF < 3 cho chỉ báo cấu tạo và cấu trúc tiền tố",
+        "Giới (nam/nữ) — ghi trước khi xem dữ liệu", "Ô thiếu thay bằng trung bình chỉ báo")
+    hs["g6"] = [{"id": "MT1_pls_sem", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                 "mo_ta": "Mô hình PLS-SEM: giao tiếp, hiểu biết, niềm tin → tuân thủ điều trị",
+                 "tham_so": {"pls_sem": "pls_pm", "bootstrap_pls": 5000}},
+                *_nhom_gioi(1, 2),
+                {"id": "DN_trung_binh", "vai": "do_nhay", "sap_muc": "§9",
+                 "sap_neo": "ô thiếu thay bằng trung bình chỉ báo", "ke_thua": True,
+                 "mo_ta": "Độ nhạy: ô thiếu thay bằng trung bình chỉ báo (phân tích chính: listwise)",
+                 "tham_so": {"du_lieu_thieu": "trung_binh"}}]
+    hs["dien_giai"] = {
+        "bang": [{"ket_cuc": "Niềm tin vào điều trị → tuân thủ điều trị", "thuoc_do": "Hệ số đường dẫn PLS-SEM (β)",
+                  "lay": "pls_beta", "gate": "G6", "y_nghia": "Giả thuyết chính — ảnh hưởng dương trung bình"},
+                 {"ket_cuc": "Nhóm nhỏ: nam", "thuoc_do": "β (niềm tin → tuân thủ)", "lay": "pls_beta",
+                  "gate": "G6_NC_nam", "y_nghia": "Mô tả theo nhóm định trước; thăm dò"},
+                 {"ket_cuc": "Nhóm nhỏ: nữ", "thuoc_do": "β (niềm tin → tuân thủ)", "lay": "pls_beta",
+                  "gate": "G6_NC_nu", "y_nghia": "Mô tả theo nhóm định trước; thăm dò"}],
+        "muc_2": ("Niềm tin vào điều trị có ảnh hưởng dương lên tuân thủ điều trị (β = {pls_beta}; KTC 95% bootstrap "
+                  "{pls_beta_duoi}–{pls_beta_tren}). Đây là ước lượng của mô hình cấu trúc trên dữ liệu cắt "
+                  "ngang: hệ số đường dẫn mô tả liên quan có hướng theo mô hình lý thuyết, không chứng minh quan hệ "
+                  "nhân quả. Về ý nghĩa lâm sàng, hệ số chuẩn hoá này cho biết người có niềm tin vào điều trị cao hơn "
+                  "một độ lệch chuẩn có điểm tuân thủ cao hơn khoảng {pls_beta} độ lệch chuẩn khi giao tiếp và hiểu "
+                  "biết như nhau; thang tuân thủ chưa có ngưỡng khác biệt tối thiểu có ý nghĩa lâm sàng nên độ lớn "
+                  "này chưa quy đổi được thành tỷ lệ người bệnh dùng thuốc đúng."),
+        "muc_3": ("Nghiên cứu cắt ngang cộng đồng tại Thượng Hải (PMID 36803662) dùng mô hình phương trình cấu trúc "
+                  "hiệp phương sai ghi nhận hiểu biết sức khoẻ ảnh hưởng trực tiếp lên tuân thủ (β = 0,291). Thang đo, "
+                  "phương pháp ước lượng và quần thể khác nhau nên hai hệ số không so trực tiếp được."),
+        "muc_4": ("Điểm mạnh: cỡ mẫu {n} người theo tính toán G3, mô hình định trước ở SAP, ước lượng bằng seminr và "
+                  "kiểm chéo độc lập bằng cSEM. Hạn chế: một thời điểm đo nên không xác định chiều thời gian; tuân thủ "
+                  "tự khai có thể bị sai lệch mong muốn xã hội — người bệnh khai tuân thủ cao hơn thực tế làm thu hẹp "
+                  "phân tán điểm tuân thủ nên hệ số đường dẫn tới tuân thủ có xu hướng bị ước lượng thấp; một cơ sở "
+                  "nên khái quát cho người tăng huyết áp điều trị ngoại trú ở cơ sở tương tự."),
+        "muc_5": ("Hàm ý cho thực hành: cải thiện giao tiếp và củng cố niềm tin vào điều trị là đích can thiệp có thể "
+                  "thử ở phòng khám. Hướng tiếp: thử nghiệm can thiệp giao tiếp có đo tuân thủ khách quan.")}
+    hs["tra_loi_G7"] = [
+        ("khong dien truoc khi phan tich", "Trong {n} người tăng huyết áp điều trị ngoại trú, niềm tin vào điều trị "
+         "ảnh hưởng dương lên tuân thủ điều trị: β = {pls_beta} (KTC 95% {pls_beta_duoi}–{pls_beta_tren})."),
+        ("^conclusions?$|2.3 cau tom tat", "Niềm tin vào điều trị liên quan dương với tuân thủ điều trị ở người tăng "
+         "huyết áp điều trị ngoại trú; hệ số đường dẫn của mô hình cấu trúc trên dữ liệu cắt ngang không chứng minh "
+         "quan hệ nhân quả."),
+        ("khong chua ket cuc phu", "Ảnh hưởng của giao tiếp và hiểu biết lên tuân thủ trình bày ở bảng mô hình cấu "
+         "trúc PLS-SEM (Kết quả, mục kết cục chính)"),
+        ("khong chay gan da tri", "Không gán đa trị — ô thiếu xử lý theo SAP §4 (listwise), độ nhạy thay trung bình "
+         "chỉ báo theo SAP §9"),
+        *[x for x in hs["tra_loi_G7"] if x[0] not in ("khong dien truoc khi phan tich",
+                                                       "^conclusions?$|2.3 cau tom tat",
+                                                       "khong chua ket cuc phu", "khong chay gan da tri",
+                                                       "mesh terms", "phan tich so sanh khi co ket qua",
+                                                       "giai thich sinh hoc")],
+        ("giai thich sinh hoc", "Không áp dụng — nghiên cứu hành vi, không đánh giá cơ chế sinh học"),
+        ("phan tich so sanh khi co ket qua", "Đối chiếu ở đoạn so sánh với nghiên cứu Thượng Hải (PMID 36803662); tác "
+         "giả chưa đọc toàn văn bài này"),
+        ("mesh terms", "Hypertension; Medication Adherence; Physician-Patient Relations; Latent Class Analysis")]
+    hs["phan_bien_G8"] = {
+        **hs["phan_bien_G8"], "ten_bai": "Giao tiếp, niềm tin và tuân thủ điều trị ở người tăng huyết áp ngoại trú",
+        "thiet_ke": "Cắt ngang phân tích — mô hình PLS-SEM",
+        "ly_do": ("Mô hình định trước ở SAP, β niềm tin → tuân thủ {pls_beta} (KTC 95% {pls_beta_duoi}–"
+                  "{pls_beta_tren}) kiểm chéo seminr–cSEM khớp. Còn vài điểm trình bày theo STROBE và Hair 2019."),
+        "gop_y_nho": [("Từ khoá (trang đầu)", "Thay bằng thuật ngữ MeSH"),
+                      ("Phương pháp — bộ câu hỏi", "Nêu nguồn gốc và quy trình thích nghi bộ câu hỏi (STROBE mục 8)")],
+        "cau_hoi": ["Vì sao hiểu biết về bệnh được mô hình hoá là cấu trúc cấu tạo?",
+                    "Đã kiểm sai lệch phương pháp chung (common method bias) chưa?"]}
+    hs["dac_ta_G10"] = {
+        **{k: v for k, v in hs["dac_ta_G10"].items() if k != "theoretical_framework_not_applicable"},
+        "bias_risks": "Sai lệch chọn (một cơ sở); sai lệch mong muốn xã hội khi tự khai tuân thủ; sai lệch phương pháp "
+                      "chung do mọi câu hỏi cùng một lần phỏng vấn",
+        "bias_controls": "Chọn liên tiếp theo danh sách khám; điều tra viên không phải bác sĩ điều trị; mô hình định "
+                         "trước và kiểm chéo độc lập bằng cSEM",
+        "literature_review": "Mô hình phương trình cấu trúc trên 1697 người tăng huyết áp tại Thượng Hải (PMID "
+                             "36803662) cho thấy hiểu biết sức khoẻ và hỗ trợ xã hội ảnh hưởng trực tiếp lên tuân thủ; "
+                             "mô hình cấu trúc tại phòng khám ngoại trú Việt Nam còn ít",
+        "theoretical_framework": "Mô hình niềm tin sức khoẻ: giao tiếp và hiểu biết ảnh hưởng niềm tin, niềm tin ảnh "
+                                 "hưởng hành vi tuân thủ — năm đường dẫn ở SAP §4",
+        "literature_consensus": "Niềm tin vào sự cần thiết của thuốc liên quan tuân thủ tốt hơn",
+        "literature_disagreements": "Độ lớn liên quan khác nhau theo thang đo tuân thủ và bối cảnh",
+        "summary": ("Bối cảnh: tuân thủ điều trị tăng huyết áp chưa được đo cùng yếu tố giao tiếp và niềm tin. Mục "
+                    "tiêu: phân tích ảnh hưởng của giao tiếp, hiểu biết và niềm tin lên tuân thủ. Phương pháp: cắt "
+                    "ngang, mô hình PLS-SEM (seminr, kiểm chéo cSEM)."),
+        "pilot": "Thử bộ câu hỏi trên 15 người ngoài mẫu nghiên cứu",
+        "limitations": "Một cơ sở; một thời điểm đo; tuân thủ tự khai",
+        # bộ câu hỏi là thang đo ⇒ hệ không tự điền công cụ (quyet_dinh_da_chot) — chủ nhiệm khai ở G10
+        "instrument": {
+            "name": ("Bộ câu hỏi 12 câu Likert 1–5 đo bốn cấu trúc của mô hình: giao tiếp bác sĩ – người bệnh, hiểu "
+                     "biết về bệnh, niềm tin vào điều trị, tuân thủ điều trị"),
+            "source": ("nhóm nghiên cứu xây dựng theo khung mô hình niềm tin sức khoẻ; thử trên 15 người ngoài mẫu "
+                       "trước thu thập chính"),
+            "note": ("Độ tin cậy và giá trị đo lường đánh giá trên dữ liệu chính theo Hair và cộng sự 2019 (tải, "
+                     "Cronbach α, ρA, ρC, AVE, HTMT; chỉ báo cấu tạo: VIF, trọng số), ngưỡng định trước ở kế hoạch "
+                     "phân tích thống kê.")}}
+    kb["ho_so_tron_vong"] = hs
+    return kb

@@ -207,6 +207,24 @@ KHONG_NHIEU = {
 }
 
 
+def _kiem_soat_nhieu_pls(hd: Optional[Dict[str, Any]]) -> str:
+    """Dòng «Kiểm soát nhiễu» của SAP §5 khi hợp đồng SAP mang khối PLS-SEM — '' khi không có (đọc HỢP ĐỒNG)."""
+    if not HD.truong(hd, "pls_sem", "mo_hinh"):
+        return ""
+    return re.sub(r"^Kiểm soát nhiễu:\s*", "", HD.dong_gach_co(hd, (5,), r"Kiểm soát nhiễu"))
+
+
+def _tien_to_pls(hd: Optional[Dict[str, Any]]) -> str:
+    """Các cấu trúc có đường dẫn ĐI RA trong mô hình cấu trúc PLS-SEM của hợp đồng SAP (tên, mã, chỉ báo) — '' khi
+    hợp đồng không mang khối PLS-SEM hợp lệ."""
+    mh = HD.truong(hd, "pls_sem", "mo_hinh")
+    if not isinstance(mh, dict):
+        return ""
+    nguon = {a for a, _b in mh.get("duong_dan") or []}
+    return "; ".join(f"{c['ten']} (`{c['ma']}`: {', '.join(f'`{m}`' for m in c['muc'])})"
+                     for c in mh.get("cau_truc") or [] if c["ma"] in nguon)
+
+
 def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], hd: Optional[Dict[str, Any]],
                    dat: Any) -> None:
     """Quyết định ĐẶC THÙ thiết kế đã chốt ở G1/G4 ⇒ khoá StudySpec đòi (X01 · S01 · Q01/Q02 · M01 · D10 · D13) và dòng
@@ -225,6 +243,13 @@ def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], hd: Optio
                 "ma trận mục tiêu–biến G3 (yếu tố dự báo)")
     elif ma in KHONG_NHIEU:
         dat("confounders", [KHONG_NHIEU[ma]], f"thiết kế {ma} (sự thật cấu trúc)")
+    elif ma == "cross_sectional" and _kiem_soat_nhieu_pls(hd):
+        # 23/11/2026 (PLS-SEM): cách kiểm soát nhiễu đã chốt ở SAP §5 (G4) — đề cương G10 không để «[CẦN BỔ SUNG]»
+        dat("confounders", [_kiem_soat_nhieu_pls(hd)], "SAP §5 (PLS-SEM — kiểm soát nhiễu, đã chốt ở G4)")
+        tien_to = _tien_to_pls(hd)
+        if tien_to:  # «phơi nhiễm/yếu tố chính» của ma trận truy xuất = các cấu trúc tiền tố của mô hình cấu trúc
+            dat("exposure", "Các cấu trúc tiền tố của mô hình cấu trúc: " + tien_to,
+                "SAP §4 (PLS-SEM — mô hình cấu trúc đã chốt ở G4)")
     elif ma == "cross_sectional" and GC.sap_declares_proportion(out_dir, study):
         dat("confounders", ["Không áp dụng — mục tiêu mô tả tỷ lệ (SAP §4), không so sánh nhóm"],
             "SAP §4 (ước lượng tỷ lệ — cắt ngang mô tả)")

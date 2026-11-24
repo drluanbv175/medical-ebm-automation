@@ -523,6 +523,10 @@ giải thích)» — lời sau dấu «:» được giữ trong đề cương; v
 cứng mà không kèm lời giải thích là trích ngược nghĩa (BTM [41], [38]). Câu SAP đã ký thì sửa là việc của thống kê
 viên (ký lại); agent chỉ đề xuất.
 
+## PLS-SEM — khối SAP §4 máy đọc (23/11/2026; một bộ đọc SAP 24/11/2026)
+
+Chỉ khi PI chốt `gate_params.G1.pls_sem` (cấu trúc, chỉ báo, Mode A/B có lý do, đường dẫn, biện minh chọn PLS-SEM thay CB-SEM theo Hair 2019, bootstrap, PLSpredict, xử lý thiếu) thì `run_g4_auto.py` mới in khối máy đọc ở §4 (số in bằng `quet_dien_sai_kieu.viet_so`: «5000 mẫu lặp», «10.000 mẫu lặp»). Hợp đồng SAP (`tools/hop_dong_sap.py`, schema `ebm.g4_sap_contract/3`) mang trường `pls_sem` — G4-AUTO-10, G6-AUTO-09 và `chay_sap_g6.kiem_pls_sap` đọc HỢP ĐỒNG, không dò chữ SAP; hợp đồng v1/v2 của SAP đã ký vẫn hợp lệ, không sinh lại để thêm trường. Cỡ mẫu G3 dùng `--effect-type PLS_PATH --effect-size <|β_min| có nguồn>` (căn bậc hai nghịch đảo, Kock & Hadaya 2018, doi:10.1111/isj.12131, α hai phía). PLS-SEM không thay CFA khi câu hỏi là giá trị cấu trúc. Muốn đổi sang PLS-SEM sau khi SAP đã khoá thì phải sửa đổi SAP trước khi có dữ liệu, do STATISTICIAN và PI ký.
+
 ## Ranh giới
 KHÔNG tự tính cỡ mẫu chi tiết (giao `co-mau-nghien-cuu`) · KHÔNG chạy phân tích trên dữ liệu thật (`phan-tich-thong-ke` sau G5) · KHÔNG viết Bàn luận (`viet-ban-thao`).
 
@@ -561,6 +565,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/hinh_g6.py` (kiểm) — đầu ra của `phan-tich-thong-ke`: tự sinh biểu đồ kết quả G6 theo đặc tả SAP + dữ liệu đã khoá; chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: trung thực–minh bạch · tái lập.
 - Công cụ `tools/kiem_cheo_g6.py` (kiểm) — đầu ra của `phan-tich-thong-ke`: kiểm chéo G6 bằng phần mềm thứ hai (SPSS và R); chốt kiểm `tests/test_kiem_cheo_g6_20261114.py`; nguyên tắc: kiểm chứng khách quan · tái lập.
 - Công cụ `tools/phan_tich_sap_bo_sung.py` (kiểm) — đầu ra của `phan-tich-thong-ke`: chạy bằng máy các phân tích SAP trước đây ghi «chờ làm tay»; chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: khách quan · tái lập.
+- Công cụ `tools/pls_sem.py` (kiểm) — đầu ra của `phan-tich-thong-ke`: PLS-SEM theo khối SAP §4 (seminr chính, cSEM kiểm chéo); chốt kiểm `tools/chay_sap_g6.py`; nguyên tắc: khách quan · tái lập.
 - Công cụ `tools/dinh_nghia_thay_the.py` (chủ) — định nghĩa thay thế định trước (vai trò `dinh_nghia_thay_the` của ma trận mục tiêu–biến G3, cột `cong_cu` ghi định nghĩa kèm căn cứ PMID) chép cụ thể vào SAP §9 và sinh mục đặc tả G6 tương ứng; chốt kiểm `tests/test_g6_tu_dong_khong_viec_tay_20261122.py`; nguyên tắc: khách quan (định nghĩa chốt trước khi thấy số) · tái lập.
 - Công cụ `tools/run_g6_auto.py` (kiểm) — đầu ra của `phan-tich-thong-ke`: G6: sinh script phân tích theo SAP đã khoá; chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: khách quan · tái lập.
 - Công cụ `tools/run_stats_analysis.py` (kiểm) — đầu ra của `phan-tich-thong-ke`: phân tích thống kê từ dữ liệu thật đã khoá; chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: tái lập · khách quan.

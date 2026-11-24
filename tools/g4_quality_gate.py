@@ -1070,6 +1070,23 @@ def evaluate_g4_quality(
     else:
         placeholder_status = "PASS"
         placeholder_evidence = "không còn ô trống ở " + "/".join(muc_bat_buoc)
+    # 23/11/2026 (PLS-SEM): khối mô hình PLS-SEM là phần BẮT BUỘC của §4 khi đề tài khai nó — phải đọc được trọn (mô
+    # hình đo lường/cấu trúc, bootstrap, PLSpredict, xử lý thiếu, hạt giống §10). 24/11/2026: đọc bằng hàm của HỢP ĐỒNG
+    # SAP (hop_dong_sap.pls_sem_van_ban — cùng hàm sinh trường `pls_sem` mà G6 chạy), không dò chữ riêng
+    import pls_sem as PLS  # noqa: PLC0415
+
+    loi_pls = None
+    khoi_pls = HD.pls_sem_van_ban(artifact_text)
+    if khoi_pls is not None:
+        if khoi_pls.get("loi"):
+            loi_pls = "SAP khai PLS-SEM nhưng khối mô hình chưa đủ/không hợp lệ: " + "; ".join(khoi_pls["loi"])
+    elif PLS.khoi_g1(meta):
+        loi_pls = ("G1 khai mô hình PLS-SEM (gate_params.G1.pls_sem) nhưng SAP §4 không có khối «Mô hình đo lường "
+                   "(PLS-SEM)» — sinh lại SAP bằng run_g4_auto.py")
+    if loi_pls and placeholder_status == "PASS":
+        placeholder_status, placeholder_evidence = "REVIEW", loi_pls
+    elif loi_pls:
+        placeholder_evidence += f"; {loi_pls}"
     automatic.append(_criterion(
         "G4-AUTO-10",
         "Mục bắt buộc có mặt và không còn ô trống (§1/§2/§4/§5/§9/§10; RCT thêm §13/§14/§15; đánh giá kinh tế "
