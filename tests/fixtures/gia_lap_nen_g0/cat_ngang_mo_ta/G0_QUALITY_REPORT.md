@@ -10,7 +10,7 @@
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
 |---|---|---|---|
 | G0-AUTO-00 | Guardrail liêm chính G0 sạch | PASS | guardrail_passed=True |
-| G0-AUTO-01 | Đề tài có chủ đề thật (không rỗng/placeholder) | PASS | topic='Tỷ lệ kiểm soát huyết áp và các yếu tố liên quan ở người tăng huyết áp điều trị ' |
+| G0-AUTO-01 | Đề tài có chủ đề thật (không rỗng/placeholder) | PASS | topic='Tỷ lệ kiểm soát huyết áp ở người tăng huyết áp điều trị ' |
 | G0-AUTO-02 | Có bằng chứng THẬT làm nền (≥ 1 PMID từ PubMed) | PASS | n_pmids=31 |
 | G0-AUTO-03 | Số hit dùng để kết luận khoảng trống là SỐ THẬT | PASS | counts_are_real=True; nhánh không tra được=[] |
 | G0-AUTO-04 | Checkpoint đủ trường hợp đồng cho cổng sau đọc | PASS | 10 khóa gốc + 9 khóa pubmed_results đầy đủ |

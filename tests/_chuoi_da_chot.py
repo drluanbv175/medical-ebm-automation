@@ -362,8 +362,11 @@ def dien_sap_g4(text: str) -> str:
     khoá; SAP RCT thêm «Quần thể phân tích CHÍNH» và §13–§15."""
     import re
 
+    import g4_quality_gate as G4Q
+
     dinh_tinh = "CHIẾN LƯỢC MÃ HÓA" in text
-    for nhan, gia_tri in _DIEN_THEO_NHAN:
+    # 23/11/2026: thống kê viên khai phương pháp biến cố hiếm ở §5 (G4-AUTO-04 đòi khi thiết kế có hồi quy nhị phân)
+    for nhan, gia_tri in (*_DIEN_THEO_NHAN, (G4Q.NHAN_BIEN_CO_HIEM, G4Q.BIEN_CO_HIEM["mo_ta_chinh_xac"][0])):
         text = re.sub(rf"(- \*\*{re.escape(nhan)}:\*\*) \[CẦN[^\]]*\]", lambda m, g=gia_tri: f"{m.group(1)} {g}", text)
     # 15/11/2026: SAP điền sẵn biến §5 từ ma trận mục tiêu–biến; thống kê viên chỉ còn điền ô LÝ DO LÂM SÀNG/DAG (kèm
     # EPV/VIF mà G4-AUTO-04 kiểm) — như người thật làm trên SAP mới.

@@ -74,8 +74,12 @@ def test_ung_vien_rscript_windows_chon_ban_moi_nhat(tmp_path, monkeypatch):
         (goc / ban / "bin" / "Rscript.exe").write_text("", encoding="utf-8", newline="\n")
     ds = R.ung_vien_rscript(he="nt", goc_cai=[goc])
     assert [p.parent.parent.name for p in ds] == ["R-4.10.0", "R-4.6.2", "R-4.4.1"]  # so số, không so chữ
-    monkeypatch.setenv("EBM_RSCRIPT", "/khac/Rscript")
-    assert R.ung_vien_rscript(he="nt", goc_cai=[goc]) == [Path("/khac/Rscript")]
+    # biến môi trường thắng mọi dò tìm — tệp phải có thật (23/11/2026: trỏ tệp không có ⇒ «không tìm thấy R»)
+    khac = tmp_path / "khac" / "Rscript"
+    khac.parent.mkdir()
+    khac.write_text("", encoding="utf-8", newline="\n")
+    monkeypatch.setenv("EBM_RSCRIPT", str(khac))
+    assert R.ung_vien_rscript(he="nt", goc_cai=[goc]) == [khac]
 
 
 def test_kiem_khong_co_r_la_khong_do_duoc(monkeypatch):
@@ -327,7 +331,8 @@ def test_ci_welch_doi_dau_tu_chuoi_effect():
 
 @pytest.mark.parametrize(
     "ten, so_dong",
-    [("cum_logistic", 7), ("cum_tuyen_tinh", 6), ("mann_whitney", 5), ("thu_tu", 13), ("cum_thu_tu", 13), ("cox", 6)],
+    # 23/11/2026: cum_logistic thêm dòng hiệu số nguy cơ thô + KTC (fixture R bổ sung bằng R thật trên cùng số đếm)
+    [("cum_logistic", 8), ("cum_tuyen_tinh", 6), ("mann_whitney", 5), ("thu_tu", 13), ("cum_thu_tu", 13), ("cox", 6)],
 )
 def test_doi_chieu_dau_ra_r_that_khop(ten, so_dong):
     py, r = _fx(ten)
@@ -670,7 +675,7 @@ def test_lenh_doi_chieu_ma_thoat(tmp_path, monkeypatch):
 
     assert ghi(py) == R.MA_OK
     md = (d / "G6_r_doi_chieu.md").read_text(encoding="utf-8")
-    assert "7 khớp" in md and "Cần bác sĩ kiểm chứng." in md
+    assert "8 khớp" in md and "Cần bác sĩ kiểm chứng." in md  # 23/11/2026: + dòng hiệu số nguy cơ
     lech = copy.deepcopy(py)
     lech["multivariate"]["results"][0]["OR_adj"] = 2.5
     assert ghi(lech) == R.MA_LECH
@@ -746,17 +751,17 @@ KICH_BAN_THAT = {
             "bien_co",
         ],
         0,
-        ("HR thô", "SE cụm"),
+        ("HR thô", "SE cụm", "Gán đa trị (logistic_mi, m = 20) — nhom"),  # Bảng 5 có cụm: CR1 + t(G−1)
     ),
     "LOGISTIC": (
         ["--outcome", "kq", "--group", "nhom", "--covariates", "tuoi,gioitinh", "--outcome-type", "binary"],
         0,
-        ("Đa biến (logistic) — nhom",),
+        ("Đa biến (logistic) — nhom", "Gán đa trị (logistic_mi, m = 20) — tuoi"),
     ),
     "WELCH": (
         ["--outcome", "diem", "--group", "nhom", "--covariates", "tuoi,gioitinh", "--outcome-type", "continuous"],
         0,
-        ("Welch", "Đa biến (linear) — nhom"),
+        ("Welch", "Đa biến (linear) — nhom", "Gán đa trị (linear_mi, m = 20) — nhom"),
     ),
     "MANN-WHITNEY": (
         ["--outcome", "diem_lech", "--group", "nhom", "--covariates", "tuoi,gioitinh", "--outcome-type", "continuous"],
@@ -851,7 +856,10 @@ def test_chay_that_python_den_r(ten, tmp_path, monkeypatch):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["run_stats_analysis.py", "--data", str(p), "--study", study, "--gate", "G6", "--n-imputations", "2", *tham_so],
+        # m = 20 (mặc định của run_stats_analysis): từ 22/11/2026 Bảng 5 (MI) có bản R và được đối chiếu theo sai số
+        # Monte Carlo — m < 10 thì «không so được» (B ước lượng với m − 1 bậc tự do)
+        ["run_stats_analysis.py", "--data", str(p), "--study", study, "--gate", "G6", "--n-imputations", "20",
+         *tham_so],
     )
     with contextlib.redirect_stdout(io.StringIO()):
         RSA.main()

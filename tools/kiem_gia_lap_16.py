@@ -26,79 +26,33 @@ KICH_BAN = {
     "case_control": "benh_chung", "diagnostic": "chan_doan", "prediction": "mo_hinh_du_bao", "sr_ma": "tong_quan_gop",
     "qualitative": "dinh_tinh", "rct_ni": "rct_khong_kem", "rct_cum": "rct_cum", "cohort_cox": "thuan_tap_song_con",
     "cohort_mi": "thuan_tap_mi", "rct_rut_bai": "rct_rut_bai", "cohort_vong_sua": "thuan_tap_vong_sua",
-    "rct_kinh_te": "rct_kinh_te", "rct_hon_hop": "rct_hon_hop",
+    "rct_kinh_te": "rct_kinh_te", "rct_hon_hop": "rct_hon_hop", "case_control_ghep_cap": "benh_chung_ghep_cap",
+    "case_control_ghep_cap_thieu": "benh_chung_ghep_cap_thieu",
+    "case_control_ghep_cap_hiem": "benh_chung_ghep_cap_hiem",
 }
 # 17/11/2026 — kịch bản CHÂN THỰC (gia_lap_chan_thuc): cùng cổng phán + ước lượng chính phải tìm lại tham số thật.
 CHAN_THUC = {f"{t}_chan_thuc": f"{t}_chan_thuc" for t in ("rct", "cross_sectional", "cohort", "case_control",
                                                           "diagnostic", "prediction", "sr_ma", "qualitative")}
 
 
-#: Sổ nợ chuẩn báo cáo theo mục (K18) của bản thảo và báo cáo tổng hợp — BÁNH CÓC (22/11/2026): mục còn thiếu đã
-#: biết, có lý do; mục MỚI thiếu ⇒ CI đỏ (lùi chuẩn); mục trong sổ mà nay đạt ⇒ CI đỏ, đòi rút khỏi sổ (sổ chỉ giảm).
-#: Kịch bản không có trong sổ thì chỉ in số đo, chưa phán.
-SO_NO_K18 = REPO / "tests" / "fixtures" / "gia_lap_k18_so_no.json"
+def kiem_chuan_bao_cao(j: Dict[str, Any]) -> List[str]:
+    """Lý do trượt về chuẩn báo cáo theo mục (K18) của bản thảo G7 và báo cáo tổng hợp nghiệm thu.
 
-
-def _doc_so_no() -> Dict[str, Any]:
-    try:
-        return json.loads(SO_NO_K18.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return {}
-
-
-def kiem_chuan_bao_cao(ten_bao_cao: str, j: Dict[str, Any], so_no: Optional[Dict[str, Any]] = None) -> List[str]:
-    """Lý do trượt về chuẩn báo cáo theo mục (K18) của bản thảo + báo cáo tổng hợp so với sổ nợ bánh cóc."""
-    so_no = _doc_so_no() if so_no is None else so_no
-    no = (so_no.get("kich_ban") or {}).get(ten_bao_cao)
-    if no is None:
-        return []
+    22/11/2026 (bác sĩ: «ghi nhỏ sổ nợ sẽ không ghi sổ nợ nữa, giải quyết theo nguyên tắc»): KHÔNG có sổ nợ, miễn trừ
+    hay bánh cóc. Mọi kịch bản có giả lập tới G7 phải đạt ĐỦ mục chuẩn áp dụng; thiếu bất kỳ mục nào ⇒ trượt; chưa đo
+    được ⇒ trượt (không bao giờ coi «không đo được» là đạt). Mục không áp dụng cho thiết kế do điều kiện của chính
+    tiêu chí K18 quyết, không do danh sách tay."""
     cb = j.get("chuan_bao_cao")
-    if not isinstance(cb, dict) or cb.get("loi") or "bao_cao_thieu" not in cb:
+    if not isinstance(cb, dict) or cb.get("loi") or "bao_cao_thieu" not in cb or "ban_thao_thieu" not in cb:
         return [f"chuẩn báo cáo theo mục CHƯA ĐO: {(cb or {}).get('loi') if isinstance(cb, dict) else 'thiếu khoá'}"]
     loi = []
     for loai, ten in (("ban_thao", "bản thảo"), ("bao_cao", "báo cáo tổng hợp")):
-        do, cho = set(cb.get(f"{loai}_thieu") or []), set(no.get(loai) or [])
-        if do - cho:
-            loi.append(f"{ten} LÙI chuẩn — mục mới thiếu: {', '.join(sorted(do - cho))}")
-        if cho - do:
-            loi.append(f"{ten} đã đạt thêm {', '.join(sorted(cho - do))} — rút khỏi sổ nợ {SO_NO_K18.name}")
+        thieu = sorted(set(cb.get(f"{loai}_thieu") or []))
+        if thieu:
+            loi.append(f"{ten} thiếu mục chuẩn báo cáo: {', '.join(thieu)}")
     if cb.get("bao_cao_cau_truc"):
         loi.append(f"cấu trúc báo cáo tổng hợp: {'; '.join(map(str, cb['bao_cao_cau_truc']))[:200]}")
     return loi
-
-
-def ghi_so_no(thu_muc: Path, ten: Sequence[str], cho_them: bool = False) -> int:
-    """Ghi lại sổ nợ K18 từ báo cáo kịch bản vừa chạy. Mục MỚI chỉ được thêm khi ``cho_them`` (mặc định từ chối)."""
-    so = _doc_so_no() or {"kich_ban": {}}
-    kb = so.setdefault("kich_ban", {})
-    them_moi: List[str] = []
-    for t in ten:
-        bang = {**KICH_BAN, **CHAN_THUC}
-        if t not in bang:
-            print(f"❌ kịch bản lạ: {t}")
-            return 3
-        try:
-            cb = json.loads((thu_muc / f"{bang[t]}.json").read_text(encoding="utf-8")).get("chuan_bao_cao") or {}
-        except (OSError, ValueError) as exc:
-            print(f"❌ {t}: không đọc được báo cáo ({exc})")
-            return 1
-        if cb.get("loi") or "bao_cao_thieu" not in cb:
-            print(f"❌ {t}: chuẩn báo cáo chưa đo — {cb.get('loi')}")
-            return 1
-        moi = {"ban_thao": sorted(cb.get("ban_thao_thieu") or []), "bao_cao": sorted(cb.get("bao_cao_thieu") or [])}
-        cu = kb.get(bang[t])
-        if cu is not None:
-            them_moi += [f"{t}/{loai}: {m}" for loai in moi for m in set(moi[loai]) - set(cu.get(loai) or [])]
-        kb[bang[t]] = moi
-    if them_moi and not cho_them:
-        print("❌ sổ nợ chỉ được GIẢM — mục mới thiếu:\n  " + "\n  ".join(them_moi)
-              + "\n(dùng --cho-them nếu có lý do)")
-        return 1
-    tam = SO_NO_K18.with_suffix(".tam")
-    tam.write_text(json.dumps(so, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
-    tam.replace(SO_NO_K18)
-    print(f"✅ đã ghi sổ nợ {SO_NO_K18.name} cho {len(ten)} kịch bản.")
-    return 0
 
 
 def kiem_mot(p: Path) -> List[str]:
@@ -125,6 +79,19 @@ def kiem_mot(p: Path) -> List[str]:
     # 22/11/2026 (kiểm toàn hệ 11 khâu): khâu 9–10 trước đây không có ở cổng phán — 22/24 kịch bản thiếu hình bắt buộc
     # của chuẩn báo cáo (sơ đồ luồng) và bản diễn giải không bàn hạn chế/khái quát theo chuẩn mà CI vẫn xanh.
     g6 = ((j.get("du_lieu") or {}).get("g6") or {})
+    # 23/11/2026: phân tích SAP mà G6 chạy LỖI ⇒ G7 chỉ có ô chờ cho kết quả đó. Trước đây không chốt nào đọc trạng
+    # thái từng phân tích: trên CI (không R/SPSS) mọi phân tích thiết kế đặc thù bị xếp LỖI mà kịch bản chẩn
+    # đoán/dự báo/gộp vẫn xanh. Chỉ rct_kinh_te đỏ (gián tiếp, qua CHEERS 22).
+    pt_loi = [str(x.get("id")) for x in g6.get("phan_tich") or [] if isinstance(x, dict)
+              and x.get("trang_thai") == "LOI"]
+    if pt_loi:
+        loi.append(f"G6 chạy LỖI {len(pt_loi)} phân tích SAP: {', '.join(pt_loi)[:200]}")
+    # 23/11/2026: kiểm chéo SPSS/R ra LỆCH/LỖI/TỪ CHỐI mà kịch bản vẫn xanh — giả lập trên máy có R/SPSS từng lọt hai
+    # LỆCH (z = 1,96 làm tròn ở Python rồi ở script R). Máy không có R/SPSS (CI) ra KHONG_DO_DUOC — không đỏ.
+    kc_hong = [f"{x.get('id')}={x.get('kiem_cheo')}" for x in g6.get("phan_tich") or [] if isinstance(x, dict)
+               and x.get("kiem_cheo") in ("LECH", "LOI", "TU_CHOI")]
+    if kc_hong:
+        loi.append(f"kiểm chéo SPSS/R không khớp ở {len(kc_hong)} phân tích: {', '.join(kc_hong)[:200]}")
     bd = g6.get("bieu_do")
     if "khong_tu_dong" not in g6:
         if not isinstance(bd, dict) or not bd.get("co_tep"):
@@ -141,7 +108,7 @@ def kiem_mot(p: Path) -> List[str]:
     g65 = ((j.get("cong") or {}).get("G6_5") or {})
     if g65 and g65.get("trang_thai") != "DAT":
         loi.append(f"bản diễn giải G6.5 = {g65.get('trang_thai')}: {'; '.join(map(str, g65.get('loi') or []))[:200]}")
-    loi += kiem_chuan_bao_cao(p.stem, j)
+    loi += kiem_chuan_bao_cao(j)
     return loi
 
 
@@ -161,12 +128,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--thu-muc", default=str(REPO / "state" / "gia-lap-tron-vong"))
     ap.add_argument("--kich-ban", nargs="*", help="tên nút (vd rct cohort); mặc định cả 16")
     ap.add_argument("--chan-thuc", action="store_true", help="phán 8 kịch bản chân thực thay cho 16 kịch bản")
-    ap.add_argument("--ghi-so-no", action="store_true",
-                    help="ghi số đo chuẩn báo cáo theo mục hiện tại vào sổ nợ (chỉ được GIẢM; thêm mục cần --cho-them)")
-    ap.add_argument("--cho-them", action="store_true", help="cho phép sổ nợ THÊM mục (phải nêu lý do trong commit)")
     a = ap.parse_args(argv)
-    if a.ghi_so_no:
-        return ghi_so_no(Path(a.thu_muc), a.kich_ban or list(KICH_BAN), cho_them=a.cho_them)
     bang = CHAN_THUC if a.chan_thuc else {**KICH_BAN, **CHAN_THUC}
     ten = a.kich_ban or list(CHAN_THUC if a.chan_thuc else KICH_BAN)
     la = [t for t in ten if t not in bang]

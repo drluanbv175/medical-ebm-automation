@@ -1491,7 +1491,8 @@ KIEU_SANG_MUC_DO = {"nhi_phan": "NOMINAL", "danh_dinh": "NOMINAL", "thu_tu": "OR
 #: cụm/trọng số ⇒ NONE (SPLIT của SPSS chỉ là nhãn tương thích Modeler, không phải split-file — dễ hiểu nhầm).
 _VAI_TRO_SPSS = {"ket_cuc_chinh": "TARGET", "ket_cuc_phu": "TARGET", "thoi_gian": "TARGET", "su_kien": "TARGET",
                  "phoi_nhiem": "INPUT", "yeu_to": "INPUT", "hiep_bien": "INPUT", "phan_tang": "INPUT",
-                 "mo_ta": "INPUT", "cum": "NONE", "trong_so": "NONE"}
+                 "mo_ta": "INPUT", "dinh_nghia_thay_the": "INPUT", "tuan_thu_de_cuong": "INPUT", "cum": "NONE",
+                 "trong_so": "NONE", "bo_ghep": "NONE", "bien_ghep": "INPUT"}
 
 
 def _so_hay_none(x) -> float | None:
@@ -1564,7 +1565,8 @@ def thuoc_tinh_ky_vong(b: dict) -> dict[str, str]:
 #: Một biến có thể nằm ở nhiều dòng ma trận (vd tuổi: mô tả ở MT1, yếu tố ở MT3) ⇒ vai trò gộp theo thứ tự ưu tiên;
 #: vai trò ĐẦU quyết định VARIABLE ROLE.
 UU_TIEN_VAI_TRO = ("ket_cuc_chinh", "ket_cuc_phu", "phoi_nhiem", "yeu_to", "hiep_bien", "phan_tang", "cum",
-                   "thoi_gian", "su_kien", "trong_so", "mo_ta")
+                   "thoi_gian", "su_kien", "trong_so", "dinh_nghia_thay_the", "tuan_thu_de_cuong", "bo_ghep",
+                   "bien_ghep", "mo_ta")
 
 
 def vai_tro_spss(b: dict) -> str:
@@ -2114,6 +2116,21 @@ def them_bien_gia(man: dict, dt: dict) -> dict:
     return man2
 
 
+def ty_le_tu_tom_tat(tom: dict) -> tuple[list[str], float | None]:
+    """(cột tỷ lệ, ngưỡng) của lượt Python: đặc tả mới ghi thẳng; tóm tắt cũ ⇒ suy từ khoá ty_le (định nghĩa
+    «cột ≥ x»). Dùng chung cho cầu nối SPSS và R (`cau_noi_r.ty_le_tu_tom_tat`)."""
+    dt = (tom or {}).get("dac_ta_phan_tich") or {}
+    if dt.get("ty_le"):
+        return list(dt["ty_le"]), dt.get("nguong_ty_le")
+    ds = [x for x in (tom or {}).get("ty_le") or [] if isinstance(x, dict) and x.get("cot")]
+    nguong = None
+    for x in ds:
+        m = re.search(r"≥\s*(-?[\d.]+)\s*$", str(x.get("dinh_nghia") or ""))
+        if m:
+            nguong = float(m.group(1))
+    return [x["cot"] for x in ds], nguong
+
+
 def dac_ta(args) -> dict:
     tom_day_du = _doc_json(thu_muc_de_tai(args.study) / f"{args.gate}_analysis_summary.json")
     tom = tom_day_du.get("dac_ta_phan_tich") or {}
@@ -2128,6 +2145,17 @@ def dac_ta(args) -> dict:
     bg = tom.get("hiep_bien_phan_loai") or {}
     dt["hiep_bien_phan_loai"] = {c: v for c, v in bg.items() if c in dt["covariates"]}
     dt["loc"] = tom.get("loc")  # F3: quần thể phân tích của lượt Python (để kiểm lệch đặc tả)
+    dt["ty_le"], dt["nguong_ty_le"] = ty_le_tu_tom_tat(tom_day_du)  # 23/11/2026: Bảng 1b (tỷ lệ + KTC Wilson)
+    # 23/11/2026: phương pháp KTC hiệu số nguy cơ của lượt Python (SAP §4) — SPSS/R tính lại đúng phương pháp này.
+    # Tóm tắt cũ không ghi (engine cũ luôn Wald) ⇒ None; cú pháp/script coi None là Wald.
+    dt["kc_hieu_so"] = tom.get("kc_hieu_so")
+    # 23/11/2026: Python đã chạy phương pháp biến cố hiếm (rào EPV chặn hồi quy) ⇒ SPSS/R tính lại cùng phương pháp —
+    # giá trị = mã phương pháp đã chạy (mo_ta_chinh_xac | firth), None khi không chạy hoặc lỗi
+    bch = tom_day_du.get("bien_co_hiem")
+    dt["bien_co_hiem_da_chay"] = (bch.get("phuong_phap") or None) if isinstance(bch, dict) and not bch.get("error") \
+        else None
+    dt["bo_ghep"] = tom.get("bo_ghep")  # 23/11/2026: mã bộ ghép ⇒ logistic có điều kiện (COXREG theo STRATA)
+    dt["bien_ghep"] = list(tom.get("bien_ghep") or []) or None  # biến dùng để ghép (mô hình gán đa trị)
     pl = dt["hiep_bien_phan_loai"]
     dt["covariates_mo_hinh"] = [t for c in dt["covariates"] for t in (pl[c]["ten"] if c in pl else [c])]
     # OR theo MỖI k đơn vị phơi nhiễm (C1a: mỗi 15 phút chờ) — thiếu thì SPSS tính theo mỗi phút ⇒ «lệch» giả
@@ -2182,6 +2210,10 @@ def cu_phap_phan_tich(
     y, g, t, e, cum = ten(dt["outcome"]), ten(dt["group"]), ten(dt["time"]), ten(dt["event"]), ten(dt["cot_cum"])
     cov = [ten(c) for c in (dt.get("covariates_mo_hinh") or dt["covariates"])]
     so = {b["ten"]: b["so"] for b in man["bien"]}
+    if dt.get("ty_le"):
+        trung = sorted(b["ten"] for b in man["bien"] if b["ten"].lower() in _BIEN_TAM_TY_LE)
+        if trung:
+            raise TuChoi(f"biến trong .sav trùng biến tạm của khối Bảng 1b: {', '.join(trung)} — đổi tên trước")
     loai = dt["outcome_type"]
     if y and loai == "auto":
         m = bien[dt["outcome"]].get("muc")
@@ -2202,10 +2234,8 @@ def cu_phap_phan_tich(
     ]
     g_mh = g  # tên phơi nhiễm dùng trong mô hình thứ tự
     dv = dt.get("don_vi_phoi_nhiem")
-    if dv and g:
-        if loai != "ordinal":
-            canh_bao.append("đơn vị phơi nhiễm chỉ áp cho hồi quy thứ tự (như run_stats_analysis.py) — bỏ qua")
-        elif not so.get(g):
+    if dv and g:  # 22/11/2026: mọi họ mô hình (như run_stats_analysis.py)
+        if not so.get(g):
             raise TuChoi(f"đơn vị phơi nhiễm cần biến số, {g} là chuỗi")
         else:
             g_mh = chuan_ten(f"{g}_dv")
@@ -2213,7 +2243,7 @@ def cu_phap_phan_tich(
                 g_mh = chuan_ten(g_mh + "_")
             dong += [
                 f"COMPUTE {g_mh} = {g} / {dv:g}.",
-                f"VARIABLE LABELS {g_mh} {chuoi_spss(f'{g} chia {dv:g} (OR cho mỗi {dv:g} đơn vị)')}.",
+                f"VARIABLE LABELS {g_mh} {chuoi_spss(f'{g} chia {dv:g} (hiệu ứng cho mỗi {dv:g} đơn vị)')}.",
             ]
             phu["ten_phoi_nhiem_mo_hinh"] = g_mh
             so[g_mh] = True
@@ -2256,14 +2286,24 @@ def cu_phap_phan_tich(
         elif loai_kc in ("binary", "continuous"):
             if loai_kc == "binary":
                 khoi("ket_cuc_chinh", [f"CROSSTABS /TABLES={g} BY {y} /STATISTICS=CHISQ RISK /CELLS=COUNT ROW."])
+                khoi("hieu_so", cu_phap_hieu_so(y, g, muc_g, so.get(g), dt.get("kc_hieu_so")))
+                if dt.get("bien_co_hiem_da_chay"):  # 23/11/2026: Python chạy phương pháp biến cố hiếm (rào EPV)
+                    khoi("bien_co_hiem", cu_phap_bien_co_hiem(y, g))
             else:
                 g0, g1 = (v if so.get(g) else "'" + v + "'" for v in muc_g or [])
                 khoi("ket_cuc_chinh", [f"T-TEST GROUPS={g}({g0} {g1}) /VARIABLES={y} /CRITERIA=CI(.95)."])
-        pred = [g_mh if loai == "ordinal" else g] + cov
+        pred = [g_mh] + cov
         ps, pc = tach(pred)
         by = f"\n    BY {goi_ds(pc)}" if pc else ""
         wi = f"\n    WITH {goi_ds(ps)}" if ps else ""
-        if loai == "binary":
+        if loai == "binary" and dt.get("bo_ghep"):
+            # 23/11/2026: bệnh–chứng ghép cặp cá thể — hồi quy logistic có điều kiện = Cox phân tầng theo bộ ghép
+            # (thời gian giả: ca 1, chứng 2 — mọi người trong bộ cùng tập nguy cơ tại thời điểm của ca)
+            dong_dk, cb_dk = cu_phap_clogit(y, ten(dt["bo_ghep"]), pred, cov, bien[dt["outcome"]], so, man)
+            khoi("da_bien", dong_dk[0])
+            khoi("da_bien_tho", dong_dk[1])
+            canh_bao.extend(cb_dk)
+        elif loai == "binary":
             cat = [f"  /CATEGORICAL={goi_ds(pc)}"] + [f"  /CONTRAST({v})=Indicator(1)" for v in pc] if pc else []
             khoi(
                 "da_bien",
@@ -2289,8 +2329,9 @@ def cu_phap_phan_tich(
                 raise TuChoi(f"Poisson vững cần biến dự báo dạng số (biến chuỗi: {', '.join(pc)}) — khai hiệp biến "
                              "phân loại để thành biến giả")  # fmt: skip
             bg = dt.get("hiep_bien_phan_loai") or {}
-            nhom_bien = [[g]] + [[ten(x) for x in bg[c]["ten"]] if c in bg else [ten(c)]
-                                 for c in dt["covariates"]]  # fmt: skip
+            # 22/11/2026: phơi nhiễm đã chia đơn vị (g_mh) — như run_stats_analysis áp đơn vị cho mọi họ mô hình
+            nhom_bien = [[g_mh]] + [[ten(x) for x in bg[c]["ten"]] if c in bg else [ten(c)]
+                                    for c in dt["covariates"]]  # fmt: skip
             tat = [v for ds in nhom_bien for v in ds]
             dk = "\n    AND ".join(f"NOT MISSING({v})" for v in [y, *tat])
 
@@ -2340,19 +2381,93 @@ def cu_phap_phan_tich(
         # hơn, HR thô lệch.
         dk = [f"{'AND ' if k else ''}NOT MISSING({v})" for k, v in enumerate(cov)]
         loc = ["TEMPORARY.", f"SELECT IF ({goi_ds(dk)})."] if cov else []
-        khoi("song_con_tho", [*loc, f"COXREG {t} /STATUS={e}(1) /METHOD=ENTER {g} /PRINT=CI(95)."])
+        khoi("song_con_tho", [*loc, f"COXREG {t} /STATUS={e}(1) /METHOD=ENTER {g_mh} /PRINT=CI(95)."])
         if cov:
             khoi(
                 "song_con_hieu_chinh",
-                [f"COXREG {t} /STATUS={e}(1)\n  /METHOD=ENTER {goi_ds([g] + cov)}\n  /PRINT=CI(95)."],
+                [f"COXREG {t} /STATUS={e}(1)\n  /METHOD=ENTER {goi_ds([g_mh] + cov)}\n  /PRINT=CI(95)."],
             )
         khoi("kaplan_meier", [f"KM {t} BY {g} /STATUS={e}(1) /PRINT TABLE MEAN /TEST LOGRANK /COMPARE OVERALL POOLED."])
         canh_bao.append(
             "Cox: SPSS xử lý thời điểm trùng bằng Breslow, lifelines bằng Efron ⇒ HR lệch rất nhỏ "
             "khi có nhiều thời điểm trùng"
         )
+    if dt.get("ty_le"):
+        dong += _cu_phap_ty_le(dt, ten, so, cum, thu_muc_kq)
     dong += ["OMSEND TAG='ebm_spv'.", ""]
     return "\n".join(dong), canh_bao, phu
+
+
+#: Biến tạm của khối Bảng 1b (tiền tố ebm_ — .sav có biến trùng tên thì từ chối, như khối bổ sung).
+_BIEN_TAM_TY_LE = ("ebm_x", "ebm_y", "ebm_w", "ebm_khoa", "ebm_moi", "ebm_n", "ebm_e", "ebm_k", "ebm_p", "ebm_vs",
+                   "ebm_de", "ebm_z", "ebm_hs", "ebm_nh", "ebm_mau", "ebm_tam", "ebm_nua", "ebm_lo", "ebm_hi")
+
+
+def _cu_phap_ty_le(dt: dict, ten, so: dict, cum: str | None, thu_muc_kq: Path) -> list[str]:
+    """Bảng 1b bằng SPSS (23/11/2026) — tỷ lệ + KTC 95 % Wilson của run_stats_analysis.ty_le_wilson_cum.
+
+    - Wilson độc lập: thủ tục PROPORTIONS /ONESAMPLE … CITYPES=WILSON_SCORE (cài đặt riêng của SPSS).
+    - Có cụm: SPSS không có Wilson theo cụm sẵn ⇒ tính từ thành phần. Phương sai thiết kế của tỷ lệ lấy từ
+      CSDESCRIPTIVES (Complex Samples, kế hoạch CLUSTER=<cụm> ESTIMATOR=WR, trọng số 1 — tuyến tính hoá:
+      K/(K−1)·Σ(t_c − p·m_c)²/n², đo 23/11/2026 trùng Python tới 15 chữ số); DE = SE²/[p(1−p)/n] chặn dưới 1;
+      n hiệu dụng = n/DE × (z/t_{K−1})² (Dean & Pagano 2015) rồi KTC Wilson trên n hiệu dụng — đúng công thức Python.
+    Quần thể: bộ dữ liệu đang mở (đã qua biến phái sinh và lọc F3) bỏ ca thiếu cột tỷ lệ (và cột cụm) — như
+    `df[[cot, cum]].dropna()` của Python. Mỗi cột chạy trên BẢN SAO bộ dữ liệu, xong trở về bản gốc."""
+    dong = ["DATASET NAME ebm_goc WINDOW=FRONT."]
+
+    def khoi(tag: str, lenh: list[str]) -> None:  # cùng dạng khối OMS của cu_phap_phan_tich
+        tep = dd_spss(thu_muc_kq / ("oms_" + tag + ".xml"))
+        dong.append(f"OMS /SELECT TABLES /DESTINATION FORMAT=OXML OUTFILE={tep} /TAG='{tag}'.")
+        dong.extend(lenh)
+        dong.append(f"OMSEND TAG='{tag}'.")
+
+    ng = dt.get("nguong_ty_le")
+    for i, cot in enumerate(dt["ty_le"], 1):
+        x = ten(cot)
+        doi_so = [] if so.get(x) else [f"COMPUTE ebm_x = NUMBER({x}, F40.0)."]  # cột chữ mang số ⇒ như pd.to_numeric
+        x = x if so.get(x) else "ebm_x"
+        dk = " AND ".join(f"NOT MISSING({v})" for v in [x, *([cum] if cum else [])])
+        dong += [f"DATASET COPY ebm_tl_{i}.", f"DATASET ACTIVATE ebm_tl_{i}.", *doi_so, f"SELECT IF ({dk}).",
+                 f"COMPUTE ebm_y = ({x} >= {ng!r})." if ng is not None else f"COMPUTE ebm_y = {x}.",
+                 "COMPUTE ebm_w = 1.", "COMPUTE ebm_khoa = 1.", "EXECUTE."]  # fmt: skip
+        khoi(f"ty_le_{i}", ["PROPORTIONS /ONESAMPLE ebm_y TESTVAL=0.5 TESTTYPES=NONE CITYPES=WILSON_SCORE",
+                            "  /SUCCESS VALUE=LEVEL(1) /CRITERIA CILEVEL=95 /MISSING SCOPE=ANALYSIS"
+                            " USERMISSING=EXCLUDE."])  # fmt: skip
+        if cum:
+            ke = dd_spss(thu_muc_kq / f"ty_le_{i}.csaplan")
+            dong += [
+                f"CSPLAN ANALYSIS /PLAN FILE={ke}",
+                f"  /PLANVARS ANALYSISWEIGHT=ebm_w /DESIGN CLUSTER={cum} /ESTIMATOR TYPE=WR.",
+                f"DATASET DECLARE ebm_cs_{i}.",
+                "OMS /SELECT TABLES /IF COMMANDS=['CSDescriptives'] SUBTYPES=['Univariate Statistics']",
+                f"  /DESTINATION FORMAT=SAV OUTFILE=ebm_cs_{i} VIEWER=NO /TAG='ebm_cs_{i}'.",
+                f"CSDESCRIPTIVES /PLAN FILE={ke} /SUMMARY VARIABLES=ebm_y /MEAN /STATISTICS SE COUNT.",
+                f"OMSEND TAG='ebm_cs_{i}'.",
+                f"DATASET ACTIVATE ebm_cs_{i}.", "COMPUTE ebm_khoa = 1.", "EXECUTE.",
+                f"DATASET ACTIVATE ebm_tl_{i}.", f"SORT CASES BY {cum}.", "COMPUTE ebm_moi = 1.",
+                f"IF ($CASENUM > 1) ebm_moi = ({cum} <> LAG({cum})).",
+                "AGGREGATE /OUTFILE=* /BREAK=ebm_khoa /ebm_n = N /ebm_e = SUM(ebm_y) /ebm_k = SUM(ebm_moi).",
+                # chiều ghép: bộ đã gộp là /FILE, bảng OMS là /TABLE (chiều ngược lại SPSS 31 báo lỗi cú pháp)
+                f"MATCH FILES /FILE=* /TABLE=ebm_cs_{i} /BY ebm_khoa.",
+                "COMPUTE ebm_p = ebm_e / ebm_n.",
+                "COMPUTE ebm_vs = ebm_p * (1 - ebm_p) / ebm_n.",
+                "COMPUTE ebm_de = 1.",
+                "IF (ebm_vs > 0) ebm_de = MAX(1, StandardError ** 2 / ebm_vs).",
+                "COMPUTE ebm_z = IDF.NORMAL(0.975, 0, 1).",
+                "COMPUTE ebm_hs = (ebm_z / IDF.T(0.975, ebm_k - 1)) ** 2.",
+                "COMPUTE ebm_nh = ebm_n / ebm_de * ebm_hs.",
+                "COMPUTE ebm_mau = 1 + ebm_z ** 2 / ebm_nh.",
+                "COMPUTE ebm_tam = (ebm_p + ebm_z ** 2 / (2 * ebm_nh)) / ebm_mau.",
+                "COMPUTE ebm_nua = ebm_z * SQRT(ebm_p * (1 - ebm_p) / ebm_nh + ebm_z ** 2 / (4 * ebm_nh ** 2))"
+                " / ebm_mau.",
+                "COMPUTE ebm_lo = MAX(0, ebm_tam - ebm_nua).",
+                "COMPUTE ebm_hi = MIN(1, ebm_tam + ebm_nua).",
+            ]
+            khoi(f"ty_le_cum_{i}", ["SUMMARIZE /TABLES=ebm_n ebm_e ebm_k ebm_p StandardError ebm_de ebm_lo ebm_hi",
+                                    "  /FORMAT=LIST NOCASENUM NOTOTAL /CELLS=NONE."])  # fmt: skip
+            dong.append(f"DATASET CLOSE ebm_cs_{i}.")
+        dong += ["DATASET ACTIVATE ebm_goc.", f"DATASET CLOSE ebm_tl_{i}."]
+    return dong
 
 
 def bien_ten(man: dict, ten: str) -> dict:
@@ -2371,10 +2486,10 @@ def lenh_cu_phap(args) -> int:
     man = them_loc(args.study, them_bien_phai_sinh(args.study, man, args.gate), args.gate)
     dt = dac_ta(args)
     man = them_bien_gia(man, dt)
-    if not dt["outcome"] and not (dt["time"] and dt["event"]):
+    if not dt["outcome"] and not (dt["time"] and dt["event"]) and not dt.get("ty_le"):
         raise TuChoi(
             "thiếu đặc tả: chưa có G6_analysis_summary.json với khoá dac_ta_phan_tich — truyền --outcome/--group/"
-            "--covariates (hoặc --time/--event) như run_stats_analysis.py"
+            "--covariates (hoặc --time/--event, hoặc tỷ lệ --ty-le) như run_stats_analysis.py"
         )
     d = thu_muc_de_tai(args.study)
     kq = d / "spss" / "ket_qua"
@@ -2480,6 +2595,119 @@ def he_so(bang: dict, *, mu: bool) -> dict[str, dict]:
     return ra
 
 
+#: phương pháp KTC hiệu số nguy cơ (mã của run_stats_analysis.KC_HIEU_SO) ⇒ từ khoá CITYPES của SPSS PROPORTIONS
+CITYPES_HIEU_SO = {"newcombe": "NEWCOMBE", "wald": "WALD"}
+
+
+def cu_phap_hieu_so(y: str, g: str, muc_g: list | None, g_la_so: bool | None, kc: str | None) -> list[str]:
+    """Hiệu số nguy cơ p(nhóm sau) − p(nhóm trước) + KTC 95 % theo ĐÚNG phương pháp lượt Python (23/11/2026).
+
+    Thủ tục PROPORTIONS /INDEPENDENTSAMPLES (cài đặt riêng của SPSS, có Newcombe hybrid score — đo 23/11/2026 trên
+    SPSS 31: ví dụ (a) của Newcombe 1998 ra 0,05243–0,33387, trùng bảng II của bài gốc và DescTools). SELECT=LEVEL(sau
+    trước) ⇒ hiệu = nhóm sau − nhóm trước như Python; SUCCESS VALUE=LAST ⇒ giá trị LỚN là biến cố như Python.
+    Phương pháp ngoài danh sách ⇒ TuChoi (không tự lùi về Wald). `kc` None (tóm tắt cũ) ⇒ Wald — engine cũ luôn Wald."""
+    kc = kc or "wald"
+    if kc not in CITYPES_HIEU_SO:
+        raise TuChoi(f"phương pháp KTC hiệu số nguy cơ «{kc}» chưa có cú pháp SPSS — không tự lùi về Wald")
+    if len(muc_g or []) != 2:
+        raise TuChoi(f"hiệu số nguy cơ cần biến nhóm {g} đúng 2 mức")
+    g0, g1 = (str(v) if g_la_so else "'" + str(v).replace("'", "''") + "'" for v in muc_g or [])
+    return [
+        f"PROPORTIONS /INDEPENDENTSAMPLES {y} BY {g} SELECT=LEVEL({g1} {g0}) CITYPES={CITYPES_HIEU_SO[kc]}"
+        " TESTTYPES=NONE",
+        "  /SUCCESS VALUE=LAST /CRITERIA CILEVEL=95 /MISSING SCOPE=ANALYSIS USERMISSING=EXCLUDE.",
+    ]
+
+
+#: biến tạm thời gian giả của COXREG cho hồi quy logistic có điều kiện (.sav có biến trùng tên ⇒ từ chối)
+BIEN_TAM_CLOGIT = "ebm_tg"
+
+
+def cu_phap_clogit(y: str, bo: str, pred: list[str], cov: list[str], b_y: dict, so: dict,
+                   man: dict) -> tuple[tuple[list[str], list[str]], list[str]]:
+    """Hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép bằng SPSS (23/11/2026): COXREG phân tầng theo mã bộ ghép, thời gian
+    giả = 2 − (ca) ⇒ ca có biến cố ở thời điểm 1, chứng kiểm duyệt ở 2 — hợp lý từng phần trong mỗi tầng chính là hợp lý
+    có điều kiện của bộ ghép. Mỗi bộ ĐÚNG MỘT ca: không có thời điểm trùng ⇒ Breslow của COXREG = hợp lý có điều kiện
+    chính xác (Python/R); bộ nhiều ca thì khác (đối chiếu ghi rõ). Trả ((lệnh hiệu chỉnh, lệnh thô), cảnh báo).
+    Thô = chỉ phơi nhiễm, CÙNG tập ca đầy đủ hiệp biến (TEMPORARY + SELECT IF) như Python."""
+    if not so.get(y):
+        raise TuChoi(f"logistic có điều kiện cần kết cục (ca/chứng) dạng số — {y} là chuỗi")
+    if any(not so.get(v) for v in pred):
+        raise TuChoi(f"logistic có điều kiện cần biến dự báo dạng số (biến chuỗi: "
+                     f"{', '.join(v for v in pred if not so.get(v))}) — khai hiệp biến phân loại để thành biến giả")
+    if BIEN_TAM_CLOGIT.upper() in {b["ten"].upper() for b in man["bien"]}:
+        raise TuChoi(f"biến trong .sav trùng biến tạm «{BIEN_TAM_CLOGIT}» của khối logistic có điều kiện — đổi tên")
+    muc = b_y.get("muc") or []
+    if len(muc) != 2:
+        raise TuChoi(f"logistic có điều kiện cần kết cục đúng 2 mức (ca/chứng) — {y} có {len(muc)}")
+    bc = max(float(m) for m in muc)
+    bc_s = f"{bc:g}"
+    tinh = f"COMPUTE {BIEN_TAM_CLOGIT} = 2 - ({y} = {bc_s})."
+
+    def cox(ds: list[str]) -> str:
+        return (f"COXREG {BIEN_TAM_CLOGIT} /STATUS={y}({bc_s}) /STRATA={bo}\n  /METHOD=ENTER {goi_ds(ds)}\n"
+                "  /PRINT=CI(95) /CRITERIA=ITERATE(100) LCON(0.00000001) BCON(0.00000001).")
+
+    dk = " AND ".join(f"NOT MISSING({v})" for v in cov)
+    tho = [tinh, *(["TEMPORARY.", f"SELECT IF ({dk})."] if cov else []), cox(pred[:1])]
+    return ([tinh, cox(pred)], tho), [
+        "Logistic có điều kiện: SPSS COXREG phân tầng theo bộ ghép (Breslow) — trùng hợp lý có điều kiện chính xác khi "
+        "mỗi bộ ghép có đúng một ca"]
+
+
+def cu_phap_bien_co_hiem(y: str, g: str) -> list[str]:
+    """Biến cố hiếm (23/11/2026): KTC 95% chính xác Clopper–Pearson của tỷ lệ biến cố TỪNG nhóm (PROPORTIONS
+    /ONESAMPLE theo SPLIT FILE nhóm). p chính xác Fisher lấy từ bảng Chi-Square Tests của CROSSTABS kết cục chính (bảng
+    2×2 luôn có dòng Fisher's Exact Test). Đo 23/11/2026 trên SPSS 31: 1/160 ⇒ 0,000158–0,034329, trùng R binom.test."""
+    return [
+        f"SORT CASES BY {g}.",
+        f"SPLIT FILE LAYERED BY {g}.",
+        f"PROPORTIONS /ONESAMPLE {y} TESTVAL=0.5 TESTTYPES=NONE CITYPES=CLOPPER_PEARSON",
+        "  /SUCCESS VALUE=LAST /CRITERIA CILEVEL=95 /MISSING SCOPE=ANALYSIS USERMISSING=EXCLUDE.",
+        "SPLIT FILE OFF.",
+    ]
+
+
+def doc_bien_co_hiem(thu_muc_kq: Path) -> dict | None:
+    """oms_bien_co_hiem.xml ⇒ {nhóm: {n, so_bien_co, ty_le, ci}} — None khi SPSS không ra bảng."""
+    p = thu_muc_kq / "oms_bien_co_hiem.xml"
+    if not p.exists():
+        return None
+    ra: dict = {}
+    for b in phang_oxml(p):
+        if _chuan_bang(b["bang"]) != "onesampleproportionsconfidenceintervals":
+            continue
+        for hang, cot in _hang_theo_bien(b).items():
+            if not hang or "clopper" not in str(hang[-1]).lower():
+                continue
+            ra[_ma_so_gon(str(hang[0]))] = {"n": _lay(cot, "Trials"), "so_bien_co": _lay(cot, "Successes"),
+                                            "ty_le": _lay(cot, "Proportion"),
+                                            "ci": [_lay(cot, "Lower"), _lay(cot, "Upper")]}
+    return ra or None
+
+
+def doc_hieu_so(thu_muc_kq: Path) -> dict | None:
+    """Đọc oms_hieu_so.xml ⇒ {rd, ci, phuong_phap (mã), n} — None khi SPSS không ra bảng."""
+    p = thu_muc_kq / "oms_hieu_so.xml"
+    if not p.exists():
+        return None
+    bangs = phang_oxml(p)
+    ci = [b for b in bangs if _chuan_bang(b["bang"]) == "independentsamplesproportionsconfidenceintervals"]
+    ra: dict | None = None
+    if ci:
+        ten_ma = {v.lower(): k for k, v in CITYPES_HIEU_SO.items()}
+        for hang, cot in _hang_theo_bien(ci[-1]).items():
+            ma = ten_ma.get(str(hang[-1] if hang else "").strip().lower())
+            if ma:
+                ra = {"rd": _lay(cot, r"^Difference in Proportions$"), "ci": [_lay(cot, "lower"), _lay(cot, "upper")],
+                      "phuong_phap": ma}
+                break
+    tk = [b for b in bangs if _chuan_bang(b["bang"]) == "independentsamplesproportionsgroupstatistics"]
+    if ra is not None and tk:
+        ra["n"] = int(sum(o["so"] or 0 for o in tk[-1]["o"] if o["cot"] and o["cot"][-1] == "Trials"))
+    return ra
+
+
 def doc_ket_qua(thu_muc_kq: Path, dt: dict, man: dict) -> dict:
     nguoc = {b["ten"]: b["cot"] for b in man["bien"]}
     if dt.get("ten_phoi_nhiem_mo_hinh") and dt.get("group"):
@@ -2510,6 +2738,14 @@ def doc_ket_qua(thu_muc_kq: Path, dt: dict, man: dict) -> dict:
                     ra["ket_cuc_chinh"]["p_pearson"] = _lay(cot, "asymptotic")
                 if hang and hang[-1] == "Continuity Correction":
                     ra["ket_cuc_chinh"]["p_yates"] = _lay(cot, "asymptotic")
+                if hang and hang[-1] == "Fisher's Exact Test":  # 23/11/2026: p chính xác Fisher (biến cố hiếm)
+                    ra["ket_cuc_chinh"]["p_fisher"] = _lay(cot, r"Exact Sig\. \(2-sided\)")
+    hs = doc_hieu_so(thu_muc_kq)
+    if hs is not None:
+        ra["hieu_so"] = hs
+    bch = doc_bien_co_hiem(thu_muc_kq)
+    if bch is not None:
+        ra["bien_co_hiem"] = bch
     tt = bang("ket_cuc_chinh", "independentsamplestest")
     if tt:
         kq = {"loai": "continuous"}
@@ -2523,7 +2759,7 @@ def doc_ket_qua(thu_muc_kq: Path, dt: dict, man: dict) -> dict:
                 "ci": [-x for x in (_lay(cot, "upper"), _lay(cot, "lower")) if x is not None] or None,
             }
         ra["ket_cuc_chinh"] = kq
-    for tag, khoa in (("da_bien", "da_bien"), ("da_bien_cum", "da_bien_cum")):
+    for tag, khoa in (("da_bien", "da_bien"), ("da_bien_cum", "da_bien_cum"), ("da_bien_tho", "da_bien_tho")):
         p = thu_muc_kq / f"oms_{tag}.xml"
         if not p.exists():
             continue
@@ -2547,6 +2783,36 @@ def doc_ket_qua(thu_muc_kq: Path, dt: dict, man: dict) -> dict:
     bs = bang("poisson_hieu_chinh", "parameterestimates")
     if bs:
         ra["poisson_hieu_chinh"] = {"thang": "PR", "he_so": doi_ten(he_so(bs[-1], mu=True))}
+    tl = doc_ty_le(thu_muc_kq, dt)
+    if tl:
+        ra["ty_le"] = tl
+    return ra
+
+
+def doc_ty_le(thu_muc_kq: Path, dt: dict) -> dict:
+    """Bảng 1b từ OXML: PROPORTIONS (Wilson độc lập) + bảng SUMMARIZE của khối theo cụm ⇒ {cột: {...}}."""
+    ra: dict = {}
+    for i, cot in enumerate(dt.get("ty_le") or [], 1):
+        mot: dict = {}
+        p = thu_muc_kq / f"oms_ty_le_{i}.xml"
+        bs = [b for b in phang_oxml(p) if _chuan_bang(b["bang"]) == "onesampleproportionsconfidenceintervals"] \
+            if p.exists() else []
+        if bs:
+            o = {tuple(x["cot"]): x["so"] for x in bs[-1]["o"]}
+            n, e = o.get(("Observed", "Trials")), o.get(("Observed", "Successes"))
+            mot.update(n=int(n) if n is not None else None, so_su_kien=int(e) if e is not None else None,
+                       ty_le=o.get(("Observed", "Proportion")),
+                       ci_doc_lap=[o.get(("95% Confidence Interval", "Lower")),
+                                   o.get(("95% Confidence Interval", "Upper"))])  # fmt: skip
+        p = thu_muc_kq / f"oms_ty_le_cum_{i}.xml"
+        bs = [b for b in phang_oxml(p) if _chuan_bang(b["bang"]) == "report"] if p.exists() else []
+        if bs:
+            o = {(x["cot"] or [""])[-1].strip(): x["so"] for x in bs[-1]["o"]}
+            mot.update(n_cum=int(o["ebm_n"]) if o.get("ebm_n") is not None else None,
+                       so_cum=int(o["ebm_k"]) if o.get("ebm_k") is not None else None, ty_le_cum=o.get("ebm_p"),
+                       se_thiet_ke=o.get("StandardError"), de=o.get("ebm_de"), ci=[o.get("ebm_lo"), o.get("ebm_hi")])
+        if mot:
+            ra[cot] = mot
     return ra
 
 
@@ -2897,6 +3163,178 @@ def _khong_so(muc: str, ly_do: str, *, py: dict | None = None, sp: dict | None =
     return {"muc": muc, "python": py, "spss": sp, "kiem": {}, "trang_thai": "khong_so_duoc", "ghi_chu": ly_do}
 
 
+#: (22/11/2026, việc H — truy 5 dòng «lệch nhỏ» của giả lập rct_cum) GENLIN /REPEATED CORRTYPE=INDEPENDENT COVB=ROBUST
+#: của SPSS cho SE sandwich theo cụm KHÔNG hiệu chỉnh mẫu nhỏ (CR0) và KTC/p theo z. Đo trên dữ liệu khoá rct_cum
+#: (N = 320, G = 40): KTC SPSS của PR thô «nhom» [1,20328; 1,78771] trùng đúng sandwich::vcovCL(type = "HC0",
+#: cadjust = FALSE) + z [1,203275; 1,787713]. Python (statsmodels cov_type="cluster") và R (vc_cum) dùng CR1 =
+#: CR0·G/(G−1)·(N−1)/(N−K) + t(G−1). Hai phép khác nhau bằng một hệ số đóng ⇒ QUY ĐỔI kết quả SPSS rồi so với dung sai
+#: CHẶT (không còn miễn «khác phương pháp»): SE₁ = SE₀·√(G/(G−1)·(N−1)/(N−K)), SE₀ = nửa độ rộng KTC Wald z / 1,95996.
+Z_975 = 1.959963984540054
+
+
+def quy_doi_cr0_cr1(sp: dict, so_cum: int, n: int, k: int, ty_so: bool) -> dict | None:
+    """Kết quả GEE robust của SPSS (CR0, KTC/p theo z) ⇒ CR1 + t(G−1) như Python. None khi thiếu số để quy đổi."""
+    from scipy import stats as st  # noqa: PLC0415
+
+    ci = sp.get("ci") or [None, None]
+    b = _beta(sp.get("uoc_luong"), ty_so)
+    lo, hi = (_beta(x, ty_so) for x in ci) if None not in ci else (None, None)
+    if b is None or lo is None or hi is None or not so_cum or so_cum < 2 or not n or n <= k:
+        return None
+    se1 = (hi - lo) / (2 * Z_975) * ((so_cum / (so_cum - 1)) * ((n - 1) / (n - k))) ** 0.5
+    q = float(st.t.ppf(0.975, so_cum - 1))
+    f = (lambda x: float(__import__("math").exp(x))) if ty_so else float
+    p_moi = float(2 * st.t.sf(abs(b / se1), so_cum - 1)) if se1 > 0 else None
+    return {"uoc_luong": sp.get("uoc_luong"), "ci": [f(b - q * se1), f(b + q * se1)], "p": p_moi}
+
+
+GHI_CHU_CR0_CR1 = "SPSS GEE robust (CR0 + z) đã quy đổi sang CR1 + t(G−1): SE × √(G/(G−1)·(N−1)/(N−K))"
+
+
+#: (23/11/2026, việc (2)) Hồi quy THỨ TỰ theo cụm: SPSS GENLIN MULTINOMIAL CUMLOGIT /REPEATED CORRTYPE=INDEPENDENT
+#: COVB=ROBUST cho β trùng statsmodels nhưng SE KHÔNG phải CR0 của Python: đo trên dữ liệu 600 ca, 30 cụm — SPSS
+#: nhom 0,2055564 · tuoi 0,0070874; statsmodels CR0 0,2083790 · 0,0068475 (tỷ số 0,986 và 1,035 — ngược chiều, không
+#: có hệ số đóng nào quy đổi được). Tái lập bằng tay: sandwich CR0 với bánh mì THÔNG TIN KỲ VỌNG (Fisher) cho đúng số
+#: SPSS tới 7–8 chữ số; bánh mì −Hessian QUAN SÁT cho đúng statsmodels. Liên kết cumulative logit không chính tắc nên
+#: hai bánh mì khác nhau theo dữ liệu ⇒ công thức quy đổi riêng: Python ghi kèm SE bánh mì Fisher CR0
+#: (run_stats_analysis.se_cr0_fisher_thu_tu) ⇒ SE_qđ = SE_SPSS × SE_Python / SE_Fisher_CR0_Python, KTC/p theo t(G−1).
+#: SE_qđ trùng SE Python ⇔ SE của SPSS trùng SE bánh mì Fisher mà Python tính từ CÙNG điểm số theo cụm — vẫn so với
+#: dung sai chặt như mọi dòng.
+GHI_CHU_THU_TU_CUM = ("SPSS GEE thứ tự (sandwich CR0, bánh mì Fisher, z) đã quy đổi sang bánh mì Hessian quan sát CR1 "
+                      "+ t(G−1) của Python: SE × SE_Python / SE_Fisher_CR0_Python")
+
+
+def quy_doi_thu_tu_cum(sp: dict, r_py: dict, so_cum: int) -> dict | None:
+    """Kết quả GEE thứ tự theo cụm của SPSS ⇒ cùng phương pháp Python. None khi tóm tắt Python thiếu SE để quy đổi."""
+    from scipy import stats as st  # noqa: PLC0415
+
+    se_py, se_f = r_py.get("se"), r_py.get("se_cr0_fisher")
+    ci = sp.get("ci") or [None, None]
+    if not se_py or not se_f or not so_cum or so_cum < 2 or None in ci or not sp.get("uoc_luong"):
+        return None
+    b, lo, hi = (math.log(x) for x in (sp["uoc_luong"], *ci))
+    se1 = (hi - lo) / (2 * Z_975) * float(se_py) / float(se_f)
+    q = float(st.t.ppf(0.975, so_cum - 1))
+    return {"uoc_luong": sp["uoc_luong"], "ci": [math.exp(b - q * se1), math.exp(b + q * se1)],
+            "p": float(2 * st.t.sf(abs(b / se1), so_cum - 1)) if se1 > 0 else None}
+
+
+#: Bảng 1b là phép TẤT ĐỊNH (không lấy mẫu, không lặp): SPSS/R và Python phải trùng tới đơn vị làm tròn của tóm tắt
+#: Python — tỷ lệ/KTC làm tròn 4 chữ số lẻ (nửa đơn vị 0,00005), DE 3 chữ số (0,0005). Dung sai chung TOL_UOC/TOL_CI
+#: (0,5 %/1,5 %) quá lỏng cho phép này: bỏ K/(K−1) chỉ dời cận KTC ≈ 0,001 — vẫn lọt dung sai chung.
+DUNG_SAI_TY_LE, DUNG_SAI_DE = 0.00005, 0.0005
+
+
+def _dong_tat_dinh(muc: str, py: dict, sp: dict, tran: float, n_py=None, n_sp=None) -> dict:
+    """Một dòng phép tất định: ước lượng và cận KTC lệch ≤ `tran` (đơn vị làm tròn của Python), cùng SỐ CA."""
+    kt = {"uoc_luong": _gan(sp.get("uoc_luong"), py.get("uoc_luong"), tran=tran)}
+    ci_py, ci_sp = py.get("ci"), sp.get("ci")
+    co_py = bool(ci_py) and None not in ci_py
+    co_sp = bool(ci_sp) and None not in ci_sp
+    kt["ci"] = all(_gan(a, b, tran=tran) for a, b in zip(ci_sp, ci_py)) if co_py and co_sp else None
+    ghi = []
+    if kt["uoc_luong"] is None or (co_py != co_sp):
+        tt = "khong_so_duoc"
+        ghi.append("một phía thiếu số" + (" (KTC)" if co_py != co_sp else ""))
+    elif all(v for v in kt.values() if v is not None):
+        tt = "khop"
+    else:
+        tt = "lech"
+    if n_py is not None and n_sp is not None and int(n_py) != int(n_sp):
+        tt = "lech"
+        ghi.append(f"SỐ CA KHÁC: Python {n_py}, SPSS {n_sp}")
+    ghi.append(f"phép tất định — dung sai đơn vị làm tròn của Python ±{tran:g}")
+    return {"muc": muc, "python": py, "spss": sp, "kiem": kt, "trang_thai": tt, "ghi_chu": " · ".join(ghi),
+            "n": {"python": n_py, "spss": n_sp}}
+
+
+def doi_chieu_bien_co_hiem(b: dict | None, sp: dict | None, p_fisher: float | None) -> list[dict]:
+    """Biến cố hiếm (23/11/2026): tỷ lệ + KTC Clopper–Pearson từng nhóm và p Fisher, Python ↔ SPSS; tất định."""
+    if not isinstance(b, dict) or b.get("error"):
+        return []
+    if not sp:
+        return [_khong_so("Biến cố hiếm — KTC chính xác Clopper–Pearson", "SPSS không ra bảng PROPORTIONS theo nhóm")]
+    ra = []
+    for g in b.get("nhom") or []:
+        s = sp.get(_ma_so_gon(str(g.get("gia_tri")))) or {}
+        ra.append(_dong_tat_dinh(f"Biến cố hiếm — tỷ lệ + KTC 95% Clopper–Pearson, nhóm `{g.get('gia_tri')}`",
+                                 {"uoc_luong": g.get("ty_le"), "ci": g.get("ci_95_clopper_pearson")},
+                                 {"uoc_luong": s.get("ty_le"), "ci": s.get("ci")}, DUNG_SAI_TY_LE, g.get("n"),
+                                 s.get("n")))
+    if "fisher_p_hai_phia" in b:
+        ra.append(_dong_tat_dinh("Biến cố hiếm — p chính xác Fisher (hai phía)", {"uoc_luong": b["fisher_p_hai_phia"]},
+                                 {"uoc_luong": p_fisher}, DUNG_SAI_TY_LE))
+    return ra
+
+
+#: SPSS không có hồi quy logistic Firth (hợp lý phạt) sẵn — như phép bootstrap: ghi rõ, đối chiếu bằng R
+KHONG_SO_FIRTH_SPSS = "không đối chiếu được bằng SPSS (SPSS không có hồi quy Firth sẵn) — đối chiếu bằng R (logistf)"
+KHONG_SO_FIRTH_DK_SPSS = ("không đối chiếu được bằng SPSS (SPSS không có hồi quy logistic có điều kiện có phạt "
+                          "Firth) — đối chiếu bằng R (survival::clogit, hợp lý phạt có điều kiện)")
+
+
+def doi_chieu_firth(b: dict | None) -> list[dict]:
+    """Biến cố hiếm theo Firth (23/11/2026): mỗi hệ số một dòng «không so được» có lý do — không bỏ dòng im lặng, không
+    chấm khớp giả; con số được đối chiếu ở cầu nối R (logistf)."""
+    if not isinstance(b, dict) or b.get("phuong_phap") not in ("firth", "firth_dk"):
+        return []
+    if b.get("error"):
+        return [_khong_so("Biến cố hiếm — Firth", f"Python lỗi: {b['error']}")]
+    ly_do = KHONG_SO_FIRTH_DK_SPSS if b["phuong_phap"] == "firth_dk" else KHONG_SO_FIRTH_SPSS
+    return [_khong_so(f"Biến cố hiếm — Firth — {r.get('variable')}", ly_do,
+                      py={"uoc_luong": r.get("OR_adj"), "ci": r.get("CI_95"), "p": r.get("p")})
+            for r in b.get("results") or []]
+
+
+def doi_chieu_hieu_so(pc: dict, hs: dict | None) -> list[dict]:
+    """Hiệu số nguy cơ thô + KTC (23/11/2026): SPSS PROPORTIONS cùng phương pháp Python ghi; phép tất định ⇒ dung sai
+    = đơn vị làm tròn của Python. Khác phương pháp ⇒ không so được (không chấm khớp hai phương pháp khác nhau)."""
+    if pc.get("risk_diff") is None:
+        return []  # bệnh–chứng: Python không ước lượng hiệu số nguy cơ
+    pp_py = pc.get("risk_diff_ci_method") or "wald"
+    ten = f"Kết cục chính — hiệu số nguy cơ thô (nhóm sau − nhóm trước), KTC 95 % {pp_py}"
+    py = {"uoc_luong": pc.get("risk_diff"), "ci": list(pc.get("risk_diff_ci_95") or []) or None}
+    n_py = sum(int((pc.get(k) or {}).get("n") or 0) for k in ("group_0", "group_1")) or None
+    if not hs:
+        return [_khong_so(ten, "SPSS không ra bảng PROPORTIONS (xem nhật ký chạy)", py=py)]
+    if hs.get("phuong_phap") != pp_py:
+        return [_khong_so(ten, f"phương pháp KTC khác nhau: Python «{pp_py}», SPSS «{hs.get('phuong_phap')}»", py=py,
+                          sp={"uoc_luong": hs.get("rd"), "ci": hs.get("ci")})]
+    return [_dong_tat_dinh(ten, py, {"uoc_luong": hs.get("rd"), "ci": hs.get("ci")}, DUNG_SAI_TY_LE, n_py,
+                           hs.get("n"))]
+
+
+def doi_chieu_ty_le(tom: dict, kq: dict) -> list[dict]:
+    """Bảng 1b: tỷ lệ + KTC Wilson độc lập (PROPORTIONS) và theo cụm (CSDESCRIPTIVES + n/DE·(z/t)²) + DE."""
+    ds, sk = [x for x in tom.get("ty_le") or [] if isinstance(x, dict)], kq.get("ty_le")
+    if not ds:
+        return [] if not sk else [_khong_so("Tỷ lệ Wilson (Bảng 1b)", "SPSS tính tỷ lệ mà Python không có")]
+    if not sk:
+        return [_khong_so("Tỷ lệ Wilson (Bảng 1b) — toàn bộ", "SPSS không ra bảng tỷ lệ (xem nhật ký chạy)")]
+    ra = []
+    for x in ds:
+        cot = x.get("cot")
+        s = sk.get(cot) or {}
+        if x.get("error"):
+            ra.append(_khong_so(f"Tỷ lệ — {cot}", f"Python lỗi: {x['error']}", sp={"uoc_luong": s.get("ty_le")}))
+            continue
+        if not s:
+            ra.append(_khong_so(f"Tỷ lệ — {cot}", "SPSS không có cột này", py={"uoc_luong": x.get("ty_le")}))
+            continue
+        ra.append(_dong_tat_dinh(f"Tỷ lệ + KTC Wilson độc lập — {cot}",
+                                 {"uoc_luong": x.get("ty_le"), "ci": x.get("CI_95_wilson_doc_lap")},
+                                 {"uoc_luong": s.get("ty_le"), "ci": s.get("ci_doc_lap")}, DUNG_SAI_TY_LE,
+                                 x.get("n"), s.get("n")))  # fmt: skip
+        if x.get("CI_95") is not None or s.get("ci") is not None:
+            ra.append(_dong_tat_dinh(f"Tỷ lệ + KTC Wilson theo cụm (n/DE·(z/t)²) — {cot}",
+                                     {"uoc_luong": x.get("ty_le"), "ci": x.get("CI_95")},
+                                     {"uoc_luong": s.get("ty_le_cum"), "ci": s.get("ci")}, DUNG_SAI_TY_LE,
+                                     x.get("n"), s.get("n_cum")))  # fmt: skip
+            ra.append(_dong_tat_dinh(f"Hiệu ứng thiết kế (DE) — {cot}", {"uoc_luong": x.get("hieu_ung_thiet_ke")},
+                                     {"uoc_luong": s.get("de")}, DUNG_SAI_DE, x.get("n"), s.get("n_cum")))
+    return ra
+
+
 def doi_chieu(tom: dict, kq: dict) -> list[dict]:
     """Mọi mục Python CÓ (hoặc báo lỗi/bỏ qua) đều sinh một dòng — không bỏ dòng im lặng (bản cũ báo «1 khớp, mã 0»
     khi Python lỗi hoặc SPSS thiếu bảng)."""
@@ -2915,6 +3353,8 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                 lam_tron=LAM_TRON["ty_so"],
             )
         )
+        dong += doi_chieu_hieu_so(pc, kq.get("hieu_so"))
+        dong += doi_chieu_bien_co_hiem(tom.get("bien_co_hiem"), kq.get("bien_co_hiem"), sc.get("p_fisher"))
     elif loai_pc == "continuous" and sc.get("loai") == "continuous":
         welch = "welch" in str(pc.get("test", "")).lower()
         s = sc.get("welch" if welch else "student") or {}
@@ -2935,8 +3375,12 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                 f"Python «{loai_pc or 'không có'}» · SPSS «{sc.get('loai') or 'không có'}» — không cùng loại để so",
             )
         )
+    dong += doi_chieu_firth(tom.get("bien_co_hiem"))
     co_thu_tu = "ordinal" in tom
     mv = (tom.get("ordinal") if co_thu_tu else tom.get("multivariate")) or {}
+    pp_dk = ("bộ ghép có tới " + str(mv.get("ca_toi_da_moi_bo")) + " ca: SPSS COXREG xử lý thời điểm trùng bằng "
+             "Breslow, Python/R dùng hợp lý có điều kiện chính xác"
+             if mv.get("model") == "logistic_dk" and int(mv.get("ca_toi_da_moi_bo") or 1) > 1 else None)
     ten_mv = "Hồi quy thứ tự" if co_thu_tu else "Đa biến"
     cum = (mv.get("cov_type") == "cluster") or bool((tom.get("dac_ta_phan_tich") or {}).get("cot_cum"))
     nguon = kq.get("da_bien_cum") if cum else kq.get("da_bien")
@@ -2966,13 +3410,27 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                     )
                 )
                 continue
+            sp_so = {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]}
+            so_cum_mv = int((mv.get("cluster") or {}).get("so_cum") or 0)
+            if cum and co_thu_tu:  # 23/11/2026: GEE thứ tự — bánh mì Fisher CR0 + z ⇒ quy đổi theo SE Python ghi
+                qd = quy_doi_thu_tu_cum(sp_so, r, so_cum_mv)
+                ghi_qd = GHI_CHU_THU_TU_CUM
+            else:
+                qd = (quy_doi_cr0_cr1(sp_so, so_cum_mv, int(mv.get("n") or 0), len(mv.get("results") or []) + 1,
+                                      ty_so) if cum else None)
+                ghi_qd = GHI_CHU_CR0_CR1
             dong.append(
                 so_mot(
                     f"{ten_mv} ({mv.get('model', '?')}) — {v}",
                     {"uoc_luong": uoc, "ci": r.get("CI_95"), "p": r.get("p")},
-                    {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]},
+                    qd or sp_so,
                     phuong_phap_khac=(
-                        "hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich có hiệu chỉnh mẫu nhỏ (Python)"
+                        pp_dk
+                        if pp_dk
+                        else None
+                        if qd is not None
+                        else "hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich có hiệu chỉnh mẫu nhỏ (Python) — tóm tắt "
+                        "thiếu số để quy đổi (chạy lại run_stats_analysis bản ≥ 23/11/2026)"
                         if cum
                         else "statsmodels lấy SE từ Hessian xấp xỉ"
                         if mv.get("model") == "ordinal_logit_po"
@@ -2982,6 +3440,21 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                     lam_tron=LAM_TRON["ty_so" if ty_so else "beta"],
                 )
             )
+            if qd is not None:
+                dong[-1]["ghi_chu"] = " · ".join(x for x in (dong[-1]["ghi_chu"], ghi_qd) if x)
+                dong[-1]["spss_goc"] = sp_so
+    if mv.get("model") == "logistic_dk":
+        nguon_tho = (kq.get("da_bien_tho") or {}).get("he_so") or {}
+        for r in mv.get("crude") or []:
+            v, sp = r.get("variable"), nguon_tho.get(r.get("variable"))
+            ten_tho = f"Logistic có điều kiện theo bộ ghép — OR thô (chỉ phơi nhiễm) — {v}"
+            if sp is None:
+                dong.append(_khong_so(ten_tho, "SPSS không có hệ số thô cùng tên (xem nhật ký chạy)",
+                                      py={"uoc_luong": r.get("OR_adj")}))
+                continue
+            dong.append(so_mot(ten_tho, {"uoc_luong": r.get("OR_adj"), "ci": r.get("CI_95"), "p": r.get("p")},
+                               {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]}, phuong_phap_khac=pp_dk,
+                               ty_so=True, lam_tron=LAM_TRON["ty_so"]))
     pr = tom.get("poisson_pr")
     if pr is not None:
         if pr.get("error"):
@@ -2996,17 +3469,31 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                                           py={"uoc_luong": r.get(khoa_py)}))  # fmt: skip
                     continue
                 pr_cum = pr.get("cov_type") == "cluster"
+                sp_so = {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]}
+                ghi_qd = None
+                if pr_cum:  # K = số tham số của CHÍNH mô hình (PR thô: nhóm biến của v; hiệu chỉnh: mọi biến) + hằng số
+                    nb = pr.get("nhom_bien") or {}
+                    k = (1 + (len(next((ds for ds in nb.values() if v in ds), [v])) if khoa_py == "PR"
+                              else len(pr.get("results") or [])))
+                    qd = quy_doi_cr0_cr1(sp_so, int((pr.get("cluster") or {}).get("so_cum") or 0),
+                                         int(pr.get("n") or 0), k, True)
+                    if qd is not None:
+                        sp_so, ghi_qd = qd, GHI_CHU_CR0_CR1
                 dong.append(
                     so_mot(
                         f"Poisson {'theo cụm' if pr_cum else 'HC0'} — {nhan} — {v}",
                         {"uoc_luong": r.get(khoa_py), "ci": r.get("CI_95"), "p": r.get("p")},
-                        {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]},
-                        phuong_phap_khac=("hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich CR1 + t(G−1) (Python)"
-                                          if pr_cum else None),
+                        sp_so,
+                        phuong_phap_khac=(None if ghi_qd or not pr_cum
+                                          else "hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich CR1 + t(G−1) (Python) — "
+                                               "thiếu N/G để quy đổi"),
                         ty_so=True,
                         lam_tron=LAM_TRON["ty_so"],
                     )
                 )
+                if ghi_qd:
+                    dong[-1]["ghi_chu"] = " · ".join(x for x in (dong[-1]["ghi_chu"], ghi_qd) if x)
+                    dong[-1]["spss_goc"] = {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]}
     sv = tom.get("survival") or {}
     nhom = (tom.get("dac_ta_phan_tich") or {}).get("group")
     if sv.get("error"):
@@ -3029,15 +3516,18 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                 lam_tron=LAM_TRON["ty_so"],
             )
         )
+    dong += doi_chieu_ty_le(tom, kq)
     return dong
 
 
 def lech_dac_ta(dt_spss: dict, dt_py: dict, tom: dict) -> list[str]:
     """Đặc tả SPSS đã chạy khác đặc tả Python ở đâu (rỗng = trùng)."""
     ra = []
-    for k in ("outcome", "group", "time", "event", "cot_cum", "loc"):
+    for k in ("outcome", "group", "time", "event", "cot_cum", "loc", "nguong_ty_le"):
         if (dt_spss.get(k) or None) != (dt_py.get(k) or None):
             ra.append(f"{k}: SPSS {dt_spss.get(k)!r} · Python {dt_py.get(k)!r}")
+    if dt_py.get("ty_le") is not None and list(dt_spss.get("ty_le") or []) != list(dt_py.get("ty_le") or []):
+        ra.append(f"ty_le: SPSS {dt_spss.get('ty_le')} · Python {dt_py.get('ty_le')}")
     if sorted(dt_spss.get("covariates") or []) != sorted(dt_py.get("covariates") or []):
         ra.append(f"covariates: SPSS {dt_spss.get('covariates')} · Python {dt_py.get('covariates')}")
     lo_s, lo_p = dt_spss.get("outcome_type"), dt_py.get("outcome_type")

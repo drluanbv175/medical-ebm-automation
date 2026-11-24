@@ -436,7 +436,8 @@ def test_n16_lien_tuc_song_con_thu_tu_ty_le(tmp_path):
     for chuoi in ("trung bình 132.418 (SD 14.207)", "Hiệu số trung bình thô (`B` − `A`): MD = -7.325",
                   "chiều `A` − `B` — NGƯỢC chiều MD thô ở trên): MD=7.325 (95%CI 1.189–13.461)",
                   "p = 0.0197 (Welch's t-test)", "Cox thô: HR = 0.642 (95% CI 0.451–0.914), p = 0.0139",
-                  "Cox hiệu chỉnh (hiệp biến: tuoi, bmi): HR = 0.668 (95% CI 0.468–0.954), p = 0.0265",
+                  # 22/11/2026: nêu rõ ước lượng hiệu chỉnh THEO biến nào (STROBE 2007 16a)
+                  "Cox hiệu chỉnh theo các hiệp biến tuoi, bmi: HR = 0.668 (95% CI 0.468–0.954), p = 0.0265",
                   "| `A` | 40 | 22 | 14.25 |", "| `B` | 41 | 15 | chưa đạt trung vị (G6) |", "Log-rank: p = 0.0144",
                   "| `thoi_gian_cho` | 0.873 | 0.801–0.951 | 0.0021 |", "OR cho MỖI 15 đơn vị",
                   "hai_long ≥ 4: 63/81 = 0.7778 (95% CI 0.6744–0.8552",
@@ -686,7 +687,10 @@ def test_dau_cuoi_g7_doc_tu_dien_g5_that_va_dung_nhap_tu_g6(tmp_path, monkeypatc
     from tests.test_g6_hoan_thien_20261004 import _de_tai_g6_that
     from tests.test_g7_hoan_thien_20261004 import _cham, _chay_g7, _ck, _xac_nhan_g6
 
-    study, out, goc = _de_tai_g6_that(tmp_path, monkeypatch, "rct")
+    # 23/11/2026: chuỗi THUẦN TẬP (SAP §4 Poisson/logistic — kết cục nhị phân) để khớp tóm tắt nhị phân + logistic ghi
+    # bên dưới. Chuỗi RCT của helper khoá SAP «t-test/ANCOVA» (MD) — tóm tắt logistic trên SAP đó là LỆCH SAP mà
+    # G6-AUTO-09 (phần lượt chạy) nay chặn đúng; fixture cũ không nhất quán, sửa fixture, không nới cổng.
+    study, out, goc = _de_tai_g6_that(tmp_path, monkeypatch, "cohort")
     _xac_nhan_g6(out, study)
     assert _chay_g7(goc, study, monkeypatch) == GC.EXIT_BLOCKED
     khung = (out / f"G7_A8_MANUSCRIPT_{study}.md").read_text(encoding="utf-8")

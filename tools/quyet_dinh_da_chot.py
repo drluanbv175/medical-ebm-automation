@@ -46,6 +46,9 @@ KHOA_NGUON = "_nguon_quyet_dinh_da_chot"
 # sửa nếu cần)*»). Không phải nội dung kết cục: G7 không chép vào bản nộp, G8 và nhất quán xuyên cổng bỏ khi so — MỘT
 # mẫu dùng chung (16/11/2026: G7 bỏ còn G8 so nguyên dòng ⇒ G8-AUTO-05 chặn nhầm «kết cục chính vắng trong bản thảo»).
 GHI_CHU_DIEN_SAN_RE = re.compile(r"\s*\*\(điền sẵn từ quyết định đã chốt[^)]*\)\*")
+#: vai của ma trận G3 mà cột «công cụ» chứa ĐỊNH NGHĨA chứ không phải nguồn đo (`dinh_nghia_thay_the.VAI_TRO`, biến
+#: tuân thủ đề cương của RCT)
+VAI_MANG_DINH_NGHIA = frozenset({"dinh_nghia_thay_the", "tuan_thu_de_cuong"})
 
 
 # ─────────────────────────────── tiện ích đọc ───────────────────────────────
@@ -349,7 +352,11 @@ def rut(out_dir: Path, study: str, meta: Mapping[str, Any]) -> Dict[str, Tuple[A
     hb = [r.get("khai_niem") for r in mt if r.get("vai_tro") == "hiep_bien" and r.get("khai_niem")]
     if hb:
         dat("confounders", hb, "ma trận mục tiêu–biến G3 (hiệp biến)")
-    cong_cu = list(dict.fromkeys(str(r.get("cong_cu") or "").strip() for r in mt if co_noi_dung(r.get("cong_cu"))))
+    # 22/11/2026: dòng vai `dinh_nghia_thay_the`/`tuan_thu_de_cuong` mang ĐỊNH NGHĨA (biến đổi, ngưỡng thay thế, tiêu
+    # chí tuân thủ) ở cột công cụ, không phải nguồn đo — «thang liên tục», «thang đo gốc» trong định nghĩa thay thế từng
+    # làm luật thang đo bên dưới tưởng đề tài có thang đo/PROM ⇒ G10 để trống công cụ đo (thuần tập, dự báo giả lập)
+    cong_cu = list(dict.fromkeys(str(r.get("cong_cu") or "").strip() for r in mt if co_noi_dung(r.get("cong_cu"))
+                                 and r.get("vai_tro") not in VAI_MANG_DINH_NGHIA))
     if cong_cu:
         dat("data_source", "; ".join(cong_cu) + " (nguồn đo từng biến — ma trận mục tiêu–biến G3)",
             "ma trận mục tiêu–biến G3 (cột công cụ)")

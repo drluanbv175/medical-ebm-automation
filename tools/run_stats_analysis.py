@@ -29,7 +29,8 @@ Kiểm chéo tư vấn (E4, 14/11/2026): thêm `--kiem-cheo` ⇒ sau khi ghi G6_
 thiếu SPSS/R hay kiểm chéo lỗi chỉ in ra.
 
 Multiple imputation (vá 2026-07-15): khi biến outcome/group/covariates có dữ liệu thiếu, script
-TỰ CHẠY MI thật (statsmodels MICEData/MICE, m=20 mặc định, --n-imputations để đổi) song song với
+TỰ CHẠY MI thật (m=20 mặc định, --n-imputations để đổi; từ 24/11/2026 bộ gán PMM kiểu 1 tham số bootstrap
+`BoGanPMM` thay MICEData của statsmodels) song song với
 complete-case — trước đây "MI" trong sensitivity_analysis.py (template do run_g6_auto.py sinh)
 chỉ là mean-impute tự khai không phải MI thật.
 
@@ -66,6 +67,7 @@ import sys as _sys_r4
 import warnings
 from datetime import datetime
 from pathlib import Path
+from statistics import NormalDist
 
 import numpy as np
 import pandas as pd
@@ -376,6 +378,16 @@ def _compare_categorical(col: pd.Series, grp: pd.Series) -> dict:
 # giải thích & chi tiết CONSORT 2010 mục 15 (Moher et al., BMJ 2010, PMID 20332511) — xem docstring dưới.
 KHONG_KIEM_DINH_NEN_RCT = "không kiểm định (RCT — CONSORT 2025 mục 25)"
 
+# 22/11/2026 (STARD 2015 mục 21b — biến «chẩn đoán khác» chỉ hỏi ở người KHÔNG có bệnh đích): biến chỉ ghi nhận ở MỘT
+# nhóm (logic nhánh của phiếu) thì không có gì để so — chi bình phương trên bảng một cột trả p = 1,0 (bậc tự do 0) và
+# Bảng 1 sẽ in «p = 1» như một phép so sánh thật. Không kiểm định, ghi rõ lý do.
+KHONG_KIEM_DINH_MOT_NHOM = "không kiểm định (biến chỉ ghi nhận ở một nhóm)"
+
+
+def _so_nhom_co_du_lieu(grp_data: dict) -> int:
+    """Số nhóm có ít nhất một giá trị không thiếu của biến."""
+    return sum(1 for s in grp_data.values() if s.notna().any())
+
 
 def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_nen: bool = True) -> dict:
     """Tạo Bảng 1 đặc điểm mẫu theo nhóm.
@@ -418,6 +430,8 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_
                     row[f"grp_{g}"] += f" (⚠loại {n_inf} giá trị Inf)"
             if not kiem_dinh_nen:
                 row["test"] = KHONG_KIEM_DINH_NEN_RCT
+            elif len(groups) == 2 and _so_nhom_co_du_lieu(grp_data) < 2:
+                row["test"] = KHONG_KIEM_DINH_MOT_NHOM
             elif len(groups) == 2 and HAS_SCIPY:
                 comp = _compare_continuous(grp_data[groups[0]], grp_data[groups[1]])
                 row["p"] = comp["p"]
@@ -448,6 +462,8 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_
                     row[f"grp_{g}"] = "; ".join(f"{k}: {v}({v/len(s)*100:.0f}%)" for k, v in counts.items())
             if not kiem_dinh_nen:
                 row["test"] = KHONG_KIEM_DINH_NEN_RCT
+            elif len(groups) == 2 and _so_nhom_co_du_lieu(grp_data) < 2:
+                row["test"] = KHONG_KIEM_DINH_MOT_NHOM
             elif len(groups) == 2 and HAS_SCIPY:
                 comp = _compare_categorical(df[var], df[group_col])
                 row["p"] = comp["p"]
@@ -476,7 +492,8 @@ def bo_hieu_so_benh_chung(res: dict) -> dict:
     """Gỡ hiệu số nguy cơ (kể cả bản hiệu chỉnh cụm) khỏi kết quả kết cục chính của đề tài bệnh–chứng, ghi lý do."""
     if not isinstance(res, dict) or res.get("error") or res.get("outcome_type") != "binary":
         return res
-    ra = {k: v for k, v in res.items() if k not in ("risk_diff", "risk_diff_ci_95")}
+    ra = {k: v for k, v in res.items()
+          if k not in ("risk_diff", "risk_diff_ci_95", "risk_diff_ci_method", "risk_diff_ci_ten")}
     if isinstance(ra.get("cum"), dict):
         ra["cum"] = {k: v for k, v in ra["cum"].items()
                      if k not in ("risk_diff_cum", "risk_diff_ci_95_cum", "p_rd_cum")}
@@ -484,15 +501,423 @@ def bo_hieu_so_benh_chung(res: dict) -> dict:
     return ra
 
 
+# 23/11/2026 (G7 phát hiện G6 lệch SAP ở thử nghiệm không kém hơn): SAP §4 khai «Hiệu tỷ lệ (risk difference) + 95%CI
+# (Newcombe)» nhưng engine luôn tính KTC Wald và không ghi tên phương pháp — kết luận không kém hơn đọc VỊ TRÍ cận KTC
+# so với biên Δ, nên đổi phương pháp KTC có thể đổi kết luận. Nay: SAP khai phương pháp nào, đặc tả G6 truyền đúng
+# phương pháp đó (`--kc-hieu-so`), tóm tắt ghi mã + tên phương pháp; phương pháp ngoài danh sách ⇒ LỖI (không tự lùi
+# về Wald). Cầu nối R/SPSS tính lại cùng phương pháp; g6_quality_gate G6-AUTO-09 (phần lượt chạy) đối chiếu SAP
+# ↔ tóm tắt.
+KC_HIEU_SO = {
+    "wald": "Wald (xấp xỉ chuẩn, z = 1,96)",
+    "newcombe": "Newcombe hybrid score — ghép hai khoảng Wilson không hiệu chỉnh liên tục (Newcombe 1998, "
+                "phương pháp 10; PMID 9595617)",
+}
+_Z_975 = NormalDist().inv_cdf(0.975)
+
+
+def _khoang_wilson(e: int, n: int, z: float) -> tuple[float, float]:
+    """Khoảng tin cậy Wilson (score, không hiệu chỉnh liên tục) của tỷ lệ e/n — thành phần của KTC Newcombe."""
+    p = e / n
+    tam = 2 * n * p + z * z
+    ban_kinh = z * math.sqrt(z * z + 4 * n * p * (1 - p))
+    mau = 2 * (n + z * z)
+    return (tam - ban_kinh) / mau, (tam + ban_kinh) / mau
+
+
+def kc_hieu_so_newcombe(e1: int, n1: int, e0: int, n0: int, z: float = _Z_975) -> tuple[float, float]:
+    """KTC của hiệu p1 − p0 theo Newcombe hybrid score (phương pháp 10, Stat Med 1998;17:873–90, PMID 9595617).
+
+    L = d − √((p1 − l1)² + (u0 − p0)²), U = d + √((u1 − p1)² + (p0 − l0)²) với (l, u) là khoảng Wilson từng nhóm.
+    Kiểm bằng ví dụ của chính bài gốc (bảng II): 56/70 − 48/80 ⇒ 0,0524 đến 0,3339; 9/10 − 3/10 ⇒ 0,1705 đến 0,8090.
+    Khác Wald: không vượt ra ngoài [−1, 1] và vẫn tính được khi một nhóm 0 % hoặc 100 % biến cố."""
+    if n1 <= 0 or n0 <= 0:
+        raise ValueError("KTC Newcombe cần mỗi nhóm n > 0")
+    p1, p0 = e1 / n1, e0 / n0
+    l1, u1 = _khoang_wilson(e1, n1, z)
+    l0, u0 = _khoang_wilson(e0, n0, z)
+    d = p1 - p0
+    return d - math.sqrt((p1 - l1) ** 2 + (u0 - p0) ** 2), d + math.sqrt((u1 - p1) ** 2 + (p0 - l0) ** 2)
+
+
+#: 23/11/2026 — phương pháp biến cố hiếm G6 TỰ CHẠY khi rào EPV chặn hồi quy logistic (mã khớp g4_quality_gate.
+#: BIEN_CO_HIEM mục «G6 tự chạy»). Firth: tự chạy từ 23/11/2026 (chiều) — firth_logistic_model, đối chiếu R logistf.
+BIEN_CO_HIEM_G6 = {
+    "mo_ta_chinh_xac": "mô tả số biến cố từng nhóm + KTC chính xác Clopper–Pearson + p chính xác Fisher",
+    "firth": "hồi quy logistic Firth (hợp lý phạt Jeffreys; KTC hợp lý phạt hồ sơ; p kiểm định tỷ số hợp lý phạt)",
+    # 23/11/2026: bệnh–chứng ghép cặp cá thể — phương pháp KHÔNG điều kiện ở trên bỏ qua bộ ghép ⇒ dùng bản có điều kiện
+    "firth_dk": ("hồi quy logistic có điều kiện có phạt Firth theo bộ ghép (Heinze–Puhr; KTC hợp lý phạt hồ sơ; p kiểm "
+                 "định tỷ số hợp lý phạt)"),
+}
+#: 23/11/2026 — bệnh–chứng ghép cặp cá thể: OR thô của Bảng 2 là OR KHÔNG điều kiện (bỏ qua bộ ghép) — chỉ mô tả.
+GHI_CHU_OR_THO_GHEP_CA_THE = ("OR thô ở bảng này KHÔNG điều kiện (bỏ qua bộ ghép) — chỉ để mô tả; ước lượng chính là "
+                              "OR có điều kiện theo bộ ghép ở bảng mô hình có điều kiện (thô và hiệu chỉnh)")
+#: phương pháp biến cố hiếm KHÔNG điều kiện (mo_ta_chinh_xac, firth) áp lên dữ liệu ghép cá thể là bỏ qua bộ ghép
+LOI_BIEN_CO_HIEM_GHEP_CA_THE = ("dữ liệu ghép cặp cá thể: phương pháp biến cố hiếm KHÔNG điều kiện bỏ qua bộ ghép, làm "
+                                "lệch ước lượng — SAP §5 của thiết kế ghép cặp cá thể khai hồi quy logistic có điều "
+                                "kiện có phạt Firth (firth_dk)")
+#: firth_dk là bản CÓ ĐIỀU KIỆN — cần mã bộ ghép
+LOI_FIRTH_DK_KHONG_BO_GHEP = ("firth_dk (hồi quy logistic có điều kiện có phạt Firth) chỉ dùng cho dữ liệu ghép cặp cá "
+                              "thể — đặc tả phải khai bo_ghep")
+#: phân vị χ²(1) 0,95 — ngưỡng của KTC hợp lý hồ sơ 95 % (2·(ℓ*max − ℓ*hồ sơ) = 3,8415)
+_CHI2_1_95 = 3.841458820694124
+
+
+def _hop_ly_phat(X: np.ndarray, y: np.ndarray, b: np.ndarray) -> float:
+    """Log hợp lý có phạt Jeffreys của hồi quy logistic: ℓ*(β) = ℓ(β) + ½·log|X'WX| (Firth 1993)."""
+    eta = X @ b
+    ll = float(np.sum(-y * np.logaddexp(0.0, -eta) - (1.0 - y) * np.logaddexp(0.0, eta)))
+    p = 1.0 / (1.0 + np.exp(-eta))
+    dau, logdet = np.linalg.slogdet(X.T @ (X * (p * (1.0 - p))[:, None]))
+    return ll + 0.5 * logdet if dau > 0 else -math.inf
+
+
+def _firth_toi_uu(X: np.ndarray, y: np.ndarray, co_dinh: dict | None = None, b0: np.ndarray | None = None,
+                  so_vong: int = 500, dung: float = 1e-10) -> tuple[np.ndarray, float, bool]:
+    """Cực đại ℓ* bằng Newton–Raphson trên điểm số đã sửa của Firth U*(β) = X'(y − p + h(½ − p)), h = đường chéo ma
+    trận mũ W^½X(X'WX)⁻¹X'W^½ (U* là gradient ĐÚNG của ℓ* với liên kết logit); bước giới hạn 5 và chia đôi khi ℓ*
+    giảm — như logistf. `co_dinh` {j: giá trị} giữ cố định hệ số j (hồ sơ / mô hình rút gọn) — mức phạt vẫn tính trên
+    TOÀN ma trận thiết kế, như logistf. Trả (β, ℓ*, hội tụ?)."""
+    co_dinh = co_dinh or {}
+    b = np.zeros(X.shape[1]) if b0 is None else np.array(b0, dtype=float)
+    for j, v in co_dinh.items():
+        b[j] = v
+    tu_do = [j for j in range(X.shape[1]) if j not in co_dinh]
+    l_cu = _hop_ly_phat(X, y, b)
+    for _ in range(so_vong):
+        p = 1.0 / (1.0 + np.exp(-(X @ b)))
+        w = p * (1.0 - p)
+        thong_tin = X.T @ (X * w[:, None])
+        h = np.einsum("ij,jk,ik->i", X, np.linalg.inv(thong_tin), X) * w
+        diem = (X.T @ (y - p + h * (0.5 - p)))[tu_do]
+        buoc = np.linalg.solve(thong_tin[np.ix_(tu_do, tu_do)], diem)
+        lon = float(np.max(np.abs(buoc)))
+        if lon > 5.0:
+            buoc *= 5.0 / lon
+        for _chia in range(40):
+            moi = b.copy()
+            moi[tu_do] += buoc
+            l_moi = _hop_ly_phat(X, y, moi)
+            if l_moi >= l_cu - 1e-12:
+                break
+            buoc /= 2.0
+        b, l_cu = moi, l_moi
+        if float(np.max(np.abs(buoc))) < dung and float(np.max(np.abs(diem))) < dung:
+            return b, l_cu, True
+    return b, l_cu, False
+
+
+def _firth_ktc_ho_so(X: np.ndarray, y: np.ndarray, b: np.ndarray, l_max: float, j: int, se: float) -> list:
+    """KTC 95 % hợp lý phạt HỒ SƠ của hệ số j: nghiệm của 2·(ℓ*max − ℓ*_j(b)) = χ²(1)0,95, ℓ*_j(b) = cực đại ℓ* khi
+    β_j = b (các hệ số còn lại tối ưu lại; mức phạt trên toàn ma trận — Heinze & Schemper 2002, PMID 12210625).
+    Không tìm được cận trong 60 bước mở rộng ⇒ None ở cận đó (không đoán)."""
+    return _ktc_ho_so_phat(lambda cd, b0: _firth_toi_uu(X, y, cd, b0), b, l_max, j, se)
+
+
+def _ktc_ho_so_phat(toi_uu, b: np.ndarray, l_max: float, j: int, se: float) -> list:
+    """KTC 95 % hợp lý phạt hồ sơ cho MỌI mô hình phạt Firth: `toi_uu(co_dinh, b0)` ⇒ (β, ℓ*, hội tụ?) với hệ số j cố
+    định. Nghiệm của 2·(ℓ*max − ℓ*_j(v)) = χ²(1)0,95 hai phía β̂_j; không tìm được trong 60 bước mở rộng ⇒ None."""
+    from scipy.optimize import brentq  # noqa: PLC0415
+
+    def f(v: float) -> float:
+        return 2.0 * (l_max - toi_uu({j: v}, b)[1]) - _CHI2_1_95
+
+    buoc = se if math.isfinite(se) and se > 0 else 1.0
+    can = []
+    for huong in (-1.0, 1.0):
+        xa = b[j] + huong * 2.0 * buoc
+        for _ in range(60):
+            if f(xa) > 0:
+                break
+            xa += huong * buoc
+        else:
+            can.append(None)
+            continue
+        a, c = (xa, b[j]) if huong < 0 else (b[j], xa)
+        can.append(float(brentq(f, a, c, xtol=1e-12)))
+    return can
+
+
+def firth_logistic_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: list,
+                         cluster_col: str | None = None) -> dict:
+    """Phương pháp biến cố hiếm «firth» (SAP §5, khi rào EPV chặn hồi quy logistic — 23/11/2026): hồi quy logistic
+    hợp lý phạt Jeffreys (Firth 1993, Biometrika 80:27–38, doi:10.1093/biomet/80.1.27; Heinze & Schemper 2002, Stat Med
+    21:2409–19, PMID 12210625) trên CÙNG ma trận thiết kế với multivariate_model (kết cục + nhóm + hiệp biến, biến giả
+    drop_first, cùng complete-case). OR = exp(β); KTC 95 % hợp lý phạt hồ sơ; p theo kiểm định tỷ số hợp lý phạt
+    (2·(ℓ*max − ℓ*|β_j = 0) ~ χ²(1)) — đúng các đại lượng logistf(pl = TRUE) của R in ra.
+    Có cụm ⇒ LỖI: Firth không có sai số chuẩn theo cụm (chay_sap_g6 `kiem` chặn từ khâu đặc tả)."""
+    ten = BIEN_CO_HIEM_G6["firth"]
+    if cluster_col:
+        return {"phuong_phap": "firth", "ten": ten, "error": f"thiết kế cụm («{cluster_col}»): hồi quy Firth không có "
+                "sai số chuẩn theo cụm — SAP thiết kế cụm cần phương pháp biến cố hiếm khác (mo_ta_chinh_xac)"}
+    if not (HAS_STATSMODELS and HAS_SCIPY):
+        return {"phuong_phap": "firth", "ten": ten, "error": "statsmodels/scipy chưa cài — không chạy được Firth"}
+    available_covs = [c for c in covariates if c in df.columns]
+    predictors = [group_col] + available_covs
+    data = df[[outcome_col] + predictors].dropna()
+    muc_y = sorted(data[outcome_col].unique())
+    if len(muc_y) != 2:
+        return {"phuong_phap": "firth", "ten": ten, "error": f"kết cục «{outcome_col}» có {len(muc_y)} giá trị "
+                "(cần đúng 2)"}
+    y = (data[outcome_col] == muc_y[-1]).to_numpy(dtype=float)
+    X_df = sm.add_constant(pd.get_dummies(data[predictors], drop_first=True).astype(float), has_constant="add")
+    X = X_df.to_numpy(dtype=float)
+    ra = {"phuong_phap": "firth", "ten": ten, "outcome": outcome_col, "group": group_col, "bien_co": str(muc_y[-1]),
+          "n": int(len(data)), "so_bien_co": int(y.sum()), "so_tham_so": int(X.shape[1] - 1)}
+    try:
+        b, l_max, hoi_tu = _firth_toi_uu(X, y)
+        if not hoi_tu or not np.all(np.isfinite(b)):
+            return {**ra, "error": "hợp lý phạt không hội tụ sau 500 vòng — [CẦN THỐNG KÊ VIÊN]"}
+        p = 1.0 / (1.0 + np.exp(-(X @ b)))
+        se = np.sqrt(np.diag(np.linalg.inv(X.T @ (X * (p * (1.0 - p))[:, None]))))
+        ket = []
+        for j, ten_bien in enumerate(X_df.columns):
+            if ten_bien == "const":
+                continue
+            lo, hi = _firth_ktc_ho_so(X, y, b, l_max, j, float(se[j]))
+            chi2 = max(0.0, 2.0 * (l_max - _firth_toi_uu(X, y, {j: 0.0}, b)[1]))
+            with np.errstate(over="ignore"):
+                ket.append({"variable": str(ten_bien), "OR_adj": round(float(np.exp(b[j])), 3),
+                            "CI_95": [None if lo is None else round(float(np.exp(lo)), 3),
+                                      None if hi is None else round(float(np.exp(hi)), 3)],
+                            "p": round(float(sp_stats.chi2.sf(chi2, 1)), 4), "b": round(float(b[j]), 6)})
+    except np.linalg.LinAlgError as e:
+        return {**ra, "error": f"ma trận thông tin suy biến ({e}) — [CẦN THỐNG KÊ VIÊN]"}
+    return {**ra, "results": ket, "hop_ly_phat": round(l_max, 6),
+            "ktc": "hợp lý phạt hồ sơ (profile penalized likelihood)", "kiem_dinh": "tỷ số hợp lý phạt, χ²(1)"}
+
+
+# ── Firth cho hồi quy logistic CÓ ĐIỀU KIỆN (bệnh–chứng ghép cặp cá thể, biến cố hiếm — 23/11/2026) ────────────────
+# Heinze G, Puhr R. Bias-reduced and separation-proof conditional logistic regression with small or sparse data sets.
+# Stat Med 2010;29:770–7 (PMID 20213709, kiểm rút bài: chưa rút): cực đại hợp lý CÓ ĐIỀU KIỆN có phạt Jeffreys
+# ℓ*_c(β) = ℓ_c(β) + ½·log|I_c(β)|; KTC hợp lý phạt hồ sơ và kiểm định tỷ số hợp lý phạt.
+#: trần số tập con khi liệt kê một bộ ghép nhiều ca (C(kích thước bộ, số ca))
+TRAN_TAP_CON_BO = 20000
+
+
+def _bo_tap_con(X: np.ndarray, y: np.ndarray, bo: np.ndarray) -> list:
+    """Mỗi bộ ghép MANG THÔNG TIN ⇒ (S, i_obs): S = tổng biến dự báo của MỌI tập con cỡ k (k = số ca của bộ), i_obs =
+    tập con thật là ca. Hợp lý có điều kiện chính xác của bộ = exp(s_obs·β) / Σ_T exp(s_T·β) (bộ 1 ca ⇒ tập con = từng
+    người). Bộ có quá nhiều tập con (> TRAN_TAP_CON_BO) ⇒ ValueError (không xấp xỉ im lặng)."""
+    import itertools  # noqa: PLC0415
+
+    ds = []
+    for g in pd.unique(bo):
+        idx = np.flatnonzero(bo == g)
+        k = int(y[idx].sum())
+        if k == 0 or k == len(idx):
+            continue
+        if math.comb(len(idx), k) > TRAN_TAP_CON_BO:
+            raise ValueError(f"bộ ghép «{g}» có {len(idx)} người, {k} ca — quá nhiều tập con để liệt kê chính xác")
+        tap = list(itertools.combinations(range(len(idx)), k))
+        ds.append((np.array([X[idx][list(t)].sum(axis=0) for t in tap], dtype=float),
+                   tap.index(tuple(np.flatnonzero(y[idx] == 1)))))
+    return ds
+
+
+def _mo_men_dk(bos: list, b: np.ndarray, bac_ba: bool = True) -> tuple:
+    """(ℓ_c, điểm số U, thông tin I = Σ_bộ Var(s), K = Σ_bộ mô men trung tâm bậc ba) của hợp lý có điều kiện tại β."""
+    from scipy.special import logsumexp  # noqa: PLC0415
+
+    p = len(b)
+    ll, U, I_ = 0.0, np.zeros(p), np.zeros((p, p))
+    K = np.zeros((p, p, p)) if bac_ba else None
+    for S, i_obs in bos:
+        eta = S @ b
+        lse = float(logsumexp(eta))
+        w = np.exp(eta - lse)
+        c = S - w @ S
+        ll += float(eta[i_obs]) - lse
+        U += c[i_obs]
+        I_ += (c * w[:, None]).T @ c
+        if bac_ba:
+            K += np.einsum("t,ti,tj,tr->ijr", w, c, c, c)
+    return ll, U, I_, K
+
+
+def _hop_ly_phat_dk(bos: list, b: np.ndarray) -> float:
+    ll, _u, I_, _k = _mo_men_dk(bos, b, bac_ba=False)
+    dau, logdet = np.linalg.slogdet(I_)
+    return ll + 0.5 * logdet if dau > 0 else -math.inf
+
+
+def _firth_dk_toi_uu(bos: list, p: int, co_dinh: dict | None = None, b0: np.ndarray | None = None,
+                     so_vong: int = 500, dung: float = 1e-10) -> tuple[np.ndarray, float, bool]:
+    """Cực đại ℓ*_c bằng Newton trên điểm số đã sửa U*_r = U_r + ½·tr(I⁻¹ ∂I/∂β_r) (∂I/∂β_r = K[:, :, r]) — gradient
+    ĐÚNG của ℓ*_c; bước giới hạn 5, chia đôi khi ℓ*_c giảm, như `_firth_toi_uu`. Mức phạt trên toàn ma trận."""
+    co_dinh = co_dinh or {}
+    b = np.zeros(p) if b0 is None else np.array(b0, dtype=float)
+    for j, v in co_dinh.items():
+        b[j] = v
+    tu_do = [j for j in range(p) if j not in co_dinh]
+    l_cu = _hop_ly_phat_dk(bos, b)
+    for _ in range(so_vong):
+        _ll, U, I_, K = _mo_men_dk(bos, b)
+        diem = (U + 0.5 * np.einsum("ij,jir->r", np.linalg.inv(I_), K))[tu_do]
+        buoc = np.linalg.solve(I_[np.ix_(tu_do, tu_do)], diem)
+        lon = float(np.max(np.abs(buoc)))
+        if lon > 5.0:
+            buoc *= 5.0 / lon
+        for _chia in range(40):
+            moi = b.copy()
+            moi[tu_do] += buoc
+            l_moi = _hop_ly_phat_dk(bos, moi)
+            if l_moi >= l_cu - 1e-12:
+                break
+            buoc /= 2.0
+        b, l_cu = moi, l_moi
+        if float(np.max(np.abs(buoc))) < dung and float(np.max(np.abs(diem))) < dung:
+            return b, l_cu, True
+    return b, l_cu, False
+
+
+def firth_conditional_logit_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: list,
+                                  bo_ghep_col: str) -> dict:
+    """Phương pháp biến cố hiếm «firth_dk» (SAP §5 của bệnh–chứng ghép cặp CÁ THỂ, khi rào EPV chặn hồi quy có điều
+    kiện — 23/11/2026): hồi quy logistic có điều kiện có phạt Firth (Heinze & Puhr 2010, PMID 20213709) trên CÙNG ma
+    trận thiết kế và cùng bộ ghép với conditional_logit_model. OR = exp(β); KTC 95 % hợp lý phạt hồ sơ; p kiểm định tỷ
+    số hợp lý phạt. Biến hằng trong mọi bộ mang thông tin ⇒ lỗi có tên biến (như hồi quy có điều kiện)."""
+    ten = BIEN_CO_HIEM_G6["firth_dk"]
+    if not HAS_SCIPY:
+        return {"phuong_phap": "firth_dk", "ten": ten, "error": "scipy chưa cài — không chạy được Firth có điều kiện"}
+    if bo_ghep_col not in df.columns:
+        return {"phuong_phap": "firth_dk", "ten": ten,
+                "error": f"cột mã bộ ghép «{bo_ghep_col}» không có trong dữ liệu"}
+    predictors = [group_col] + [c for c in covariates if c in df.columns]
+    data = df[[outcome_col] + predictors + [bo_ghep_col]].dropna()
+    muc_y = sorted(data[outcome_col].unique())
+    if len(muc_y) != 2:
+        return {"phuong_phap": "firth_dk", "ten": ten, "error": f"kết cục «{outcome_col}» có {len(muc_y)} giá trị "
+                "(cần đúng 2: ca / chứng)"}
+    y = (data[outcome_col] == muc_y[-1]).to_numpy(dtype=int)
+    X_df = pd.get_dummies(data[predictors], drop_first=True).astype(float)
+    bo = data[bo_ghep_col].to_numpy()
+    ra = {"phuong_phap": "firth_dk", "ten": ten, "outcome": outcome_col, "group": group_col, "bo_ghep": bo_ghep_col,
+          "bien_co": str(muc_y[-1]), "n": int(len(data)), "so_bien_co": int(y.sum()), "so_tham_so": int(X_df.shape[1]),
+          "so_bo_ghep": int(pd.Series(bo).nunique())}
+    thong_tin = pd.Series(y).groupby(bo).transform(lambda t: t.nunique() > 1).to_numpy(dtype=bool)
+    hang = [c for c in X_df.columns
+            if bool((X_df[thong_tin].groupby(bo[thong_tin])[c].nunique() <= 1).all())]
+    if hang:
+        return {**ra, "error": f"biến {', '.join(hang)} HẰNG trong mọi bộ ghép (biến dùng để ghép) — không ước lượng "
+                               "được; bỏ khỏi covariates của đặc tả"}
+    X = X_df.to_numpy(dtype=float)
+    try:
+        bos = _bo_tap_con(X, y, bo)
+        ra["so_bo_thong_tin"] = len(bos)
+        p = X.shape[1]
+        b, l_max, hoi_tu = _firth_dk_toi_uu(bos, p)
+        if not hoi_tu or not np.all(np.isfinite(b)):
+            return {**ra, "error": "hợp lý phạt có điều kiện không hội tụ sau 500 vòng — [CẦN THỐNG KÊ VIÊN]"}
+        se = np.sqrt(np.diag(np.linalg.inv(_mo_men_dk(bos, b, bac_ba=False)[2])))
+        def toi_uu(cd, b0):
+            return _firth_dk_toi_uu(bos, p, cd, b0)
+
+        ket = []
+        for j, ten_bien in enumerate(X_df.columns):
+            lo, hi = _ktc_ho_so_phat(toi_uu, b, l_max, j, float(se[j]))
+            chi2 = max(0.0, 2.0 * (l_max - toi_uu({j: 0.0}, b)[1]))
+            with np.errstate(over="ignore"):
+                ket.append({"variable": str(ten_bien), "OR_adj": round(float(np.exp(b[j])), 3),
+                            "CI_95": [None if lo is None else round(float(np.exp(lo)), 3),
+                                      None if hi is None else round(float(np.exp(hi)), 3)],
+                            "p": round(float(sp_stats.chi2.sf(chi2, 1)), 4), "b": round(float(b[j]), 6)})
+    except (ValueError, np.linalg.LinAlgError) as e:
+        return {**ra, "error": f"{e} — [CẦN THỐNG KÊ VIÊN]"}
+    return {**ra, "results": ket, "hop_ly_phat": round(l_max, 6),
+            "ktc": "hợp lý phạt hồ sơ có điều kiện (profile penalized conditional likelihood)",
+            "kiem_dinh": "tỷ số hợp lý phạt có điều kiện, χ²(1)"}
+
+
+def format_firth_text(bch: dict) -> list[str]:
+    """Các dòng Bảng 4b cho phương pháp Firth (OR hợp lý phạt + KTC hồ sơ + p tỷ số hợp lý phạt)."""
+    dong = [f"  n = {bch.get('n')} | số biến cố = {bch.get('so_bien_co')} | số tham số = {bch.get('so_tham_so')}",
+            f"  KTC: {bch.get('ktc')} · p: {bch.get('kiem_dinh')}",
+            f"  {'Biến số':<28} {'OR (Firth)':>12}  {'95%CI':>22}  {'p':>8}", "  " + "-" * 60]
+    for r in bch.get("results") or []:
+        lo, hi = r["CI_95"]
+        ci = f"{'?' if lo is None else lo}–{'?' if hi is None else hi}"
+        dong.append(f"  {r['variable'][:28]:<28} {r['OR_adj']:>12}  {ci:>22}  {r['p']:>8}")
+    return dong
+
+
+def ktc_clopper_pearson(e: int, n: int, alpha: float = 0.05) -> tuple[float, float]:
+    """KTC chính xác Clopper–Pearson của tỷ lệ e/n (phân vị beta); e = 0 ⇒ cận dưới 0, e = n ⇒ cận trên 1."""
+    lo = 0.0 if e == 0 else float(sp_stats.beta.ppf(alpha / 2, e, n - e + 1))
+    hi = 1.0 if e == n else float(sp_stats.beta.ppf(1 - alpha / 2, e + 1, n - e))
+    return lo, hi
+
+
+def mo_ta_bien_co_hiem(df: pd.DataFrame, outcome_col: str, group_col: str) -> dict:
+    """Phương pháp biến cố hiếm «mo_ta_chinh_xac» (SAP §5, khi rào EPV chặn hồi quy logistic — 23/11/2026): số biến
+    cố từng nhóm + KTC 95% chính xác Clopper–Pearson + p chính xác Fisher hai phía (bảng 2×2). Cùng quần thể và cùng
+    quy ước biến cố (giá trị LỚN của kết cục 2 mức) như compare_primary_outcome. Không có mô hình, không hiệu chỉnh."""
+    if not HAS_SCIPY:
+        return {"error": "scipy chưa cài — không tính được KTC chính xác/Fisher"}
+    d = df[[outcome_col, group_col]].dropna()
+    muc_y = sorted(d[outcome_col].unique())
+    if len(muc_y) != 2:
+        return {"error": f"kết cục «{outcome_col}» có {len(muc_y)} giá trị (cần đúng 2)"}
+    bc = muc_y[-1]
+    nhom = []
+    for g in sorted(d[group_col].unique()):
+        y = d.loc[d[group_col] == g, outcome_col]
+        n, e = int(len(y)), int((y == bc).sum())
+        lo, hi = ktc_clopper_pearson(e, n)
+        nhom.append({"gia_tri": str(g), "n": n, "so_bien_co": e, "ty_le": round(e / n, 4),
+                     "ci_95_clopper_pearson": [round(lo, 4), round(hi, 4)]})
+    ra = {"phuong_phap": "mo_ta_chinh_xac", "ten": BIEN_CO_HIEM_G6["mo_ta_chinh_xac"], "outcome": outcome_col,
+          "group": group_col, "bien_co": str(bc), "nhom": nhom}
+    if len(nhom) == 2:
+        bang = [[nhom[i]["so_bien_co"], nhom[i]["n"] - nhom[i]["so_bien_co"]] for i in (0, 1)]
+        ra["fisher_p_hai_phia"] = round(float(sp_stats.fisher_exact(bang, alternative="two-sided")[1]), 4)
+    return ra
+
+
+def format_bien_co_hiem_text(bch: dict) -> str:
+    """Bảng 4b — phương pháp biến cố hiếm thay cho mô hình hồi quy bị rào EPV chặn."""
+    dong = ["BẢNG 4b — BIẾN CỐ HIẾM (thay mô hình hồi quy bị rào EPV chặn — theo SAP §5)", "=" * 70,
+            f"  Phương pháp: {bch.get('ten')}", f"  Lý do: {bch.get('ly_do', '')}"]
+    if bch.get("error"):
+        return "\n".join(dong + [f"  Lỗi: {bch['error']}"]) + "\n"
+    if bch.get("phuong_phap") in ("firth", "firth_dk"):
+        return "\n".join(dong + format_firth_text(bch)) + "\n"
+    for g in bch.get("nhom") or []:
+        lo, hi = g["ci_95_clopper_pearson"]
+        dong.append(f"  Nhóm {g['gia_tri']}: {g['so_bien_co']}/{g['n']} ({g['ty_le']}); KTC 95% chính xác {lo}–{hi}")
+    if "fisher_p_hai_phia" in bch:
+        dong.append(f"  p chính xác Fisher (hai phía) = {bch['fisher_p_hai_phia']}")
+    return "\n".join(dong) + "\n"
+
+
+def kc_hieu_so(e1: int, n1: int, e0: int, n0: int, phuong_phap: str) -> tuple[float, float]:
+    """KTC 95 % của hiệu nguy cơ p1 − p0 theo ĐÚNG phương pháp được khai — tên lạ ⇒ ValueError (không tự lùi Wald)."""
+    if phuong_phap not in KC_HIEU_SO:
+        raise ValueError(f"phương pháp KTC hiệu số nguy cơ «{phuong_phap}» chưa được G6 hỗ trợ "
+                         f"(hỗ trợ: {', '.join(KC_HIEU_SO)}) — không tự lùi về Wald")
+    if phuong_phap == "newcombe":
+        return kc_hieu_so_newcombe(e1, n1, e0, n0)
+    p1, p0 = e1 / n1, e0 / n0
+    se = math.sqrt(p0 * (1 - p0) / n0 + p1 * (1 - p1) / n1)
+    # 23/11/2026: phân vị chuẩn CHÍNH XÁC (như Newcombe, SPSS, R) — z = 1,96 làm tròn làm nửa độ rộng lớn hơn
+    # ≈ 0,0018 %, đủ đẩy cận KTC (làm tròn 4 chữ số) qua ngưỡng ⇒ kiểm chéo SPSS báo LỆCH giả (rct_chan_thuc,
+    # rct_kinh_te).
+    return p1 - p0 - _Z_975 * se, p1 - p0 + _Z_975 * se
+
+
 def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
                              group_col: str, outcome_type: str = "auto",
-                             cluster_col: str | None = None) -> dict:
+                             cluster_col: str | None = None, kc_hieu_so_pp: str = "wald") -> dict:
     """Tính crude effect (OR/MD) + 95%CI cho kết cục chính.
 
     Có ``cluster_col`` (28/09/2026, N7) ⇒ thêm khoá ``cum`` chứa ước lượng thô với SE sandwich theo cụm
     (``_so_sanh_hai_nhom_cum``). Các khoá cũ KHÔNG đổi (golden GOLDEN-G6-001 là hợp đồng); p Chi-square/t-test cũ
     vẫn giả định độc lập và được dán nhãn như vậy trong Bảng 2.
+    ``kc_hieu_so_pp`` (23/11/2026): phương pháp KTC của hiệu nguy cơ do SAP khai (``KC_HIEU_SO``); tên lạ ⇒ ValueError
+    ngay cả khi kết cục không nhị phân (không âm thầm bỏ qua lời khai của SAP).
     """
+    if kc_hieu_so_pp not in KC_HIEU_SO:
+        raise ValueError(f"phương pháp KTC hiệu số nguy cơ «{kc_hieu_so_pp}» chưa được G6 hỗ trợ "
+                         f"(hỗ trợ: {', '.join(KC_HIEU_SO)}) — không tự lùi về Wald")
     if outcome_type == "auto":
         outcome_type = detect_var_type(df[outcome_col])
 
@@ -554,8 +979,8 @@ def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
         if p0 > 0 and p1 > 0 and p0 < 1 and p1 < 1:
             or_crude = (e1 / (n1 - e1)) / (e0 / (n0 - e0))
             se_log = np.sqrt(1/e0 + 1/(n0-e0) + 1/e1 + 1/(n1-e1))
-            ci = (round(np.exp(np.log(or_crude) - 1.96 * se_log), 3),
-                  round(np.exp(np.log(or_crude) + 1.96 * se_log), 3))
+            ci = (round(np.exp(np.log(or_crude) - _Z_975 * se_log), 3),  # phân vị chính xác (23/11/2026)
+                  round(np.exp(np.log(or_crude) + _Z_975 * se_log), 3))
             result["or_crude"] = round(or_crude, 3)
             result["ci_95"] = ci
         # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện
@@ -566,10 +991,13 @@ def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
         # sánh margin (thang tỷ lệ) với CI của OR (thang log-odds, khác thang
         # hoàn toàn). RD cho phép interpret_hypothesis_type() bên dưới so
         # sánh ĐÚNG thang với margin từ G3.
+        # 23/11/2026: KTC theo phương pháp SAP khai (`kc_hieu_so`, mặc định Wald như cũ) + ghi tên phương pháp.
         rd = p1 - p0
-        se_rd = np.sqrt(p0 * (1 - p0) / n0 + p1 * (1 - p1) / n1)
+        lo_rd, hi_rd = kc_hieu_so(e1, n1, e0, n0, kc_hieu_so_pp)
         result["risk_diff"] = round(rd, 4)
-        result["risk_diff_ci_95"] = (round(rd - 1.96 * se_rd, 4), round(rd + 1.96 * se_rd, 4))
+        result["risk_diff_ci_95"] = (round(lo_rd, 4), round(hi_rd, 4))
+        result["risk_diff_ci_method"] = kc_hieu_so_pp
+        result["risk_diff_ci_ten"] = KC_HIEU_SO[kc_hieu_so_pp]
         if HAS_SCIPY:
             ct = pd.crosstab(df[outcome_col], df[group_col])
             _, p, _, _ = sp_stats.chi2_contingency(ct)
@@ -875,8 +1303,11 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
         n_events = int(min((y_raw == y_raw.unique()[0]).sum(), (y_raw != y_raw.unique()[0]).sum())) \
             if y_raw.nunique() == 2 else len(data)
         if n_events < len(predictors) * 10:
+            # 23/11/2026: đánh dấu rào EPV (khác cảnh báo cỡ mẫu của kết cục liên tục) — main() chạy phương pháp biến
+            # cố hiếm SAP §5 đã khai (`--bien-co-hiem`) thay cho mô hình bị chặn.
             return {"warning": f"Số biến cố (nhóm hiếm hơn) {n_events} có thể không đủ EPV "
-                                f"cho {len(predictors)} biến dự báo (cần ≥ 10 biến cố/biến — Peduzzi 1996)."}
+                                f"cho {len(predictors)} biến dự báo (cần ≥ 10 biến cố/biến — Peduzzi 1996).",
+                    "rao_epv": True, "so_bien_co": n_events, "so_tham_so": len(predictors)}
     elif len(data) < len(predictors) * 10:
         return {"warning": f"Cỡ mẫu {len(data)} có thể không đủ cho {len(predictors)} biến dự báo."}
 
@@ -941,6 +1372,87 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
         # Lỗi ở đây gồm cả lỗi DỮ LIỆU (kiểu biến, ma trận suy biến) — không chỉ không hội tụ; ghi đúng bản chất.
         return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — mô hình không chạy được (dữ liệu đầu vào, ma trận "
                                          "suy biến hoặc không hội tụ): xem «error»]"}
+
+
+def _fit_clogit(y: pd.Series, X: pd.DataFrame, nhom: pd.Series) -> tuple:
+    """Một mô hình logistic có điều kiện (statsmodels ConditionalLogit, Newton — hợp lý có điều kiện CHÍNH XÁC, cùng
+    phương pháp `survival::clogit(method = "exact")` của R). Trả (kết quả, cảnh báo bắt được)."""
+    from statsmodels.discrete.conditional_models import ConditionalLogit  # noqa: PLC0415
+
+    return _chay_fit_bat_canh_bao(
+        lambda: ConditionalLogit(y, X, groups=nhom.to_numpy()).fit(method="newton", maxiter=200, disp=False))
+
+
+def _dong_or_clogit(model, var: str, ly_do_mo_hinh: list) -> dict:
+    conf = model.conf_int()
+    with np.errstate(over="ignore", under="ignore"):
+        r = {"variable": var, "OR_adj": round(float(np.exp(model.params[var])), 3),
+             "CI_95": [round(float(np.exp(conf.loc[var, 0])), 3), round(float(np.exp(conf.loc[var, 1])), 3)],
+             "p": round(float(model.pvalues[var]), 4)}
+    return _gan_co_khong_hoi_tu(r, ly_do_mo_hinh, ("OR_adj", "CI_95", "p"))
+
+
+def conditional_logit_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: list,
+                            bo_ghep_col: str) -> dict:
+    """Hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép (bệnh–chứng ghép cặp CÁ THỂ — 23/11/2026; SAP §4 họ `logistic_dk`).
+
+    Hợp lý có điều kiện trên từng bộ ghép (`bo_ghep_col` = mã bộ ghép thật của dữ liệu): tham số chặn riêng của từng
+    bộ bị khử, nên ước lượng không lệch như logistic không điều kiện trên dữ liệu ghép cá thể (Breslow & Day 1980).
+    Trả OR hiệu chỉnh (phơi nhiễm + hiệp biến) và OR thô CÓ ĐIỀU KIỆN (chỉ phơi nhiễm) trên CÙNG tập ca, KTC Wald, p z.
+    Bộ ghép toàn ca hoặc toàn chứng không mang thông tin (loại khỏi hợp lý — như R clogit), vẫn đếm vào `n`.
+    Biến HẰNG trong mọi bộ ghép (biến dùng để ghép, vd giới khi ghép đúng giới) không ước lượng được ⇒ LỖI có tên biến
+    (đặc tả bỏ biến đó khỏi covariates) — không tự loại im lặng. Rào EPV như multivariate_model (số ca hoặc chứng, nhóm
+    ít hơn, < 10 × số biến) ⇒ cảnh báo `rao_epv`."""
+    if not HAS_STATSMODELS:
+        return {"error": "statsmodels chưa cài. Chạy: pip install statsmodels",
+                "note": "[CẦN BỔ SUNG — Hồi quy có điều kiện cần statsmodels]"}
+    if bo_ghep_col not in df.columns:
+        return {"error": f"cột mã bộ ghép «{bo_ghep_col}» không có trong dữ liệu"}
+    available_covs = [c for c in covariates if c in df.columns]
+    predictors = [group_col] + available_covs
+    data = df[[outcome_col] + predictors + [bo_ghep_col]].dropna()
+    muc_y = sorted(data[outcome_col].unique())
+    if len(muc_y) != 2:
+        return {"error": f"kết cục «{outcome_col}» có {len(muc_y)} giá trị (cần đúng 2: ca / chứng)"}
+    y = (data[outcome_col] == muc_y[-1]).astype(float)
+    bo = data[bo_ghep_col]
+    so_ca_bo = y.groupby(bo).sum()
+    thong_tin = y.groupby(bo).transform(lambda s: s.nunique() > 1).astype(bool)
+    chung = {"model": "logistic_dk", "n": int(len(data)), "bo_ghep": bo_ghep_col, "so_bo_ghep": int(bo.nunique()),
+             "so_bo_thong_tin": int(y[thong_tin].groupby(bo[thong_tin]).ngroups),
+             "n_thong_tin": int(thong_tin.sum()), "ca_toi_da_moi_bo": int(so_ca_bo.max()),
+             "bien_co": str(muc_y[-1])}
+    n_events = int(min(y.sum(), len(y) - y.sum()))
+    if n_events < len(predictors) * 10:
+        return {"warning": f"Số biến cố (nhóm hiếm hơn) {n_events} có thể không đủ EPV cho {len(predictors)} biến "
+                           "dự báo (cần ≥ 10 biến cố/biến — Peduzzi 1996).",
+                "rao_epv": True, "so_bien_co": n_events, "so_tham_so": len(predictors), **chung}
+    X = pd.get_dummies(data[predictors], drop_first=True).astype(float)
+    y_i, X_i, bo_i = y[thong_tin], X[thong_tin], bo[thong_tin]
+    hang = [c for c in X.columns if bool((X_i.groupby(bo_i)[c].nunique() <= 1).all())]
+    if hang:
+        return {"error": f"biến {', '.join(hang)} HẰNG trong mọi bộ ghép (biến dùng để ghép) — hồi quy có điều kiện "
+                         "không ước lượng được; bỏ khỏi covariates của đặc tả", **chung}
+    cot_nhom = [c for c in X.columns if c == group_col or c.startswith(f"{group_col}_")]
+    try:
+        model, caught = _fit_clogit(y_i, X_i, bo_i)
+        ly_do = _ly_do_tu_canh_bao(caught)
+        for var in model.params.index:
+            conf = model.conf_int()
+            ly_do.extend(_ly_do_tu_uoc_luong(str(var), model.params[var], model.bse[var], conf.loc[var, 0],
+                                             conf.loc[var, 1], kiem_do_lon=True))
+        results = [_dong_or_clogit(model, str(v), ly_do) for v in model.params.index]
+        tho, caught_t = _fit_clogit(y_i, X_i[cot_nhom], bo_i)
+        ly_do_t = _ly_do_tu_canh_bao(caught_t)
+        crude = [_dong_or_clogit(tho, str(v), ly_do_t) for v in tho.params.index]
+    except Exception as e:  # noqa: BLE001 — ma trận suy biến/không hội tụ: ghi đúng bản chất như multivariate_model
+        return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — hồi quy có điều kiện không chạy được]", **chung}
+    out = {**chung, "results": results, "crude": crude, "convergence": not ly_do,
+           "phuong_phap": "hợp lý có điều kiện chính xác (statsmodels ConditionalLogit, Newton); KTC Wald, p z"}
+    if ly_do:
+        out["khong_hoi_tu"] = True
+        out["ly_do"] = ly_do
+    return out
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -1071,12 +1583,429 @@ def poisson_pr_model(df: pd.DataFrame, outcome_col: str, group_col: str, covaria
         return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — mô hình Poisson không hội tụ]"}
 
 
+#: Nguồn phương pháp của bộ gán đa trị tự lập (22/11/2026): gán thụ động (gán biến nguồn rồi tính lại biến phái sinh)
+#: và luật Rubin gộp ước lượng — White IR, Royston P, Wood AM. Stat Med 2011;30(4):377-99 (PMID 21225900,
+#: doi:10.1002/sim.4067; đã kiểm rút bài 22/11/2026: không rút); luật gộp gốc: Rubin DB 1987 (sách, không có PMID).
+NGUON_MI_TU_LAP = "White, Royston & Wood, Stat Med 2011 (PMID 21225900)"
+
+
+#: 23/11/2026 — nguồn của gán đa trị cho bệnh–chứng ghép cặp (đã tra PubMed, kiểm rút bài: chưa rút)
+NGUON_MI_GHEP_CAP = ("Seaman & Keogh, Biometrics 2015 (PMID 26237003) — gán theo phương trình nối tiếp gồm ca/chứng và "
+                     "các biến ghép, phân tích có điều kiện trong từng bộ, gộp Rubin")
+LOI_MI_THIEU_BIEN_GHEP = ("dữ liệu ghép cặp cá thể có giá trị thiếu nhưng đặc tả chưa khai biến dùng để ghép "
+                          "(bien_ghep) — mô hình gán phải gồm tình trạng ca/chứng và các biến ghép (Seaman & "
+                          "Keogh 2015, PMID 26237003); không gán thiếu cấu trúc ghép")
+
+
+#: 24/11/2026 — BỘ GÁN PMM của MỌI đường gán đa trị (`_mi_tu_lap`, `_mi_ghep_cap`, `multiple_imputation_model`). Thay
+#: `statsmodels.imputation.mice.MICEData.impute_pmm` sau khi đo được ba lỗi phương pháp của nó: (1) `np.argsort` KHÔNG
+#: ổn định trên trung bình dự đoán trùng hàng loạt (biến dự báo rời rạc ⇒ vài mức) — numpy dùng bản sắp xếp SIMD theo
+#: CPU nên thứ tự trong nhóm trùng, và do đó người cho mẫu, khác nhau theo máy (λ_x1 = 0,15 / 0,29 / 0,59 trên SkylakeX
+#: / Accelerate / Haswell, cùng dữ liệu, cùng hạt giống); (2) cửa sổ `searchsorted ± k` giống nhau cho mọi ca thiếu cùng
+#: trung bình dự đoán ⇒ cả ô dùng chung một nhóm nhỏ người cho; (3) so khớp kiểu 2 (cả hai phía dùng tham số đã nhiễu).
+#: Cách mới — PMM kiểu 1 với tham số BOOTSTRAP:
+#:   • mỗi lần gán một biến: rút mẫu bootstrap các ca quan sát, ước lượng hồi quy trên mẫu đó (β*) — bất định tham số;
+#:   • người cho = các ca của mẫu bootstrap; trung bình dự đoán của người cho VÀ người nhận cùng tính bằng β*;
+#:   • với TỪNG ca thiếu: k người cho gần nhất, phá thế trùng NGẪU NHIÊN riêng cho ca đó (chọn đều trong toàn bộ nhóm
+#:     trùng ở khoảng cách thứ k), rồi lấy một người trong k — k = 10 theo Morris, White & Royston 2014 (PMID 24903709,
+#:     doi:10.1186/1471-2288-14-75: tránh một người cho, khuyên khoảng 10);
+#:   • biến dự báo rời rạc ⇒ quy về gán nóng Bayes xấp xỉ (ABB) theo ô — đúng lý thuyết khi thiếu ngẫu nhiên (Rubin &
+#:     Schenker, JASA 1986, doi:10.1080/01621459.1986.10478280); biến dự báo phân loại vào mô hình gán dạng biến giả;
+#:   • mỗi bộ gán là MỘT chuỗi độc lập (khởi tạo bằng rút ngẫu nhiên từ giá trị quan sát, SO_VONG_GAN vòng) — không lấy
+#:     các bộ liền nhau của cùng một chuỗi.
+#: Tất định theo hạt giống (numpy PCG64), không phụ thuộc CPU: sắp xếp ổn định, trung bình dự đoán làm tròn 10 chữ số
+#: theo đơn vị độ lệch chuẩn trước khi so (sai khác bit cuối của BLAS không đổi nhóm trùng).
+K_NGUOI_CHO_PMM = 10
+SO_VONG_GAN = 10
+HAT_GIONG_MI = 20261124
+NGUON_PMM = ("PMM kiểu 1 tham số bootstrap, k = 10 người cho chọn riêng từng ca, phá thế trùng ngẫu nhiên — Morris, "
+             "White & Royston 2014 (PMID 24903709); dự báo rời rạc ⇒ ABB theo ô (Rubin & Schenker 1986, "
+             "doi:10.1080/01621459.1986.10478280)")
+
+
+def _mi_ghep_cap(df: pd.DataFrame, outcome_col: str, predictors: list, bo_ghep: str, bien_ghep: list,
+                 n_imputations: int, bien_gia: dict | None = None, hat_giong: int = HAT_GIONG_MI) -> dict:
+    """Gán đa trị cho bệnh–chứng GHÉP CẶP CÁ THỂ (23/11/2026; Seaman & Keogh 2015, PMID 26237003 — cách thứ nhất, hiệu
+    quả nhất trong mô phỏng của bài): mô hình gán theo phương trình nối tiếp (`BoGanPMM`, 24/11/2026: PMM kiểu 1 tham số
+    bootstrap) cho từng biến thiếu, biến dự báo = tình trạng ca/chứng, phơi nhiễm, hiệp biến VÀ các biến dùng để ghép
+    (giữ cấu trúc ghép — biến ghép không vào mô hình phân tích); mỗi bộ một chuỗi độc lập (như `_mi_tu_lap`).
+    Trong mỗi bộ gán: hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép (cùng hàm `_fit_clogit` của mô hình chính) trên bộ mang
+    thông tin; gộp luật Rubin (`_gop_rubin`), KTC/p theo z. Mã bộ ghép không vào mô hình gán."""
+    bien_gia = bien_gia or {}
+    cot_gan = [outcome_col] + predictors + [b for b in bien_ghep if b not in predictors and b != outcome_col]
+    data = df[df[bo_ghep].notna()].reset_index(drop=True)
+    khung = data[cot_gan].apply(pd.to_numeric, errors="coerce")
+    if khung[outcome_col].isna().any():
+        raise LoiGanDaTri("tình trạng ca/chứng thiếu ở một số hàng — không gán biến định nghĩa bộ ghép")
+    if khung.isna().all().any():
+        raise LoiGanDaTri("cột không có giá trị quan sát nào: " + ", ".join(khung.columns[khung.isna().all()]))
+    imp = BoGanPMM(khung, None, [c for c in cot_gan if c in bien_gia], rng=np.random.default_rng(hat_giong))
+    muc_y = sorted(khung[outcome_col].unique())
+    y = pd.Series((khung[outcome_col] == muc_y[-1]).astype(float).to_numpy())
+    bo = data[bo_ghep]
+    thong_tin = y.groupby(bo).transform(lambda t: t.nunique() > 1).astype(bool).to_numpy()
+    he_so, hiep_ps, canh_bao, ten = [], [], [], None
+    bo_da_gan = [imp.mot_bo() for _ in range(n_imputations)]  # mỗi bộ một chuỗi độc lập
+    muc = {c: sorted({float(x) for b in bo_da_gan for x in b[c].unique()}) for c in predictors if c in bien_gia}
+    for b in bo_da_gan:
+        X = pd.DataFrame(index=b.index)
+        for c in predictors:
+            if c in muc:
+                for m in muc[c][1:]:
+                    X[f"{c}_{int(m)}"] = (b[c] == m).astype(float)
+            else:
+                X[c] = b[c].astype(float)
+        r, caught = _fit_clogit(y[thong_tin], X[thong_tin], bo[thong_tin])
+        canh_bao += caught
+        if ten is None:
+            ten = list(r.params.index)
+        elif list(r.params.index) != ten:
+            raise LoiGanDaTri("tham số mô hình khác nhau giữa các bộ gán")
+        he_so.append(np.asarray(r.params, dtype=float))
+        hiep_ps.append(np.asarray(r.cov_params(), dtype=float))
+    q_bar, se, lam = _gop_rubin(he_so, hiep_ps)
+    z = float(sp_stats.norm.ppf(0.975))
+    ly_do = _ly_do_tu_canh_bao(canh_bao)
+    for i, t in enumerate(ten):
+        ly_do.extend(_ly_do_tu_uoc_luong(str(t), float(q_bar[i]), float(se[i]), float(q_bar[i] - z * se[i]),
+                                         float(q_bar[i] + z * se[i]), kiem_do_lon=True))
+    results = []
+    for i, t in enumerate(ten):
+        est, s_i = float(q_bar[i]), float(se[i])
+        b_giua = float(lam[i]) * s_i ** 2 / (1 + 1 / n_imputations) if np.isfinite(lam[i]) else 0.0
+        e = {"variable": str(t), "OR_adj": round(float(np.exp(est)), 3),
+             "CI_95": [round(float(np.exp(est - z * s_i)), 3), round(float(np.exp(est + z * s_i)), 3)],
+             "p": round(float(2 * sp_stats.norm.sf(abs(est / s_i))), 4),
+             "b": round(est, 6), "se": round(s_i, 6), "mcse": round(float(np.sqrt(b_giua / n_imputations)), 6)}
+        results.append(_gan_co_khong_hoi_tu(e, ly_do, ("OR_adj", "CI_95", "p", "b", "se", "mcse")))
+    out = {"bo_may": "ghep_cap", "bo_ghep": bo_ghep, "bien_ghep": list(bien_ghep),
+           "bien_mo_hinh_gan": list(cot_gan), "so_bo_thong_tin": int(pd.Series(bo[thong_tin]).nunique()),
+           "phuong_phap_gop": f"luật Rubin (Q̄, Ū + (1 + 1/m)·B) — {NGUON_MI_GHEP_CAP}",
+           "phuong_phap_gan": NGUON_PMM, "hat_giong": int(hat_giong),
+           "ty_le_thong_tin_thieu": {str(t): round(float(lam[i]), 3) for i, t in enumerate(ten)
+                                     if np.isfinite(lam[i])},
+           "results": results}
+    if ly_do:
+        out["khong_hoi_tu"] = True
+        out["ly_do"] = ly_do
+    return out
+
+
+class LoiGanDaTri(ValueError):
+    """Bộ gán đa trị tự lập không chạy được với lý do kỹ thuật cụ thể (trả thành {"error"}, không đoán)."""
+
+
+def _chon_nguoi_cho(du_doan_cho: np.ndarray, gia_tri_cho: np.ndarray, du_doan_nhan: np.ndarray, k: int,
+                    rng: np.random.Generator) -> np.ndarray:
+    """Giá trị gán cho từng ca nhận: một người trong k người cho gần nhất theo |trung bình dự đoán|, phá thế trùng
+    ngẫu nhiên RIÊNG cho từng ca (tương đương chọn đều trong tập k gồm mọi người gần hơn khoảng cách thứ k cộng một tập
+    con ngẫu nhiên của nhóm trùng ở đúng khoảng cách đó). Vector hoá; không phụ thuộc thứ tự hàng ngoài dãy ngẫu
+    nhiên."""
+    n = len(du_doan_cho)
+    k = max(1, min(int(k), n))
+    thu_tu = np.argsort(du_doan_cho, kind="stable")
+    s, v = du_doan_cho[thu_tu], gia_tri_cho[thu_tu]
+    r = np.asarray(du_doan_nhan, dtype=float)
+    nr = len(r)
+    if nr == 0:
+        return np.empty(0, dtype=float)
+    pos = np.searchsorted(s, r)
+    w = pos[:, None] + np.arange(-k, k)[None, :]
+    hop_le = (w >= 0) & (w < n)
+    wc = np.clip(w, 0, n - 1)
+    d = np.where(hop_le, np.abs(s[wc] - r[:, None]), np.inf)
+    dk = np.partition(d, k - 1, axis=1)[:, k - 1]  # khoảng cách thứ k (k người gần nhất nằm trong cửa sổ ±k)
+    gan_hon = d < dk[:, None]  # người gần hơn hẳn: < k người, liền khối trong mảng đã sắp
+    n_lt = gan_hon.sum(axis=1)
+    gia_bang = np.where(d == dk[:, None], s[wc], np.nan)
+    v_trai, v_phai = np.nanmin(gia_bang, axis=1), np.nanmax(gia_bang, axis=1)
+    dau_t, cuoi_t = np.searchsorted(s, v_trai, "left"), np.searchsorted(s, v_trai, "right")
+    dau_p, cuoi_p = np.searchsorted(s, v_phai, "left"), np.searchsorted(s, v_phai, "right")
+    so_t = cuoi_t - dau_t
+    so_p = np.where(v_phai != v_trai, cuoi_p - dau_p, 0)  # nhóm trùng ở hai phía (tối đa hai giá trị)
+    u = rng.random((nr, 2))
+    chon_gan = u[:, 0] * k < n_lt  # P(chọn người gần hơn) = n_lt / k
+    dau_gan = np.argmax(gan_hon, axis=1)
+    j = np.minimum((u[:, 1] * np.maximum(n_lt, 1)).astype(np.int64), np.maximum(n_lt - 1, 0))
+    idx_gan = wc[np.arange(nr), np.minimum(dau_gan + j, 2 * k - 1)]
+    t = np.minimum((u[:, 1] * (so_t + so_p)).astype(np.int64), so_t + so_p - 1)
+    idx_bang = np.where(t < so_t, dau_t + t, dau_p + (t - so_t))
+    return v[np.where(chon_gan, idx_gan, idx_bang)]
+
+
+class BoGanPMM:
+    """Gán theo phương trình nối tiếp bằng PMM kiểu 1 tham số bootstrap (xem chú thích `K_NGUOI_CHO_PMM`).
+
+    `khung`: các cột số cần đưa vào mô hình gán (NaN = thiếu). `du_bao`: {cột: [cột dự báo]} — mặc định mọi cột khác.
+    `phan_loai`: cột phân loại ⇒ vào mô hình gán của cột khác dưới dạng biến giả (mức tham chiếu nhỏ nhất). Mỗi lần gọi
+    `mot_bo()` chạy MỘT chuỗi độc lập và trả DataFrame đã gán (cùng chỉ mục, cùng cột)."""
+
+    def __init__(self, khung: pd.DataFrame, du_bao: dict | None = None, phan_loai=(), *, k: int = K_NGUOI_CHO_PMM,
+                 so_vong: int = SO_VONG_GAN, rng: np.random.Generator | None = None):
+        self.cot = list(khung.columns)
+        self.goc = khung.apply(pd.to_numeric, errors="coerce").to_numpy(dtype=float)
+        self.thieu = np.isnan(self.goc)
+        if (self.thieu.all(axis=0) & self.thieu.any(axis=0)).any():
+            raise LoiGanDaTri("cột không có giá trị quan sát nào: "
+                              + ", ".join(c for c, t in zip(self.cot, self.thieu.all(axis=0)) if t))
+        mac_dinh = {c: [y for y in self.cot if y != c] for c in self.cot}
+        self.du_bao = {c: [x for x in (du_bao or {}).get(c, mac_dinh[c]) if x in self.cot and x != c] for c in self.cot}
+        self.phan_loai = {c for c in phan_loai if c in self.cot}
+        self.muc = {c: np.unique(self.goc[~self.thieu[:, i], i]) for i, c in enumerate(self.cot) if c in self.phan_loai}
+        self.k, self.so_vong = int(k), int(so_vong)
+        self.rng = rng if rng is not None else np.random.default_rng(HAT_GIONG_MI)
+        self.can_gan = [i for i in range(len(self.cot)) if self.thieu[:, i].any()]
+
+    def _thiet_ke(self, x: np.ndarray, i: int) -> np.ndarray:
+        cot = [np.ones(len(x))]
+        for c in self.du_bao[self.cot[i]]:
+            j = self.cot.index(c)
+            if c in self.phan_loai:
+                cot += [(x[:, j] == m).astype(float) for m in self.muc[c][1:]]
+            else:
+                cot.append(x[:, j])
+        return np.column_stack(cot)
+
+    def mot_bo(self) -> pd.DataFrame:
+        rng, x = self.rng, self.goc.copy()
+        for i in self.can_gan:  # khởi tạo: rút ngẫu nhiên từ giá trị quan sát của chính cột
+            t = self.thieu[:, i]
+            x[t, i] = rng.choice(self.goc[~t, i], size=int(t.sum()), replace=True)
+        for _ in range(self.so_vong):
+            for i in self.can_gan:
+                t = self.thieu[:, i]
+                quan_sat = np.flatnonzero(~t)
+                X = self._thiet_ke(x, i)
+                b = quan_sat[rng.integers(0, len(quan_sat), len(quan_sat))]  # mẫu bootstrap của người cho
+                beta = np.linalg.lstsq(X[b], self.goc[b, i], rcond=None)[0]
+                thang = float(np.std(self.goc[quan_sat, i])) or 1.0
+                du_cho = np.round(X[b] @ beta / thang, 10)
+                du_nhan = np.round(X[t] @ beta / thang, 10)
+                x[t, i] = _chon_nguoi_cho(du_cho, self.goc[b, i], du_nhan, self.k, rng)
+        return pd.DataFrame(x, columns=self.cot)
+
+
+def _gia_tri_logic(v) -> str:
+    """Giá trị một ô cho bộ đánh giá Branching Logic: trống cho thiếu, số nguyên không «.0»."""
+    if v is None or (isinstance(v, float) and math.isnan(v)):
+        return ""
+    if isinstance(v, (float, np.floating)) and float(v).is_integer():
+        return str(int(v))
+    return str(v)
+
+
+def _mat_na_nhanh(data: pd.DataFrame, bieu_thuc: str) -> tuple:
+    """(mặt nạ «thoả nhánh», mặt nạ «đánh giá được») của một Branching Logic trên từng hàng — dùng ĐÚNG bộ đánh giá
+    dùng chung `nhap_lieu_excel.danh_gia_logic`. Hàng có biến điều kiện còn thiếu ⇒ «không đánh giá được» (không coi
+    là ẩn)."""
+    import nhap_lieu_excel as NLE  # noqa: PLC0415 — nạp trễ: chỉ cần khi có gán theo nhánh
+
+    cot = BPS.cot_cua_nhanh(bieu_thuc)
+    vang = [c for c in cot if c not in data.columns]
+    if vang:
+        raise LoiGanDaTri(f"nhánh «{bieu_thuc}» cần cột không có trong dữ liệu phân tích: {', '.join(vang)}")
+    thoa = np.zeros(len(data), dtype=bool)
+    duoc = data[cot].notna().all(axis=1).to_numpy()
+    for i, hang in enumerate(data[cot].itertuples(index=False, name=None)):
+        if not duoc[i]:
+            continue
+        try:
+            thoa[i] = bool(NLE.danh_gia_logic(bieu_thuc, {c: _gia_tri_logic(v) for c, v in zip(cot, hang)}))
+        except NLE.LogicKhongHo as e:
+            raise LoiGanDaTri(f"không đánh giá được nhánh «{bieu_thuc}»: {e}") from e
+    return thoa, duoc
+
+
+def _gop_rubin(ds_he_so: list, ds_hiep_phuong_sai: list) -> tuple:
+    """Luật Rubin: Q̄ = trung bình hệ số; T = Ū + (1 + 1/m)·B (Ū trung bình hiệp phương sai trong bộ, B hiệp phương sai
+    giữa các bộ). Trả (Q̄, SE = √diag T, tỷ lệ thông tin thiếu λ = (1 + 1/m)·B_jj / T_jj)."""
+    q = np.asarray(ds_he_so, dtype=float)
+    m = q.shape[0]
+    u_bar = np.mean(np.asarray(ds_hiep_phuong_sai, dtype=float), axis=0)
+    b = np.atleast_2d(np.cov(q, rowvar=False, ddof=1)) if m > 1 else np.zeros_like(u_bar)
+    t = u_bar + (1 + 1 / m) * b
+    se = np.sqrt(np.diag(t))
+    with np.errstate(invalid="ignore", divide="ignore"):
+        lam = (1 + 1 / m) * np.diag(b) / np.diag(t)
+    return q.mean(axis=0), se, lam
+
+
+def _mi_tu_lap(df: pd.DataFrame, outcome_col: str, predictors: list, outcome_type: str, poisson: bool,
+               bien_gia: dict, cluster_col: str | None, n_imputations: int, gan_thu_dong,
+               hat_giong: int = HAT_GIONG_MI) -> dict:
+    """Bộ gán đa trị TỰ LẬP (22/11/2026) — dùng khi bộ MICE dựng sẵn của statsmodels không làm đúng được:
+
+    (a) GÁN THEO NHÁNH: biến phân tích là biến phái sinh có cột nguồn chỉ áp cho nhóm con (Branching Logic REDCap,
+        `BPS.KeHoachGanThuDong`) ⇒ gán cột NGUỒN thay cho biến phái sinh; sau mỗi bộ, cột nguồn ngoài nhóm con (nhánh
+        không thoả, đánh giá trên giá trị đã gán của biến điều kiện) trở lại «không áp dụng», rồi TÍNH LẠI biến phái
+        sinh từ công thức đã duyệt. Cột nguồn có nhánh không làm biến dự báo cho cột khác (ngoài nhóm con nó không có
+        nghĩa). Nhánh luôn thoả trong quần thể phân tích (vd «[du_tieu_chuan] = '1'» sau lọc) coi như không nhánh.
+    (b) POISSON VỮNG THEO CỤM: mỗi bộ khớp GLM Poisson liên kết log với sai số chuẩn sandwich theo cụm (CR1), gộp Rubin;
+        suy luận t(G−1) như mọi bảng hiệu chỉnh cụm khác (N11).
+    (c) 24/11/2026: MỌI gán đa trị không ghép cặp đi qua bộ này (MICE dựng sẵn của statsmodels đã bỏ).
+    Gán: `BoGanPMM` (PMM kiểu 1 tham số bootstrap, k = 10 người cho chọn riêng từng ca, mỗi bộ một chuỗi độc lập —
+    chú thích `K_NGUOI_CHO_PMM`). Gộp: luật Rubin (`_gop_rubin`; nguồn `NGUON_MI_TU_LAP`)."""
+    import statsmodels.formula.api as smf  # noqa: PLC0415
+
+    analysis_cols = [outcome_col] + predictors
+    data = df.reset_index(drop=True)
+    so = data.apply(pd.to_numeric, errors="coerce")
+    nguon_cua = dict(getattr(gan_thu_dong, "nguon_cua", {}) or {})
+    nhanh_khai = dict(getattr(gan_thu_dong, "nhanh", {}) or {})
+    # chỉ xét nhánh của cột nguồn thuộc biến phái sinh CÒN THIẾU; nhánh CÓ HIỆU LỰC = không thoả ở ít nhất một hàng
+    # đánh giá được (nhánh luôn thoả sau lọc quần thể — «[du_tieu_chuan] = '1'» — coi như không nhánh)
+    ung_vien = [v for v in analysis_cols if v in nguon_cua and so[v].isna().any()]
+    nhanh: dict = {}
+    for c in dict.fromkeys(x for v in ung_vien for x in nguon_cua[v]):
+        if c not in nhanh_khai or c not in data.columns:
+            continue
+        thoa, duoc = _mat_na_nhanh(data, nhanh_khai[c])
+        if (duoc & ~thoa).any():
+            nhanh[c] = nhanh_khai[c]
+    thu_dong = [v for v in ung_vien if any(c in nhanh for c in nguon_cua[v])]
+    ngay = getattr(getattr(gan_thu_dong, "dm", None), "ngay", set()) or set()
+    cot_ngay = [c for v in thu_dong for c in nguon_cua[v] if c in ngay]
+    if cot_ngay:
+        raise LoiGanDaTri(f"cột nguồn là ngày ({', '.join(cot_ngay)}) — bộ gán chưa hỗ trợ gán cột ngày")
+    khung_cot = [c for c in analysis_cols if c not in thu_dong]
+    khung_cot += [c for v in thu_dong for c in nguon_cua[v] if c not in khung_cot]
+    nhanh_khung = [c for c in khung_cot if c in nhanh]
+    # biến điều kiện của nhánh còn thiếu cũng được gán (không thì không biết hàng có thuộc nhóm con hay không)
+    khung_cot += [x for c in nhanh_khung for x in BPS.cot_cua_nhanh(nhanh[c])
+                  if x not in khung_cot and x in so.columns and so[x].isna().any()]
+    khung = so[khung_cot].copy()
+    ngoai_nhanh = {}
+    for c in nhanh_khung:  # giá trị ở hàng nhánh không thoả là «không áp dụng» — không làm dữ liệu gán
+        thoa, duoc = _mat_na_nhanh(data, nhanh[c])
+        an = duoc & ~thoa
+        ngoai_nhanh[c] = int(an.sum())
+        khung.loc[an, c] = np.nan
+    if khung.isna().all().any():
+        raise LoiGanDaTri("cột không có giá trị quan sát nào: " + ", ".join(khung.columns[khung.isna().all()]))
+    # cột nguồn có nhánh không làm biến dự báo cho cột khác (ngoài nhóm con nó không có nghĩa)
+    du_bao = {c: [x for x in khung_cot if x != c and x not in nhanh_khung] for c in khung_cot}
+    imp = BoGanPMM(khung.reset_index(drop=True), du_bao, [c for c in khung_cot if c in bien_gia],
+                   rng=np.random.default_rng(hat_giong))
+    cac_bo = []
+    for _ in range(n_imputations):
+        bo = data.copy()
+        da_gan = imp.mot_bo()  # mỗi bộ một chuỗi độc lập (không lấy bộ liền nhau của cùng chuỗi)
+        for c in khung_cot:
+            bo[c] = da_gan[c].to_numpy()
+        for c in nhanh_khung:
+            thoa, _duoc = _mat_na_nhanh(bo, nhanh[c])
+            bo.loc[~thoa, c] = np.nan
+        if thu_dong:
+            moi = gan_thu_dong.tinh_lai(bo, thu_dong)
+            for v in thu_dong:
+                bo[v] = moi[v].to_numpy()
+        cac_bo.append(bo)
+    gan_nhanh: dict = {}
+    for v in thu_dong:
+        thieu_v = so[v].isna().to_numpy()
+        dem = pd.concat([b.loc[thieu_v, v] for b in cac_bo]).value_counts(dropna=False)
+        gan_nhanh[v] = {"nguon": nguon_cua[v], "so_o_gan": int(thieu_v.sum()),
+                        "ma_da_gan": {_gia_tri_logic(k) or "thiếu": int(n) for k, n in dem.items()}}
+    for b in cac_bo:
+        con = b[analysis_cols].isna().any(axis=1)
+        if con.any():
+            raise LoiGanDaTri(f"{int(con.sum())} hàng còn thiếu biến phân tích sau gán — biến phái sinh không xác "
+                              "định ở hàng ngoài nhóm con của nhánh (công thức không có giá trị cho hàng nhánh không "
+                              "thoả) hoặc cần cột chưa gán được; biến chỉ có nghĩa trong nhóm con không làm hiệp biến "
+                              "cho cả quần thể")
+    # mức của biến phân loại: hợp các bộ (mức vắng ở một bộ ⇒ tham số lệch giữa các bộ)
+    muc = {c: sorted({float(x) for b in cac_bo for x in pd.to_numeric(b[c], errors="coerce").unique()})
+           for c in predictors if c in bien_gia}
+    cot_at = {c: f"v{i}" for i, c in enumerate(analysis_cols)}
+    rev = {v: k for k, v in cot_at.items()}
+    cong_thuc = f"{cot_at[outcome_col]} ~ " + " + ".join(
+        f"C({cot_at[c]})" if c in bien_gia else cot_at[c] for c in predictors)
+    so_cum = int(data[cluster_col].nunique()) if cluster_col else 0
+    fit_kw = ({"cov_type": "cluster", "cov_kwds": {"groups": pd.factorize(data[cluster_col])[0]}} if cluster_col
+              else ({"cov_type": "HC0"} if poisson else {}))
+    def khop(d: pd.DataFrame):
+        if poisson:
+            return smf.glm(cong_thuc, d, family=sm.families.Poisson()).fit(maxiter=200, **fit_kw)
+        if outcome_type == "binary":
+            return smf.logit(cong_thuc, d).fit(disp=0, **fit_kw)
+        return smf.ols(cong_thuc, d).fit(**fit_kw)
+
+    he_so, hiep_ps, canh_bao = [], [], []
+    ten_tham_so = None
+    for b in cac_bo:
+        d = b[analysis_cols].apply(pd.to_numeric, errors="coerce").rename(columns=cot_at).astype(float)
+        for c, ds in muc.items():
+            d[cot_at[c]] = pd.Categorical(d[cot_at[c]], categories=ds)
+        r, caught = _chay_fit_bat_canh_bao(lambda d=d: khop(d))
+        canh_bao += caught
+        if ten_tham_so is None:
+            ten_tham_so = list(r.params.index)
+        elif list(r.params.index) != ten_tham_so:
+            raise LoiGanDaTri("tham số mô hình khác nhau giữa các bộ gán")
+        he_so.append(r.params.to_numpy())
+        hiep_ps.append(r.cov_params().to_numpy())
+    q_bar, se, lam = _gop_rubin(he_so, hiep_ps)
+    if cluster_col:
+        ci, pvals = _suy_luan_t_cum(q_bar, se, so_cum)
+    else:
+        z = float(sp_stats.norm.ppf(0.975))
+        ci = np.column_stack([q_bar - z * se, q_bar + z * se])
+        pvals = 2 * sp_stats.norm.sf(np.abs(q_bar / se))
+
+    def ten_goc(t: str) -> str:
+        m = re.fullmatch(r"C\((v\d+)\)\[T\.([^\]]+)\]", t)
+        if m:
+            return f"{rev[m.group(1)]}_{int(float(m.group(2)))}"
+        return rev.get(t, t)
+
+    ly_do = _ly_do_tu_canh_bao(canh_bao) if (poisson or outcome_type == "binary") else []
+    if poisson or outcome_type == "binary":
+        for i, t in enumerate(ten_tham_so):
+            ly_do.extend(_ly_do_tu_uoc_luong(ten_goc(t), float(q_bar[i]), float(se[i]), float(ci[i][0]),
+                                             float(ci[i][1]), kiem_do_lon=(t != "Intercept")))
+    results = []
+    m_bo = len(he_so)
+    for i, t in enumerate(ten_tham_so):
+        if t == "Intercept":
+            continue
+        est, lo, hi, p = float(q_bar[i]), float(ci[i][0]), float(ci[i][1]), round(float(pvals[i]), 4)
+        # thang mô hình (log với PR/OR) — cho đối chiếu R theo sai số Monte Carlo: mcse = √(B/m)
+        b_giua = float(lam[i]) * float(se[i]) ** 2 / (1 + 1 / m_bo) if np.isfinite(lam[i]) else 0.0
+        mc = {"b": round(est, 6), "se": round(float(se[i]), 6), "mcse": round(float(np.sqrt(b_giua / m_bo)), 6)}
+        if poisson:
+            e = {"variable": ten_goc(t), "PR_adj": round(float(np.exp(est)), 4),
+                 "CI_95": [round(float(np.exp(lo)), 4), round(float(np.exp(hi)), 4)], "p": p, **mc}
+            results.append(_gan_co_khong_hoi_tu(e, ly_do, ("PR_adj", "CI_95", "p", "b", "se", "mcse")))
+        elif outcome_type == "binary":
+            e = {"variable": ten_goc(t), "OR_adj": round(float(np.exp(est)), 3),
+                 "CI_95": [round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)], "p": p, **mc}
+            results.append(_gan_co_khong_hoi_tu(e, ly_do, ("OR_adj", "CI_95", "p", "b", "se", "mcse")))
+        else:
+            results.append({"variable": ten_goc(t), "beta": round(est, 4), "CI_95": [round(lo, 4), round(hi, 4)],
+                            "p": p, **mc})
+    out = {"bo_may": "tu_lap", "phuong_phap_gop": f"luật Rubin (Q̄, Ū + (1 + 1/m)·B) — {NGUON_MI_TU_LAP}",
+           "phuong_phap_gan": NGUON_PMM, "hat_giong": int(hat_giong),
+           "ty_le_thong_tin_thieu": {ten_goc(t): round(float(lam[i]), 3) for i, t in enumerate(ten_tham_so)
+                                     if t != "Intercept" and np.isfinite(lam[i])},
+           "results": results}
+    if thu_dong:
+        out["gan_theo_nhanh"] = {"bien": gan_nhanh, "nhanh": {c: nhanh[c] for c in nhanh_khung},
+                                 "so_hang_ngoai_nhanh": ngoai_nhanh}
+    if ly_do:
+        out["khong_hoi_tu"] = True
+        out["ly_do"] = ly_do
+    return out
+
+
 def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str,
                                covariates: list, outcome_type: str = "auto",
                                n_imputations: int = 20, cluster_col: str | None = None,
-                               bien_gia: dict | None = None) -> dict:
-    """Multiple imputation THẬT (statsmodels MICEData+MICE, m=n_imputations mặc
-    định 20, pooling theo luật Rubin qua MICEResults) — vá 2026-07-15. Trước đây
+                               bien_gia: dict | None = None, gan_thu_dong=None, bo_ghep: str | None = None,
+                               bien_ghep: list | None = None, hat_giong: int = HAT_GIONG_MI) -> dict:
+    """Multiple imputation THẬT (m=n_imputations mặc định 20, gộp theo luật Rubin) — vá 2026-07-15. 24/11/2026: bộ gán
+    là `BoGanPMM` (PMM kiểu 1 tham số bootstrap, chú thích `K_NGUOI_CHO_PMM`) qua `_mi_tu_lap`/`_mi_ghep_cap`; hạt giống
+    `hat_giong` (mặc định HAT_GIONG_MI) ⇒ chạy lại cho đúng cùng kết quả trên mọi máy. Các đoạn dưới nhắc MICEData/MICE
+    là lịch sử của bản trước. Trước đây
     "MI" trong exports/<study>/sensitivity_analysis.py (template do run_g6_auto.py
     sinh ra) chỉ là mean-impute tự khai KHÔNG PHẢI MI thật ("MI-demo (mean-impute;
     R mice m=20 for real)") — MI thật (mice m=20, method pmm) CHỈ tồn tại trong R
@@ -1107,12 +2036,9 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
             "error": "statsmodels chưa cài. Chạy: pip install statsmodels",
             "note": "[CẦN BỔ SUNG — multiple imputation cần statsmodels]",
         }
-    from statsmodels.imputation.mice import MICE, MICEData
 
     bien_gia = bien_gia or {}
     poisson = outcome_type == "poisson_pr"
-    if poisson and cluster_col:
-        return {"error": "MI Poisson vững chưa hỗ trợ hiệu chỉnh cụm", "note": "[CẦN THỐNG KÊ VIÊN]"}
 
     if outcome_type == "auto":
         outcome_type = detect_var_type(df[outcome_col])
@@ -1129,6 +2055,20 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
     n_total = len(sub)
     n_complete = int(sub.notna().all(axis=1).sum())
     n_missing_rows = n_total - n_complete
+    # 23/11/2026 (G7 phát hiện ở DN_ca_day_du của cohort_mi): đặc tả khai n_imputations = 0 nghĩa là phân tích CA ĐẦY
+    # ĐỦ (độ nhạy «complete case vs MI» của SAP §9) — bản cũ vẫn gọi MICE.fit(n_imputations=0) và ghi lỗi nội bộ
+    # statsmodels «cannot access local variable 'result'». Nay không gán đa trị; ước lượng là mô hình ca đầy đủ
+    # ở Bảng 4.
+    if int(n_imputations) < 0:
+        return {"error": f"n_imputations = {n_imputations} — phải ≥ 0 (0 = phân tích ca đầy đủ, không gán đa trị)"}
+    if int(n_imputations) == 0:
+        return {
+            "skipped": True, "ca_day_du": True, "n_imputations": 0,
+            "n_total": n_total, "n_complete_case": n_complete, "n_missing_rows": n_missing_rows,
+            "reason": f"đặc tả khai n_imputations = 0 — phân tích CA ĐẦY ĐỦ, không gán đa trị: ước lượng là mô hình "
+                      f"ca đầy đủ ở Bảng 4 ({n_complete}/{n_total} quan sát đủ dữ liệu ở {len(analysis_cols)} biến "
+                      "phân tích)",
+        }
     if n_missing_rows == 0:
         return {
             "skipped": True,
@@ -1137,99 +2077,47 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
                       f"đã dùng toàn bộ {n_total} quan sát.",
         }
 
-    safe_map = {c: f"v{i}" for i, c in enumerate(analysis_cols)}
-    rev_map = {v: k for k, v in safe_map.items()}
-    sub_safe = sub.rename(columns=safe_map)
-    formula = f"{safe_map[outcome_col]} ~ " + " + ".join(
-        f"C({safe_map[p]})" if p in bien_gia else safe_map[p] for p in predictors)
-    init_kwds = None
-    if poisson:
-        model_class, init_kwds, fit_kwds = sm.GLM, {"family": sm.families.Poisson()}, {"cov_type": "HC0"}
-        sub_safe = sub_safe.apply(pd.to_numeric, errors="coerce")
-    else:
-        model_class = sm.Logit if outcome_type == "binary" else sm.OLS
-        fit_kwds = {"disp": 0} if outcome_type == "binary" else None
-    if cluster_col:
-        so_cum = int(df[cluster_col].nunique())
-        if so_cum < 2:
-            return {"error": f"Cột cụm «{cluster_col}» chỉ có {so_cum} giá trị — không hiệu chỉnh cụm được.",
-                    "note": "[CẦN THỐNG KÊ VIÊN]"}
-        fit_kwds = dict(fit_kwds or {}, cov_type="cluster",
-                        cov_kwds={"groups": pd.factorize(df[cluster_col])[0]})
+    # 23/11/2026: bệnh–chứng ghép cặp cá thể ⇒ gán đa trị giữ cấu trúc ghép (mô hình gán gồm ca/chứng + biến ghép,
+    # Seaman & Keogh 2015) và mô hình phân tích trong từng bộ là hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép, gộp Rubin
+    if bo_ghep:
+        if not bien_ghep:
+            return {"error": LOI_MI_THIEU_BIEN_GHEP, "n_imputations": n_imputations}
+        try:
+            kq_dk = _mi_ghep_cap(df, outcome_col, predictors, bo_ghep, list(bien_ghep), int(n_imputations), bien_gia,
+                                 hat_giong)
+        except LoiGanDaTri as e:
+            return {"error": f"gán đa trị cho dữ liệu ghép cặp không chạy được: {e}"}
+        except Exception as e:  # noqa: BLE001 — lỗi khớp mô hình ⇒ báo, không sập lượt phân tích
+            return {"error": f"{type(e).__name__}: {e}", "note": "[CẦN BIOSTATISTICIAN — MI không hội tụ]"}
+        return {"model": "logistic_dk_mi", "n_imputations": n_imputations, "n_total": n_total,
+                "n_complete_case": n_complete, "n_missing_rows": n_missing_rows,
+                "pct_missing_rows": round(n_missing_rows / n_total * 100, 1), **kq_dk}
 
+    # 24/11/2026: MỌI gán đa trị không ghép cặp đi qua bộ máy TỰ LẬP (`_mi_tu_lap`, bộ gán `BoGanPMM`) — gán theo
+    # nhánh, Poisson theo cụm và mọi trường hợp còn lại. MICE dựng sẵn của statsmodels (impute_pmm) đã bỏ vì kết quả
+    # phụ thuộc CPU và thứ tự hàng (chú thích `K_NGUOI_CHO_PMM`).
+    so_cum_tl = int(df[cluster_col].nunique()) if cluster_col else 0
+    if cluster_col and so_cum_tl < 2:
+        return {"error": f"Cột cụm «{cluster_col}» chỉ có {so_cum_tl} giá trị — không hiệu chỉnh cụm được.",
+                "note": "[CẦN THỐNG KÊ VIÊN]"}
     try:
-        imp = MICEData(sub_safe)
-        mice = MICE(formula, model_class, imp, init_kwds=init_kwds, fit_kwds=fit_kwds)
-        res, caught = _chay_fit_bat_canh_bao(
-            lambda: mice.fit(n_imputations=n_imputations, n_burnin=10))
-    except Exception as e:
-        return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — MI không hội tụ]"}
-
-    ci = res.conf_int()
-    bse = getattr(res, "bse", None)
-    pvals = res.pvalues
+        kq_tl = _mi_tu_lap(df, outcome_col, predictors, outcome_type, poisson, bien_gia, cluster_col,
+                           n_imputations, gan_thu_dong, hat_giong)
+    except LoiGanDaTri as e:
+        return {"error": f"gán đa trị tự lập không chạy được: {e}"}
+    except Exception as e:  # noqa: BLE001 — lỗi khớp mô hình ⇒ báo, không sập lượt phân tích
+        return {"error": f"{type(e).__name__}: {e}", "note": "[CẦN BIOSTATISTICIAN — MI không hội tụ]"}
+    ten_mo_hinh = ("poisson_cluster_mi" if cluster_col else "poisson_hc0_mi") if poisson else (
+        "logistic_mi" if outcome_type == "binary" else "linear_mi")
+    out_tl = {"model": ten_mo_hinh, "n_imputations": n_imputations, "n_total": n_total,
+              "n_complete_case": n_complete, "n_missing_rows": n_missing_rows,
+              "pct_missing_rows": round(n_missing_rows / n_total * 100, 1), **kq_tl}
     if cluster_col:
-        # MICE gộp Rubin bỏ qua use_t (luôn dùng z) ⇒ tự tính KTC/p theo t(G−1) từ hệ số + SE đã gộp,
-        # cùng quy ước với các bảng hiệu chỉnh cụm khác (N11).
-        ci, pvals = _suy_luan_t_cum(res.params, bse, so_cum)
-    # Kiểm hội tụ chỉ áp cho nhánh logistic (thang log-odds); OLS không có vấn đề
-    # tách hoàn toàn. Lý do cấp mô hình (cảnh báo trong bất kỳ lần fit MI nào,
-    # hệ số vô nghĩa ở bất kỳ tham số nào) ⇒ mọi ước lượng gộp không tin cậy.
-    def ten_goc(safe_name: str) -> str:
-        m = re.fullmatch(r"C\((v\d+)\)\[T\.([^\]]+)\]", safe_name)  # biến giả patsy ⇒ <cột>_<mã>
-        if m:
-            return f"{rev_map[m.group(1)]}_{int(float(m.group(2)))}"
-        return rev_map.get(safe_name, safe_name)
-
-    ly_do_mo_hinh = []
-    if outcome_type == "binary" or poisson:
-        ly_do_mo_hinh = _ly_do_tu_canh_bao(caught)
-        for i, safe_name in enumerate(res.model.exog_names):
-            ten = ten_goc(safe_name)
-            se_i = float(bse[i]) if bse is not None else None
-            ly_do_mo_hinh.extend(_ly_do_tu_uoc_luong(
-                str(ten), float(res.params[i]), se_i, float(ci[i][0]), float(ci[i][1]),
-                kiem_do_lon=(safe_name != "Intercept")))
-    results = []
-    for i, safe_name in enumerate(res.model.exog_names):
-        if safe_name == "Intercept":
-            continue
-        var = ten_goc(safe_name)
-        est = float(res.params[i])
-        lo, hi = float(ci[i][0]), float(ci[i][1])
-        p = round(float(pvals[i]), 4)
-        if poisson:
-            results.append(_gan_co_khong_hoi_tu(
-                {"variable": var, "PR_adj": round(float(np.exp(est)), 4),
-                 "CI_95": [round(float(np.exp(lo)), 4), round(float(np.exp(hi)), 4)], "p": p},
-                ly_do_mo_hinh, ("PR_adj", "CI_95", "p")))
-        elif outcome_type == "binary":
-            results.append(_gan_co_khong_hoi_tu(
-                {"variable": var, "OR_adj": round(float(np.exp(est)), 3),
-                 "CI_95": [round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)],
-                 "p": p},
-                ly_do_mo_hinh, ("OR_adj", "CI_95", "p")))
-        else:
-            results.append({"variable": var, "beta": round(est, 4),
-                             "CI_95": [round(lo, 4), round(hi, 4)], "p": p})
-
-    out_mi = {
-        "model": "poisson_hc0_mi" if poisson else ("logistic_mi" if outcome_type == "binary" else "linear_mi"),
-        "n_imputations": n_imputations,
-        "n_total": n_total, "n_complete_case": n_complete,
-        "n_missing_rows": n_missing_rows,
-        "pct_missing_rows": round(n_missing_rows / n_total * 100, 1),
-        "results": results,
-    }
-    if ly_do_mo_hinh:
-        out_mi["khong_hoi_tu"] = True
-        out_mi["ly_do"] = ly_do_mo_hinh
-    if cluster_col:
-        out_mi.update(cov_type="cluster", cluster={"cot": cluster_col, "so_cum": so_cum},
-                      canh_bao=[_ghi_chu_so_cum(so_cum)])
+        out_tl.update(cov_type="cluster", cluster={"cot": cluster_col, "so_cum": so_cum_tl},
+                      canh_bao=[_ghi_chu_so_cum(so_cum_tl)])
         if loai_thieu_cum:
-            out_mi["loai_thieu_ma_cum"] = loai_thieu_cum
-    return out_mi
+            out_tl["loai_thieu_ma_cum"] = loai_thieu_cum
+    return out_tl
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -1450,6 +2338,46 @@ def ap_don_vi_phoi_nhiem(df: pd.DataFrame, cot: str, don_vi) -> pd.DataFrame:
     return ra
 
 
+def se_cr0_fisher_thu_tu(model, X: pd.DataFrame, ma_y: np.ndarray, nhom_cum: np.ndarray) -> list | None:
+    """SE sandwich theo cụm CR0 với bánh mì THÔNG TIN KỲ VỌNG (Fisher) cho hệ số dốc của OrderedModel logit — CHỈ để
+    đối chiếu SPSS, không thay SE chính.
+
+    23/11/2026 (đo trên dữ liệu thứ tự 600 ca, 30 cụm): SPSS GENLIN MULTINOMIAL CUMLOGIT /REPEATED CORRTYPE=INDEPENDENT
+    COVB=ROBUST cho β TRÙNG statsmodels nhưng SE = sandwich CR0 với bánh mì Fisher Σᵢ Σⱼ Pᵢⱼ sᵢⱼ sᵢⱼᵀ (trùng 7–8 chữ
+    số), còn statsmodels dùng bánh mì −Hessian QUAN SÁT rồi CR1 G/(G−1)·(N−1)/(N−K) (K = hệ số dốc + ngưỡng) và
+    t(G−1). Với liên kết cumulative logit (không chính tắc) hai bánh mì khác nhau theo dữ liệu, không theo một hệ số
+    đóng ⇒ cầu nối SPSS cần đúng con số này để quy đổi (cau_noi_spss.quy_doi_thu_tu_cum)."""
+    try:
+        from scipy.stats import logistic  # noqa: PLC0415
+
+        k = X.shape[1]
+        beta = np.asarray(model.params, dtype=float)[:k]
+        nguong = np.asarray(model.model.transform_threshold_params(model.params), dtype=float)  # [−∞, θ…, +∞]
+        xa = X.to_numpy(dtype=float)
+        eta = nguong[None, :] - (xa @ beta)[:, None]
+        fe = logistic.pdf(eta)
+        P = np.diff(logistic.cdf(eta), axis=1)  # n × J
+        n, J = P.shape
+        with np.errstate(divide="ignore", invalid="ignore"):
+            S = np.zeros((n, J, k + J - 1))
+            S[:, :, :k] = (-(fe[:, 1:] - fe[:, :-1]) / P)[:, :, None] * xa[:, None, :]
+            for j in range(J):
+                if j < J - 1:
+                    S[:, j, k + j] += fe[:, j + 1] / P[:, j]
+                if j > 0:
+                    S[:, j, k + j - 1] -= fe[:, j] / P[:, j]
+        if not np.isfinite(S).all():
+            return None
+        I_kv = np.einsum("nj,nja,njb->ab", P, S, S)
+        s_y = S[np.arange(n), np.asarray(ma_y, dtype=int)]
+        tong = pd.DataFrame(s_y).groupby(np.asarray(nhom_cum)).sum().to_numpy()
+        B = np.linalg.inv(I_kv)
+        V = B @ (tong.T @ tong) @ B
+        return [float(x) for x in np.sqrt(np.diag(V))[:k]]
+    except Exception:  # noqa: BLE001 — chỉ số phụ cho kiểm chéo; không tính được thì bỏ, không làm hỏng mô hình chính
+        return None
+
+
 def ordinal_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: list,
                   cluster_col: str | None = None) -> dict:
     """Hồi quy logistic thứ tự (proportional odds, statsmodels OrderedModel) → OR hiệu chỉnh + KTC 95%.
@@ -1511,6 +2439,13 @@ def ordinal_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates
                                round(float(np.exp(conf.loc[v, 1])), 3)],
                      "p": round(float(model.pvalues[v]), 4)}
         results.append(_gan_co_khong_hoi_tu(entry, ly_do, ("OR_adj", "CI_95", "p")))
+    if cluster_col:  # 23/11/2026: SE chính chưa làm tròn + SE bánh mì Fisher CR0 — để cầu nối SPSS quy đổi GEE robust
+        se_f = se_cr0_fisher_thu_tu(model, X, np.asarray(y.cat.codes), pd.factorize(data[cluster_col])[0])
+        for k_, (v, r) in enumerate(zip(bien, results)):
+            r["se"] = float(bse[v])
+            if se_f is not None:
+                r["se_cr0_fisher"] = se_f[k_]
+        out["k_tham_so"] = int(len(model.params))
     out.update({"results": results, "aic": round(float(model.aic), 2),
                 "cov_type": "cluster" if cluster_col else "nonrobust",
                 "convergence": model.mle_retvals.get("converged", True)})
@@ -1901,7 +2836,10 @@ def generate_r_script_ordinal(study: str, gate: str, outcome_col: str, group_col
 # ════════════════════════════════════════════════════════════════════════════
 
 NHOM_TOAN_BO = "Toàn bộ"
-_COT_DINH_DANH_BANG1 = frozenset({"record_id", "ma_nguoi_tham_gia", "study_id", "transcript_id", "ma_phieu"})
+# 22/11/2026: «ma_dang_ky» — mã đăng ký thử nghiệm của bảng trích xuất tổng quan (định danh báo cáo nguồn, PRISMA 2020
+# mục 17), không phải đặc điểm để đếm tần suất
+_COT_DINH_DANH_BANG1 = frozenset({"record_id", "ma_nguoi_tham_gia", "study_id", "transcript_id", "ma_phieu",
+                                  "ma_dang_ky"})
 
 
 def bien_bang1_mo_ta(df: pd.DataFrame, ung_vien: list, bo: tuple = ()) -> list:
@@ -1985,6 +2923,8 @@ def format_outcome_text(res: dict, outcome_col: str, hypothesis_interp: dict = N
         if "risk_diff" in res:
             rd_ci = res["risk_diff_ci_95"]
             lines.append(f"  Risk difference = {res['risk_diff']} (95%CI {rd_ci[0]}–{rd_ci[1]})")
+            if res.get("risk_diff_ci_ten"):
+                lines.append(f"  Phương pháp KTC của hiệu số nguy cơ: {res['risk_diff_ci_ten']}")
     else:
         lines.append(f"  Nhóm {g[0]}: Mean={n0.get('mean','?')} ± SD={n0.get('sd','?')}")
         lines.append(f"  Nhóm {g[1]}: Mean={n1.get('mean','?')} ± SD={n1.get('sd','?')}")
@@ -2043,11 +2983,34 @@ def _dong_bang2_cum(cu: dict) -> list:
     return dong
 
 
+def _format_clogit_text(mv: dict) -> str:
+    """Bảng 4 — hồi quy logistic có điều kiện theo bộ ghép: OR thô có điều kiện + OR hiệu chỉnh."""
+    lines = [f"BẢNG 4 — HỒI QUY LOGISTIC CÓ ĐIỀU KIỆN (theo bộ ghép «{mv.get('bo_ghep')}»)", "=" * 70,
+             f"  n = {mv.get('n')} ({mv.get('so_bo_ghep')} bộ ghép; {mv.get('so_bo_thong_tin')} bộ mang thông tin, "
+             f"{mv.get('n_thong_tin')} quan sát) | ca tối đa mỗi bộ = {mv.get('ca_toi_da_moi_bo')}",
+             f"  {mv.get('phuong_phap', '')}"]
+    if mv.get("khong_hoi_tu"):
+        lines += [f"  {DONG_KHONG_HOI_TU}", f"  {GHI_CHU_KHONG_HOI_TU}"]
+        lines += [f"    - {x}" for x in mv.get("ly_do", [])[:6]]
+    for nhan, ds in (("OR thô có điều kiện (chỉ phơi nhiễm)", mv.get("crude") or []),
+                     ("OR hiệu chỉnh có điều kiện", mv.get("results") or [])):
+        lines += [f"\n  {nhan}", f"  {'Biến số':<28} {'OR':>12}  {'95%CI':>20}  {'p':>8}", "  " + "-" * 60]
+        for r in ds:
+            if r.get("khong_hoi_tu") or "CI_95" not in r:
+                lines.append(f"  {r['variable'][:28]:<28} {DONG_KHONG_HOI_TU}")
+                continue
+            lines.append(f"  {r['variable'][:28]:<28} {r['OR_adj']:>12}  {r['CI_95'][0]}–{r['CI_95'][1]:<10}  "
+                         f"{r['p']:>8}{' *' if r['p'] < 0.05 else ''}")
+    return "\n".join(lines + ["\n* p < 0.05", "[CẦN BIOSTATISTICIAN XÁC NHẬN]"]) + "\n"
+
+
 def format_multivariate_text(mv: dict) -> str:
     if "error" in mv:
         return f"HỒI QUY ĐA BIẾN: {mv['error']}\n{mv.get('note','')}"
     if "warning" in mv:
         return f"HỒI QUY ĐA BIẾN: {mv['warning']}\n[CẦN BIOSTATISTICIAN XÁC NHẬN]"
+    if mv["model"] == "logistic_dk":
+        return _format_clogit_text(mv)
     lines = [f"BẢNG 4 — MÔ HÌNH ĐA BIẾN ({mv['model'].upper()})", "=" * 70]
     metric_label = "AIC" if mv["model"] == "logistic" else "R²"
     metric_value = mv.get("aic", mv.get("r_squared", "?"))
@@ -2124,7 +3087,15 @@ def format_mi_text(mi: dict, mv: dict = None) -> str:
                      "trong từng lần fit, gộp theo luật Rubin")
         if mi.get("loai_thieu_ma_cum"):
             lines.append(f"  Loại {mi['loai_thieu_ma_cum']} hàng thiếu mã cụm trước khi impute.")
-        lines += [f"  ⚠ {c}" for c in mi.get("canh_bao", [])]
+    lines += [f"  ⚠ {c}" for c in mi.get("canh_bao", [])]
+    gn = mi.get("gan_theo_nhanh") or {}
+    for v, tt in (gn.get("bien") or {}).items():
+        ma = ", ".join(f"mã {k}: {n}" for k, n in sorted(tt.get("ma_da_gan", {}).items()))
+        lines.append(f"  Gán theo nhánh «{v}»: gán cột nguồn {', '.join(tt.get('nguon', []))} trong đúng nhóm con "
+                     f"thoả nhánh rồi tính lại từ công thức ({tt.get('so_o_gan', 0)} ô × m bộ — {ma})")
+    for c, bt in (gn.get("nhanh") or {}).items():
+        lines.append(f"    nhánh «{c}»: {bt} — {gn.get('so_hang_ngoai_nhanh', {}).get(c, 0)} hàng ngoài nhóm con "
+                     "không gán")
     if mi.get("khong_hoi_tu"):
         lines.append(f"  {DONG_KHONG_HOI_TU}")
         lines.append(f"  {GHI_CHU_KHONG_HOI_TU}")
@@ -2154,7 +3125,15 @@ def format_mi_text(mi: dict, mv: dict = None) -> str:
         star = "*" if p < 0.05 else " "
         lines.append(f"  {r['variable'][:20]:<22} {est:>14}  {ci[0]}–{ci[1]:<10}  {p:>6}{star}   {cc_str}")
     lines.append("\n* p < 0.05 (MI). So sánh với complete-case để đánh giá độ nhạy với giả định thiếu dữ liệu.")
-    lines.append("[BÁC SĨ KIỂM TRA: MI dùng statsmodels MICEData/MICE, pooling theo luật Rubin]")
+    gan = mi.get("phuong_phap_gan") or "PMM"
+    lines.append("Phương pháp: " + (f"gán đa trị tự lập ({gan}) — {mi['phuong_phap_gop']}"
+                                     if mi.get("bo_may") == "tu_lap"
+                                     else (f"gán đa trị ghép cặp ({gan}; biến dự báo của mô hình gán: "
+                                           f"{', '.join(mi.get('bien_mo_hinh_gan') or [])}; hồi quy logistic có điều "
+                                           f"kiện theo bộ ghép «{mi.get('bo_ghep')}» trong từng bộ) — "
+                                           f"{mi.get('phuong_phap_gop')}")
+                                     if mi.get("bo_may") == "ghep_cap"
+                                     else "statsmodels MICEData/MICE, gộp theo luật Rubin"))
     return "\n".join(lines)
 
 
@@ -2545,12 +3524,30 @@ def main():
     parser.add_argument("--n-imputations", type=int, default=20,
                         help="Số bộ dữ liệu impute (m) cho multiple imputation khi biến phân "
                              "tích có dữ liệu thiếu — mặc định 20 (vá 2026-07-15)")
+    parser.add_argument("--hat-giong", type=int, default=HAT_GIONG_MI,
+                        help="Hạt giống của bộ gán đa trị (PMM kiểu 1 tham số bootstrap) — đúng «Random seed» SAP "
+                             f"khai; mặc định {HAT_GIONG_MI}. Cùng hạt giống ⇒ cùng kết quả trên mọi máy (24/11/2026)")
     parser.add_argument("--outcome-type", default="auto",
                         choices=["auto", "binary", "continuous", "ordinal", "poisson_pr"],
                         help="Loại kết cục (mặc định: tự phát hiện). 'ordinal' = logistic thứ tự "
                              "(proportional odds) — chỉ bật khi SAP khai tường minh, không tự đoán. "
                              "'poisson_pr' = Poisson log-link phương sai vững HC0 ⇒ tỷ số tỷ lệ hiện mắc (PR) cho "
                              "kết cục 0/1 (Zou 2004) — chỉ khi SAP khai")
+    parser.add_argument("--kc-hieu-so", default="wald", choices=sorted(KC_HIEU_SO),
+                        help="Phương pháp KTC 95%% của hiệu số nguy cơ ở kết cục chính nhị phân — ĐÚNG phương pháp "
+                             "SAP §4 khai (newcombe = Newcombe hybrid score, PMID 9595617; wald = mặc định cũ). "
+                             "Phương pháp khác chưa hỗ trợ ⇒ từ chối, không tự lùi về Wald (23/11/2026)")
+    parser.add_argument("--bien-co-hiem", default=None, choices=sorted(BIEN_CO_HIEM_G6),
+                        help="Phương pháp biến cố hiếm SAP §5 khai, chạy khi rào EPV chặn hồi quy logistic "
+                             "(mo_ta_chinh_xac = số biến cố từng nhóm + KTC Clopper–Pearson + p Fisher; firth = hồi "
+                             "quy logistic Firth, KTC hợp lý phạt hồ sơ). 23/11/2026")
+    parser.add_argument("--bien-ghep", default="",
+                        help="Biến DÙNG ĐỂ GHÉP (vd gioi,tuoi) của bệnh–chứng ghép cặp cá thể — biến dự báo của mô "
+                             "hình gán đa trị cùng tình trạng ca/chứng (Seaman & Keogh 2015, PMID 26237003). "
+                             "23/11/2026")
+    parser.add_argument("--bo-ghep", default="",
+                        help="Cột MÃ BỘ GHÉP của bệnh–chứng ghép cặp cá thể (SAP §4 «logistic có điều kiện») ⇒ mô hình "
+                             "đa biến là hồi quy logistic có điều kiện theo bộ ghép. 23/11/2026")
     parser.add_argument("--loc", default="",
                         help="Quần thể phân tích theo SAP — biểu thức ngôn ngữ công thức (docs/BIEN-PHAI-SINH.md), giữ "
                              "ca có giá trị = 1, vd \"PhieuHopLe == 1\". Cầu nối SPSS/R lọc y hệt")
@@ -2863,6 +3860,14 @@ def main():
         print(f"✗ DỪNG: hiệp biến phân loại — {e}")
         sys.exit(1)
     covariates_mh = mo_rong_hiep_bien(covariates, bien_gia)
+    bo_ghep = (args.bo_ghep or "").strip() or None
+    if bo_ghep and bo_ghep not in df.columns:
+        print(f"✗ DỪNG: --bo-ghep «{bo_ghep}» không có trong dữ liệu.")
+        sys.exit(1)
+    bien_ghep = [c.strip() for c in (args.bien_ghep or "").split(",") if c.strip()]
+    if [c for c in bien_ghep if c not in df.columns]:
+        print(f"✗ DỪNG: --bien-ghep {[c for c in bien_ghep if c not in df.columns]} không có trong dữ liệu.")
+        sys.exit(1)
     ten_bien_gia = {t for v in bien_gia.values() for t in v["ten"]}
     if bien_gia:
         print("✓ Hiệp biến phân loại (biến giả, tham chiếu = mã nhỏ nhất): " + "; ".join(
@@ -2908,6 +3913,14 @@ def main():
         "loc": args.loc.strip() or None,
         "loc_cot_ngay": loc_cot_ngay,
         "hiep_bien_hang_sau_loc": hang_sau_loc,  # 16/11/2026: đã loại khỏi mô hình nhóm con (hằng sau lọc)
+        # 22/11/2026 (việc G): tỷ lệ Wilson của Bảng 1b — cầu nối R tái lập đúng cột + ngưỡng SAP
+        "ty_le": list(args.ty_le or []), "nguong_ty_le": args.nguong_ty_le,
+        # 23/11/2026: phương pháp KTC hiệu số nguy cơ — cầu nối R/SPSS tính lại ĐÚNG phương pháp này
+        "kc_hieu_so": args.kc_hieu_so,
+        "bien_co_hiem": args.bien_co_hiem,  # 23/11/2026: phương pháp biến cố hiếm SAP §5 (khi rào EPV chặn)
+        "bo_ghep": (args.bo_ghep or "").strip() or None,  # 23/11/2026: mã bộ ghép ⇒ logistic có điều kiện
+        # 23/11/2026: biến dùng để ghép — vào mô hình GÁN (không vào mô hình có điều kiện)
+        "bien_ghep": [c.strip() for c in (args.bien_ghep or "").split(",") if c.strip()],
     }
     if args.loc.strip():
         summary["loc"] = {"bieu_thuc": args.loc.strip(), "n_truoc": n_truoc_loc, "n_sau": len(df)}
@@ -3035,6 +4048,14 @@ def main():
             encoding="utf-8", newline="\n")
         print("✓ Script R (thứ tự) tái lặp đã tạo")
 
+    # 22/11/2026: --don-vi-phoi-nhiem áp cho MỌI mô hình (Poisson/logistic/tuyến tính/Cox/MI), không riêng nhánh thứ
+    # tự — định nghĩa thay thế SAP §9 «phơi nhiễm liên tục, mỗi 1 SD» (chay_sap_g6 tính SD) cần đúng đơn vị ở mọi họ.
+    if (args.don_vi_phoi_nhiem and args.outcome_type != "ordinal" and args.group
+            and args.group in df.columns):
+        df = ap_don_vi_phoi_nhiem(df, args.group, args.don_vi_phoi_nhiem)
+        summary["don_vi_phoi_nhiem_ap"] = {"cot": args.group, "don_vi": args.don_vi_phoi_nhiem,
+                                           "dien_giai": f"hiệu ứng cho MỖI {args.don_vi_phoi_nhiem:g} đơn vị "
+                                                        f"«{args.group}»"}
     # 5. Kết cục chính
     if args.outcome_type != "ordinal" and args.outcome and args.group and args.outcome in df.columns:
         so_nhom = int(df[args.group].dropna().nunique()) if args.group in df.columns else 0
@@ -3046,9 +4067,12 @@ def main():
                                                   "hai nhóm (phơi nhiễm liên tục/nhiều mức); xem mô hình đa biến"}
             else:
                 res = compare_primary_outcome(df, args.outcome, args.group,
-                                              "binary" if poisson else args.outcome_type, cot_cum)
+                                              "binary" if poisson else args.outcome_type, cot_cum,
+                                              kc_hieu_so_pp=args.kc_hieu_so)
                 if design_code == "case_control":
                     res = bo_hieu_so_benh_chung(res)
+                if bo_ghep and not res.get("error"):
+                    res["ghep_ca_the"] = GHI_CHU_OR_THO_GHEP_CA_THE
         except (ZeroDivisionError, ValueError) as exc:
             res = {"error": f"Lỗi tính kết cục chính: {exc}",
                    "note": "[CẦN BIOSTATISTICIAN — kiểm tra dữ liệu]"}
@@ -3056,6 +4080,8 @@ def main():
         res_txt = format_outcome_text(res, args.outcome, hypothesis_interp)
         if res.get("hieu_so_khong_ap_dung"):
             res_txt = res_txt.rstrip("\n") + f"\n  Hiệu số nguy cơ: không báo — {res['hieu_so_khong_ap_dung']}\n"
+        if res.get("ghep_ca_the"):
+            res_txt = res_txt.rstrip("\n") + f"\n  Ghép cặp cá thể: {res['ghep_ca_the']}\n"
         (prefix.parent / f"{args.gate}_table2_main_outcome.txt").write_text(res_txt, encoding="utf-8", newline="\n")
         summary["primary_outcome"] = res
         if hypothesis_interp:
@@ -3078,11 +4104,35 @@ def main():
                 format_poisson_text(mv, design_code), encoding="utf-8", newline="\n")
             summary["poisson_pr"] = mv
         else:
-            mv = multivariate_model(df, args.outcome, args.group, covariates_mh, args.outcome_type, cot_cum)
+            # 23/11/2026: bệnh–chứng ghép cặp CÁ THỂ (đặc tả khai mã bộ ghép) ⇒ hồi quy logistic có điều kiện theo bộ
+            # ghép — SAP §4 họ `logistic_dk`; G6-AUTO-09 (lượt chạy) đối chiếu họ đã chạy với SAP.
+            if bo_ghep:
+                mv = conditional_logit_model(df, args.outcome, args.group, covariates_mh, bo_ghep)
+            else:
+                mv = multivariate_model(df, args.outcome, args.group, covariates_mh, args.outcome_type, cot_cum)
             mv_txt = format_multivariate_text(mv)
             (prefix.parent / f"{args.gate}_table4_multivariate.txt").write_text(mv_txt, encoding="utf-8",
                                                                                  newline="\n")
             summary["multivariate"] = mv
+            # 23/11/2026: rào EPV chặn hồi quy logistic ⇒ chạy ĐÚNG phương pháp biến cố hiếm SAP §5 khai (không để bảng
+            # đa biến trống im lặng). Không khai ⇒ giữ cảnh báo; G6-AUTO-09 chặn khi SAP có khai mà lượt chạy thiếu.
+            if mv.get("rao_epv") and args.bien_co_hiem:
+                # 23/11/2026: ghép cặp cá thể ⇒ CHỈ phương pháp có điều kiện (firth_dk); không điều kiện ⇒ báo lỗi
+                if bo_ghep and args.bien_co_hiem == "firth_dk":
+                    bch = firth_conditional_logit_model(df, args.outcome, args.group, covariates_mh, bo_ghep)
+                elif bo_ghep or args.bien_co_hiem == "firth_dk":
+                    bch = {"phuong_phap": args.bien_co_hiem, "ten": BIEN_CO_HIEM_G6[args.bien_co_hiem],
+                           "error": LOI_BIEN_CO_HIEM_GHEP_CA_THE if bo_ghep else LOI_FIRTH_DK_KHONG_BO_GHEP}
+                elif args.bien_co_hiem == "firth":
+                    bch = firth_logistic_model(df, args.outcome, args.group, covariates_mh, cot_cum)
+                else:
+                    bch = mo_ta_bien_co_hiem(df, args.outcome, args.group)
+                bch["ly_do"] = mv.get("warning")
+                summary["bien_co_hiem"] = bch
+                mv["thay_the_theo_sap"] = "bien_co_hiem"
+                (prefix.parent / f"{args.gate}_table4b_bien_co_hiem.txt").write_text(
+                    format_bien_co_hiem_text(bch), encoding="utf-8", newline="\n")
+                print(f"✓ Biến cố hiếm (rào EPV) — theo SAP §5: {bch.get('ten')}")
         if mv.get("error"):
             print(f"✗ Mô hình đa biến: {mv['error']}")
         elif mv.get("khong_hoi_tu") or mv.get("convergence") is False:
@@ -3092,8 +4142,20 @@ def main():
             print(f"✓ Mô hình đa biến: {mv.get('model','?')} ({mv.get('n','?')} quan sát)")
 
         # 6a. Multiple imputation (chỉ khi biến phân tích có dữ liệu thiếu) — vá 2026-07-15
+        # 22/11/2026: biến phái sinh có cột nguồn chỉ áp cho nhóm con (Branching Logic của từ điển đề tài) ⇒ gán cột
+        # nguồn trong đúng nhóm con rồi tính lại (BPS.ke_hoach_gan_thu_dong). Không đọc được từ điển ⇒ ghi lý do.
+        gan_thu_dong, ly_do_khong_nhanh = None, ""
+        try:
+            gan_thu_dong = BPS.ke_hoach_gan_thu_dong(_thu_muc_de_tai(args.study), args.study,
+                                                     [args.outcome, args.group, *covariates], df.columns)
+        except (BPS.KhongDoDuoc, BPS.TuChoi, BPS.LoiCongThuc, OSError) as e:
+            ly_do_khong_nhanh = (f"không đọc được nhánh của biến phái sinh ({e}) — biến phái sinh còn thiếu được gán "
+                                 "trực tiếp")
         mi = multiple_imputation_model(df, args.outcome, args.group, covariates,
-                                        args.outcome_type, args.n_imputations, cot_cum, bien_gia)
+                                        args.outcome_type, args.n_imputations, cot_cum, bien_gia, gan_thu_dong,
+                                        bo_ghep=bo_ghep, bien_ghep=bien_ghep, hat_giong=args.hat_giong)
+        if ly_do_khong_nhanh and not mi.get("skipped"):
+            mi.setdefault("canh_bao", []).append(ly_do_khong_nhanh)
         summary["multiple_imputation"] = mi
         if mi.get("skipped"):
             print(f"ℹ️  Multiple imputation: bỏ qua ({mi['reason']})")

@@ -166,6 +166,13 @@ Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G10` xác nh�
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí
 tiền đề.
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/kiem_api_truoc_ky.py` (chủ) — một lệnh kiểm API trước khi ký/nộp (phản biện + A12 + hội đồng); chốt kiểm `tools/duyet_kiem_may_api.py`; nguyên tắc: đạt chuẩn định trước · kiểm chứng khách quan.
+- Công cụ `tools/research_study_spec.py` (chủ) — chuẩn hoá StudySpec và kiểm đầy đủ của đề cương G10; chốt kiểm `tools/check_de_cuong.py`; nguyên tắc: tái lập · trung thực–minh bạch.
+- Công cụ `tools/so_doc_de_cuong.py` (kiểm) — đầu ra của `tham-dinh-dau-ra`: đề cương chỉ giao khi mọi đơn vị của bản hiện hành có bản ghi đọc còn khớp mã băm (K21); chốt kiểm `tests/test_so_doc_de_cuong_20261122.py`; nguyên tắc: đạt chuẩn định trước.
+
 ## BƯỚC TỰ KIỂM — trước khi bàn giao điều phối tổng
 1. Mọi nhiệm vụ áp dụng ở mục 3 đã có đầu ra THẬT (hoặc lý do không áp dụng) và biên bản đánh giá chéo hợp lệ (≥1 người
    chấm chuyên môn theo bảng + `giam-khao-cong`; tác giả không tự chấm).

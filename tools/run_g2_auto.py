@@ -47,11 +47,13 @@ import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu �
 import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6, 14/11/2026)
 import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import ho_so_g2_da_soan as HSG  # noqa: E402  (văn bản G2 đã soạn — tái lập khi sinh lại, 22/11/2026)
 import hon_hop as HH  # noqa: E402  (thiết kế hỗn hợp — cấu phần định tính, 17/11/2026)
 import pii_van_ban as PII  # noqa: E402  (bộ dò PII dùng chung — CHUNG-G)
 import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G0)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
+import xung_dot_loi_ich as XDLI  # noqa: E402  (COI/tài trợ/quản trị dữ liệu đọc từ study_meta — 22/11/2026)
 
 _TODAY = datetime.now().strftime("%d/%m/%Y")
 _YEAR  = datetime.now().strftime("%Y")
@@ -650,6 +652,27 @@ def ap_nguon_du_lieu(risk: dict, design_code: str, meta: Optional[dict]) -> dict
     return ra
 
 
+#: Lợi ích cộng đồng của cắt ngang CHỈ MÔ TẢ (không có mục tiêu phân tích yếu tố/mối liên quan).
+LOI_ICH_CAT_NGANG_MO_TA = "Cung cấp dữ liệu tỷ lệ hiện mắc tại địa phương; chi phí thấp"
+
+
+def ap_loi_ich_theo_muc_tieu(risk: dict, design_code: str, meta: Optional[dict]) -> dict:
+    """Câu lợi ích của cắt ngang chỉ nhắc «yếu tố liên quan» khi đề tài THẬT SỰ có mục tiêu phân tích (22/11/2026).
+
+    Khuôn cắt ngang in «tỷ lệ các yếu tố liên quan» cho mọi đề tài, kể cả đề tài chỉ mô tả — Tài liệu 2/3 hứa một phân
+    tích mà đề cương không có. Điều kiện dùng CHUNG với nhãn thiết kế G1/G2/SAP và đề cương nộp:
+    `skill_standards.co_muc_tieu_phan_tich(gate_params.G1.objectives)`. Không đổi bảng gốc (trả bản sao).
+    """
+    if design_code != "cross_sectional":
+        return risk
+    import skill_standards as _S  # noqa: PLC0415
+
+    g1 = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+    if _S.co_muc_tieu_phan_tich(g1.get("objectives")):
+        return risk
+    return {**risk, "benefits": LOI_ICH_CAT_NGANG_MO_TA}
+
+
 def _pi_xin_mien_icf(design_code: str, meta: Optional[dict]) -> bool:
     """PI đã chọn xin miễn phiếu đồng ý (`gate_params.G2.icf_waiver_requested` = true) — không bao giờ cho RCT."""
     if design_code == "rct" or not isinstance(meta, dict):
@@ -1109,17 +1132,29 @@ def generate_g2_full_package(
     reporting_std: str, n_sr: int, n_rct: int, evidence_level: str,
     registry: Optional[dict], risk: dict, run_date: str, n_adjusted: int = 0,
     specialist_modules: Optional[list] = None, meta: Optional[dict] = None,
-    quy_trinh: Optional[list] = None,
+    quy_trinh: Optional[list] = None, bao_ve: Optional["HSG.BaoVe"] = None,
 ) -> str:
     """Sinh toàn bộ hồ sơ G2 — 8 tài liệu + 24 mục WHO TRDS 1.3.1.
 
     `registry` là kết quả `lookup_prior_art()` (dict theo hợp đồng
     `trial_registry`), KHÔNG còn là list thử nghiệm như trước 2026-07-28: một list
     rỗng không nói được hệ đã tra hay chưa tra được. `None` = chưa tra.
+
+    22/11/2026 (tính tái lập): văn bản đã soạn và dữ kiện nguyên văn đọc từ study_meta (`tools/ho_so_g2_da_soan.py`)
+    được đặt bằng MÃ GIỮ CHỖ. Truyền `bao_ve` (main làm vậy) ⇒ trả văn bản còn mã, người gọi chuẩn hoá văn phong rồi
+    `bao_ve.chen(...)`; không truyền ⇒ hàm tự thay mã trước khi trả (văn bản không qua chuẩn hoá).
     """
+    _tu_chen = bao_ve is None
+    bv = HSG.BaoVe() if bao_ve is None else bao_ve
+    _ds = HSG.khoi_da_soan(meta)
+
+    def _nv(x: str) -> str:
+        """Dữ kiện nguyên văn (không phải ô chờ điền) ⇒ mã giữ chỗ; ô chờ điền giữ nguyên để bộ đếm ô trống thấy."""
+        return bv.nguyen_van(x) if x and not x.lstrip().startswith("[") else x
     # 15/11/2026: TÊN ĐỀ TÀI in trên hồ sơ = tên chính thức (study_meta.title), không phải chuỗi chủ đề G0 hay MÃ đề tài
     # (tools/ten_de_tai.py); chưa khai tên ⇒ chuỗi chủ đề như cũ.
     ten_dt = TDT.ten_chinh_thuc(meta, topic)
+    risk = ap_loi_ich_theo_muc_tieu(risk, design_code, meta)  # gọi trực tiếp cũng đúng (không qua main)
 
     specialist_modules = specialist_modules or []
 
@@ -1134,6 +1169,16 @@ def generate_g2_full_package(
     _irb_name  = _meta_or_blank(meta, "administrative", "irb_name", blank="[TÊN ĐƠN VỊ — CẦN BỔ SUNG]")
     _sponsor   = _meta_or_blank(meta, "administrative", "sponsor",
                                 blank='[CẦN BỔ SUNG / "Không có tài trợ bên ngoài"]')
+    # 22/11/2026 (hội đồng đề tài): xung đột lợi ích theo hồ sơ, kế hoạch quản lý, tài trợ, người giữ dữ liệu, phân quyền
+    # và người giám sát ĐỌC TỪ study_meta (tools/xung_dot_loi_ich.py) — trước đây chỉ là chữ vá trên văn bản, sinh lại
+    # là mất. Quan hệ cá nhân (Tài liệu 8 mục A, B) người ký tự khai: không bao giờ tích sẵn.
+    _coi = XDLI.doc(meta)
+    _ngay_pb, _ngay_pb_vn = HSG.ngay_phien_ban(meta, run_date)
+    _gtr = (lambda *k: HSG.gia_tri(meta, "gate_params", "G2", *k))  # noqa: E731
+    _tap_chi = _gtr("tap_chi_du_kien")
+    _g2_dk = (((meta or {}).get("gate_params") or {}).get("G2") or {}) if isinstance(meta, dict) else {}
+    _ai = _g2_dk.get("ai") if isinstance(_g2_dk.get("ai"), dict) else {}
+    _dg = (meta or {}).get("data_governance") if isinstance((meta or {}).get("data_governance"), dict) else {}
     _population = _meta_or_blank(meta, "gate_params", "G0", "population",
                                  blank="[CẦN BỔ SUNG — từ PICO P]")
     _setting    = _meta_or_blank(meta, "gate_params", "G1", "setting",
@@ -1156,7 +1201,10 @@ def generate_g2_full_package(
                       "   2.1 [CẦN — Mục tiêu 1, từ PICO G0]\n   2.2 [CẦN — Mục tiêu 2 nếu có]")
     # 16/11/2026: câu «Nghiên cứu do [đơn vị] thực hiện … tại [nơi thực hiện]» của ICF lấy đơn vị/nơi thực hiện ĐÃ CHỐT
     # (administrative.pi_unit, G1.setting) — trước là ô mẫu chung không nhãn, PI phải gõ lại điều G1 đã có.
-    _don_vi_icf = (f"Nghiên cứu do {_pi_unit} thực hiện tại {_setting}" if not _pi_unit.startswith("[")
+    # 22/11/2026: «Nghiên cứu do [đơn vị] thực hiện» là ĐƠN VỊ CHỦ TRÌ (`administrative.don_vi_chu_tri`); vắng thì đơn vị
+    # công tác của chủ nhiệm (`pi_unit`) như cũ.
+    _don_vi_chu_tri = _meta_or_blank(meta, "administrative", "don_vi_chu_tri", blank=_pi_unit)
+    _don_vi_icf = (f"Nghiên cứu do {_don_vi_chu_tri} thực hiện tại {_setting}" if not _don_vi_chu_tri.startswith("[")
                    else f"Nghiên cứu được thực hiện tại {_setting}")
     risk_table_str = _risk_table(risk["risks"])
     # K9 (14/11/2026): phiếu đồng thuận (tài liệu cho NGƯỜI BỆNH) dùng danh sách riêng — khi loại can thiệp RCT chưa rõ,
@@ -1304,6 +1352,10 @@ def generate_g2_full_package(
    ☐ Không có hỗ trợ/bồi dưỡng nào ngoài chăm sóc y tế thường quy.
    ☐ Có hỗ trợ: [CẦN — mô tả cụ thể, vd hỗ trợ chi phí đi lại/thời gian;
      PHẢI ở mức hợp lý, không mang tính ép buộc/dụ dỗ tham gia]."""
+    if _coi["icf"]:  # 22/11/2026: câu mục 4b đã soạn cho người tham gia (gate_params.G2.icf_coi_statement)
+        icf_4bc = re.sub(r"(4b\. NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH\n).*?(?=\n\n4c\.)",
+                         lambda _m: _m.group(1) + XDLI.boc(_coi["icf"], dau="   ", thut="   ", rong=100),
+                         icf_4bc, count=1, flags=re.S)
 
     if design_code == "rct":
         icf_6b = """
@@ -1481,6 +1533,10 @@ def generate_g2_full_package(
             en_1b, en_4bc, en_6c, en_2b, en_5b, en_6b, en_6d, en_6fgh = (
                 re.sub(_mau_re, lambda _m: _e[_khoa], x)
                 for x in (en_1b, en_4bc, en_6c, en_2b, en_5b, en_6b, en_6d, en_6fgh))
+    if _coi["icf_en"]:  # 22/11/2026: bản tiếng Anh của câu mục 4b (gate_params.G2.icf_en.coi_statement)
+        en_4bc = re.sub(r"(4b\. FUNDING AND CONFLICTS OF INTEREST\n).*?(?=\n\n4c\.)",
+                        lambda _m: _m.group(1) + XDLI.boc(_coi["icf_en"], dau="   ", thut="   ", rong=100),
+                        en_4bc, count=1, flags=re.S)
     if _e.get("follow_up_step") and "Step 4: [TO BE COMPLETED — e.g. follow-up visits" in en_steps:
         en_steps = re.sub(r"\[TO BE COMPLETED — e\.g\. follow-up visits; DELETE if single contact\]",
                           lambda _m: _e["follow_up_step"], en_steps)
@@ -1546,6 +1602,13 @@ def generate_g2_full_package(
         # lực) và khối «CỜ ĐỎ: có dữ liệu nhận dạng được → ICF bắt buộc» trái CIOMS 2016 Hướng dẫn 10 (miễn được khi
         # đủ ba điều kiện) và Helsinki 2024 §32 (chính là điều khoản cho dữ liệu xác định được). Căn cứ + ba điều kiện
         # lấy CHUNG từ `can_cu_dao_duc.py` với `ho_so_hdd_bvqy175.py`; nguồn và ngày đọc ở docstring tệp đó.
+        # 22/11/2026: lập luận từng điều kiện đã soạn (đơn đề nghị miễn ở đề cương) — `gate_params.G2.mien_icf_lap_luan`;
+        # vắng thì ô [CẦN LẬP LUẬN].
+        _lap_luan = _g2_dk.get("mien_icf_lap_luan") if isinstance(_g2_dk.get("mien_icf_lap_luan"), dict) else {}
+        _ba_dieu_kien = "\n".join(
+            bv.sinh(XDLI.boc(f"☐ {nhan} — Lập luận: {HSG._chu(_lap_luan.get(_k))}", thut=" "))
+            if HSG._chu(_lap_luan.get(_k)) else f"☐ {nhan} — [CẦN LẬP LUẬN]"
+            for _k, nhan in CCDD.BA_DIEU_KIEN_CIOMS)
         waiver_section = """
 ---
 
@@ -1559,7 +1622,7 @@ YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request) — DRAFT Phi
 ═══════════════════════════════════════════════════════════════
 Căn cứ: {can_cu}
 Tên đề tài: {ten_dt}
-Chủ nhiệm: [CẦN BỔ SUNG]
+Chủ nhiệm: {chu_nhiem}
 Ngày: {run_date_short}
 
 ĐIỀU KIỆN MIỄN (CIOMS 2016 Hướng dẫn 10 — phải thoả CẢ BA; Hội đồng quyết):
@@ -1586,13 +1649,19 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
 ```
 """.format(
             can_cu=CCDD.CAN_CU_MIEN_DONG_THUAN_NGAN,
-            ba_dieu_kien="\n".join(f"☐ {nhan} — [CẦN LẬP LUẬN]" for _k, nhan in CCDD.BA_DIEU_KIEN_CIOMS),
-            ten_dt=ten_dt, run_date_short=run_date[:10], year=_YEAR,
+            ba_dieu_kien=_ba_dieu_kien,
+            ten_dt=ten_dt, chu_nhiem=_nv(_pi), run_date_short=_ngay_pb, year=_YEAR,
             activation_note=activation_note, waiver_criteria=waiver_criteria,
             data_type_line=data_type_line, xac_nhan_mien_line=xac_nhan_mien_line,
             ma_hoa_line=dam_bao_bao_mat_mien_icf(quy_trinh)[0],
             ke_hoach_huy_line=dam_bao_bao_mat_mien_icf(quy_trinh)[1],
         )
+
+    if "tl9_khong_nop" in _ds:
+        # 22/11/2026: chủ nhiệm đã quyết KHÔNG xin miễn phiếu đồng ý — Tài liệu 9 ghi quyết định đó (khối đã soạn), không
+        # in đơn xin miễn có ô [CẦN BÁC SĨ XÁC NHẬN] trái với quyết định.
+        waiver_section = ("\n---\n\n## TÀI LIỆU 9 — ĐỀ NGHỊ MIỄN ICF" + bv.nguyen_van(" — KHÔNG NỘP") + "\n\n"
+                          + bv.nguyen_van(_ds["tl9_khong_nop"]) + "\n")
 
     # WHO Trial Registration Data Set 1.3.1 hiện có 24 mục. VÁ 04/10/2026 (soát từng cổng, G2-07): hai bảng
     # design type/primary purpose riêng của tệp này (lệch bảng của bản JSON: cohort «Observational» ≠ «Epidemiology»;
@@ -1611,6 +1680,54 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
     prospero_section = _khoi_prospero(meta) if design_code == "sr_ma" else ""
 
     khoi_quy_trinh_tl6 = khoi_quy_trinh_g2(quy_trinh)
+
+    # ── 22/11/2026 (tính tái lập): văn bản ĐÃ SOẠN và dữ kiện nguyên văn từ study_meta — tools/ho_so_g2_da_soan.py ──
+    def _khoi(ten: str, mac_dinh: str) -> str:
+        return bv.nguyen_van(_ds[ten]) if ten in _ds else mac_dinh
+
+    _dang_ky_dong = _khoi("tl1_dang_ky", _dang_ky_tom_tat(meta, risk))
+    _kem_theo_them = "".join("\n  ☐ " + bv.nguyen_van(str(x)) for x in (_g2_dk.get("tl1_kem_theo_extra") or [])
+                             if isinstance(x, str) and x.strip())
+    _tl2_van_de = _khoi("tl2_van_de", f"   {topic}")
+    _tl2_bang_chung = _khoi("tl2_bang_chung",
+                            f"   Bằng chứng hiện có (từ PubMed): {n_sr} SR/MA · {n_rct} RCT (mức: {evidence_level}).\n"
+                            f"   Lý do cần nghiên cứu tại bối cảnh Việt Nam: {_gap_vn}")
+    # mục tiêu G1 in NGUYÊN VĂN (bộ chuẩn hoá văn phong không được đổi «—» trong mục tiêu đã chốt)
+    _khoi_muc_tieu_in = bv.sinh(_khoi_muc_tieu) if _muc_tieu_ds else _khoi_muc_tieu
+    _tl2_quy_trinh = _khoi("tl2_quy_trinh", f"   Quy trình: {_quy_trinh_g1 or '[CẦN MÔ TẢ ngắn gọn theo PICO]'}")
+    _tl2_bao_mat = _khoi("tl2_bao_mat", "   Dữ liệu mã hóa, khử định danh theo Luật 91/2025/QH15.\n"
+                                        "   Không lưu PII; bảng liên kết lưu riêng có mật khẩu.")
+    _tl2_tap_chi = (f"   Tạp chí mục tiêu: {bv.nguyen_van(_tap_chi)}" if _tap_chi
+                    else "   [CẦN BỔ SUNG tạp chí/hội nghị mục tiêu]")
+    _bang_rui_ro = _khoi("tl3_bang_rui_ro", f"{risk_table_str}{ghi_chu_can_thiep}")
+    _loi_ich_truc_tiep = (_nv(_gtr("loi_ich_truc_tiep"))
+                          or "[CẦN BỔ SUNG — xác định xem có lợi ích trực tiếp không]")
+    _loi_ich_cong_dong = _nv(_gtr("loi_ich_cong_dong")) or risk["benefits"]
+    _rui_ro_xac_nhan = _nv(_gtr("rui_ro_xac_nhan")) or "`[CẦN BÁC SĨ XÁC NHẬN bảng rủi ro phù hợp với đề tài thật]`"
+    _tl6_loai = _khoi("tl6_loai_du_lieu", "   [CẦN BÁC SĨ LIỆT KÊ CỤ THỂ theo đề tài]")
+    _tl6_cong_cu = _khoi("tl6_cong_cu", "            ☐ [CẦN XÁC NHẬN]")
+    _tl6_khu = _khoi("tl6_khu_dinh_danh",
+                     "   Phương pháp: Thay thế tên/CMND bằng ID nghiên cứu (vd: PT001)\n"
+                     "   Bảng liên kết ID–tên: Lưu riêng, mã hóa AES-256, mật khẩu\n"
+                     "   mạnh (≥ 12 ký tự), chỉ chủ nhiệm giữ\n"
+                     "   Ngưỡng k-ẩn danh: ≥ 5 (nhóm nhỏ sẽ nhóm lại trước công bố)")
+    _tl6_chia_se = bv.sinh(XDLI.dong_chia_se(_coi)) + (
+        "\n" + bv.nguyen_van(_ds["tl6_chia_se_ghi_chu"]) if "tl6_chia_se_ghi_chu" in _ds else "")
+    _tl6_quy_trinh_vp = (f"   Quy trình: {bv.nguyen_van(_coi['vi_pham_quy_trinh'])}" if _coi.get("vi_pham_quy_trinh")
+                         else "   Quy trình: [CẦN BỔ SUNG quy trình cụ thể của đơn vị]")
+    _tl6_cuoi = _khoi("tl6_cuoi_nghien_cuu",
+                      f"   ∎ Dữ liệu nhận dạng: {_huy_dinh_danh(quy_trinh)}\n"
+                      "   ∎ Dữ liệu ẩn danh hóa: lưu theo quy định lưu trữ y tế\n"
+                      "   ∎ Backup: xóa an toàn (overwrite 3 lần tiêu chuẩn DoD)")
+    _so_ban_nop = _nv(_gtr("so_ban_nop")) or "[CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]"
+    _tl7_thu_cap = _khoi("tl7_du_lieu_thu_cap", "☐ [Dữ liệu thứ cấp]: Văn bản chấp thuận cung cấp dữ liệu")
+    _ai_co = "☑" if _ai.get("co_su_dung") is True else "☐"
+    _ai_khong = "☑" if _ai.get("co_su_dung") is False else "☐"
+    _ai_them = _nv(HSG._chu(_ai.get("cong_cu_khac"))) or "[CẦN BỔ SUNG thêm nếu có]"
+    _ai_nguoi = _nv(HSG._chu(_ai.get("nguoi_kiem_tra"))) or "[CẦN — tên nghiên cứu viên phụ trách]"
+    _tra_khac = _nv(_gtr("tra_dang_ky_khac")) or "[CẦN BÁC SĨ TỰ TRA]"
+    _hoi_dong_trds = (bv.nguyen_van(f"Hội đồng Đạo đức Nghiên cứu Y sinh — {_irb_name}") if not _irb_name.startswith("[")
+                      else "[CẦN mã/tên đơn vị; không lưu PII cá nhân]")
     doc = f"""# A3 — HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU | {study_name}
 > Tạo tự động: {run_date} | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
 > [BẢN NHÁP TỰ ĐỘNG — DRAFT Phiên bản 1.0 chờ phê duyệt]
@@ -1636,16 +1753,16 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
 ```
 ══════════════════════════════════════════════════════════════
      ĐƠN XIN PHÊ DUYỆT NGHIÊN CỨU Y SINH HỌC
-     (DRAFT Phiên bản 1.0 — {run_date[:10]})
+     (DRAFT Phiên bản 1.0 — {_ngay_pb})
 ══════════════════════════════════════════════════════════════
 
 Kính gửi: Hội đồng Đạo đức Nghiên cứu Y sinh
-          {_irb_name}
+          {_nv(_irb_name)}
 
-Từ:  Chủ nhiệm đề tài: {_pi}
-     Chức vụ: {_pi_title}
-     Đơn vị: {_pi_unit}
-     Điện thoại: {_pi_phone} | Email: {_pi_email}
+Từ:  Chủ nhiệm đề tài: {_nv(_pi)}
+     Chức vụ: {_nv(_pi_title)}
+     Đơn vị: {_nv(_pi_unit)}
+     Điện thoại: {bv.nguyen_van(_pi_phone)} | Email: {bv.nguyen_van(_pi_email)}
 
 TÊN ĐỀ TÀI: {ten_dt}
 
@@ -1656,9 +1773,9 @@ THÔNG TIN TỔNG QUAN:
   Dân số tham gia: {_population}
   Cỡ mẫu dự kiến: {n_display}
   Thời gian nghiên cứu: {_study_period}
-  Nguồn tài trợ: {_sponsor}
-  Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
-  Đăng ký nghiên cứu: {_dang_ky_tom_tat(meta, risk)}
+  Nguồn tài trợ: {_nv(_sponsor)}
+  Xung đột lợi ích (COI): {bv.sinh(XDLI.dong_coi_don(_coi))}
+  Đăng ký nghiên cứu: {_dang_ky_dong}
 
 CAM KẾT:
   Chúng tôi cam kết thực hiện nghiên cứu theo Tuyên ngôn Helsinki
@@ -1675,7 +1792,7 @@ Kèm theo hồ sơ:
   ☐ Tài liệu 7: Checklist nộp Hội đồng
   ☐ Tài liệu 8: Khai báo COI + Tài trợ + AI
   ☐ Đề cương đầy đủ (từ G1)
-  ☐ CV chủ nhiệm + nghiên cứu viên chính
+  ☐ CV chủ nhiệm + nghiên cứu viên chính{_kem_theo_them}
 
 Chủ nhiệm đề tài:
 ___________________________  Ký, ghi rõ họ tên     Ngày: ___/___/{_YEAR}
@@ -1696,12 +1813,11 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
 ─────────────────────────────────────────────────────────────
 
 1. VẤN ĐỀ NGHIÊN CỨU VÀ LÝ DO CẦN THIẾT:
-   {topic}
-   Bằng chứng hiện có (từ PubMed): {n_sr} SR/MA · {n_rct} RCT (mức: {evidence_level}).
-   Lý do cần nghiên cứu tại bối cảnh Việt Nam: {_gap_vn}
+{_tl2_van_de}
+{_tl2_bang_chung}
 
 2. MỤC TIÊU CỤ THỂ:
-{_khoi_muc_tieu}
+{_khoi_muc_tieu_in}
 
 3. ĐỐI TƯỢNG THAM GIA:
    Tiêu chí chọn: {_incl}
@@ -1712,7 +1828,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
    Thiết kế: {design_primary}
    Chuẩn báo cáo: {reporting_std}
    Nơi thực hiện: {_setting}
-   Quy trình: {_quy_trinh_g1 or '[CẦN MÔ TẢ ngắn gọn theo PICO]'}
+{_tl2_quy_trinh}
 
 5. RỦI RO TIỀM TÀNG VÀ BIỆN PHÁP BẢO VỆ:
    Mức nguy cơ tổng thể: {risk["risk_level"]}
@@ -1722,14 +1838,13 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
    {risk["benefits"]}
 
 7. BẢO MẬT DỮ LIỆU:
-   Dữ liệu mã hóa, khử định danh theo Luật 91/2025/QH15.
-   Không lưu PII; bảng liên kết lưu riêng có mật khẩu.
+{_tl2_bao_mat}
 
 8. KẾT QUẢ ĐẦU RA DỰ KIẾN:
    ☐ Bài báo đăng tạp chí quốc tế/trong nước có phản biện
    ☐ Luận văn/báo cáo nghiên cứu
    ☐ Báo cáo khuyến nghị cho đơn vị/chính sách
-   [CẦN BỔ SUNG tạp chí/hội nghị mục tiêu]
+{_tl2_tap_chi}
 ─────────────────────────────────────────────────────────────
 "DRAFT — Cần bác sĩ/chủ nhiệm kiểm chứng trước khi nộp."
 ```
@@ -1741,16 +1856,16 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
 **Phân loại nguy cơ tổng thể: {risk["risk_level"]}**
 **Lộ trình xét duyệt đề nghị: {risk["irb_route"]}**
 
-{risk_table_str}{ghi_chu_can_thiep}
+{_bang_rui_ro}
 
 | | **Lợi ích bù đắp** |
 |---|---|
-| Trực tiếp với NTG | [CẦN BỔ SUNG — xác định xem có lợi ích trực tiếp không] |
-| Cộng đồng/y tế | {risk["benefits"]} |
+| Trực tiếp với NTG | {_loi_ich_truc_tiep} |
+| Cộng đồng/y tế | {_loi_ich_cong_dong} |
 
 **Kết luận:** Lợi ích dự kiến của nghiên cứu **vượt trội** nguy cơ tiềm tàng.
 Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
-`[CẦN BÁC SĨ XÁC NHẬN bảng rủi ro phù hợp với đề tài thật]`
+{_rui_ro_xac_nhan}
 {specialist_risk_note}
 
 ---
@@ -1760,7 +1875,7 @@ Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
 ```
 ══════════════════════════════════════════════════════════════
    PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU
-   DRAFT Phiên bản 1.0 — Ngày soạn: {run_date[:10]}
+   DRAFT Phiên bản 1.0 — Ngày soạn: {_ngay_pb}
    [Phiên bản phê duyệt sẽ có số IRB — CẦN BỔ SUNG]
 ══════════════════════════════════════════════════════════════
 
@@ -1820,7 +1935,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    ✅ Kết quả công bố dùng dữ liệu TỔNG HỢP — KHÔNG tiết lộ danh tính
 {_icf_du_lieu_nhan_dang(quy_trinh)}
    ✅ Trong trường hợp rò rỉ, anh/chị sẽ được thông báo NGAY KHI XÁC NHẬN
-      (cơ quan bảo vệ dữ liệu được báo trong 72 giờ theo NĐ 356/2025/NĐ-CP —
+      (cơ quan chuyên trách được báo chậm nhất 72 giờ theo Luật 91/2025/QH15 —
       mốc này áp cho cơ quan quản lý, không phải mốc cam kết với anh/chị)
 
    Với dữ liệu còn liên kết được với anh/chị, anh/chị có quyền yêu cầu xem,
@@ -1879,7 +1994,7 @@ Ký tên: _______________  Ngày: ___/___/{_YEAR}
 ```
 ══════════════════════════════════════════════════════════════
    INFORMED CONSENT FORM (ENGLISH TRANSLATION)
-   DRAFT Version 1.0 — Date: {run_date[:10]}
+   DRAFT Version 1.0 — Date: {_ngay_pb}
    "English translation of Vietnamese ICF — for journal submission only."
 ══════════════════════════════════════════════════════════════
 
@@ -1943,7 +2058,7 @@ Investigator: _______________  Date: ___/___/{_YEAR}
 
 {khoi_quy_trinh_tl6}```
 KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp IRB
-Đề tài: {ten_dt} | Phiên bản: 1.0 | Ngày: {run_date[:10]}
+Đề tài: {ten_dt} | Phiên bản: 1.0 | Ngày: {_ngay_pb}
 ─────────────────────────────────────────────────────────────
 
 1. LOẠI DỮ LIỆU THU THẬP:
@@ -1952,46 +2067,28 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp IRB
    ☐ Cận lâm sàng (xét nghiệm, hình ảnh) — mã hóa
    ☐ Kết quả điều tra/khảo sát — ẩn danh hoặc giả danh
    ☐ Dữ liệu thứ cấp (hồ sơ bệnh án) — mã giả danh
-   [CẦN BÁC SĨ LIỆT KÊ CỤ THỂ theo đề tài]
+{_tl6_loai}
 
 2. THU THẬP:
    Công cụ: ☐ REDCap ☐ Google Forms (institutional) ☐ Phiếu giấy
-            ☐ [CẦN XÁC NHẬN]
-   Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép
-   Phê duyệt quyền: Chủ nhiệm đề tài
+{_tl6_cong_cu}
+{bv.sinh(XDLI.dong_phan_quyen(_coi))}
 
 3. KHỬ ĐỊNH DANH:
-   Phương pháp: Thay thế tên/CMND bằng ID nghiên cứu (vd: PT001)
-   Bảng liên kết ID–tên: Lưu riêng, mã hóa AES-256, mật khẩu
-   mạnh (≥ 12 ký tự), chỉ chủ nhiệm giữ
-   Ngưỡng k-ẩn danh: ≥ 5 (nhóm nhỏ sẽ nhóm lại trước công bố)
+{_tl6_khu}
 
 4. LƯU TRỮ:
-   Nơi lưu: [CẦN — máy chủ nội bộ / OneDrive institutional
-             / ổ cứng mã hóa tại đơn vị]
-   Bảo mật: AES-256 · mật khẩu cấp người dùng · VPN (nếu từ xa)
-   Sao lưu: [CẦN — ví dụ: hàng ngày/tuần, 2 bản độc lập]
-   Thời gian lưu: {_thoi_gian_luu(quy_trinh)}
-                  (theo TT38/2018/TT-BYT về lưu trữ hồ sơ y tế)
+{bv.sinh(XDLI.dong_luu_tru(_coi, _thoi_gian_luu(quy_trinh), bool(_gia_tri_qt(quy_trinh, 'luu_tru')), CCDD.CAN_CU_THOI_HAN_LUU))}
 
 5. CHIA SẺ / MỞ DỮ LIỆU:
-   ☐ Không chia sẻ (lý do: [CẦN])
-   ☐ Chia sẻ theo yêu cầu hợp lý (DTA cần ký trước)
-   ☐ Mở hoàn toàn sau ẩn danh hóa (tại: [CẦN — OSF/Zenodo...])
-   [CẦN BÁC SĨ CHỌN VÀ BIỆN MINH]
+{_tl6_chia_se}
 
 6. XỬ LÝ VI PHẠM DỮ LIỆU:
-   Theo NĐ 356/2025/NĐ-CP Điều 23:
-   ∎ Phát hiện vi phạm → báo cáo nội bộ trong 24 giờ
-   ∎ Thông báo cơ quan bảo vệ dữ liệu trong 72 giờ
-   ∎ Thông báo người tham gia bị ảnh hưởng ngay khi xác nhận
-   ∎ Khắc phục và điều tra nguyên nhân, lưu hồ sơ xử lý
-   Quy trình: [CẦN BỔ SUNG quy trình cụ thể của đơn vị]
+{bv.sinh(XDLI.dong_vi_pham(_coi, CCDD.HAN_THONG_BAO_VI_PHAM, CCDD.NOI_DUNG_THONG_BAO_VI_PHAM))}
+{_tl6_quy_trinh_vp}
 
 7. CUỐI NGHIÊN CỨU:
-   ∎ Dữ liệu nhận dạng: {_huy_dinh_danh(quy_trinh)}
-   ∎ Dữ liệu ẩn danh hóa: lưu theo quy định lưu trữ y tế
-   ∎ Backup: xóa an toàn (overwrite 3 lần tiêu chuẩn DoD)
+{_tl6_cuoi}
 ─────────────────────────────────────────────────────────────
 "DRAFT — Cần chủ nhiệm kiểm chứng và DMP Luật 91/2025 hoàn chỉnh."
 ```
@@ -2002,7 +2099,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp IRB
 
 ```
 CHECKLIST HỒ SƠ NỘP HỘI ĐỒNG ĐẠO ĐỨC
-Đề tài: {ten_dt} | Ngày chuẩn bị: {run_date[:10]}
+Đề tài: {ten_dt} | Ngày chuẩn bị: {_ngay_pb}
 ─────────────────────────────────────────────────────────────
 
 HỒ SƠ BẮT BUỘC:
@@ -2014,18 +2111,18 @@ HỒ SƠ BẮT BUỘC:
 ☐ CV chủ nhiệm đề tài (cập nhật ≤ 2 năm)
 ☐ CV nghiên cứu viên chính (nếu có)
 ☐ Khai báo COI + AI (Tài liệu 8)
-☐ Kế hoạch Quản lý Dữ liệu (Tài liệu 6)
+☐ Kế hoạch Quản lý Dữ liệu (Tài liệu 6){bv.sinh(XDLI.dong_ho_so_kem(_coi)) if _coi.get("ho_so_kem") else ""}
 
 HỒ SƠ BỔ SUNG (theo loại NC):
 ☐ [RCT / can thiệp]: Hồ sơ an toàn DSMB (an-toan-nghien-cuu)
 ☐ [RCT]: Bằng chứng đã đăng ký / kế hoạch đăng ký trước tuyển
 ☐ [Can thiệp thuốc]: Thông tin sản phẩm / IB (Investigator Brochure)
-☐ [Dữ liệu thứ cấp]: Văn bản chấp thuận cung cấp dữ liệu
+{_tl7_thu_cap}
 ☐ [Nhóm dễ tổn thương — trẻ em, thai phụ, người mất NLHV]:
     ICF người giám hộ + biện pháp bảo vệ đặc biệt
 ☐ [Dùng dữ liệu di truyền/nhạy cảm]: ICF đặc biệt
 
-SỐ BẢN NỘP: [CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]
+SỐ BẢN NỘP: {_so_ban_nop}
 HÌNH THỨC: ☐ Bản cứng ☐ Điện tử ☐ Cả hai
 
 LỘ TRÌNH XÉT DUYỆT DỰ KIẾN: {risk["irb_route"]}
@@ -2048,45 +2145,36 @@ SAU KHI NHẬN SỐ PHÊ DUYỆT:
 KHAI BÁO XUNG ĐỘT LỢI ÍCH, TÀI TRỢ VÀ SỬ DỤNG AI
 (Dựa theo ICMJE Form — phiên bản rút gọn cho IRB)
 ─────────────────────────────────────────────────────────────
-Tên chủ nhiệm: [CẦN BỔ SUNG]
-Chức vụ: [CẦN BỔ SUNG] | Đơn vị: [CẦN BỔ SUNG]
-Ngày khai báo: {_TODAY}
+Tên chủ nhiệm: {_nv(_pi)}
+Chức vụ: {_nv(_pi_title)} | Đơn vị: {_nv(_pi_unit)}
+Ngày khai báo: {_ngay_pb_vn}
 
-A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH (12 tháng gần nhất):
-☐ Không có
-☐ Có → [Liệt kê: Tên công ty · Loại quan hệ (cổ phần/tư vấn/
-         thù lao/tài trợ hội nghị) · Giá trị (nếu phải khai)]
+{bv.sinh(XDLI.MUC_A)}
 
-B. XUNG ĐỘT LỢI ÍCH PHI TÀI CHÍNH:
-☐ Không có
-☐ Có → [Quan hệ cá nhân với người được nghiên cứu / lợi ích
-         học thuật (thăng tiến/bằng sáng chế) / quan điểm đối nghịch]
+{bv.sinh(XDLI.MUC_B)}
 
-C. NGUỒN TÀI TRỢ:
-  Tài trợ chính: [CẦN BỔ SUNG — "Không có tài trợ bên ngoài" nếu đúng]
-  Tài trợ bổ sung: [CẦN BỔ SUNG]
-  Số hợp đồng (nếu có): [CẦN BỔ SUNG]
+{bv.sinh(XDLI.muc_b2(_coi))}
 
-D. VAI TRÒ NHÀ TÀI TRỢ:
-  Nhà tài trợ có can thiệp vào:
-  ☐ Thiết kế nghiên cứu: ☐ Có ☐ Không
-  ☐ Thu thập / phân tích dữ liệu: ☐ Có ☐ Không
-  ☐ Báo cáo / quyết định công bố: ☐ Có ☐ Không
+{bv.sinh(XDLI.muc_c(_coi))}
+
+{bv.sinh(XDLI.muc_d(_coi))}
 
 E. SỬ DỤNG CÔNG CỤ AI TRONG NGHIÊN CỨU:
-  ☐ Không sử dụng công cụ AI nào
-  ☐ Có sử dụng:
-    Tên công cụ: Claude AI (EBM Copilot) · [CẦN BỔ SUNG thêm nếu có]
+  {_ai_khong} Không sử dụng công cụ AI nào
+  {_ai_co} Có sử dụng:
+    Tên công cụ: Claude AI (EBM Copilot) · {_ai_them}
     Mục đích: Hỗ trợ soạn hồ sơ G2 · tổng quan y văn · thống kê
-    Người kiểm tra đầu ra: [CẦN — tên nghiên cứu viên phụ trách]
+    Người kiểm tra đầu ra: {_ai_nguoi}
 
   XÁC NHẬN (bắt buộc): "Tôi đã kiểm chứng TOÀN BỘ nội dung AI
   hỗ trợ. Mọi số liệu, trích dẫn và kết quả đã được xác minh
   từ nguồn gốc. AI KHÔNG được liệt kê là tác giả. Nội dung do
   AI sinh KHÔNG được trích dẫn như nguồn gốc." [ICMJE Mục V, bản 1/2026]
 
+{bv.sinh(XDLI.cam_ket_khai_bo_sung(_coi, HSG.ten_ngan_hoi_dong(_irb_name)))}
+
 Chữ ký chủ nhiệm: _______________  Ngày: ___/___/{_YEAR}
-[Mỗi đồng tác giả cần khai báo COI riêng theo mẫu ICMJE]
+{bv.sinh(XDLI.ghi_chu_thanh_vien(_coi))}
 ─────────────────────────────────────────────────────────────
 "DRAFT — Cần chủ nhiệm điền và ký trước khi nộp."
 ```
@@ -2104,7 +2192,7 @@ Chữ ký chủ nhiệm: _______________  Ngày: ___/___/{_YEAR}
 
 > ClinicalTrials.gov KHÔNG bao phủ mọi đăng ký. Dù mục trên có kết quả hay không,
 > WHO ICTRP, PROSPERO (nếu SR/MA) và đăng ký trong nước vẫn cần bác sĩ tự tra —
-> hệ thống không tra được hai nguồn đầu vì không có API mở. [CẦN BÁC SĨ TỰ TRA]
+> hệ thống không tra được hai nguồn đầu vì không có API mở. {_tra_khac}
 
 ```
 WHO Trial Registration Data Set 1.3.1 — DRAFT Phiên bản 1.0
@@ -2174,7 +2262,7 @@ Trường 20 — Key secondary outcomes:
 Trường 21 — Ethics review:
             Status: Not approved
             Approval date: [CẦN sau quyết định IRB]
-            Ethics committee: [CẦN mã/tên đơn vị; không lưu PII cá nhân]
+            Ethics committee: {_hoi_dong_trds}
 
 Trường 22 — Completion date:
             [CẦN — ngày hoàn tất dự kiến; cập nhật ngày thật khi kết thúc]
@@ -2262,7 +2350,12 @@ tiêu đề — kết quả kiểm THẬT của lần chạy này nằm ở G2_Q
 
 *[BẢN NHÁP TỰ ĐỘNG — DRAFT Phiên bản 1.0] · Cần bác sĩ kiểm chứng.*
 """
-    return doc
+    # 22/11/2026 (tính tái lập): giá trị WHO TRDS đã soạn và phiếu đồng ý đã soạn (toàn thân Tài liệu 4/5) từ study_meta
+    doc = HSG.ap_trds(doc, HSG.trds_md(meta), bv)
+    for _so, _ten in ((4, "tl4"), (5, "tl5")):
+        if _ten in _ds:
+            doc = HSG.thay_than_tai_lieu(doc, _so, _ds[_ten], bv)
+    return bv.chen(doc, gop_khoang_trang=False) if _tu_chen else doc
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -2716,6 +2809,7 @@ def main():
     risk = ap_loai_can_thiep(risk, design_code, _study_meta_for_g2, topic)
     risk = ap_nguon_du_lieu(risk, design_code, _study_meta_for_g2)
     risk = ap_xin_mien_icf(risk, design_code, _study_meta_for_g2)
+    risk = ap_loi_ich_theo_muc_tieu(risk, design_code, _study_meta_for_g2)
     print(f"  → Mức nguy cơ: {risk['risk_level']}")
     print(f"  → Lộ trình IRB: {risk['irb_route']}")
     print(f"  → Đăng ký: {risk['registration']}")
@@ -2736,8 +2830,16 @@ def main():
     print("\n🔍 Bước 3/7: Tra ClinicalTrials.gov (prior art)...")
     registry_query = base_query or topic
     if args.skip_registry:
-        registry = TR.empty_registry(registry_query, "bị bỏ qua bằng --skip-registry")
-        print("  ⏭  Bỏ qua theo yêu cầu (--skip-registry)")
+        # 22/11/2026 (tính tái lập): đã từng tra THẬT (kết quả lưu ở G2_checkpoint) ⇒ dùng lại kết quả đó, ghi đúng ngày
+        # tra — không lùi hồ sơ về «CHƯA TRA ĐƯỢC» chỉ vì lượt sinh lại chạy ngoại tuyến.
+        try:
+            _cp_cu = json.loads((out_dir / "G2_checkpoint.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            _cp_cu = {}
+        registry = (HSG.dang_ky_tu_checkpoint(_cp_cu)
+                    or TR.empty_registry(registry_query, "bị bỏ qua bằng --skip-registry"))
+        print("  ⏭  Bỏ qua theo yêu cầu (--skip-registry)"
+              + (f" — dùng lại lần tra thật {str(registry.get('checked_at'))[:10]}" if registry.get("checked") else ""))
     else:
         print(f"  → Truy vấn: '{registry_query[:70]}'")
         registry = lookup_prior_art(registry_query)
@@ -2752,13 +2854,17 @@ def main():
         n_sr=n_sr, n_rct=n_rct, evidence_level=evidence_level,
         registry=registry, risk=risk, run_date=run_date,
         n_adjusted=n_adjusted, specialist_modules=specialist_modules,
-        meta=_study_meta_for_g2, quy_trinh=_quy_trinh_de_tai(out_dir),
+        meta=_study_meta_for_g2, quy_trinh=_quy_trinh_de_tai(out_dir), bao_ve=(_bv := HSG.BaoVe()),
     )
     # Hồ sơ này in ra để nộp Hội đồng, nên phải đọc như văn bản khoa học do
     # người viết: bỏ dấu ngắt kiểu máy và ký tự vẽ khung, GIỮ nguyên ô trống chờ
     # điền và mọi số liệu (tools/vn_prose_style.py).
     artifact_md = thu_gon_icf_khi_xin_mien(artifact_md, design_code, _study_meta_for_g2)
     artifact_md = _VNSTYLE.clean_generated_prose(artifact_md)
+    # 22/11/2026: văn bản đã soạn/dữ kiện nguyên văn vào SAU chuẩn hoá — giữ đúng từng ký tự (tools/ho_so_g2_da_soan.py)
+    artifact_md = _bv.chen(artifact_md)
+    for _la in HSG.khoi_la(_study_meta_for_g2):
+        print(f"  ⚠ gate_params.G2.da_soan có khối lạ «{_la}» — không dùng (tên hợp lệ: tools/ho_so_g2_da_soan.KHOI)")
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     # ★ BẢN NHÁP ĐĂNG KÝ WHO TRDS DỰNG TRƯỚC RÀO CHỐNG ĐÈ (vá 27/09/2026): bản nháp sinh HOÀN TOÀN từ dữ kiện PI đã ghim
     # trong study_meta (G0/G1) + nguy cơ/cỡ mẫu vừa tính, không chứa văn bản bác sĩ biên tập. Trước đây nó nằm SAU rào,

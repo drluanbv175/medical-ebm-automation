@@ -8,18 +8,20 @@ gọi API tính phí; công cụ này đọc TOÀN VĂN có sẵn trên máy, kh
 
 Cách làm: tách khoảng văn bản (mặc định từ «ĐẶT VẤN ĐỀ» tới «ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP») thành từng VẾ (dấu chấm hoặc
 chấm phẩy); vế nào mang trích dẫn [n] thì mọi con số trong vế (trừ năm, số hiệu khuyến cáo/mục/bảng/mục tiêu) phải có
-trong toàn văn của CÁC tài liệu được dẫn ở chính vế đó. So linh hoạt kiểu viết: «24,9» ↔ «24.9», «316.234» ↔ «316 234»
-/ «316,234».
+trong toàn văn của CÁC tài liệu được dẫn ở chính vế đó. So linh hoạt kiểu viết: «24,9» ↔ «24.9» ↔ «24·9», «316.234» ↔
+«316 234» / «316,234», «0,78» ↔ «0.78» ↔ «.78» (bỏ số 0 đứng đầu, 22/11/2026) — chi tiết và ca cố ý KHÔNG khớp ở
+`mau_so`.
 
 Nguồn toàn văn (theo thứ tự): `exports/<mã>/toan_van_oa/PMID-<pmid>_*.xml` (JATS) → `toan_van_trong_nuoc/` và
 `toan_van_tltk/` (`DOI-<doi, «/» thành «_»>.pdf`, `TLTK-<n>.pdf`) → PDF đính kèm trong thư viện EndNote khai ở
 `~/.ebm-endnote.json` (đọc BẢN SAO `sdb.eni`, chỉ đọc; BỎ tệp `*TomTatChungCu*` — đó là bản tóm tắt do hệ thống dựng,
 không phải nguồn: ngày 20/11/2026 tệp đính kèm đầu tiên của KDIGO 2022/2024 là bản tóm tắt).
 
-GIỚI HẠN (nói thẳng): (1) số viết bằng chữ trong nguồn («Eighty-eight») máy không thấy ⇒ báo «không thấy», người đọc
-soát bằng mắt; (2) số ngắn («1,1») có thể trùng ngẫu nhiên với một chỗ khác trong bài ⇒ không chứng minh được đúng ngữ
-cảnh — đột biến chuyển «1,1%» sang sai tài liệu từng lọt; (3) chỉ kiểm SỰ CÓ MẶT của con số, không kiểm quần thể hay
-chiều liên quan — vẫn phải đọc; (4) tài liệu không có toàn văn trên máy ⇒ vế đó «chưa đối chiếu được», không phải lỗi.
+GIỚI HẠN (nói thẳng): (1) số viết bằng chữ trong nguồn («Eighty-eight») máy không thấy ⇒ báo «không thấy» (lý do kỹ
+thuật: phép so là khớp chữ số); (2) số ngắn («1,1») có thể trùng ngẫu nhiên với một chỗ khác trong bài ⇒ không chứng
+minh được đúng ngữ cảnh — đột biến chuyển «1,1%» sang sai tài liệu từng lọt; (3) chỉ kiểm SỰ CÓ MẶT của con số, không
+kiểm quần thể hay chiều liên quan; (4) tài liệu không có toàn văn trên máy ⇒ vế đó «chưa đối chiếu được», không phải
+lỗi — hệ gom toàn văn qua `tools/toan_van_trich_dan.py kiem` rồi chạy lại.
 
 Ranh giới: TƯ VẤN — không sửa đề cương, không ghi biên nhận, không mở/chặn cổng.
 Lệnh:  python3 tools/kiem_so_lieu_toan_van.py --study <mã> [--tep <.md>] [--tu "ĐẶT VẤN ĐỀ"] [--den "ĐỐI TƯỢNG"]
@@ -57,7 +59,12 @@ TEN_MAC_DINH = "DE_CUONG_NOP_HOI_DONG_{study}.md"
 BO_TEP_HE_THONG = ("TomTatChungCu",)  # tệp do hệ thống dựng, không phải nguồn
 _SO_RE = re.compile(r"\d{1,3}(?:\.\d{3})+|\d+,\d+|\d+")
 _NAM_RE = re.compile(r"^(19|20)\d\d$")
-_SO_HIEU_RE = re.compile(r"(khuyến cáo|điểm thực hành|mục|Mục|Bảng|Hình|MT|phụ lục|Phụ lục)\s*[\d.]+[a-z]?")
+_SO_HIEU_RE = re.compile(r"(khuyến cáo|điểm thực hành|mục|Mục|Bảng|Hình|MT|phụ lục|Phụ lục)\s*[\d.]+[a-z]?"
+                         # 22/11/2026: số hiệu + ngày ban hành văn bản quy phạm («Quyết định số 56/QĐ-BYT ngày
+                         # 08/01/2024») và số mẫu phiếu («Mẫu số 2») là ĐỊNH DANH văn bản — đối chiếu ở K13/sổ định
+                         # danh, không phải số liệu quy cho nguồn
+                         r"|(?:Quyết định|Thông tư|Nghị định|Công văn|Chỉ thị|Nghị quyết)(?:\s+số)?\s*\d+(?:/\d{4})?"
+                         r"/[\wĐđ-]+(?:\s+ngày\s+\d{1,2}/\d{1,2}/\d{4})?|[Mm]ẫu(?:\s+phiếu)?\s+số\s*\d+")
 _TACH_VE_RE = re.compile(r"(?<=\.)\s+|;\s+|\n")
 
 
@@ -161,13 +168,16 @@ class NguonEndNote:
             shutil.rmtree(self._tam, ignore_errors=True)
 
 
-def van_toan_van(out_dir: Path, khoa: Dict[str, Optional[str]], endnote: Optional[NguonEndNote]) -> str:
-    """Văn bản toàn văn của một tài liệu (rỗng nếu máy không có)."""
+def tep_va_van_toan_van(out_dir: Path, khoa: Dict[str, Optional[str]],
+                        endnote: Optional[NguonEndNote]) -> "tuple[Optional[Path], str]":
+    """(tệp toàn văn, văn bản) của một tài liệu — (None, "") nếu máy không có. Thứ tự nguồn như docstring mô-đun.
+    22/11/2026: tách ra để phiếu kiểm nội dung trích dẫn (chế độ agent của `kiem_noi_dung_trich_dan.py`) chỉ đúng tệp
+    nguồn cho người đọc, cùng MỘT luật tìm tệp với phép đối chiếu số liệu."""
     if khoa.get("pmid"):
         for p in sorted((out_dir / "toan_van_oa").glob(f"PMID-{khoa['pmid']}_*.xml")):
             van = _van_xml(p)
             if van.strip():
-                return van
+                return p, van
     ung_vien: List[Path] = []
     if khoa.get("doi"):
         ten = "DOI-" + str(khoa["doi"]).replace("/", "_") + ".pdf"
@@ -177,21 +187,46 @@ def van_toan_van(out_dir: Path, khoa: Dict[str, Optional[str]], endnote: Optiona
         if p.is_file():
             van = _van_pdf(p)
             if van.strip():
-                return van
+                return p, van
     if endnote is not None:
         p = endnote.tim(khoa.get("pmid"), khoa.get("doi"))
         if p:
-            return _van_pdf(p)
-    return ""
+            van = _van_pdf(p)
+            return (p, van) if van.strip() else (None, "")
+    return None, ""
+
+
+def van_toan_van(out_dir: Path, khoa: Dict[str, Optional[str]], endnote: Optional[NguonEndNote]) -> str:
+    """Văn bản toàn văn của một tài liệu (rỗng nếu máy không có)."""
+    return tep_va_van_toan_van(out_dir, khoa, endnote)[1]
+
+
+# Dấu thập phân trong nguồn: «.» (tiếng Anh), «,» (tiếng Việt/châu Âu), «·» (dấu chấm giữa của nhóm Lancet: «0·78»).
+_DAU_THAP_PHAN = "[.,·]"
+# Trước số thập phân bỏ số 0 đứng đầu («.78» — kiểu APA cho hệ số không vượt 1): KHÔNG được là chữ số, chữ cái hay dấu
+# phân cách — «1.78», «10.78», «p.78» (trang 78), «vol.78» không phải 0,78. Riêng «¼» được phép: pypdf dịch dấu «=» của
+# PDF Wiley thành «¼» (đo 22/11/2026 trên toàn văn Polit 2007: «S-CVI/Ave ¼ .90», «experts¼.90»), mà «¼» là ký tự \w.
+_TRUOC_THAP_PHAN_KHONG_0 = r"(?<![.,·])(?<![^\W¼_])"
 
 
 def mau_so(tok: str) -> str:
-    """Regex linh hoạt cho một con số viết kiểu Việt Nam."""
+    """Regex linh hoạt cho một con số viết kiểu Việt Nam.
+
+    Các cách viết coi là MỘT: «24,9» ↔ «24.9» ↔ «24·9»; «316.234» ↔ «316 234» / «316,234» / «316234»; số nhỏ hơn 1
+    «0,78» ↔ «0.78» ↔ «.78» (bỏ số 0 đứng đầu — 22/11/2026: đề cương C1a trích Polit 2007 «I-CVI ≥ 0,78», toàn văn
+    viết «.78» ⇒ công cụ từng báo «không thấy» sai).
+
+    KHÔNG coi là một (cố ý): «78», «7,8», «1.78»/«10.78» (số khác); «0,780» ↔ «0,78» — số 0 ở CUỐI đổi độ chính xác
+    được công bố (nguồn «.78» không cho phép viết «0,780»; nguồn «.780» viết thành «0,78» là làm tròn), mà công cụ chỉ
+    kiểm sự có mặt nguyên văn, không chấp nhận làm tròn ở bất kỳ con số nào.
+    """
     if re.fullmatch(r"\d{1,3}(?:\.\d{3})+", tok):  # 316.234 ↔ 316 234 / 316,234 / 316234
         return r"(?<![\d.,])" + r"[\s,.  ]?".join(tok.split(".")) + r"(?!\d)"
-    if "," in tok:  # 24,9 ↔ 24.9
+    if "," in tok:  # 24,9 ↔ 24.9 ↔ 24·9
         a, b = tok.split(",")
-        return rf"(?<![\d.,]){a}[.,]{b}(?!\d)"
+        if a == "0":  # 0,78 ↔ 0.78 ↔ .78
+            return rf"(?:(?<![\d.,·])0|{_TRUOC_THAP_PHAN_KHONG_0}){_DAU_THAP_PHAN}{b}(?!\d)"
+        return rf"(?<![\d.,·]){a}{_DAU_THAP_PHAN}{b}(?!\d)"
     return rf"(?<![\d.,]){tok}(?!\d)"
 
 
@@ -244,12 +279,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--tu", default="ĐẶT VẤN ĐỀ", help="đề mục bắt đầu khoảng kiểm")
     ap.add_argument("--den", default="ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP", help="đề mục kết thúc khoảng kiểm (không gồm)")
     ap.add_argument("--khong-endnote", action="store_true", help="không tra PDF đính kèm EndNote")
+    ap.add_argument("--goc", type=Path, default=BASE,
+                    help="thư mục chứa exports/ (đo trên bản chép dữ liệu đề tài; mặc định: repo này)")
     ap.add_argument("--json", action="store_true")
     try:
         a = ap.parse_args(argv)
     except SystemExit:
         return 3
-    out_dir = BASE / "exports" / a.study
+    out_dir = Path(a.goc) / "exports" / a.study
     tep = Path(a.tep) if a.tep else out_dir / TEN_MAC_DINH.format(study=a.study)
     if not tep.is_file():
         print(f"Không thấy tệp {tep}")
@@ -284,10 +321,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         for v in loi:
             print(f"✗ [{', '.join(map(str, v.tai_lieu))}] không thấy {v.khong_thay} trong toàn văn: {v.trich}…")
         for v in chua:
-            print(f"⚪ [{', '.join(map(str, v.tai_lieu))}] chưa đối chiếu được — chưa có toàn văn "
+            print(f"⚪ [{', '.join(map(str, v.tai_lieu))}] chưa đối chiếu được — máy chưa có toàn văn "
                   f"{v.thieu_toan_van} (con số chưa thấy: {v.khong_thay or 'không'}): {v.trich[:120]}…")
+        if chua:
+            print(f"   Hướng xử lý của hệ: `python3 tools/toan_van_trich_dan.py kiem --study {a.study}` xếp từng TLTK "
+                  "thiếu toàn văn vào làn gom (còn làn chưa thử ⇒ thu-thu-tai-lieu gom tiếp; đã thử đủ làn ⇒ "
+                  "`loai-bo`), rồi chạy lại công cụ này.")
         print(f"\n{a.study}: {len(loi)} vế có con số không thấy trong nguồn · {len(chua)} vế chưa đối chiếu được. "
-              "Phép kiểm chỉ xét SỰ CÓ MẶT của con số — quần thể, chiều liên quan vẫn phải đọc. Cần bác sĩ kiểm chứng.")
+              "Phạm vi đo: SỰ CÓ MẶT nguyên văn của con số trong toàn văn tài liệu được dẫn (không đo quần thể, "
+              "chiều liên quan).")
     if loi:
         return 1
     if not co_van:

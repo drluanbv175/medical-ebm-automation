@@ -116,6 +116,73 @@ def n_two_proportion(p1, p2, alpha=0.05, power=0.80, continuity_correction=False
     return math.ceil(n)
 
 
+#: 23/11/2026 — nguồn công thức cỡ mẫu bệnh–chứng ghép cặp cá thể (đã tra PubMed, kiểm rút bài: chưa rút)
+NGUON_DUPONT = "Dupont WD. Power calculations for matched case-control studies. Biometrics 1988;44:1157–68 (PMID 3233252)"
+
+
+def n_ghep_cap_dupont(p0, odds_ratio, so_chung, phi, alpha=0.05, power=0.80):
+    """Số BỘ GHÉP (= số ca) cần cho bệnh–chứng ghép cặp CÁ THỂ 1 ca : M chứng (Dupont 1988, PMID 3233252).
+
+    Tham số: p0 = xác suất phơi nhiễm ở chứng, ψ = OR cần phát hiện, M = số chứng mỗi ca, φ = hệ số tương quan phơi
+    nhiễm giữa ca và chứng cùng bộ. p1 = ψ·p0/(1 + p0(ψ − 1)); xác suất chứng phơi nhiễm khi ca phơi nhiễm / không phơi
+    nhiễm p0+ = (p1·p0 + φ√(p1q1p0q0))/p1, p0− = (p0·q1 − φ√(p1q1p0q0))/q1. Với m = 1…M (bộ có m người phơi nhiễm, mang
+    thông tin): t_m = p1·C(M, m−1)·p0+^(m−1)·q0+^(M−m+1) + q1·C(M, m)·p0−^m·q0−^(M−m); kỳ vọng và phương sai số ca phơi
+    nhiễm trong các bộ đó dưới ψ và dưới H0 (ψ = 1) ⇒ n = [z_{α/2}√Σν₁ + z_β√Σν_ψ]² / (Σe₁ − Σe_ψ)².
+    Đối chiếu: ví dụ Dupont 1988 tr. 1164 (p0 = 0,6; φ = 0,2; ψ = 3; lực 0,8) ⇒ 80,16 cặp (81) và 50,60 bộ 1:3 (51) —
+    trùng epiR 3.0.1 epi.sscc(method = "matched"). Trả số bộ ghép KHÔNG làm tròn. Tham số ngoài miền ⇒
+    InvalidEffectSizeError (không kẹp)."""
+    p0, psi, phi = float(p0), float(odds_ratio), float(phi)
+    if not (0 < p0 < 1):
+        raise InvalidEffectSizeError(f"p0 (xác suất phơi nhiễm ở chứng) phải trong (0,1), nhận được {p0}")
+    if psi <= 0 or psi == 1:
+        raise InvalidEffectSizeError(f"OR phải dương và khác 1, nhận được {psi}")
+    if isinstance(so_chung, bool) or int(so_chung) != so_chung or int(so_chung) < 1:
+        raise InvalidEffectSizeError(f"số chứng mỗi ca M phải là số nguyên ≥ 1, nhận được {so_chung}")
+    if not (0 <= phi < 1):
+        raise InvalidEffectSizeError(f"φ (tương quan phơi nhiễm trong bộ ghép) phải trong [0,1), nhận được {phi}")
+    m_ = int(so_chung)
+    q0 = 1 - p0
+    p1 = psi * p0 / (1 + p0 * (psi - 1))
+    q1 = 1 - p1
+    can = math.sqrt(p1 * q1 * p0 * q0)
+    p0c, p0k = (p1 * p0 + phi * can) / p1, (p0 * q1 - phi * can) / q1
+    if not (0 <= p0c <= 1 and 0 <= p0k <= 1):
+        raise InvalidEffectSizeError(f"φ = {phi} quá lớn với p0 = {p0}, OR = {psi} — xác suất có điều kiện ngoài [0,1]")
+    e_psi = e_1 = v_psi = v_1 = 0.0
+    for m in range(1, m_ + 1):
+        t = (p1 * math.comb(m_, m - 1) * p0c ** (m - 1) * (1 - p0c) ** (m_ - m + 1)
+             + q1 * math.comb(m_, m) * p0k ** m * (1 - p0k) ** (m_ - m))
+        mau = m * psi + m_ - m + 1
+        e_psi += m * t * psi / mau
+        e_1 += m * t / (m_ + 1)
+        v_psi += m * t * psi * (m_ - m + 1) / mau ** 2
+        v_1 += m * t * (m_ - m + 1) / (m_ + 1) ** 2
+    return (z(alpha / 2) * math.sqrt(v_1) + z(1 - power) * math.sqrt(v_psi)) ** 2 / (e_1 - e_psi) ** 2
+
+
+def tham_so_ghep_ca_the(design_code, study_meta, g3_pinned):
+    """{"so_chung": M, "phi": φ} khi đề tài BỆNH–CHỨNG đã chốt ghép cặp CÁ THỂ ở G1 (khung_de_tai.kieu_ghep_benh_chung —
+    cùng hàm cổng G1-AUTO-04c và khuôn SAP G4 dùng); M, φ lấy từ gate_params.G3 (vắng ⇒ None, để công thức báo «[CẦN
+    …]»). Thiết kế khác hoặc ghép theo tần suất/không ghép ⇒ None (công thức hai tỷ lệ như cũ)."""
+    if design_code != "case_control":
+        return None
+    import khung_de_tai as KD  # noqa: PLC0415
+
+    if KD.kieu_ghep_benh_chung(((study_meta or {}).get("gate_params") or {}).get("G1") or {})[0] != "ca_the":
+        return None
+    g3_pinned = g3_pinned or {}
+    m_ = _coerce_pinned_float(g3_pinned.get("so_chung_moi_ca"), "so_chung_moi_ca") \
+        if g3_pinned.get("so_chung_moi_ca") is not None else None
+    phi = _coerce_pinned_float(g3_pinned.get("phi"), "phi") if g3_pinned.get("phi") is not None else None
+    return {"so_chung": int(m_) if m_ is not None and float(m_).is_integer() else m_, "phi": phi}
+
+
+def so_nhom_ghep(ghep_ca_the) -> int:
+    """Số «nhóm» chia N tổng ra n_per_group: ghép cặp cá thể 1:M ⇒ 1 + M; còn lại 2."""
+    m_ = (ghep_ca_the or {}).get("so_chung")
+    return 1 + int(m_) if isinstance(m_, int) and m_ >= 1 else 2
+
+
 def n_two_proportion_auto(p1, p2, alpha=0.05, power=0.80):
     """Như n_two_proportion(), nhưng TỰ ĐỘNG áp hiệu chỉnh liên tục Fleiss khi
     cỡ mẫu cơ sở nhỏ (<100) HOẶC tỷ lệ gần biên (min(p1,p2,1-p1,1-p2)<0.10) —
@@ -344,6 +411,27 @@ def n_auc(auc, alpha=0.05, power=0.80, prevalence=0.5):
     n_benh, n_khong = n_auc_hanley_mcneil(auc, alpha, power, kappa=(1 - prevalence) / prevalence)
     return n_benh + n_khong
 
+def tinh_ris(p_chung, giam_tuong_doi, alpha=0.05, power=0.80, d2=0.0):
+    """Cỡ thông tin cần thiết (RIS) của phân tích gộp kết cục nhị phân, hiệu chỉnh độ đa dạng D².
+
+    Wetterslev J, Thorlund K, Brok J, Gluud C. BMC Med Res Methodol 2009;9:86 (PMID 20042080,
+    doi:10.1186/1471-2288-9-86; đã kiểm rút bài 22/11/2026):
+    RIS = 4·(z₁₋α/₂ + z₁₋β)²·p̄(1 − p̄)/δ² × 1/(1 − D²), với p_can_thiệp = p_chứng·(1 − RRR), δ = p_chứng − p_can_thiệp,
+    p̄ = trung bình hai tỷ lệ. Trả số người (làm tròn lên)."""
+    if not (0 < p_chung < 1) or not (0 < giam_tuong_doi < 1) or not (0 <= d2 < 1):
+        raise InvalidEffectSizeError(f"Tham số RIS ngoài miền: p_chứng={p_chung}, RRR={giam_tuong_doi}, D²={d2}")
+    p_ct = p_chung * (1 - giam_tuong_doi)
+    delta = p_chung - p_ct
+    p_tb = (p_chung + p_ct) / 2
+    return math.ceil(4 * (z(alpha / 2) + z(1 - power)) ** 2 * p_tb * (1 - p_tb) / delta ** 2 / (1 - d2))
+
+
+def _so_vn(x, thap_phan=0):
+    """Số kiểu Việt Nam: dấu chấm phân cách hàng nghìn, dấu phẩy thập phân."""
+    s = f"{x:,.{thap_phan}f}"
+    return s.replace(",", "§").replace(".", ",").replace("§", ".")
+
+
 def n_continuous_md(md, sd, alpha=0.05, power=0.80):
     """
     Cỡ mẫu so sánh HAI TRUNG BÌNH độc lập (kết cục LIÊN TỤC — vd thang đau
@@ -405,13 +493,15 @@ ONE_GROUP_DESIGNS = frozenset({"cross_sectional", "diagnostic", "prediction", "q
 
 def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p_event=0.30, sd=None,
                precision=0.05, prevalence=None, hypothesis_type="superiority", margin=None,
-               outcome_direction=None):
+               outcome_direction=None, ghep_ca_the=None):
     """MỘT nơi tính cỡ mẫu LÕI (trước FPC/cụm/dropout) cho mọi nhánh — main() và bảng độ nhạy cùng gọi.
 
     VÁ 04/10/2026 (soát từng cổng, G3-06): trước đây bảng độ nhạy tự tính lại theo cách riêng (không Fleiss, không làm
     tròn theo nhóm, d cố định 0,05, không FPC/cụm, NI không có bảng) nên ô cơ sở lệch N đã kết luận và G3-AUTO-09 REVIEW
     vĩnh viễn ở nhiều đường hợp lệ. Trả dict: n_per_group, n_total, formula, missing_sd, n_benh, n_khong_benh.
-    Ném InvalidEffectSizeError khi tham số ngoài miền (không kẹp im lặng)."""
+    Ném InvalidEffectSizeError khi tham số ngoài miền (không kẹp im lặng).
+    `ghep_ca_the` (23/11/2026) = {"so_chung": M, "phi": φ} ⇒ bệnh–chứng ghép cặp CÁ THỂ tính theo Dupont 1988 (n_per_group
+    = số ca = số bộ ghép, n_total = số ca × (1 + M)), không dùng công thức hai tỷ lệ không ghép."""
     kq = {"n_per_group": 0, "n_total": 0, "formula": "", "missing_sd": False, "n_benh": None, "n_khong_benh": None}
     if hypothesis_type in ("non_inferiority", "equivalence"):
         if margin is None or margin <= 0:
@@ -476,6 +566,20 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
                          "thật sự có dữ liệu thời gian-đến-biến-cố và effect size là HR "
                          "thật (không phải OR/RR), dùng --effect-type HR để tính bằng "
                          "Schoenfeld log-rank thay vì công thức này.]")
+    elif design_code == "case_control" and effect_type in ("OR", "RR", "HR") and ghep_ca_the is not None:
+        m_, phi = ghep_ca_the.get("so_chung"), ghep_ca_the.get("phi")
+        if m_ is None or phi is None:
+            kq["formula"] = ("[CẦN — bệnh–chứng ghép cặp cá thể tính theo Dupont 1988 (PMID 3233252): cần số chứng mỗi "
+                             "ca (gate_params.G3.so_chung_moi_ca) và hệ số tương quan phơi nhiễm giữa ca và chứng cùng "
+                             "bộ φ (gate_params.G3.phi, kèm phi_source) — KHÔNG dùng công thức hai tỷ lệ không ghép, "
+                             "KHÔNG bịa φ.]")
+            return kq
+        n = math.ceil(n_ghep_cap_dupont(p0, effect_val, m_, phi, alpha, power))
+        kq.update(n_per_group=n, n_total=n * (1 + int(m_)))
+        kq["formula"] = (f"Bệnh–chứng ghép cặp cá thể 1:{int(m_)} — {NGUON_DUPONT}: {effect_type}={effect_val:.2f}, "
+                         f"p0 (phơi nhiễm ở chứng)={p0:.2f}, φ={phi:.2f} ⇒ {n} bộ ghép ({n} ca + {n * int(m_)} chứng). "
+                         "[CẦN — φ là tương quan phơi nhiễm trong bộ ghép, phải có nguồn; φ lớn hơn ⇒ cần nhiều bộ "
+                         "hơn.]")
     elif design_code == "case_control" and effect_type in ("OR", "RR", "HR"):
         odds1 = effect_val * (p0 / (1 - p0))
         p1 = odds1 / (1 + odds1)
@@ -639,24 +743,26 @@ def dong_luc_muc_tieu_phu(kq):
             "số liệu khảo sát thử và HIS")
 
 
-def ap_fpc_cum(n_total, design_code, population_n=None, icc=None, cluster_size=None, cluster_cv=None):
+def ap_fpc_cum(n_total, design_code, population_n=None, icc=None, cluster_size=None, cluster_cv=None, so_nhom=2):
     """(n_total sau FPC/cụm, n_per_group tương ứng, ghi chú, design_effect hoặc None, số cụm hoặc None,
-    N NGAY TRƯỚC khi nhân DE — tức sau FPC nếu có)."""
+    N NGAY TRƯỚC khi nhân DE — tức sau FPC nếu có). `so_nhom` (23/11/2026): bệnh–chứng ghép cặp cá thể 1:M ⇒ 1 + M
+    (n_per_group = số ca = số bộ ghép), mặc định 2 nhóm bằng nhau."""
     if not n_total or not (population_n or (icc is not None and cluster_size)):
-        return n_total, (n_total if design_code in ONE_GROUP_DESIGNS else math.ceil(n_total / 2)), "", None, None, \
-            n_total
+        return n_total, (n_total if design_code in ONE_GROUP_DESIGNS else math.ceil(n_total / so_nhom)), "", None, \
+            None, n_total
     n2, note = apply_fpc_and_cluster_de(n_total, population_n, icc, cluster_size, cluster_cv)
     de = he_so_thiet_ke(icc, cluster_size, cluster_cv) if (icc is not None and cluster_size) else None
     so_cum = math.ceil(n2 / cluster_size) if de is not None else None
     n_truoc_de = math.ceil(n_total / (1 + n_total / population_n)) if population_n else n_total
     # VÁ 04/10/2026 (G3-06): thiết kế MỘT nhóm giữ n_per_group = n_total sau FPC/cụm (trước đây bị chia đôi).
-    n_nhom = n2 if design_code in ONE_GROUP_DESIGNS else math.ceil(n2 / 2)
+    n_nhom = n2 if design_code in ONE_GROUP_DESIGNS else math.ceil(n2 / so_nhom)
     return n2, n_nhom, note, de, so_cum, n_truoc_de
 
 
 def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_event=0.30, p0=0.30, sd=None, *,
                       power=0.80, precision=0.05, prevalence=None, hypothesis_type="superiority", margin=None,
-                      outcome_direction=None, population_n=None, icc=None, cluster_size=None, cluster_cv=None):
+                      outcome_direction=None, population_n=None, icc=None, cluster_size=None, cluster_cv=None,
+                      ghep_ca_the=None):
     """Bảng độ nhạy N tổng (TRƯỚC dropout, SAU FPC/cụm như N chính): hàng = power, cột = biến thiên tham số chính.
 
     Superiority: ES × 0,8/1,0/1,2 (AUC: biến thiên phần vượt 0,5). Non-inferiority: biên Δ × 0,8/1,0/1,2. Mọi ô gọi
@@ -679,7 +785,7 @@ def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_eve
             try:
                 kq = tinh_n_loi(design_code, effect_type, ev, alpha, pwr, p0=p0, p_event=p_event, sd=sd,
                                 precision=precision, prevalence=prevalence, hypothesis_type=hypothesis_type,
-                                margin=mg, outcome_direction=outcome_direction)
+                                margin=mg, outcome_direction=outcome_direction, ghep_ca_the=ghep_ca_the)
                 n = kq["n_total"]
                 if not n:
                     row.append("N/A")
@@ -1676,6 +1782,12 @@ def main():
     power = args.power
     dropout = args.dropout
     p_event = args.p_event
+    # 23/11/2026: bệnh–chứng PI chốt ghép cặp CÁ THỂ (G1 matching_type) ⇒ cỡ mẫu theo Dupont 1988 với số chứng mỗi ca
+    # và tương quan phơi nhiễm trong bộ ghép φ đã ghim ở gate_params.G3 (thiếu ⇒ «[CẦN …]», không lùi về hai tỷ lệ)
+    ghep_ca_the = tham_so_ghep_ca_the(design_code, _study_meta, _g3_pinned)
+    for _k, _kg in (("so_chung_moi_ca", "so_chung"), ("phi", "phi")):
+        if ghep_ca_the and ghep_ca_the.get(_kg) is not None:
+            nguon_tham_so[_k] = "study_meta"
 
     # Validate tham số đầu vào — SỬA: dropout=1.0 gây ZeroDivisionError,
     # dropout gần 1.0 (vd 0.99) không crash nhưng âm thầm nhân N lên gấp
@@ -1709,6 +1821,7 @@ def main():
     # sĩ]" chung chung — bỏ lỡ hoàn toàn lời giải thích RIS/TSA hoặc pmsampsize
     # đã viết riêng cho 2 thiết kế này. Kiểm design_code == sr_ma/prediction
     # TRƯỚC, không phụ thuộc effect_val còn hay không.
+    ris_khoi = None
     if design_code == "sr_ma":
         # THÊM 2026-07-06: sr_ma là nhánh G1 gán THƯỜNG GẶP (topic có ≥2
         # RCT chưa có SR/MA, hoặc câu hỏi tường minh yêu cầu tổng quan)
@@ -1731,6 +1844,37 @@ def main():
         )
         print("  ⚠️  design=sr_ma → cần RIS/TSA (không phải công thức 1 nghiên cứu) "
               "— KHÔNG bịa số, xem hướng dẫn trong artifact A4")
+        # 22/11/2026: tham số RIS CÓ CẤU TRÚC do thống kê viên ghim (gate_params.G3: p0 = tỷ lệ biến cố nhóm chứng,
+        # power, ris_giam_nguy_co_tuong_doi, ris_d2) ⇒ máy TÍNH LẠI RIS và đối chiếu N đã chốt. Đo thật: checkpoint
+        # G3 tổng quan gộp ghi lực 0,8 · p0 0,3 MẶC ĐỊNH MÁY trong khi đề cương và lời chốt ghi lực 90% · p_chứng 3%.
+        _rrr = _coerce_pinned_float(_g3_pinned.get("ris_giam_nguy_co_tuong_doi"), "ris_giam_nguy_co_tuong_doi") \
+            if _g3_pinned.get("ris_giam_nguy_co_tuong_doi") is not None else None
+        _d2 = _coerce_pinned_float(_g3_pinned.get("ris_d2"), "ris_d2") if _g3_pinned.get("ris_d2") is not None \
+            else None
+
+        def _cua_nguoi(k):
+            return not str(nguon_tham_so.get(k) or "").startswith("mặc định")
+
+        if args.p0 is not None and _rrr is not None and _d2 is not None and _cua_nguoi("p0") and _cua_nguoi("power"):
+            _ris = tinh_ris(args.p0, _rrr, alpha, power, _d2)
+            _lech = abs(_ris - args.confirmed_n) / _ris if args.confirmed_n else None
+            ris_khoi = {"p_chung": args.p0, "giam_nguy_co_tuong_doi": _rrr, "alpha": alpha, "power": power,
+                        "d2": _d2, "ris": _ris, "confirmed_n": args.confirmed_n,
+                        "lech_tuong_doi": round(_lech, 4) if _lech is not None else None,
+                        "khop": (_lech is not None and _lech <= 0.01),
+                        "nguon_cong_thuc": "Wetterslev 2009, BMC Med Res Methodol 9:86, PMID 20042080"}
+            formula_used = (
+                "Cỡ thông tin cần thiết (RIS) cho kết cục nhị phân, hiệu chỉnh độ đa dạng D² (Wetterslev 2009, "
+                f"PMID 20042080): tỷ lệ biến cố nhóm chứng {_so_vn(args.p0 * 100, 1).rstrip('0').rstrip(',')}%, "
+                f"giảm nguy cơ tương đối {_so_vn(_rrr * 100, 1).rstrip('0').rstrip(',')}%, "
+                f"α {_so_vn(alpha, 2)}, lực {_so_vn(power * 100, 1).rstrip('0').rstrip(',')}%, "
+                f"D² {_so_vn(_d2 * 100, 1).rstrip('0').rstrip(',')}% ⇒ RIS = {_so_vn(_ris)} người"
+                + ("" if args.confirmed_n is None else (
+                    f"; khớp N đã chốt {_so_vn(args.confirmed_n)} (lệch {_so_vn(_lech * 100, 2)}%)"
+                    if ris_khoi["khop"] else
+                    f"; LỆCH N đã chốt {_so_vn(args.confirmed_n)} ({_so_vn(_lech * 100, 2)}%) — thống kê viên "
+                    "đối chiếu lại")))
+            print(f"  → RIS tính lại = {_ris} (N chốt {args.confirmed_n})")
     elif design_code == "prediction":
         # THÊM 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction"
         # (mô hình tiên lượng/TRIPOD+AI) trước đây rơi vào else chung chung.
@@ -1785,7 +1929,7 @@ def main():
             kq = tinh_n_loi(design_code, effect_type, effect_val, alpha, power, p0=args.p0, p_event=p_event,
                             sd=args.sd, precision=precision, prevalence=args.prevalence,
                             hypothesis_type=args.hypothesis_type, margin=args.margin,
-                            outcome_direction=args.outcome_direction)
+                            outcome_direction=args.outcome_direction, ghep_ca_the=ghep_ca_the)
             n_per_group, n_total = kq["n_per_group"], kq["n_total"]
             formula_used, missing_sd = kq["formula"], kq["missing_sd"]
             n_benh, n_khong_benh = kq["n_benh"], kq["n_khong_benh"]
@@ -1817,7 +1961,8 @@ def main():
     # study_meta (không chỉ CLI) và được GHI vào checkpoint (design_effect, N trước DE, số cụm) để cổng kiểm số học.
     if n_total:
         n_total, n_per_group, _fpc_cluster_note, design_effect, n_clusters, n_total_truoc_de = ap_fpc_cum(
-            n_total, design_code, args.population_n, args.icc, args.cluster_size, args.cluster_cv)
+            n_total, design_code, args.population_n, args.icc, args.cluster_size, args.cluster_cv,
+            so_nhom=so_nhom_ghep(ghep_ca_the))
         formula_used += _fpc_cluster_note
         n_adjusted = math.ceil(n_total / (1 - dropout))
         if _fpc_cluster_note:
@@ -1827,7 +1972,7 @@ def main():
             design_code, n_total, effect_val, effect_type, alpha, p_event, args.p0, args.sd, power=power,
             precision=precision, prevalence=args.prevalence, hypothesis_type=args.hypothesis_type,
             margin=args.margin, outcome_direction=args.outcome_direction, population_n=args.population_n,
-            icc=args.icc, cluster_size=args.cluster_size, cluster_cv=args.cluster_cv)
+            icc=args.icc, cluster_size=args.cluster_size, cluster_cv=args.cluster_cv, ghep_ca_the=ghep_ca_the)
         print(f"  → N mỗi nhóm: {n_per_group}, N tổng: {n_total}, N điều chỉnh: {n_adjusted}")
 
     # 17/10/2026 (hội đồng G0 C1a, DP-G0-1): lực cho mục tiêu phụ khai ở study_meta — chỉ báo cáo, không đổi N.
@@ -2083,6 +2228,9 @@ def main():
         "cluster_size": args.cluster_size,
         **({"cluster_cv": args.cluster_cv} if args.cluster_cv is not None else {}),
         "design_effect": round(design_effect, 6) if design_effect is not None else None,
+        # 23/11/2026: bệnh–chứng ghép cặp cá thể (Dupont 1988) — M và φ để cổng kiểm số học (N = số ca × (1 + M))
+        **({"ghep_ca_the": {"so_chung_moi_ca": ghep_ca_the.get("so_chung"), "phi": ghep_ca_the.get("phi"),
+                            "cong_thuc": NGUON_DUPONT}} if ghep_ca_the else {}),
         "n_total_truoc_de": n_total_truoc_de,
         "n_clusters": n_clusters,
         **({"luc_muc_tieu_phu": luc_phu} if luc_phu is not None else {}),
@@ -2104,6 +2252,17 @@ def main():
             if effect_quality == "crude" else []
         ),
     }
+    if ris_khoi is not None:
+        cp["ris"] = ris_khoi
+    if design_code in N_NOT_APPLICABLE_DESIGNS:
+        # 22/11/2026: thiết kế không dùng công thức lực mẫu ⇒ KHÔNG ghi số MẶC ĐỊNH MÁY (0,8 · 0,3) như thể là tham số
+        # của đề tài — tầng sau đọc checkpoint sẽ tưởng là quyết định của người.
+        for _k in ("power", "p0", "p_event"):
+            if str(nguon_tham_so.get(_k) or "").startswith("mặc định"):
+                cp[_k] = None
+                nguon_tham_so[_k] = "không áp dụng — thiết kế không dùng công thức lực mẫu"
+        cp["tham_so_mac_dinh_may"] = sorted(k for k, v in nguon_tham_so.items()
+                                            if str(v or "").startswith("mặc định"))
     if need is not None:
         cp["needs_input"] = need
     cp_path = out_dir / "G3_checkpoint.json"

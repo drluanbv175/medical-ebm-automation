@@ -54,7 +54,7 @@ def _ap_loc(kb: Dict[str, Any], loc: str) -> None:
     đè lọc quần thể."""
     for pt in kb["ho_so_tron_vong"]["g6"]:
         ts = pt.get("tham_so")
-        if not isinstance(ts, dict):
+        if not isinstance(ts, dict) or ts.get("bang_chung"):  # kiểm bằng chứng thủ tục — không có quần thể dữ liệu
             continue
         if pt.get("vai") == "chinh" or not pt.get("ke_thua") or ts.get("loc"):
             ts["loc"] = f"{loc} and {ts['loc']}" if ts.get("loc") else loc
@@ -128,6 +128,11 @@ def _rct(goc: Dict[str, Any]) -> Dict[str, Any]:
            hi="150", form="theo_doi_t6", nhanh=tl),
         _t("kiem_soat_t6", "radio", "Kiểm soát huyết áp tháng 6 (< 140/90 mmHg)", "0, Không | 1, Có",
            form="theo_doi_t6", nhanh=tl),
+        # 22/11/2026: định nghĩa thay thế của kết cục chính (SAP §9) + quần thể theo đề cương (CONSORT)
+        _t("kiem_soat_t6_130", "calc", "Đạt đích huyết áp tâm thu tháng 6 < 130 mmHg (máy tự tính)",
+           "if([ha_tt_t6] < 130, 1, 0)", form="theo_doi_t6", nhanh=tl, bat_buoc=False),
+        _t("tuan_thu_de_cuong", "radio", "Tuân thủ đề cương (≥ 80% số lần can thiệp theo nhánh, không vi phạm đề cương "
+           "chính)", "0, Không | 1, Có", form="theo_doi_t6", nhanh=tl),
         _t("tuan_thu_t6", "text", "Điểm tuân thủ dùng thuốc tự báo cáo (0–8)", kt="integer", lo="0", hi="8",
            form="theo_doi_t6", nhanh=tl),
         _t("co_bien_co", "yesno", "Có biến cố bất lợi trong 6 tháng", form="bien_co", nhanh=tl,
@@ -149,6 +154,13 @@ def _rct(goc: Dict[str, Any]) -> Dict[str, Any]:
     ], meta)
     kb["du_lieu_redcap"] = {"hinh_mau": HINH_MAU_RCT, "so_ho_so_he_so": 2.5, "dung_khi": [DU, "N_G3"]}
     _ap_loc(kb, "du_tieu_chuan == 1")
+    # 23/11/2026: ô §3 «ai thực hiện can thiệp» của bản thảo — tin nhắn bắt đầu từ ngày ngẫu nhiên hoá trên phiếu
+    # sàng lọc/ngẫu nhiên hoá; người gửi tin tách khỏi người đo huyết áp (cách làm mù đã chốt)
+    hs = kb["ho_so_tron_vong"]
+    hs["tra_loi_G7"] = [(r"ai thuc hien can thiep", (
+        "Điều dưỡng phụ trách chương trình tin nhắn (không tham gia đo huyết áp) cài lịch gửi tự động từ ngày "
+        "ngẫu nhiên hoá, kiểm nhật ký gửi tin hằng tuần và gửi lại tin bị lỗi; tuân thủ đo bằng tỷ lệ tin nhắn gửi "
+        "thành công trong 6 tháng")), *hs["tra_loi_G7"]]
     return kb
 
 
@@ -176,6 +188,7 @@ HINH_MAU_RCT: Dict[str, Any] = {
     "ha_ttr_t6": {"tuyen_tinh": {"chan": 20, "he_so": [["ha_ttr_nen", 0.6], ["[nhom] = '1'", -3]], "sd": 7}},
     "kiem_soat_t6": {"cong_thuc": "if([ha_tt_t6] < 140 and [ha_ttr_t6] < 90, 1, 0)"},
     "tuan_thu_t6": {"tuyen_tinh": {"chan": 5, "he_so": [["[nhom] = '1'", 1.2]], "sd": 1.5}},
+    "tuan_thu_de_cuong": {"logit": {"chan": 2.2, "he_so": [["[nhom] = '1'", -0.7]]}},
     "co_bien_co": {"p": 0.08}, "loai_bien_co": {"p": {"1": 0.5, "2": 0.3, "3": 0.1, "4": 0.2}},
 }
 
@@ -226,6 +239,8 @@ def _cat_ngang(goc: Dict[str, Any]) -> Dict[str, Any]:
            form="do_huyet_ap", nhanh=DU),
         _t("kiem_soat_ha", "radio", "Đạt kiểm soát huyết áp (< 140/90 mmHg)", "0, Không | 1, Có", form="do_huyet_ap",
            nhanh=DU),
+        _t("kiem_soat_ha_130", "calc", "Đạt đích huyết áp tâm thu < 130 mmHg (máy tự tính)",
+           "if([ha_tt_tb] < 130, 1, 0)", form="do_huyet_ap", nhanh=DU, bat_buoc=False),
     ], [
         ("1", "đái tháo đường", "mo_ta", "dtd", "nhi_phan", "", "phỏng vấn, hồ sơ", "SAP §3 mô tả"),
         ("1", "huyết áp tâm thu trung bình", "mo_ta", "ha_tt_tb", "lien_tuc", "", "đo huyết áp chuẩn hoá",
@@ -289,8 +304,10 @@ def _thuan_tap(goc: Dict[str, Any]) -> Dict[str, Any]:
         _t("thuoc_loang_xuong", "checkbox", "Thuốc dự phòng/điều trị loãng xương",
            "1, Bisphosphonate | 2, Canxi hoặc vitamin D | 3, Khác | 0, Không dùng thuốc nào", form="nen", nhanh=DU),
         _t("nga_12t", "yesno", "Ngã trong 12 tháng trước ngày bắt đầu", form="nen", nhanh=DU),
+        _t("so_thang_ppi", "text", "Số tháng dùng PPI liên tục trước ngày bắt đầu theo dõi", kt="integer", lo="0",
+           hi="240", form="phoi_nhiem", nhanh=DU, phan="C. Phơi nhiễm"),
         _t("ppi_dai_han", "radio", "Dùng PPI liên tục ≥ 12 tháng (PHƠI NHIỄM)", "0, Không | 1, Có", form="phoi_nhiem",
-           nhanh=DU, phan="C. Phơi nhiễm"),
+           nhanh=DU),
         _t("loai_ppi", "checkbox", "Loại PPI đã dùng",
            "1, Omeprazol | 2, Esomeprazol | 3, Pantoprazol | 4, Lansoprazol hoặc rabeprazol", form="phoi_nhiem",
            nhanh="[ppi_dai_han] = '1'"),
@@ -329,7 +346,8 @@ HINH_MAU_THUAN_TAP: Dict[str, Any] = {
     "loang_xuong": {"theo_dieu_kien": [["[gioi] = '0'", {"p": 0.3}], ["", {"p": 0.1}]]},
     "thuoc_loang_xuong": {"p": {"1": 0.12, "2": 0.25, "3": 0.03}, "doc_quyen": "0"},
     "nga_12t": {"p": 0.15},
-    "ppi_dai_han": {"logit": {"chan": -1.1, "he_so": [["[corticoid] = '1'", 0.6], ["[tuoi] >= 75", 0.3]]}},
+    "so_thang_ppi": {"tuyen_tinh": {"chan": 4, "he_so": [["[corticoid] = '1'", 6], ["[tuoi] >= 75", 3]], "sd": 12}},
+    "ppi_dai_han": {"cong_thuc": "if([so_thang_ppi] >= 12, 1, 0)"},
     "loai_ppi": {"p": {"1": 0.6, "2": 0.25, "3": 0.1, "4": 0.08}},
     "thoi_gian_theo_doi": {"song_con": {
         "chan": -8.915, "he_so": [["tuoi", 0.04], ["[ppi_dai_han] = '1'", 0.3], ["[corticoid] = '1'", 0.5],
@@ -372,8 +390,10 @@ def _benh_chung(goc: Dict[str, Any]) -> Dict[str, Any]:
         _t("ruou_nguy_hai", "yesno", "Uống rượu ở mức nguy hại", form="nen", nhanh=DU),
         _t("h_pylori", "radio", "Nhiễm H. pylori", "1, Dương tính | 0, Âm tính | 9, Chưa xét nghiệm", form="nen",
            nhanh=DU),
+        _t("so_ngay_nsaid_30", "text", "Số ngày dùng NSAID trong 30 ngày trước ngày chỉ điểm", kt="integer", lo="0",
+           hi="30", form="thuoc", nhanh=DU, phan="C. Thuốc dùng trong 30 ngày trước ngày chỉ điểm"),
         _t("nsaid_30ngay", "radio", "Dùng NSAID trong 30 ngày trước ngày chỉ điểm (PHƠI NHIỄM)", "0, Không | 1, Có",
-           form="thuoc", nhanh=DU, phan="C. Thuốc dùng trong 30 ngày trước ngày chỉ điểm"),
+           form="thuoc", nhanh=DU),
         _t("loai_nsaid", "checkbox", "Loại NSAID", "1, Ibuprofen | 2, Diclofenac | 3, Meloxicam | 4, Celecoxib | "
            "5, Khác", form="thuoc", nhanh="[nsaid_30ngay] = '1'"),
         _t("chong_dong", "yesno", "Dùng thuốc chống đông/chống kết tập", form="thuoc", nhanh=DU),
@@ -402,7 +422,8 @@ HINH_MAU_BENH_CHUNG: Dict[str, Any] = {
     "tuoi": {"chuan": (71, 7)}, "gioi": {"phan_bo": {"0": 0.45, "1": 0.55}},
     "hut_thuoc": {"phan_bo": {"1": 0.2, "2": 0.25, "0": 0.55}}, "ruou_nguy_hai": {"p": 0.08},
     "h_pylori": {"phan_bo": {"1": 0.3, "0": 0.35, "9": 0.35}},
-    "nsaid_30ngay": {"logit": {"chan": -1.735, "he_so": [["[nhom_ca] = '1'", 0.61]]}},
+    "so_ngay_nsaid_30": {"tuyen_tinh": {"chan": -7.3, "he_so": [["[nhom_ca] = '1'", 2.8]], "sd": 8}},
+    "nsaid_30ngay": {"cong_thuc": "if([so_ngay_nsaid_30] >= 1, 1, 0)"},
     "loai_nsaid": {"p": {"1": 0.35, "2": 0.35, "3": 0.2, "4": 0.1, "5": 0.05}},
     "chong_dong": {"logit": {"chan": -1.4, "he_so": [["[nhom_ca] = '1'", 0.7]]}},
     "loai_chong_dong": {"p": {"1": 0.7, "2": 0.25, "3": 0.08, "4": 0.1}},
@@ -418,6 +439,10 @@ def _chan_doan(goc: Dict[str, Any]) -> Dict[str, Any]:
               "Chẩn đoán chân thực: sàng lọc, đo đàn hồi (có lượt không hợp lệ), xét nghiệm máu, FIB-4 máy tự tính")
     dong_y = "[tc_tuoi18] = '1' and [tc_gan_nhiem_mo] = '1' and [lt_ruou] = '0' and [lt_viem_gan_virus] = '0'"
     hop_le = "[lsm_hop_le] = '1'"
+    # 22/11/2026 (STARD 2015 mục 21b): PI khai `alternative_diagnosis_variable = chan_doan_khac` ở đặc tả G10 kế thừa
+    # từ kịch bản gốc ⇒ phiếu chân thực phải có đúng trường đó (thiếu thì đề cương lẫn bản thảo để trống mục 21b).
+    # Nhãn và lựa chọn lấy từ phiếu gốc — một nguồn duy nhất, không chép tay.
+    _x, kieu_khac, nhan_khac, lua_khac = next(b for b in goc["bien_so"]["bo_bien"] if b[0] == "chan_doan_khac")[:4]
     _dat_bo_bien(kb, [
         _t("record_id", "text", "Mã nghiên cứu", form="sang_loc", phan="A. Sàng lọc và đồng ý"),
         _t("ngay_kham", "text", "Ngày khám", kt="date_dmy", lo="2027-03-01", hi="2027-12-31", form="sang_loc"),
@@ -442,11 +467,15 @@ def _chan_doan(goc: Dict[str, Any]) -> Dict[str, Any]:
         _t("lsm_kpa", "text", "Độ đàn hồi gan (kPa)", kt="number", lo="2", hi="75", form="dan_hoi", nhanh=hop_le),
         _t("xo_hoa_tien_trien", "radio", "Xơ hoá tiến triển theo đo đàn hồi ≥ 10 kPa (KẾT CỤC CHÍNH)",
            "0, Không | 1, Có", form="dan_hoi", nhanh=hop_le),
+        _t("chan_doan_khac", kieu_khac, nhan_khac, lua_khac, form="dan_hoi",
+           nhanh=f"{hop_le} and [xo_hoa_tien_trien] = '0'"),
         _t("ast", "text", "AST (U/L)", kt="integer", lo="5", hi="1000", form="xet_nghiem", nhanh=DU,
            phan="D. Xét nghiệm máu (cùng lần khám)"),
         _t("alt", "text", "ALT (U/L)", kt="integer", lo="5", hi="1000", form="xet_nghiem", nhanh=DU),
         _t("tieu_cau", "text", "Tiểu cầu (G/L)", kt="integer", lo="20", hi="800", form="xet_nghiem", nhanh=DU),
         _t("fib4", "calc", "FIB-4 (XÉT NGHIỆM CẦN ĐÁNH GIÁ)", "round(([tuoi]*[ast])/([tieu_cau]*sqrt([alt])),2)",
+           form="xet_nghiem", nhanh=DU, bat_buoc=False),
+        _t("fib4_tren_1_3", "calc", "FIB-4 ≥ 1,3 (ngưỡng loại trừ — máy tự tính)", "if([fib4] >= 1.3, 1, 0)",
            form="xet_nghiem", nhanh=DU, bat_buoc=False),
     ], [
         ("1", "đo đàn hồi hợp lệ", "mo_ta", "lsm_hop_le", "nhi_phan", "", "máy đo đàn hồi", "SAP §1 quần thể"),
@@ -467,6 +496,9 @@ HINH_MAU_CHAN_DOAN: Dict[str, Any] = {
     "can_nang": {"chuan": (68, 11)}, "chieu_cao": {"chuan": (162, 8)}, "dtd": {"p": 0.3}, "tha": {"p": 0.4},
     "lsm_hop_le": {"p": 0.94}, "lsm_kpa": {"lognorm": (7.8, 1.6)},
     "xo_hoa_tien_trien": {"cong_thuc": "if([lsm_kpa] >= 10, 1, 0)"},
+    # chẩn đoán ở người không xơ hoá tiến triển: TẤT ĐỊNH theo độ đàn hồi đã mô phỏng — giả định của bộ mô phỏng, không
+    # phải ngưỡng lâm sàng (< 8 kPa ⇒ 1, còn lại ⇒ 2); công thức không rút số ngẫu nhiên nên mọi trường khác giữ nguyên
+    "chan_doan_khac": {"cong_thuc": "if([lsm_kpa] < 8, 1, 2)"},
     **{xn: {"theo_dieu_kien": [
         ["[lsm_hop_le] = '1'", {"tuyen_tinh": {"chan": c, "he_so": [["lsm_kpa", h]], "sd": sd}}],
         ["", {"chuan": _XN_KHI_KHONG_LSM[xn]}]]}
@@ -498,6 +530,8 @@ def _du_bao(goc: Dict[str, Any]) -> Dict[str, Any]:
            nhanh=DU),
         _t("nyha", "radio", "Phân độ NYHA", "1, I | 2, II | 3, III | 4, IV", form="du_bao", nhanh=DU),
         _t("ntprobnp", "text", "NT-proBNP (pg/mL)", kt="number", lo="10", hi="35000", form="du_bao", nhanh=DU),
+        _t("ntprobnp_can2", "calc", "Căn bậc hai NT-proBNP (máy tự tính)", "sqrt([ntprobnp])", form="du_bao", nhanh=DU,
+           bat_buoc=False),
         _t("egfr", "text", "eGFR (mL/phút/1,73 m²)", kt="integer", lo="5", hi="150", form="du_bao", nhanh=DU),
         _t("natri", "text", "Natri máu (mmol/L)", kt="integer", lo="115", hi="160", form="du_bao", nhanh=DU),
         _t("hb", "text", "Hemoglobin (g/dL)", kt="number", lo="5", hi="20", form="du_bao", nhanh=DU),
@@ -652,6 +686,8 @@ def _dinh_tinh(goc: Dict[str, Any]) -> Dict[str, Any]:
            "1, Sợ kim tiêm | 2, Lo hạ đường huyết | 3, Ngại người khác biết | 4, Chi phí và bảo quản | "
            "5, Hỗ trợ của gia đình | 6, Tin tưởng bác sĩ", form="phong_van", nhanh=DU),
         _t("chu_de", "notes", "Chủ đề/mã rút ra từ phỏng vấn (KẾT CỤC CHÍNH)", form="phong_van", nhanh=DU),
+        _t("chu_de_nguoi_2", "notes", "Chủ đề/mã do người mã hoá thứ hai gán độc lập (cùng bộ mã)", form="phong_van",
+           nhanh=DU),
     ], [
         ("1", "mã chủ đề xuất hiện", "mo_ta", "ma_chu_de", "danh_dinh", "", "bộ mã", "SAP §3 phân tích chủ đề"),
     ])
@@ -672,6 +708,9 @@ HINH_MAU_DINH_TINH: Dict[str, Any] = {
     "ma_chu_de": {"p": {"1": 0.5, "2": 0.6, "3": 0.35, "4": 0.3, "5": 0.45, "6": 0.4}},
     "chu_de": {"chon_chu": ["Sợ kim tiêm; lo phải tiêm suốt đời", "Ngại hạ đường huyết khi đi làm",
                             "Gia đình hỗ trợ học cách tiêm", "Chi phí và việc bảo quản bút tiêm"]},
+    "chu_de_nguoi_2": {"giong_bien": ["chu_de", 0.85, [
+        "Sợ kim tiêm; lo phải tiêm suốt đời", "Ngại hạ đường huyết khi đi làm", "Gia đình hỗ trợ học cách tiêm",
+        "Chi phí và việc bảo quản bút tiêm"]]},
 }
 
 

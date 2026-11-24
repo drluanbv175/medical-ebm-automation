@@ -1004,8 +1004,12 @@ def evaluate_g3_quality(
         alpha_issues.append("thiếu alpha")
     elif alpha > ALPHA_CONVENTIONAL_MAX:
         alpha_issues.append(f"alpha={alpha} > {ALPHA_CONVENTIONAL_MAX} (quy ước)")
-    if power is None:
+    if power is None and not n_not_applicable:
         alpha_issues.append("thiếu power")
+    elif power is None:
+        # 22/11/2026: thiết kế không dùng công thức lực mẫu — trước đây tiêu chí này chỉ «PASS» nhờ số MẶC ĐỊNH MÁY 0,8
+        # mà run_g3_auto ghi vào checkpoint (xanh giả); nay checkpoint để None ⇒ «không áp dụng», không phải thiếu.
+        pass
     elif power < POWER_CONVENTIONAL_MIN:
         alpha_issues.append(f"power={power} < {POWER_CONVENTIONAL_MIN} (quy ước)")
     multiplicity = g3.get("multiplicity_strategy")
@@ -1021,7 +1025,9 @@ def evaluate_g3_quality(
             "G3-AUTO-07",
             "Alpha/power trong quy ước và đã xử lý bội/giữa kỳ",
             "REVIEW" if alpha_issues else "PASS",
-            "; ".join(alpha_issues) if alpha_issues else f"alpha={alpha}, power={power}",
+            "; ".join(alpha_issues) if alpha_issues else (
+                f"alpha={alpha}, power={power}" if power is not None
+                else f"alpha={alpha}; power không áp dụng cho thiết kế {design_code}"),
             "Biện minh alpha/power ngoài quy ước; khai chiến lược alpha khi đa kết cục hoặc có giữa kỳ.",
         )
     )
@@ -1040,6 +1046,10 @@ def evaluate_g3_quality(
         nuisance_missing.append("tỷ lệ hiện mắc p (quy ước thận trọng là p=0,5)")
     if design_code == "diagnostic" and not _present(g3.get("prevalence_source")):
         nuisance_missing.append("tỷ lệ hiện mắc để quy Se/Sp ra tổng N")
+    # 23/11/2026: bệnh–chứng ghép cặp cá thể (Dupont 1988) — φ vào công thức nên phải có nguồn
+    ghep = checkpoint.get("ghep_ca_the") if isinstance(checkpoint.get("ghep_ca_the"), Mapping) else None
+    if ghep and ghep.get("phi") is not None and not _present(g3.get("phi_source")):
+        nuisance_missing.append("φ (tương quan phơi nhiễm giữa ca và chứng cùng bộ ghép — Dupont 1988)")
     # Chỉ đòi nguồn cho dropout khi nó THỰC SỰ được áp (n_adjusted suy từ
     # n_total). Với sr_ma/prediction/qualitative, n_total=0 nên giá trị dropout
     # mặc định nằm trong checkpoint mà không vào phép tính nào — bắt lỗi ở đây
@@ -1068,10 +1078,12 @@ def evaluate_g3_quality(
 
     # ── G3-AUTO-09 — nhất quán nội bộ bằng SỐ ──────────────────────────────
     consistency: list[str] = []
+    # 23/11/2026: bệnh–chứng ghép cặp cá thể 1:M — n_per_group là số ca (= số bộ ghép), N tổng = số ca × (1 + M)
+    so_nhom = 1 + int(_as_int(ghep.get("so_chung_moi_ca")) or 1) if ghep else 2
     if n_total and n_per_group and design_code not in ONE_GROUP_DESIGNS:
-        if abs(n_per_group * 2 - n_total) > 1:
+        if abs(n_per_group * so_nhom - n_total) > 1:
             consistency.append(
-                f"n_per_group×2={n_per_group * 2} ≠ n_total={n_total}"
+                f"n_per_group×{so_nhom}={n_per_group * so_nhom} ≠ n_total={n_total}"
             )
     if n_total and n_per_group and design_code in ONE_GROUP_DESIGNS:
         if n_per_group not in (n_total, 0):

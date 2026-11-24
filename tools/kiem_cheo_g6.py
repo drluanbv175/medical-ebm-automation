@@ -306,19 +306,30 @@ def _md(study: str, ket: dict) -> str:
     return "\n".join(dong)
 
 
+def _chi_mo_ta(d: Path, gate: str) -> str | None:
+    """None = có kết cục/thời gian (kiểm chéo đầy đủ) · "ty_le" = chỉ mô tả, có tỷ lệ Wilson Bảng 1b (cầu nối R
+    22/11/2026 và SPSS 23/11/2026 đều có bản đối chiếu) · "khong_co_ban_kiem_cheo" = chỉ mô tả, không có phép nào hai
+    cầu nối tái lập được."""
+    tom = _doc_json(d / f"{gate}_analysis_summary.json")
+    dt = tom.get("dac_ta_phan_tich") or {}
+    if dt.get("outcome") or dt.get("time"):
+        return None
+    return "ty_le" if (dt.get("ty_le") or tom.get("ty_le")) else "khong_co_ban_kiem_cheo"
+
+
 def lenh_chay(args) -> int:
     d = thu_muc_de_tai(args.study)
     vt = van_tay(d, args.gate)
     if vt is None:
         print(f"⚪ chưa có {args.gate}_analysis_summary.json — chạy run_stats_analysis.py (phân tích chính) trước")
         return 2
-    dt = (_doc_json(d / f"{args.gate}_analysis_summary.json").get("dac_ta_phan_tich") or {})
-    if not dt.get("outcome") and not dt.get("time"):
-        # F3 (14/11/2026): lượt chỉ mô tả (vd tỷ lệ Wilson) — hai cầu nối CHƯA có bản kiểm chéo cho dạng này; ghi rõ
+    mo_ta = _chi_mo_ta(d, args.gate)
+    if mo_ta == "khong_co_ban_kiem_cheo":
+        # F3 (14/11/2026): lượt chỉ mô tả KHÔNG có tỷ lệ Wilson — hai cầu nối chưa có bản kiểm chéo cho dạng này; ghi rõ
         # «không áp dụng» kèm lý do (trước đây báo «từ chối/lỗi» như thể phân tích hỏng).
         ket = {"study": args.study, "gate": args.gate, "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
                "van_tay": vt, "phan_mem": {}, "trang_thai": KHONG_AP_DUNG,
-               "ly_do": "phân tích chỉ mô tả (không có kết cục/thời gian) — chưa có bản kiểm chéo SPSS/R",
+               "ly_do": "phân tích chỉ mô tả (không có kết cục/thời gian/tỷ lệ Wilson) — chưa có bản kiểm chéo SPSS/R",
                "disclaimer": CAN_KIEM}  # fmt: skip
         tj, tm = tep_kiem_cheo(args.gate)
         (d / tj).write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")

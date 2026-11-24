@@ -114,7 +114,7 @@ bước sàng lọc (phiếu phần A) — thiếu `loc` thì Bảng 1 và N c�
 SAP nhiều phân tích ⇒ đặc tả máy đọc `exports/<mã>/G6_DAC_TA_SAP.json` (agent SOẠN từ SAP đã khoá, gắn `sha256_sap`; thống
 kê viên/PI ghi `nguoi_duyet` — agent KHÔNG ghi) rồi `python3 medical-ebm-automation/tools/chay_sap_g6.py kiem|chay|ket-qua
 --study <mã>`: đúng một mục vai `chinh` (gate G6), mục khác gate `G6_<id>` nên không ghi đè nhau; phân tích SAP cam kết mà
-chưa có công cụ (spline RCS, partial PO, Firth…) khai `chua_tu_dong` để thống kê viên làm tay — KHÔNG lặng lẽ bỏ. Luật đọc:
+chưa có công cụ (spline RCS, partial PO…) khai `chua_tu_dong` để thống kê viên làm tay — KHÔNG lặng lẽ bỏ. Luật đọc:
 (1) phơi nhiễm liên tục/nhiều mức ⇒ Python, SPSS, R đều BỎ so thô hai nhóm có chủ đích (ước lượng nằm ở mô hình đa biến);
 (2) biến phái sinh/biểu thức lọc dùng biến CHƯA DUYỆT ⇒ công cụ dừng — không lách; (3) PR là tỷ số tỷ lệ hiện mắc, không viết
 thành OR/RR. Qua MCP `spss-r-ebm`: `phan_tich_g6` (nhận `poisson_pr`, `hiep_bien_phan_loai`, `loc`), `chay_sap_g6`,
@@ -386,8 +386,10 @@ library(mice)
 # Kiểm tra cơ chế thiếu
 md.pattern(data)  # Bản đồ thiếu
 
-# Multiple imputation (m=20 như SAP)
-imp <- mice(data, m = 20, method = "pmm",  # PMM cho liên tục
+# Multiple imputation (m=20 như SAP) — 24/11/2026: dùng method "pmmboot" của cầu nối R (PMM kiểu 1 tham số
+# bootstrap, 10 người cho chọn riêng từng ca, phá thế trùng ngẫu nhiên), KHÔNG "pmm" mặc định (tách đồng hạng theo
+# thứ tự cố định ⇒ phương sai giữa bộ sai khi biến dự báo rời rạc)
+imp <- mice(data, m = 20, method = "pmmboot",
             seed = ___, printFlag = FALSE)  # Seed cố định
 
 # Chạy phân tích trên từng imputed dataset + pool
@@ -541,6 +543,34 @@ Trước khi trả việc cho điều phối cổng: chạy lệnh đo của c�
 ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ hồ sơ + đúng lệnh, KHÔNG làm thay người có
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
+
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/bieu_do_chan_doan.py` (chủ) — biểu đồ chẩn đoán và mô hình dự báo (STARD/TRIPOD+AI); chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: hợp lệ–tin cậy · trung thực–minh bạch.
+- Công cụ `tools/bieu_do_chung.py` (chủ) — nền trình bày chung cho mọi biểu đồ kết quả; chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: kiểm soát chất lượng.
+- Công cụ `tools/g6_trong_so_survey.py` (chủ) — script R trọng số hậu phân tầng + phân tích giới hạn theo SAP; chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: khách quan · tái lập.
+- Công cụ `tools/hinh_g6.py` (chủ) — tự sinh biểu đồ kết quả G6 theo đặc tả SAP + dữ liệu đã khoá; chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: trung thực–minh bạch · tái lập.
+- Công cụ `tools/kiem_cheo_g6.py` (chủ) — kiểm chéo G6 bằng phần mềm thứ hai (SPSS và R); chốt kiểm `tests/test_kiem_cheo_g6_20261114.py`; nguyên tắc: kiểm chứng khách quan · tái lập.
+- Công cụ `tools/normal_dist.py` (chủ) — CDF chuẩn và nghịch đảo dùng chung cho mọi máy tính thống kê; chốt kiểm `tests/test_normal_dist.py`; nguyên tắc: tái lập.
+- Công cụ `tools/phan_tich_sap_bo_sung.py` (chủ) — chạy bằng máy các phân tích SAP trước đây ghi «chờ làm tay»; chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: khách quan · tái lập.
+- Công cụ `tools/dinh_nghia_thay_the.py` (dùng phụ) — G6 dựng mục đặc tả định nghĩa thay thế đã định trước ở SAP §9 (phơi nhiễm liên tục ước lượng theo mỗi 1 SD, SD tính trên đúng tập ca của mô hình); kịch bản R của phân tích SAP bổ sung nay ở `tools/cau_noi_r.py` (`kich_ban_bo_sung`); chốt kiểm `tests/test_g6_tu_dong_khong_viec_tay_20261122.py`; nguyên tắc: tái lập · kiểm chứng khách quan.
+- Công cụ `tools/spss_chay_nen.py` (chủ) — trình chạy nền SPSS do Python đi kèm SPSS thực thi; chốt kiểm `tools/kiem_cheo_g6.py`; nguyên tắc: tái lập · kiểm chứng khách quan.
+- Công cụ `tools/ve_bieu_do.py` (chủ) — cửa vào duy nhất cho biểu đồ kết quả: danh mục hình theo thiết kế + kiểm thư mục hình; chốt kiểm `tests/test_ve_bieu_do_20261121.py`; nguyên tắc: tái lập · kiểm soát chất lượng.
+- Công cụ `tools/bieu_do_gop.py` (kiểm) — đầu ra của `meta-phan-tich`: biểu đồ phân tích gộp (forest, funnel, SROC); chốt kiểm `tools/ve_bieu_do.py`; nguyên tắc: trung thực–minh bạch · tái lập.
+- Công cụ `tools/clean_research_dataset.py` (kiểm) — đầu ra của `quan-ly-du-lieu`: làm sạch dữ liệu trên bản sao, có nhật ký truy vấn; chốt kiểm `tools/g5_quality_gate.py`; nguyên tắc: trung thực–minh bạch · kiểm soát chất lượng.
+- Công cụ `tools/dien_giai_ket_qua.py` (kiểm) — đầu ra của `dien-giai-ket-qua`: hợp đồng bản diễn giải kết quả (G6-T3); chốt kiểm `tools/hoi_dong_cong.py`; nguyên tắc: khách quan · trung thực–minh bạch.
+- Công cụ `tools/doi_chieu_sai_lech_sap.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: đối chiếu biện pháp kiểm soát sai lệch G1 ↔ phân tích SAP G4; chốt kiểm `tools/g4_quality_gate.py`; nguyên tắc: khách quan · phương pháp phù hợp.
+- Công cụ `tools/interim_analysis_calc.py` (kiểm) — đầu ra của `an-toan-nghien-cuu`: máy tính phân tích giữa kỳ (hàm chi tiêu alpha); chốt kiểm `tools/hoi_dong_cong.py`; nguyên tắc: đạo đức · khách quan.
+- Công cụ `tools/lock_analysis_dataset.py` (kiểm) — đầu ra của `quan-ly-du-lieu`: khoá bộ dữ liệu phân tích có audit trail, không PII; chốt kiểm `tools/g5_quality_gate.py`; nguyên tắc: đạt chuẩn định trước · khách quan.
+- Công cụ `tools/meta_analysis_calc.py` (kiểm) — đầu ra của `meta-phan-tich`: máy tính phân tích gộp (cố định/ngẫu nhiên, I², Egger); chốt kiểm `tools/g6_quality_gate.py`; nguyên tắc: tái lập · khoa học.
+- Công cụ `tools/run_g3_auto.py` (kiểm) — đầu ra của `co-mau-nghien-cuu`: tính cỡ mẫu/lực mẫu theo thiết kế với nguồn tham số; chốt kiểm `tools/g3_quality_gate.py`; nguyên tắc: bằng chứng · tái lập · phương pháp phù hợp.
+- Công cụ `tools/run_g4_auto.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: SAP final + chứng chỉ khoá SAP; chốt kiểm `tools/g4_quality_gate.py`; nguyên tắc: khách quan · đạt chuẩn định trước · kết quả kiểm chứng được.
+- Công cụ `tools/run_g5_auto.py` (kiểm) — đầu ra của `quan-ly-du-lieu`: hạ tầng quản trị dữ liệu: DMP, từ điển REDCap, script QC; chốt kiểm `tools/g5_quality_gate.py`; nguyên tắc: kiểm soát chất lượng · tôn trọng đối tượng · tái lập.
+- Công cụ `tools/run_g8_auto.py` (kiểm) — đầu ra của `binh-duyet`: bảng rà trước nộp A9 (bình duyệt đối kháng); chốt kiểm `tools/g8_quality_gate.py`; nguyên tắc: khách quan · kiểm chứng khách quan.
+- Gán đa trị (24/11/2026): mọi đường của `tools/run_stats_analysis.py` (`_mi_tu_lap`, `_mi_ghep_cap`, `multiple_imputation_model`) dùng `BoGanPMM` — PMM kiểu 1 tham số bootstrap, k = 10 người cho chọn RIÊNG từng ca, phá thế trùng ngẫu nhiên (Morris, White & Royston 2014, PMID 24903709); biến dự báo rời rạc quy về ABB theo ô (Rubin & Schenker 1986, doi:10.1080/01621459.1986.10478280); mỗi bộ một chuỗi độc lập; hạt giống `hat_giong` ghi trong đầu ra ⇒ chạy lại cho đúng cùng số trên mọi máy. Không dùng `statsmodels` MICEData/MICE (impute_pmm cho kết quả phụ thuộc CPU và thứ tự hàng khi dự báo rời rạc). Đối chiếu R bằng mice method «pmmboot» (cùng phương pháp, cài đặt độc lập) theo sai số Monte Carlo; chốt kiểm `tests/test_mi_pmm_do_phu_20261124.py` (độ phủ, bất biến thứ tự hàng, tất định theo hạt giống); nguyên tắc: tái lập · kiểm chứng khách quan.
+- Công cụ `tools/run_stats_analysis.py` (chủ, 23/11/2026) — chạy ĐÚNG phương pháp SAP khai: `--kc-hieu-so newcombe|wald` cho hiệu số nguy cơ (ghi `risk_diff_ci_method` vào tóm tắt; phương pháp lạ ⇒ lỗi); `n_imputations = 0` ⇒ phân tích ca đầy đủ; rào EPV chặn hồi quy ⇒ chạy phương pháp biến cố hiếm SAP §5 khai (khối `bien_co_hiem`, Bảng 4b: số biến cố từng nhóm, KTC Clopper–Pearson, p Fisher), đối chiếu chéo R/SPSS cùng phương pháp; bệnh–chứng ghép cặp cá thể: đặc tả khai `bo_ghep` (cột mã bộ ghép, vai trò `bo_ghep` của ma trận G3) ⇒ `--bo-ghep` chạy hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép (hợp lý có điều kiện chính xác; OR hiệu chỉnh + OR thô có điều kiện, KTC Wald; biến dùng để ghép là hằng trong bộ nên không đưa vào covariates — engine báo lỗi có tên biến), đối chiếu R survival::clogit(method="exact") và SPSS COXREG phân tầng theo bộ ghép; SAP §4 khoá họ có điều kiện mà đặc tả thiếu `bo_ghep` ⇒ `chay_sap_g6 kiem` chặn; SAP §5 khai Firth ⇒ `--bien-co-hiem firth` chạy hồi quy Firth khi rào EPV chặn (hợp lý phạt Jeffreys, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt — Heinze & Schemper 2002, PMID 12210625), đối chiếu R logistf(pl = TRUE), SPSS ghi «không đối chiếu được bằng SPSS — đối chiếu bằng R»; Firth kèm cột cụm ⇒ chặn; ghép cặp cá thể: đặc tả khai `bo_ghep` thì phải khai `bien_ghep` (biến dùng để ghép, vai trò `bien_ghep`; `kiem` chặn khi thiếu); dữ liệu thiếu ⇒ gán đa trị giữ cấu trúc ghép — mô hình gán gồm ca/chứng, phơi nhiễm, hiệp biến và biến ghép (Seaman & Keogh 2015, PMID 26237003), clogit theo bộ ghép trong từng bộ đã gán, gộp Rubin (`logistic_dk_mi`, Bảng 5), đối chiếu R mice + survival::clogit + Rubin theo sai số Monte Carlo; rào EPV chặn hồi quy có điều kiện ⇒ `--bien-co-hiem firth_dk` (logistic có điều kiện phạt Firth, Heinze & Puhr 2010, PMID 20213709; KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt), đối chiếu R survival::clogit + hợp lý phạt, SPSS ghi «không đối chiếu được — đối chiếu bằng R»; phương pháp không điều kiện cho dữ liệu ghép cá thể, hoặc `firth_dk` mà không có `bo_ghep` ⇒ `kiem` chặn và engine báo lỗi; chốt kiểm thêm `tests/test_ghep_cap_mi_hiem_co_mau_20261123.py`; chốt kiểm thêm `tests/test_clogit_firth_20261123.py`; chốt kiểm `tests/test_g6_sap_ho_mo_hinh_20261123.py`, `tests/test_g6_mi0_bien_co_hiem_20261123.py`; nguyên tắc: khách quan · tái lập · đạt chuẩn định trước.
+- Công cụ `tools/goi_ra_khuon_sap.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: trang rà khuôn SAP chép đúng SAP đã điền, không ghi nhận xét thay thống kê viên; chốt kiểm `tests/test_goi_ra_khuon_sap_20261123.py`; nguyên tắc: khách quan.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 

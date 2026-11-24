@@ -23,6 +23,9 @@ CÁCH KIỂM (tất định, không gọi mạng; dùng lại bộ chấm `cham_
      (`_GHI_DE`: STROBE 1a, 1b, 13c, 16b, 16c, 17, 20…; RECORD 1.1–1.3; chuẩn Việt Nam; CROSS 5d, 11c). RCT dùng
      CONSORT 2025 (42 mục, `_CONSORT`) thay SPIRIT 2025; tổng quan hệ thống/phân tích gộp dùng PRISMA 2020 (42 dòng —
      27 mục kể cả mục con, `_PRISMA_2020`; mục 2 chấm theo 12 mục PRISMA 2020 for Abstracts) thay PRISMA-P 2015.
+     RCT theo cụm / không kém hơn thêm phần mở rộng CONSORT 2010 (Campbell 2012, Piaggio 2012) — cùng điều kiện
+     kích hoạt với K17 (phần thiết kế CỦA ĐỀ TÀI, không theo tên chuẩn được dẫn); mục kết quả có tiêu chí
+     bài báo riêng (số cụm, mất/loại hai mức, ICC ước tính, diễn giải theo giả thuyết không kém hơn).
   4. Bản thảo CHƯA CÓ SỐ LIỆU (còn ô [CẦN…], không ở chế độ nộp): mục thuộc trọn Kết quả/Bàn luận/Kết luận và yếu tố
      `so_lieu` (số liệu kết quả, số quyết định Hội đồng, đồng thuận/miễn) báo «chua_do» — KHÔNG BAO GIỜ là đạt.
      Mục phương pháp và cấu trúc vẫn chấm đầy đủ.
@@ -559,6 +562,16 @@ _GHI_DE: Dict[tuple, dict] = {
 _MAU_THAY.update({TC.TIEU_CHUAN_CHON: TIEU_CHUAN_CHON_BT, TC.TIEU_CHUAN_LOAI: TIEU_CHUAN_LOAI_BT,
                    TC.KINH_PHI: NGUON_KINH_PHI_BT, TC.VAI_TRO_TAI_TRO: VAI_TRO_TAI_TRO_BT})
 
+# ═════════════════════════════════ COREQ 2007 (bản thảo định tính) — chương đúng bảng gốc ═════════════════════════════
+_GHI_DE.update({
+    # 22/11/2026: COREQ mục 4 «Gender — Was the researcher male or female?» thuộc Domain 1 (nhóm nghiên cứu và phản tư,
+    # đặc điểm cá nhân) — bài báo nêu ở Phương pháp, cạnh người phỏng vấn (bản in lại bảng gốc trong PMC12567161,
+    # PMC12731783). Tiêu chí đề cương xếp mục là «kế hoạch» nên bản chuyển đổi chỉ tìm ở Kết quả/Bàn luận — sai chỗ so
+    # với chuẩn gốc; sửa phép đo, yếu tố giữ nguyên.
+    ("COREQ 2007", "4"): _g(("phuong_phap", "ket_qua"), "Nêu giới của người phỏng vấn.",
+                            (_y("giới người phỏng vấn", r"(người phỏng vấn|điều tra viên).{0,80}(nam|nữ|giới)"),)),
+})
+
 # ═════════════════════════════════ STARD 2015 (bản thảo chẩn đoán) — ghi đè báo nhầm ═════════════════════════════════
 _GHI_DE.update({
     # «Gan nhiễm mỡ trên siêu âm kèm …» (tiêu chí nhận) là căn cứ xác định từ kết quả xét nghiệm trước
@@ -595,6 +608,55 @@ _GHI_DE.update({
                                                       r"dự báo|horizon"),
                                   _y("cách xác định", r"xác định (bằng|qua|theo|là)|ghi nhận|đánh giá|định nghĩa|"
                                                       r"đối chiếu|ghi trong|ascertain")), cung_doan=True),
+})
+
+# ═════════════════════ Phần mở rộng CONSORT 2010 — thử nghiệm cụm và không kém hơn (bản thảo RCT) ═════════════════════
+# 22/11/2026. Cùng bảng mục với K17 (`tieu_chi_chuan_de_cuong._CONSORT_CUM` / `_CONSORT_NI`, đối chiếu Campbell 2012 —
+# PMID 22951546 — và Piaggio 2012 — PMID 23268518), cùng điều kiện kích hoạt (phần thiết kế CỦA ĐỀ TÀI nêu cụm/không kém
+# hơn). Mục phương pháp dùng lại tiêu chí đề cương qua `sang_ban_thao`; mục dưới đây có cách viết riêng ở bài báo:
+# tóm tắt (1b), sơ đồ luồng và số phân tích theo CỤM và CÁ NHÂN (13a, 13b, 16), đặc điểm nền hai mức (15), ICC ước tính
+# (17a), diễn giải theo giả thuyết không kém hơn (22). Số liệu (`so_lieu`) chỉ đòi khi bản thảo đã có số liệu.
+SO_CUM = r"\d+\s*(cụm|phòng khám|cơ sở)"
+_CUM = r"(cụm|phòng khám|cơ sở)"
+_SO_CUM_NHOM = SO_CUM + r"[^.\n]{0,160}(phân bổ|ngẫu nhiên|mỗi nhóm|nhóm (can thiệp|chứng))"
+_MAT_CUM = r"(mất|loại|rút|ngừng)[^.\n]{0,160}" + _CUM + "|" + _CUM + r"[^.\n]{0,80}(mất|loại|rút|ngừng)"
+_MAT_NGUOI = (r"(mất (theo dõi|dấu|liên lạc)|loại|rút (lui|khỏi)|ngừng)[^.\n]{0,160}(người|người tham gia)|"
+              r"(người|người tham gia)[^.\n]{0,80}(mất theo dõi|bị loại|rút)")
+_NEN_NGUOI = r"(đặc điểm|nền)[^\n]{0,160}(người tham gia|cá nhân|người bệnh)"
+_NEN_CUM = (r"(đặc điểm|nền)[^\n]{0,160}(mức cụm|của (các )?" + _CUM + r"|theo " + _CUM + r")|"
+            + _CUM + r"[^\n]{0,80}(quy mô|số người bệnh|đặc điểm)")
+_SO_CUM_PT = SO_CUM + r"[^.\n]{0,160}(phân tích|đưa vào)|(phân tích|đưa vào)[^.\n]{0,160}" + SO_CUM
+_ICC_SO = r"(ICC|tương quan nội cụm)[^.\n]{0,80}\d[,.]\d+"
+_DIEN_GIAI_NI = (r"(không kém hơn|tương đương|non-?inferior)[^.\n]{0,200}(kết luận|cho thấy|đạt|không đạt|xác lập|"
+                 r"chứng minh|vững)|(kết luận|cho thấy|xác lập)[^.\n]{0,200}(không kém hơn|tương đương)")
+_CHUYEN_VUOT_TROI = (r"(chuyển|đổi) sang[^.\n]{0,60}vượt trội|vượt trội[^.\n]{0,120}(định trước|tiền định|khai trước|"
+                     r"thứ bậc|kiểm định tuần tự)")
+_GHI_DE.update({
+    ("CONSORT Cluster 2012", "1b"): _g(("tom_tat",), "Tóm tắt nêu thiết kế cụm và số cụm được phân bổ ở mỗi nhóm.",
+                                       (_y("thiết kế cụm", r"theo cụm|cluster"),
+                                        _y("số cụm", SO_CUM, so_lieu=True))),
+    ("CONSORT Cluster 2012", "13a"): _g(("ket_qua",), "Với mỗi nhóm: số cụm được phân bổ, nhận can thiệp, đưa vào "
+                                                       "phân tích kết cục chính, và số người tương ứng.",
+                                        (_y("số cụm theo nhóm", _SO_CUM_NHOM, so_lieu=True),
+                                         _y("số người theo nhóm", SO_NGUOI, so_lieu=True))),
+    ("CONSORT Cluster 2012", "13b"): _g(("ket_qua",), "Với mỗi nhóm: mất và loại ở mức cụm và mức cá nhân, kèm lý do.",
+                                        (_y("mất/loại mức cụm", _MAT_CUM), _y("mất/loại mức cá nhân", _MAT_NGUOI))),
+    ("CONSORT Cluster 2012", "15"): _g(("ket_qua",), "Đặc điểm nền theo nhóm ở mức cá nhân và (khi có) mức cụm.",
+                                       (_y("đặc điểm nền mức cá nhân", _NEN_NGUOI),
+                                        _y("đặc điểm nền mức cụm", _NEN_CUM))),
+    ("CONSORT Cluster 2012", "16"): _g(("ket_qua",), "Với mỗi nhóm: số cụm đưa vào từng phân tích.",
+                                       (_y("số cụm phân tích", _SO_CUM_PT, so_lieu=True),)),
+    ("CONSORT Cluster 2012", "17a"): _g(("ket_qua",), "Kết quả ở mức cá nhân hoặc cụm và hệ số tương quan nội cụm "
+                                                       "(ICC) ước tính cho mỗi kết cục chính.",
+                                        (_y("ICC ước tính", _ICC_SO, so_lieu=True),)),
+    ("CONSORT NI 2012", "1b"): _g(("tom_tat",), "Tóm tắt nêu khung không kém hơn/tương đương và biên.",
+                                  (_y("khung không kém hơn", TC.KHONG_KEM), _y("biên", r"biên|Δ|margin"))),
+    ("CONSORT NI 2012", "22"): _g(("ban_luan", "ket_luan"),
+                                  "Diễn giải theo giả thuyết không kém hơn/tương đương; biện minh nếu chuyển sang kết "
+                                  "luận vượt trội.",
+                                  (_y("diễn giải theo giả thuyết", _DIEN_GIAI_NI),
+                                   _y("biện minh chuyển sang vượt trội", _CHUYEN_VUOT_TROI,
+                                      khi=r"kết luận[^.\n]{0,80}vượt trội|vượt trội có ý nghĩa"))),
 })
 
 # ═════════════════════════════════ CONSORT 2025 (bản thảo RCT) ═════════════════════════════════
@@ -1155,6 +1217,9 @@ def chuan_ap_dung_ban_thao(thiet_ke: str, md: str, bt: Optional[BanThao] = None)
         van = "\n".join(p.van for p in bt_dk.cac_phan if p.tieu_de in ("⟦phuong_phap⟧", "⟦tom_tat⟧"))
         md = van or bt_dk.md_sach
     ra = []
+    # 22/11/2026: phần mở rộng CONSORT cho thử nghiệm cụm/không kém hơn (`K.CHUAN_DIEU_KIEN_RCT`) áp cho bài báo cùng
+    # điều kiện với đề cương — chỉ đọc phần đề tài tự nêu thiết kế (ở đây: Phương pháp + Tóm tắt; `K.chuan_ap_dung`
+    # còn bỏ Giới thiệu/Bàn luận/TLTK khi văn bản chưa tách chương). Mục kết quả có tiêu chí bài báo riêng (`_GHI_DE`).
     for ten, ly_do in K.chuan_ap_dung(thiet_ke, md):
         moi = CHUAN_BAN_THAO.get(ten)
         ra.append((moi, f"{ly_do} — bài báo dùng {moi} thay {ten}") if moi else (ten, ly_do))

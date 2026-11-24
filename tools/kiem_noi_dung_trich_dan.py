@@ -14,6 +14,9 @@ nghĩa là abstract không nói tới (có thể ở toàn văn), KHÔNG phải 
 
 Mã thoát: 0 không phát hiện gì cần xem · 1 có câu cần agent phân xử · 2 không kiểm được (thiếu khoá/NCBI/API) ·
 3 tham số sai.
+
+CHẾ ĐỘ AGENT (22/11/2026, KHÔNG gọi API): `xuat-phieu` → agent đọc → `nap-ket-qua --tu <tệp>` → `trang-thai`. Sổ
+`exports/<mã>/SO_KIEM_NOI_DUNG_TRICH_DAN_<mã>.json` (khuôn chung với sổ đọc K21). Luật ở khối «CHẾ ĐỘ AGENT».
 """
 
 from __future__ import annotations
@@ -755,6 +758,249 @@ def bao_cao_md(
     return "\n".join(dong)
 
 
+# ── CHẾ ĐỘ AGENT — không gọi API (22/11/2026) ───────────────────────────────────────────────────────────────────────
+# VÌ SAO. Bác sĩ 22/11/2026: «Đề cương phải được đọc từng câu từng chữ trước khi hoàn thành»; tín dụng API sắp hết ⇒
+# không dùng đường gọi Claude API trả phí. Đo trên checkout chính: C1a 98 đoạn/118 cặp, BTM 117 đoạn/130 cặp CHƯA kiểm
+# nội dung.
+# Chế độ này giao việc đọc cho AGENT (`kiem-chung-trich-dan`, đọc toàn văn hoặc abstract) và để MÁY giữ phần khách quan:
+#   1. `xuat-phieu` — phiếu từng cặp (đoạn khẳng định, tài liệu [n]): đoạn, câu, vị trí, dòng TLTK, PMID/DOI, tệp toàn
+#      văn có trên máy (CÙNG luật tìm tệp với `kiem_so_lieu_toan_van.tep_va_van_toan_van`), abstract (chỉ khi
+#      `--lay-abstract`: PubMed/Europe PMC/Crossref miễn phí, không API trả phí), con số máy tách được.
+#   2. `nap-ket-qua` — nhận phán quyết của agent: `ung_ho` · `ung_ho_mot_phan` · `khong_ung_ho` · `khong_doc_duoc`,
+#      kèm vị trí trong nguồn và trích ≤ 15 từ. Máy TỪ CHỐI: mã cặp không có trong bản hiện hành; băm khác băm hiện hành
+#      (đoạn hoặc dòng TLTK đã đổi sau khi xuất phiếu); phán quyết lạ; thiếu vị trí/trích/lý do theo mức; trích > 15 từ;
+#      nguồn máy có mà trích KHÔNG có nguyên văn trong nguồn; «ủng hộ» mà con số của đoạn không có trong nguồn máy có.
+#   3. `trang-thai` — tỷ lệ phủ của bản hiện hành, các cặp `khong_ung_ho`/`ung_ho_mot_phan`, cặp đổi sau khi đọc.
+# KHUÔN SỔ dùng chung với sổ đọc từng đơn vị K21 (`tools/so_doc_de_cuong.py`, nhánh tam-nguyen-tac): `ban_ghi` là dict
+# theo `ma`, mỗi bản ghi mang `bam` lúc đọc + `ket_qua` + `can_cu`/`vai`/`thoi_diem` + `lich_su`; băm cùng thuật toán
+# (`bam_don_vi` = sha256 của các phần đã NFC + gộp khoảng trắng, nối «\x1f», 16 ký tự hex). Mã cặp «trich:<băm đoạn 10
+# ký tự>:<n>» — loại đơn vị riêng, không trùng sáu loại của K21, nên gộp hai sổ không va mã.
+# Ranh giới: TƯ VẤN — không ghi A12 receipt, không mở/chặn cổng, không sửa đề cương.
+SCHEMA_PHIEU = "kiem_noi_dung_trich_dan/phieu/v1"
+SCHEMA_SO = "kiem_noi_dung_trich_dan/so/v1"
+PHAN_QUYET = ("ung_ho", "ung_ho_mot_phan", "khong_ung_ho", "khong_doc_duoc")
+TEN_PHAN_QUYET = {"ung_ho": "ủng hộ", "ung_ho_mot_phan": "ủng hộ một phần", "khong_ung_ho": "KHÔNG ủng hộ",
+                  "khong_doc_duoc": "không đọc được nguồn"}
+NGUON_DOC = ("toan_van", "abstract")
+TRAN_TU_TRICH = 15  # luật bản quyền của hệ: trích nguyên văn ≤ 15 từ
+TEP_PHIEU = "PHIEU_KIEM_NOI_DUNG_TRICH_DAN_{study}.json"
+TEP_SO = "SO_KIEM_NOI_DUNG_TRICH_DAN_{study}.json"
+
+
+def bam_don_vi(*phan: str) -> str:
+    """Băm 16 ký tự hex của một đơn vị — gọi THẲNG `so_doc_de_cuong._bam` (sổ đọc K21), một thuật toán duy nhất.
+
+    Hai sổ (đọc từng đơn vị đề cương và kiểm nội dung trích dẫn) cùng khuôn băm, nên sửa đoạn nào thì cả hai cùng đòi
+    đọc lại; phần rỗng/None coi là chuỗi rỗng.
+    """
+    import so_doc_de_cuong as SDC  # noqa: PLC0415
+
+    return SDC._bam(*(str(x or "") for x in phan))
+
+
+def cap_kiem(van: str) -> List[Dict[str, Any]]:
+    """Mọi cặp (đoạn khẳng định, tài liệu [n]) của văn bản, mã ổn định theo NỘI DUNG đoạn, băm gồm đoạn + dòng TLTK."""
+    tltk = tach_tltk(van)
+    ra: List[Dict[str, Any]] = []
+    dem: Dict[str, int] = {}
+    for c in tach_cau_khang_dinh(van):
+        for n in c.so:
+            t = tltk.get(n)
+            goc = f"trich:{bam_don_vi(c.doan)[:10]}:{n}"
+            dem[goc] = dem.get(goc, 0) + 1
+            ma = goc if dem[goc] == 1 else f"{goc}~{dem[goc]}"
+            ra.append({"ma": ma, "bam": bam_don_vi("trich", c.doan, t.van if t else ""), "id": c.id,
+                       "vi_tri": c.vi_tri, "doan": c.doan, "cau": c.cau if c.cau != c.doan else None, "so": n,
+                       "tai_lieu": t.van if t else None, "pmid": t.pmid if t else None, "doi": t.doi if t else None,
+                       "so_lieu": so_lieu(phan_cua_tai_lieu(c.doan))})
+    return ra
+
+
+def _nguon_may(out_dir: Path, cap: Dict[str, Any], endnote: Any) -> Tuple[Optional[Path], str]:
+    """(tệp, văn bản) toàn văn trên máy cho tài liệu của cặp — cùng luật với `kiem_so_lieu_toan_van`."""
+    import kiem_so_lieu_toan_van as KSL  # noqa: PLC0415
+
+    khoa = {"so": str(cap["so"]), "pmid": cap.get("pmid"), "doi": (cap.get("doi") or "").lower() or None}
+    return KSL.tep_va_van_toan_van(Path(out_dir), khoa, endnote)
+
+
+def _mo_endnote(dung: bool) -> Any:
+    if not dung:
+        return None
+    import kiem_so_lieu_toan_van as KSL  # noqa: PLC0415
+
+    return KSL.NguonEndNote()
+
+
+def xuat_phieu(out_dir: Path, study: str, tep: Path, *, chon: Optional[Sequence[str]] = None, toi_da: int = 0,
+               lay_abs: Any = None, endnote: bool = True, ra: Optional[Path] = None) -> Dict[str, Any]:
+    """Ghi phiếu kiểm từng cặp cho agent đọc. `chon`: chỉ các mã cặp/mã đoạn (C001…) này; `toi_da` > 0: lấy N cặp đầu
+    sau khi chọn; `lay_abs`: hàm `lay_abstract(tltk)` (mạng miễn phí) — None ⇒ không lấy abstract."""
+    van = tep.read_text(encoding="utf-8")
+    ds = cap_kiem(van)
+    if chon:
+        k = set(chon)
+        ds = [c for c in ds if c["ma"] in k or c["id"] in k]
+    if toi_da > 0:
+        ds = ds[:toi_da]
+    abs_tl: Dict[int, Dict[str, Any]] = {}
+    if lay_abs is not None:
+        tltk = tach_tltk(van)
+        abs_tl, _ly = lay_abs({n: tltk[n] for n in {c["so"] for c in ds} if n in tltk})
+    en = _mo_endnote(endnote)
+    try:
+        for c in ds:
+            p, van_nguon = _nguon_may(out_dir, c, en)
+            c["toan_van"] = str(p) if p else None
+            c["toan_van_sha256"] = hashlib.sha256(van_nguon.encode("utf-8")).hexdigest()[:16] if p else None
+            a = abs_tl.get(c["so"]) or {}
+            c["abstract"] = (f"{a.get('title', '')}\n{a.get('abstract', '')}".strip() or None) if a else None
+    finally:
+        if en is not None:
+            en.dong()
+    phieu = {"schema": SCHEMA_PHIEU, "study": study, "tep": tep.name, "tep_sha256": _bam(van),
+             "luc": dt.datetime.now().isoformat(timespec="seconds"), "so_cap": len(ds),
+             "huong_dan": ("Đọc nguồn của từng cặp (toàn văn nếu có, không thì abstract), phán: "
+                           + " · ".join(PHAN_QUYET) + f"; ghi vị trí trong nguồn và trích nguyên văn ≤ {TRAN_TU_TRICH} "
+                           "từ; «ung_ho_mot_phan»/«khong_ung_ho»/«khong_doc_duoc» phải có lý do. Nạp: "
+                           "kiem_noi_dung_trich_dan.py nap-ket-qua --study <mã> --tu <tệp>"),
+             "cap": ds}
+    dich = Path(ra) if ra else Path(out_dir) / TEP_PHIEU.format(study=study)
+    dich.write_text(json.dumps(phieu, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+    return {"phieu": str(dich), "so_cap": len(ds), "co_toan_van": sum(1 for c in ds if c["toan_van"]),
+            "co_abstract": sum(1 for c in ds if c["abstract"])}
+
+
+def doc_so(out_dir: Path, study: str) -> Dict[str, Any]:
+    try:
+        v = json.loads((Path(out_dir) / TEP_SO.format(study=study)).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        v = None
+    if not isinstance(v, dict) or not isinstance(v.get("ban_ghi"), dict):
+        return {"schema": SCHEMA_SO, "study": study, "ban_ghi": {}, "lich_su": []}
+    return v
+
+
+def _so_tu(s: str) -> int:
+    return len(re.findall(r"\S+", s or ""))
+
+
+def _doc_abstract_phieu(out_dir: Path, study: str) -> Dict[str, Tuple[str, str]]:
+    """{mã cặp: (băm cặp, abstract)} từ phiếu đã xuất — để đối chiếu trích khi agent đọc abstract trong phiếu."""
+    try:
+        ph = json.loads((Path(out_dir) / TEP_PHIEU.format(study=study)).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return {str(c.get("ma")): (str(c.get("bam")), str(c.get("abstract") or "")) for c in ph.get("cap") or []
+            if isinstance(c, dict) and c.get("abstract")}
+
+
+def nap_ket_qua(out_dir: Path, study: str, tep: Path, nhap: Dict[str, Any], *,
+                endnote: bool = True) -> Tuple[int, List[str]]:
+    """Nạp phán quyết của agent vào sổ. Trả (số bản ghi nhận, lý do từ chối). Xem luật từ chối ở đầu khối."""
+    van = tep.read_text(encoding="utf-8")
+    hien = {c["ma"]: c for c in cap_kiem(van)}
+    abs_phieu = _doc_abstract_phieu(out_dir, study)
+    so = doc_so(out_dir, study)
+    tu_choi: List[str] = []
+    nhan = 0
+    en = _mo_endnote(endnote)
+    try:
+        for r in nhap.get("ban_ghi") or []:
+            if not isinstance(r, dict):
+                tu_choi.append("bản ghi không phải đối tượng")
+                continue
+            ma = str(r.get("ma") or "")
+            c = hien.get(ma)
+            if c is None:
+                tu_choi.append(f"{ma}: không có trong bản hiện hành")
+                continue
+            if r.get("bam") != c["bam"]:
+                tu_choi.append(f"{ma}: băm {r.get('bam')} khác băm hiện hành {c['bam']} — đoạn hoặc dòng TLTK đã đổi, "
+                               "xuất phiếu và đọc lại")
+                continue
+            kq = r.get("ket_qua")
+            if kq not in PHAN_QUYET:
+                tu_choi.append(f"{ma}: phán quyết phải là một trong {', '.join(PHAN_QUYET)}")
+                continue
+            trich, vi_tri, ly_do = (str(r.get(k) or "").strip() for k in ("trich", "vi_tri", "ly_do"))
+            nguon_doc = r.get("nguon_doc")
+            if not str(r.get("vai") or "").strip():
+                tu_choi.append(f"{ma}: thiếu vai người đọc")
+                continue
+            if kq != "khong_doc_duoc":
+                if nguon_doc not in NGUON_DOC or not trich or not vi_tri:
+                    tu_choi.append(f"{ma}: phán «{kq}» phải có nguon_doc (toan_van|abstract), vị trí và trích nguyên "
+                                   "văn")
+                    continue
+                if _so_tu(trich) > TRAN_TU_TRICH:
+                    tu_choi.append(f"{ma}: trích {_so_tu(trich)} từ > {TRAN_TU_TRICH}")
+                    continue
+            if kq != "ung_ho" and not ly_do:
+                tu_choi.append(f"{ma}: phán «{kq}» phải có lý do")
+                continue
+            nguon = ""
+            if nguon_doc == "toan_van":
+                nguon = _nguon_may(out_dir, c, en)[1]
+            elif nguon_doc == "abstract" and abs_phieu.get(ma, ("", ""))[0] == c["bam"]:
+                nguon = abs_phieu[ma][1]
+            if nguon and kq != "khong_doc_duoc":
+                if not API.co_nguyen_van(trich, nguon):
+                    tu_choi.append(f"{ma}: trích không có nguyên văn trong {nguon_doc} trên máy")
+                    continue
+                if kq == "ung_ho":
+                    thieu = [x for x in c["so_lieu"] if not so_co_trong(x, nguon)]
+                    if thieu:
+                        tu_choi.append(f"{ma}: phán «ủng hộ» nhưng số {', '.join(thieu)} của đoạn không có trong "
+                                       f"{nguon_doc} — xem lại («ung_ho_mot_phan»/«khong_ung_ho» kèm lý do)")
+                        continue
+            td = str(r.get("thoi_diem") or dt.datetime.now().isoformat(timespec="seconds"))
+            try:
+                if dt.datetime.fromisoformat(td).replace(tzinfo=None) > dt.datetime.now():
+                    raise ValueError
+            except ValueError:
+                tu_choi.append(f"{ma}: thời điểm không phải ISO hoặc ở tương lai")
+                continue
+            bg = {"bam": c["bam"], "ket_qua": kq, "nguon_doc": nguon_doc, "vi_tri": vi_tri, "trich": trich,
+                  "ly_do": ly_do, "can_cu": f"{nguon_doc or 'nguồn'} — {vi_tri}".strip(" —"),
+                  "vai": str(r["vai"]).strip(), "thoi_diem": td, "loai": "trich",
+                  "trich_doi_chieu_may": bool(nguon), "so": c["so"]}
+            so["ban_ghi"][ma] = bg
+            so.setdefault("lich_su", []).append({"ma": ma, **bg})
+            nhan += 1
+    finally:
+        if en is not None:
+            en.dong()
+    if nhan:
+        so["schema"], so["study"] = SCHEMA_SO, study
+        dich = Path(out_dir) / TEP_SO.format(study=study)
+        tam = dich.with_name(dich.name + ".tam")
+        tam.write_text(json.dumps(so, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+        tam.replace(dich)
+    return nhan, tu_choi
+
+
+def trang_thai_so(out_dir: Path, study: str, tep: Path) -> Dict[str, Any]:
+    """Phủ của sổ trên bản HIỆN HÀNH: cặp đã phán (bản ghi đúng băm), chưa đọc, đổi sau khi đọc, theo phán quyết."""
+    hien = cap_kiem(tep.read_text(encoding="utf-8"))
+    so = doc_so(out_dir, study)["ban_ghi"]
+    theo = {k: [] for k in PHAN_QUYET}
+    chua, doi = [], []
+    for c in hien:
+        bg = so.get(c["ma"])
+        if isinstance(bg, dict) and bg.get("bam") == c["bam"] and bg.get("ket_qua") in PHAN_QUYET:
+            theo[bg["ket_qua"]].append({**c, **{k: bg.get(k) for k in ("vi_tri", "trich", "ly_do")}})
+        else:
+            chua.append(c)
+            if isinstance(bg, dict):
+                doi.append(c["ma"])
+    da = sum(len(v) for v in theo.values())
+    return {"tong": len(hien), "da_phan": da, "chua_doc": len(chua), "doi_sau_doc": doi,
+            "ty_le_phu": (da / len(hien)) if hien else 0.0, "theo_phan_quyet": {k: len(v) for k, v in theo.items()},
+            "khong_ung_ho": theo["khong_ung_ho"], "ung_ho_mot_phan": theo["ung_ho_mot_phan"],
+            "khong_doc_duoc": theo["khong_doc_duoc"]}
+
+
 def _tep_de_cuong(study: str, tep: Optional[str], goc: Path) -> Path:
     if tep:
         return Path(tep)
@@ -765,6 +1011,8 @@ def main(
     argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc: Path = REPO, lay_doi=None
 ) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("lenh", nargs="?", choices=("xuat-phieu", "nap-ket-qua", "trang-thai"),
+                    help="chế độ AGENT (không gọi API): xuất phiếu · nạp phán quyết · trạng thái sổ")
     ap.add_argument("--study", required=True)
     ap.add_argument("--tep", help="tệp Markdown cần kiểm (mặc định: đề cương nộp Hội đồng của đề tài)")
     ap.add_argument("--goi-api", action="store_true", help="lấy abstract + GỌI Claude API (tính phí) + ghi báo cáo")
@@ -783,7 +1031,15 @@ def main(
         help="chỉ LẤY kết quả batch đã nộp (đã trả phí), KHÔNG nộp batch mới",
     )
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--tu", help="(nap-ket-qua) tệp JSON phán quyết {\"ban_ghi\": [...]}")
+    ap.add_argument("--chon", help="(xuat-phieu) chỉ các mã cặp hoặc mã đoạn, ngăn bằng dấu phẩy")
+    ap.add_argument("--chi", type=int, default=0, help="(xuat-phieu) chỉ N cặp đầu")
+    ap.add_argument("--lay-abstract", action="store_true",
+                    help="(xuat-phieu) lấy abstract PubMed/Europe PMC/Crossref (mạng, miễn phí) vào phiếu")
+    ap.add_argument("--khong-endnote", action="store_true", help="không tra PDF đính kèm của thư viện EndNote")
+    ap.add_argument("--goc", type=Path, default=None, help="thư mục chứa exports/ (đo trên bản chép dữ liệu đề tài)")
     a = ap.parse_args(argv)
+    goc = Path(a.goc) if a.goc else goc
     if not re.fullmatch(r"[A-Za-z0-9._-]+", a.study):
         print("❌ --study chỉ nhận chữ/số/._-")
         return 3
@@ -794,6 +1050,8 @@ def main(
     if not tep.is_file():
         print(f"❌ Không thấy tệp {tep}")
         return 3
+    if a.lenh:
+        return _main_agent(a, tep, goc / "exports" / a.study, lay)
     try:
         model = API.chon_model(a.model)
     except API.LoiApi as exc:
@@ -970,6 +1228,45 @@ def main(
     if het_loi:
         return 2
     return 1 if xem else 0
+
+
+def _main_agent(a: Any, tep: Path, out_dir: Path, lay: Any = None) -> int:
+    """Ba lệnh chế độ agent. Mã thoát: xuat-phieu 0 · nap-ket-qua 0 nhận hết / 1 có bản ghi bị từ chối / 3 tệp sai ·
+    trang-thai 0 phủ 100% và không cặp «khong_ung_ho» / 1 còn việc."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if a.lenh == "xuat-phieu":
+        lay_abs = (lambda tl: lay_abstract(tl, lay)) if a.lay_abstract else None
+        kq = xuat_phieu(out_dir, a.study, tep, chon=[x.strip() for x in (a.chon or "").split(",") if x.strip()],
+                        toi_da=a.chi, lay_abs=lay_abs, endnote=not a.khong_endnote, ra=Path(a.ra) if a.ra else None)
+        print(json.dumps(kq, ensure_ascii=False) if a.json else
+              f"📝 Phiếu {kq['phieu']}: {kq['so_cap']} cặp · có toàn văn trên máy {kq['co_toan_van']} · có abstract "
+              f"{kq['co_abstract']}")
+        return 0
+    if a.lenh == "nap-ket-qua":
+        if not a.tu:
+            print("❌ nap-ket-qua cần --tu <tệp JSON>")
+            return 3
+        try:
+            nhap = json.loads(Path(a.tu).read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            print(f"❌ Không đọc được {a.tu}: {exc}")
+            return 3
+        nhan, tu_choi = nap_ket_qua(out_dir, a.study, tep, nhap if isinstance(nhap, dict) else {},
+                                    endnote=not a.khong_endnote)
+        print(f"Đã ghi {nhan} bản ghi vào {TEP_SO.format(study=a.study)}; từ chối {len(tu_choi)}")
+        for x in tu_choi[:40]:
+            print(f"  ✗ {x}")
+        return 1 if tu_choi else 0
+    tt = trang_thai_so(out_dir, a.study, tep)
+    if a.json:
+        print(json.dumps(tt, ensure_ascii=False, indent=1))
+    else:
+        print(f"{a.study}: phủ {tt['da_phan']}/{tt['tong']} cặp ({tt['ty_le_phu']:.0%}) · "
+              + " · ".join(f"{TEN_PHAN_QUYET[k]} {v}" for k, v in tt["theo_phan_quyet"].items())
+              + f" · đổi sau khi đọc {len(tt['doi_sau_doc'])}")
+        for c in tt["khong_ung_ho"] + tt["ung_ho_mot_phan"]:
+            print(f"  ✗ {c['ma']} [{c['so']}] {c['doan'][:110]} — {c.get('ly_do') or ''}")
+    return 0 if tt["tong"] and tt["da_phan"] == tt["tong"] and not tt["khong_ung_ho"] else 1
 
 
 if __name__ == "__main__":

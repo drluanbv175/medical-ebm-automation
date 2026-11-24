@@ -15,7 +15,7 @@
 ## PHẦN 1 — PICO / PECO (khung trống — bác sĩ tự viết)
 
 
-**Topic đề tài:** Tỷ lệ kiểm soát huyết áp và các yếu tố liên quan ở người tăng huyết áp điều trị ngoại trú: nghiên cứu cắt ngang mô tả
+**Topic đề tài:** Tỷ lệ kiểm soát huyết áp ở người tăng huyết áp điều trị ngoại trú: nghiên cứu cắt ngang mô tả
 **Truy vấn PubMed:** `(hypertension[MeSH] OR hypertension[tiab]) AND ("blood pressure control"[tiab] OR "controlled hypertension"[tiab] OR "hypertension control"[tiab]) AND (outpatient*[tiab] OR "primary care"[tiab]) AND (prevalence[tiab] OR "cross-sectional"[tiab])`
 
 ```

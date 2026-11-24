@@ -167,7 +167,9 @@ def test_kich_ban_r_that_khop_python_tung_dai_luong(tmp_path):
     subprocess.run(["Rscript", str(tmp_path / "kb.R")], capture_output=True, text=True, check=True, timeout=300)
     py = P.cac_so_doi_chieu("gop", _gop(phan_nhom="g"))
     kq = P.so_khop(py, P._doc_kq_r(ra))
-    assert kq["trang_thai"] == "KHOP" and kq["so_dai_luong"] == 15, kq
+    # 22/11/2026: + 3 đại lượng hiệu ứng cố định (rr_gop_co_dinh, KTC) — metafor method = "FE"
+    assert kq["trang_thai"] == "KHOP" and kq["so_dai_luong"] == 18, kq
+    assert {"rr_gop_co_dinh", "ci_duoi_co_dinh", "ci_tren_co_dinh"} <= set(py)
 
 
 # ─────────────────────────────────── bảng đặc điểm từng nghiên cứu (PRISMA 17) ───────────────────────────────────
@@ -447,7 +449,9 @@ def test_g7_phan_nhom_tu_chi_muc_sap_chep_nguyen_van(tmp_path):
 def test_g7_phan_nhom_vang_chi_muc_thanh_o_cho_khong_bien_mat(tmp_path):
     out, _ = _de_tai_phan_nhom(tmp_path, nc_trong_chi_muc=False)
     text = "\n".join(G7.dung_phan_nhom_g6(out))
-    assert "**`NC_thuoc`** (SAP §7): [CẦN THỐNG KÊ VIÊN — SAP cam kết phân nhóm này nhưng" in text
+    # 23/11/2026: mục thiếu chỉ mục kèm mô tả đặc tả (người đọc biết phân tích SAP nào còn thiếu kết quả)
+    assert ("**`NC_thuoc`** (SAP §7) — Phân nhóm theo thuốc: [CẦN THỐNG KÊ VIÊN — SAP cam kết phân nhóm này nhưng"
+            in text)
 
 
 def test_g7_phan_nhom_khong_ap_dung_khi_nhom_con_khong_phai_gop_phan_nhom(tmp_path):

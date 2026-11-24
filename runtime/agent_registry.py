@@ -221,11 +221,13 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # byte origin/master của repo gốc.
 # 22/11/2026 (K19 + khối ký bìa phụ): 3 agent — dieu-phoi-g10, viet-ban-thao, tham-dinh-dau-ra học chốt K19 và luật
 # khối ký thứ ba theo đơn vị ngay trên Khoa (mã ở PR #419; cặp gốc EBM-drluanbv175#490) — vẫn 64.
-# 22/11/2026 (nguyên tắc tổng nghiên cứu): khối guardrail cuối của CẢ 64 agent nhận mục 5–7 — nguyên tắc tổng + sửa đúng
-# khâu rồi khoá · giao sản phẩm · không sổ nợ (cặp THAY_THE mới của enforce_agent_guardrails.py ở repo gốc);
-# dieu-phoi-nghien-cuu thêm mục 🔒 dùng tools/buoc_dang_mo.py; _HOI-DONG-CONG.md §1c — vẫn 64.
+# 22/11/2026 (sổ phân công công cụ C1–C6): 23 agent nhận dòng «Công cụ `tools/x.py` (chủ|kiểm|dùng phụ)» theo
+# config/phan_cong_cong_cu.json, chép từ nhánh gốc claude/phan-cong-goc-20261122 — vẫn 64.
+# 23/11/2026: chép 2 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
+# 23/11/2026: chép 4 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
+# 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "accd17546416bbb1ca051edd651e84b0eae5ba7fb680ee0219516841e902035b"
+    "680ba4b87b1ec1621f05547e372cd9517f1d2d7270fc9e84480913e040483124"
 )
 
 MINIMUM_AGENT_COUNT = 64

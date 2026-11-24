@@ -359,9 +359,21 @@ KINH_TE_O = (
     ("currency_year", "Đơn vị tiền tệ và năm giá", "vd VND, giá năm 2026"),
     ("cost_items", "Hạng mục chi phí và nguồn đơn giá", "nhân công, thuốc, xét nghiệm, chương trình… + nguồn giá"),
     ("effect_measure", "Đơn vị hiệu quả", "đơn vị tự nhiên hoặc QALY/DALY tránh được"),
+    # 22/11/2026 (giả lập biến thể kinh tế y tế — K18 bản thảo báo thiếu CHEERS 2022 mục 13, 18, 19): mục báo cáo bắt
+    # buộc của CHEERS mà SAP chưa có chỗ khai (mục 19 «distributional_effects» ở cuối bảng); chuẩn đòi nêu rõ cả khi
+    # KHÔNG làm (vd đơn vị tự nhiên không quy đổi thoả dụng, không phân tích theo phân nhóm) — bản thảo G7 chép nguyên
+    # chữ dòng SAP (`_khoi_kinh_te_g7`).
+    ("outcome_valuation", "Định giá kết cục hiệu quả (CHEERS 2022 mục 13)",
+     "quần thể và phương pháp định giá kết cục (bộ trọng số thoả dụng), hoặc nêu kết cục đo bằng đơn vị tự nhiên, "
+     "không quy đổi thoả dụng"),
     ("wtp", "Ngưỡng sẵn lòng chi trả (WTP)", "số tiền cho một đơn vị hiệu quả"),
     ("wtp_source", "Nguồn/biện minh ngưỡng WTP", "nguồn PMID/DOI hoặc quyết định của chủ nhiệm — không tự đặt"),
+    ("heterogeneity", "Khác biệt kết quả theo phân nhóm (CHEERS 2022 mục 18)",
+     "có ước lượng chi phí–hiệu quả theo phân nhóm không, phân nhóm nào và cách ước lượng"),
     ("patient_involvement", "Sự tham gia của người bệnh/bên liên quan (CHEERS 2022 mục 21)", "có/không và cách nào"),
+    # 22/11/2026 (CHEERS 2022 mục 19 — phân bố tác động giữa các cá nhân/nhóm, công bằng)
+    ("distributional_effects", "Tác động phân bố (công bằng)",
+     "có phân tích tác động theo nhóm người bệnh (thu nhập, vùng, giới) không và cách nào; không phân tích ⇒ ghi lý do"),
 )
 
 
@@ -417,6 +429,12 @@ def muc_hon_hop(meta) -> list:
     return dong
 
 
+#: 23/11/2026 — SAP §6 của bệnh–chứng ghép cặp cá thể (Seaman & Keogh 2015, PMID 26237003; G6 _mi_ghep_cap)
+DONG_MI_GHEP_CAP = ("- **Gán đa trị cho thiết kế ghép cặp cá thể:** mô hình gán gồm tình trạng ca/chứng, phơi nhiễm, hiệp "
+                    "biến và các biến dùng để ghép (Seaman & Keogh 2015); mô hình phân tích trong từng bộ gán là hồi quy "
+                    "logistic có điều kiện theo bộ ghép; gộp theo luật Rubin  ")
+
+
 def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
              hypothesis_type="superiority", margin=None, n_statistical_min=None, *,
@@ -446,7 +464,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "cross_sectional": ("Toàn bộ mẫu đủ tiêu chí", "Phân tích đầy đủ", "Hồi quy logistic/tuyến tính"),
         "diagnostic": ("Bệnh nhân có xét nghiệm chỉ số và tiêu chuẩn vàng", "Phân tích đầy đủ", "ROC, AUC, độ nhạy/đặc hiệu"),
         "sr_ma": ("Tất cả nghiên cứu đủ tiêu chí đưa vào", "Phân tích đầy đủ", "Random/Fixed effects meta-analysis"),
-        "case_control": ("Ca bệnh vs chứng ghép cặp", "Phân tích đầy đủ", "Conditional logistic regression"),
+        # 23/11/2026: bệnh–chứng chọn phương pháp theo KIỂU GHÉP G1 đã chốt (khối dưới) — giá trị này chỉ là chỗ giữ.
+        "case_control": ("Ca bệnh vs chứng", "Phân tích đầy đủ", "[CẦN]"),
         # THÊM 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction"
         # (mô hình tiên lượng/TRIPOD+AI) trước đây rơi vào .get() fallback
         # ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]") — an toàn (không bịa
@@ -477,6 +496,22 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "NI_PROPORTION": "Hiệu tỷ lệ (risk difference) + 95%CI (Newcombe) so với biên Δ",
             "MD": "t-test hoặc Mann-Whitney; ANCOVA/hồi quy tuyến tính hiệu chỉnh giá trị nền",
         }.get(str(effect_type or "").upper().replace("ARR", "ARR%").replace("%%", "%"), main_method)
+
+    # 23/11/2026 (G7 phát hiện G6 lệch SAP bệnh–chứng): khuôn cũ in CỨNG «Conditional logistic regression» cho mọi đề tài
+    # bệnh–chứng, kể cả khi G1 ghép theo TẦN SUẤT (dữ liệu không có bộ ghép) ⇒ G6 chạy logistic không điều kiện, lệch
+    # SAP. Nay theo kiểu ghép G1 đã chốt (khung_de_tai.kieu_ghep_benh_chung, cùng hàm cổng G1-AUTO-04c dùng): cá thể ⇒
+    # logistic có điều kiện theo bộ ghép; tần suất ⇒ logistic không điều kiện hiệu chỉnh biến ghép; không ghép ⇒
+    # logistic không điều kiện. Chưa chốt ⇒ ô [CẦN …] (G4 không khoá được §4 còn ô trống).
+    if design_code == "case_control":
+        import khung_de_tai as KD  # noqa: PLC0415
+
+        kieu_ghep = (khung or {}).get("kieu_ghep")
+        if kieu_ghep in KD.KIEU_GHEP:
+            ten_ghep, main_method = KD.KIEU_GHEP[kieu_ghep]
+            pop = f"Ca bệnh vs chứng — {ten_ghep}"
+        else:
+            main_method = ("[CẦN CHỐT kiểu ghép nhóm chứng ở G1 (gate_params.G1.matching_type: individual | frequency "
+                           "| none) — quyết định logistic có/không điều kiện]")
 
     # THÊM 16/11/2026 (giả lập trọn vòng 8 thiết kế): cắt ngang MÔ TẢ (G3 «descriptive…» hoặc cỡ mẫu theo độ chính xác
     # của tỷ lệ, không thước đo hiệu ứng) — phân tích chính là ƯỚC LƯỢNG TỶ LỆ + KTC, không phải hồi quy. Khuôn cũ in
@@ -560,9 +595,16 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             f"- **Hiệu chỉnh cụm:** phân tích chính phải tính cấu trúc cụm (DE = {_so(design_effect)}, ICC = {_so(icc)}, "
             f"m = {_so(cluster_size)}) — [CẦN THỐNG KÊ VIÊN chọn phương pháp, vd mô hình hiệu ứng hỗn hợp hoặc GEE]  ")
     if hypothesis_type in ("non_inferiority", "equivalence"):
+        # 22/11/2026 (CONSORT mở rộng NI mục 12a — khoảng tin cậy một phía hay hai phía): G3 tính cỡ mẫu với α MỘT
+        # phía ⇒ kết luận dựa trên khoảng tin cậy HAI phía mức (1 − 2α), đúng tương đương kiểm định một phía mức α
+        try:
+            muc_ktc = f"khoảng tin cậy hai phía {_phan_tram(1 - 2 * float(alpha))} (tương ứng kiểm định một phía " \
+                      f"α = {_so(alpha)})"
+        except (TypeError, ValueError):
+            muc_ktc = "khoảng tin cậy [CẦN từ G3 — α]"
         dong_muc4.append(
-            f"- **Kết luận {'không kém hơn' if hypothesis_type == 'non_inferiority' else 'tương đương'}:** so cận khoảng "
-            f"tin cậy với biên Δ = {_so(margin)} theo chiều kết cục {g3.get('outcome_direction') or '[CẦN từ G3]'} "
+            f"- **Kết luận {'không kém hơn' if hypothesis_type == 'non_inferiority' else 'tương đương'}:** so cận "
+            f"{muc_ktc} với biên Δ = {_so(margin)} theo chiều kết cục {g3.get('outcome_direction') or '[CẦN từ G3]'} "
             "— không dựa vào p-value của kiểm định vượt trội  ")
     if design_code == "qualitative":
         dong_muc4.append("- **Trình bày:** chủ đề, chủ đề con và trích dẫn minh hoạ ẩn danh (COREQ/SRQR)  ")
@@ -623,6 +665,12 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "- **Không đồng nhất:** I², τ², kiểm định Q và khoảng dự báo 95%  ",
             "- **Sai lệch công bố / hiệu ứng nghiên cứu nhỏ:** biểu đồ phễu + kiểm định Egger khi ≥ 10 nghiên cứu  ",
             "- **Mức chắc chắn:** GRADE cho từng kết cục (bảng tóm tắt phát hiện)  ",
+            # 22/11/2026 (PRISMA-P 2015 mục 15a, 15d): tiêu chí quyết định gộp định lượng và cách tổng hợp khi không
+            # gộp được là quyết định của thống kê viên — khoá cùng kế hoạch tổng hợp, không để máy đặt sẵn
+            "- **Điều kiện gộp định lượng:** [CẦN THỐNG KÊ VIÊN — chỉ gộp khi nào: số nghiên cứu tối thiểu, mức tương "
+            "đồng lâm sàng và phương pháp]  ",
+            "- **Tổng hợp khi không gộp được:** [CẦN THỐNG KÊ VIÊN — tổng hợp mô tả theo SWiM: nhóm nghiên cứu, thước đo "
+            "chuẩn hoá, cách trình bày]  ",
             "",
             "### §6 DỮ LIỆU THIẾU CẤP NGHIÊN CỨU (thay Dữ liệu thiếu cá thể — không gán đa trị)",
             "",
@@ -664,12 +712,20 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  ",
             "- **Phương pháp chọn biến:** Đưa vào toàn bộ (không stepwise)  ",
             "- **Giả định:** [CẦN kiểm tra PH / normality theo thiết kế]  ",
+            # 23/11/2026 (G7 phát hiện ở rct_cum: tổn hại 2 biến cố ⇒ rào EPV chặn logistic, bảng đa biến bản thảo để
+            # trống): khai TRƯỚC phương pháp khi số biến cố không đủ cho hồi quy — G6 chạy đúng phương pháp này.
+            # 23/11/2026: ghép cặp cá thể ⇒ khuôn chỉ có phương pháp có điều kiện (firth_dk)
+            *([G4Q.dong_khuon_bien_co_hiem((khung or {}).get("kieu_ghep") if design_code == "case_control" else None)]
+              if G4Q.ap_dung_bien_co_hiem(design_code, main_method) else []),
             "",
             "### §6 DỮ LIỆU THIẾU",
             "",
             "- **Chiến lược:** Multiple Imputation (MI, m=20, method=pmm)  ",
             "- **Giả định:** MAR (missing at random)  ",
             "- **Biến đưa vào mô hình imputation:** [CẦN BÁC SĨ ĐIỀN]  ",
+            # 23/11/2026: bệnh–chứng ghép cặp cá thể — gán giữ cấu trúc ghép, phân tích có điều kiện trong từng bộ
+            *([DONG_MI_GHEP_CAP] if design_code == "case_control" and (khung or {}).get("kieu_ghep") == "ca_the"
+              else []),
             "- **Phân tích hoàn chỉnh (complete case):** báo cáo song song với MI  ",
             "",
             "### §7 PHÂN TÍCH NHÓM NHỎ (Subgroup Analysis)",
@@ -985,7 +1041,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "---",
         "*Cần bác sĩ kiểm chứng. SAP này chỉ có hiệu lực pháp lý sau khi được ký.*",
     ]
-    return _dong_bo_chung_chi(_dien_khung("\n".join(lines), khung, design_code))
+    return _dong_bo_chung_chi(_dien_khung("\n".join(lines), khung, design_code, hypothesis_type))
 
 
 def _dong_bo_chung_chi(sap: str) -> str:
@@ -1006,12 +1062,20 @@ def _dong_bo_chung_chi(sap: str) -> str:
     return sap.replace("║ KQ chính  : [CẦN BÁC SĨ ĐIỀN — từ SAP §2]                 ║", f"║ KQ chính  : {kc} ║", 1)
 
 
-def _dien_khung(sap: str, khung, design_code) -> str:
+def _dien_khung(sap: str, khung, design_code, hypothesis_type: str = "superiority") -> str:
     """Điền ô [CẦN …] của SAP bằng khung đề tài ĐÃ CHỐT (15/11/2026). Chỉ thay đúng các dòng khuôn; vắng dữ kiện ⇒ giữ
-    nguyên [CẦN …]. Không đụng §2 của thiết kế định tính (đã có nhánh riêng)."""
+    nguyên [CẦN …]. §2 định tính có nhánh riêng; riêng hai dòng «Kết cục phụ 1/2» định tính điền theo danh sách G1
+    đã chốt (23/11/2026)."""
     if not khung:
         return sap
     nhan = " *(điền sẵn từ quyết định đã chốt — thống kê viên/PI sửa nếu cần)*"
+    # 22/11/2026: §9 «định nghĩa thay thế» — chép CỤ THỂ từng định nghĩa đã khai ở ma trận G3 (biến, định nghĩa, căn
+    # cứ) thay dòng chung; G6 chạy tự động theo đúng các dòng này (tools/dinh_nghia_thay_the.py)
+    import dinh_nghia_thay_the as DTT  # noqa: PLC0415
+
+    sap = DTT.thay_dong_chung(sap, khung.get("dinh_nghia_thay_the") or [])
+    if design_code == "rct":  # CONSORT: quần thể theo đề cương định trước bằng biến tuân thủ của ma trận G3
+        sap = DTT.chen_theo_de_cuong(sap, khung.get("tuan_thu_de_cuong"), hypothesis_type)
     thay = {}
     if khung.get("tieu_chi_nhan"):
         thay["- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  "] = (
@@ -1041,6 +1105,17 @@ def _dien_khung(sap: str, khung, design_code) -> str:
     if khung.get("phu_da_khai") and not phu:
         thay["- **Kết cục phụ 2:** [CẦN — câu hỏi/chủ đề nghiên cứu phụ, hoặc KHÔNG ÁP DỤNG]  "] = (
             f"- **Kết cục phụ 2:** Không áp dụng — G1 không chốt kết cục/chủ đề phụ{nhan}  ")
+    # 23/11/2026 (giả lập định tính): SAP định tính để NGUYÊN cả hai ô «Kết cục phụ 1/2» khi G1 chốt KHÔNG có câu hỏi
+    # phụ mà G0 còn mang một chủ đề phụ cũ (danh sách gộp `ket_cuc_phu` lấy G0 khi G1 rỗng) ⇒ ô rơi về «chưa có thông
+    # tin». Định tính quyết bằng danh sách G1 ĐÃ CHỐT: có ⇒ chép từng câu hỏi/chủ đề phụ; rỗng ⇒ không áp dụng.
+    if design_code == "qualitative" and isinstance(khung.get("ket_cuc_phu_g1"), list):
+        phu_g1 = [str(x).strip() for x in khung["ket_cuc_phu_g1"] if str(x).strip()]
+        for i in (1, 2):
+            thay[f"- **Kết cục phụ {i}:** [CẦN — câu hỏi/chủ đề nghiên cứu phụ, hoặc KHÔNG ÁP DỤNG]  "] = (
+                f"- **Kết cục phụ {i}:** {phu_g1[i - 1]}{nhan}  " if i <= len(phu_g1) else
+                f"- **Kết cục phụ {i}:** Không áp dụng — G1 không chốt câu hỏi/chủ đề nghiên cứu phụ{nhan}  "
+                if not phu_g1 else
+                f"- **Kết cục phụ {i}:** Không có — G1 chốt {len(phu_g1)} câu hỏi/chủ đề nghiên cứu phụ{nhan}  ")
     # 16/11/2026: tiêu chí ngừng/cứu trợ cho TỪNG người tham gia (SPIRIT 15b) G1 đã chốt ⇒ §15 không hỏi lại
     if str(khung.get("ngung_mot_nguoi") or "").strip():
         thay["- **Tiêu chí ngừng/đổi can thiệp cho MỘT người tham gia:** [CẦN — vd đổi liều khi có tác "
@@ -1076,7 +1151,7 @@ def _dien_khung(sap: str, khung, design_code) -> str:
 
 
 _NHAN_VAI_TRO_CAU_TRUC = (("cum", "biến cụm"), ("thoi_gian", "biến thời gian theo dõi"), ("su_kien", "biến sự kiện"),
-                          ("trong_so", "biến trọng số"))
+                          ("trong_so", "biến trọng số"), ("bo_ghep", "biến mã bộ ghép"))
 
 
 def _them_bien_vai_tro(sap: str, khung) -> str:
@@ -1127,6 +1202,8 @@ def _khung_sap(out, meta):
         "ket_cuc": KD.ket_cuc_chinh(meta), "ket_cuc_bien": vt.get("ket_cuc"),
         "ket_cuc_phu": KD.danh_sach(KD.gia_tri(meta, "secondary_outcomes")[0]),
         "phu_da_khai": isinstance(g1.get("secondary_outcomes"), list),
+        # 23/11/2026: danh sách G1 ĐÃ CHỐT nguyên dạng (định tính quyết câu hỏi/chủ đề phụ theo G1, không lùi về G0)
+        "ket_cuc_phu_g1": g1.get("secondary_outcomes") if isinstance(g1.get("secondary_outcomes"), list) else None,
         "ngung_mot_nguoi": g1.get("stopping_rescue_rules"),
         "itt_tu_estimand": bool(re.search(r"treatment[\s-]*policy", str(
             ((g1.get("estimand") or {}) if isinstance(g1.get("estimand"), dict) else {}).get(
@@ -1134,13 +1211,29 @@ def _khung_sap(out, meta):
         "bien_phan_tich": [f"`{b}` ({khai.get(b) or b})" for b in phan_tich],
         "bien_imputation": [b for b in ([vt.get("ket_cuc")] + phan_tich) if b],
         "khai_niem": khai,
-        "bien_cau_truc": {k: vt.get(k) for k in ("cum", "thoi_gian", "su_kien", "trong_so")},
+        "bien_cau_truc": {k: vt.get(k) for k in ("cum", "thoi_gian", "su_kien", "trong_so", "bo_ghep")},
         "bien_mo_ta": list(vt.get("mo_ta") or []),
+        "dinh_nghia_thay_the": _DTT_tu_ma_tran(dong_mt),
+        "tuan_thu_de_cuong": _DTT_tuan_thu(dong_mt),
         # 16/11/2026 (giả lập trọn vòng — định tính): G1 đã chốt cách tiếp cận, tiêu chí bão hoà và chiến lược chọn mẫu
         # ⇒ SAP định tính không hỏi lại
         "tiep_can": g1.get("qualitative_approach"), "bao_hoa": g1.get("saturation_criterion"),
         "chon_mau": g1.get("recruitment_strategy") if str(g1.get("recruitment_strategy") or "").strip() else None,
+        # 23/11/2026: kiểu ghép nhóm chứng của đề tài bệnh–chứng ⇒ họ mô hình §4 (logistic có/không điều kiện)
+        "kieu_ghep": KD.kieu_ghep_benh_chung(g1)[0],
     }
+
+
+def _DTT_tu_ma_tran(dong_mt):  # noqa: N802 — tên gắn với mô-đun dinh_nghia_thay_the
+    import dinh_nghia_thay_the as DTT  # noqa: PLC0415
+
+    return DTT.tu_dong_ma_tran(dong_mt)
+
+
+def _DTT_tuan_thu(dong_mt):  # noqa: N802
+    import dinh_nghia_thay_the as DTT  # noqa: PLC0415
+
+    return DTT.tuan_thu_tu_dong_ma_tran(dong_mt)
 
 
 def _ket_cuc_chinh_da_chot(meta):

@@ -109,6 +109,7 @@ if str(_TOOLS) not in sys.path:
 
 import danh_muc_trich_dan as DMTD  # noqa: E402
 import ho_so_hdd_bvqy175 as HDD  # noqa: E402
+import ho_so_nguon_chung as HSC  # noqa: E402
 
 docx = HDD.docx
 OxmlElement = HDD.OxmlElement
@@ -133,11 +134,13 @@ CO_CHU_TM = 14  # thân mẫu thuyết minh của bệnh viện dùng 14
 CO_CHU_BANG = 12
 
 TEN_TEP_MAU = {
+    "de_xuat": "1. Mau DTCS-XDNV.01-PDX",
     "dang_ky": "7. Mau DTCS-DKCT.01-DK",
     "thuyet_minh": "8. Mau DTCS-DKCT.02-TM",
     "ly_lich": "9. Mau DTCS-DKCT.03-LLKH",
 }
 NHAN_MAU = {
+    "de_xuat": "Mẫu DTCS-XDNV.01-PDX (phiếu đề xuất nhiệm vụ)",
     "dang_ky": "Mẫu DTCS-DKCT.01-DK (đơn đăng ký chủ trì)",
     "thuyet_minh": "Mẫu DTCS-DKCT.02-TM (thuyết minh đề tài)",
     "ly_lich": "Mẫu DTCS-DKCT.03-LLKH (lý lịch khoa học)",
@@ -155,6 +158,7 @@ _DT_RE = re.compile(r"(?<![\d/.])(?:\+84|0)\d{9}(?![\d])")
 def ten_ra(loai: str, study: str, hau_to: str = "") -> str:
     """Tên tệp đầu ra (hợp đồng tên với danh mục và `kiem`)."""
     return {
+        "de_xuat": f"XDNV01_PHIEU_DE_XUAT_NHIEM_VU_{study}.docx",
         "dang_ky": f"DKCT01_DON_DANG_KY_CHU_TRI_{study}.docx",
         "thuyet_minh": f"DKCT02_THUYET_MINH_{study}.docx",
         "ly_lich": f"DKCT03_LY_LICH_KHOA_HOC_{study}_{hau_to}.docx",
@@ -216,7 +220,7 @@ def tim_so_ca_nhan() -> Path | None:
 def duong_dan_mau(thu_muc: Path, khoa: str) -> tuple[Path | None, str]:
     """(tệp .docx dùng được, trạng thái «docx» | «chi_doc» | «thieu»)."""
     ten = TEN_TEP_MAU[khoa]
-    for p in (thu_muc / "docx" / f"{ten}.docx", thu_muc / f"{ten}.docx"):
+    for p in (thu_muc / "docx" / f"{ten}.docx", thu_muc / f"{ten}.docx", thu_muc.parent / f"{ten}.docx"):
         if p.is_file():
             return p, "docx"
     for p in (thu_muc / f"{ten}.doc", thu_muc / "goc" / f"{ten}.doc"):
@@ -395,7 +399,7 @@ def _co(v: Any) -> str:
     if v is None or isinstance(v, (dict, list)):
         return ""
     s = " ".join(_nfc(v).split())
-    if not s or "[CẦN" in s or re.fullmatch(r"[.…_\-–\s]*", s):
+    if not s or re.search(r"\[(CẦN|GÓI KÝ|DỮ KIỆN CẦN NHẬP|SỔ LÝ LỊCH)", s) or re.fullmatch(r"[.…_\-–\s]*", s):
         return ""
     return s
 
@@ -827,6 +831,9 @@ def tai_nguyen_xac_minh(thu_muc: Path, study: str) -> dict:
         "kiem_rut": _doc_json(thu_muc / f"KIEM_RUT_BAI_TRICH_DAN_{study}.json").get("ket_qua") or {},
         "trich": DMTD.trich_dan(thu_muc, study),
         "loai": DMTD.loai_bo(thu_muc, study),
+        # 22/11/2026: văn bản quy phạm/tài liệu tổ chức (không PMID/DOI) đạt tiêu chí danh mục giữ trích dẫn chuẩn
+        "giu": {k: m for m in (_doc_json(thu_muc / f"GIU_TRICH_DAN_CHUAN_{study}.json").get("muc") or [])
+                if isinstance(m, dict) for k in m.get("khoa") or []},
     }
 
 
@@ -863,7 +870,19 @@ def xac_minh_tltk(dong: str, tn: dict) -> tuple[str, str]:
         if any(k in tn["trich"] for k in doi):
             return "chua_kiem_rut_bai", "có trong danh mục trích dẫn; chưa có biên nhận kiểm rút bài theo DOI"
         return "chua_xac_minh", "DOI chưa có trong danh mục trích dẫn hay biên nhận kiểm rút bài"
-    return "khong_dinh_danh", "tài liệu không có PMID/DOI (văn bản quy phạm, sách) — bác sĩ kiểm tay"
+    try:
+        import toan_van_trich_dan as TVTD  # noqa: PLC0415 - cùng khoá «van:…» với danh mục giữ trích dẫn chuẩn
+
+        khoa_van = TVTD.khoa_tltk(dong)
+    except Exception:  # noqa: BLE001 - thiếu công cụ ⇒ không đo được, giữ trạng thái không định danh
+        khoa_van = set()
+    for k in sorted(khoa_van):
+        muc = (tn.get("giu") or {}).get(k)
+        tc = (muc or {}).get("tieu_chi") or {}
+        if tc and all(isinstance(v, dict) and v.get("dat") is True for v in tc.values()):
+            return "da_xac_minh", ("không PMID/DOI — " + (tc.get("dinh_danh") or {}).get("mo_ta", "")
+                                   + " (danh mục giữ trích dẫn chuẩn)")
+    return "khong_dinh_danh", "tài liệu không có PMID/DOI, chưa có trong danh mục giữ trích dẫn chuẩn"
 
 
 TRANG_THAI_NHAN = {
@@ -968,16 +987,31 @@ def hien_thi_ca_nhan(rec: dict | None, nguoi: dict) -> dict:
         don_vi = f"{don_vi}, {ten_tc}" if don_vi else ten_tc
     don_vi = don_vi or _co(nguoi.get("to_chuc"))
     gt = _co(rec.get("gioi_tinh")).lower()
+    # 22/11/2026: ô thiếu không in «[CẦN]» rải rác — người CHƯA được phân công (họ tên là dữ kiện cần nhập) ⇒ một
+    # mục «dữ kiện cần nhập» cho cả khối; người đã có tên mà sổ lý lịch thiếu ⇒ tự khai khi ký (gói ký).
+    chua_phan_cong = bool(HSC.mo_ta_dau(nguoi.get("ho_ten", ""))) or not (_co(rec.get("ho_ten"))
+                                                                        or _co(nguoi.get("ho_ten")))
+    vai = _co(nguoi.get("vai_tro")) or "thành viên"
+    ten_nguoi = _co(rec.get("ho_ten") or nguoi.get("ho_ten"))
 
-    def o(v: Any) -> str:
-        return _co(v) or CAN_BAC_SI_DIEN
+    def o(v: Any, nhan: str = "") -> str:
+        if _co(v):
+            return _co(v)
+        if chua_phan_cong:
+            return HSC.can_nhap(f"thông tin cá nhân của {vai.lower()} — có khi chủ nhiệm phân công nhân sự")
+        return HSC.goi_ky(f"tự khai khi ký — {vai.lower()} {ten_nguoi}: {nhan}".rstrip(": "))
 
     return {
-        "ho_ten": o(rec.get("ho_ten") or nguoi.get("ho_ten")), "so_dinh_danh": o(rec.get("so_dinh_danh")),
-        "ngay_sinh": o(rec.get("ngay_sinh")), "gioi_tinh": "Nam" if gt == "nam" else "Nữ" if gt in ("nữ", "nu") else "",
-        "hoc_ham_hoc_vi": o(hh), "chuc_danh_sqcm": o(rec.get("chuc_danh_sqcm")), "cap_bac": o(rec.get("cap_bac")),
-        "chuc_vu": o(chuc_vu), "dien_thoai": o(rec.get("mobile") or rec.get("dien_thoai_to_chuc")),
-        "email": o(rec.get("email")), "don_vi": o(don_vi), "_suy": suy,
+        "ho_ten": o(rec.get("ho_ten") or nguoi.get("ho_ten"), "họ tên"),
+        "so_dinh_danh": o(rec.get("so_dinh_danh"), "số định danh cá nhân"),
+        "ngay_sinh": o(rec.get("ngay_sinh"), "ngày sinh"),
+        "gioi_tinh": "Nam" if gt == "nam" else "Nữ" if gt in ("nữ", "nu") else (o("", "giới tính") if chua_phan_cong
+                                                                             else ""),
+        "hoc_ham_hoc_vi": o(hh, "học hàm, học vị"), "chuc_danh_sqcm": o(rec.get("chuc_danh_sqcm"), "chức danh"
+                                                                       " SQCM-KT-NV"),
+        "cap_bac": o(rec.get("cap_bac"), "cấp bậc"), "chuc_vu": o(chuc_vu, "chức vụ"),
+        "dien_thoai": o(rec.get("mobile") or rec.get("dien_thoai_to_chuc"), "điện thoại"),
+        "email": o(rec.get("email"), "thư điện tử"), "don_vi": o(don_vi, "đơn vị công tác"), "_suy": suy,
     }
 
 
@@ -1235,7 +1269,277 @@ def trich_du_kien(exports_root: Path, study: str, chu_nhiem: str | None = None,
         "viec_bac_si": viec,
         "_nguon": nguon,
     }
+    # 22/11/2026: ô dùng chung từ NGUỒN CHUNG (một bản sự thật với gói G2 và hồ sơ Hội đồng Đạo đức), rồi khối dữ
+    # kiện riêng của thuyết minh trong study_meta (ho_so_nguon_chung.py).
+    n_chung = HSC.NguonDeTai(exports_root, study, so)
+    du_lieu["meta"]["dau_nguon"] = n_chung.dau_nguon()
+    da_suy = ap_nguon_chung_dtcs(du_lieu, n_chung, nguon, md)
+    ap_khoi_dtcs(du_lieu, n_chung, nguon, ghi_chu, da_suy)
+    du_lieu["phieu_de_xuat"] = phieu_de_xuat(du_lieu, n_chung, md, nguon)
+    du_lieu["goi_ky"] = du_lieu["phieu_de_xuat"]["ky"] + du_lieu["goi_ky"]
     return du_lieu, ghi_chu
+
+
+# --- Trích từ NGUỒN CHUNG (22/11/2026) — một bản sự thật với gói G2 và hồ sơ Hội đồng Đạo đức ------------------
+
+#: Khối dữ kiện riêng của thuyết minh đề tài cơ sở trong study_meta (loại đề tài, tình trạng, phối hợp, sản phẩm, tác
+#: động, tài sản, người chủ trì từng nội dung tiến độ, đơn vị ứng dụng của phiếu đề xuất…) — khoá riêng
+#: `ho_so_don_vi.dtcs`, ngoài gate_params (xem HSC.KHOA_HO_SO_DON_VI). Ô dùng chung/đã suy được thắng khối này.
+KHOI_DTCS = HSC.KHOI_DTCS
+
+
+def du_tru_kinh_phi(md: str) -> list[str]:
+    """Các khoản chi của bảng «Dự trù kinh phí» trong đề cương nộp (cột nội dung/khoản chi), bỏ dòng tổng cộng."""
+    than = HSC.than_muc(md, "DỰ TRÙ KINH PHÍ")
+    ra: list[str] = []
+    cot = None
+    for d in than.split("\n"):
+        o = [x.strip() for x in d.strip().strip("|").split("|")] if d.strip().startswith("|") else []
+        if not o or re.fullmatch(r"[-: |]+", d.strip()):
+            continue
+        thap = [HSC.nfc(x).lower() for x in o]
+        if cot is None:
+            cot = next((i for i, x in enumerate(thap) if "khoản chi" in x or "nội dung chi" in x), None)
+            continue
+        if cot < len(o):
+            v = re.sub(r"\*+", "", o[cot]).strip()
+            if v and not re.search(r"tổng cộng", v, re.I):
+                ra.append(v)
+    return ra
+
+
+def ap_nguon_chung_dtcs(du_lieu: dict, n: HSC.NguonDeTai, nguon: dict[str, str], md: str) -> set[str]:
+    """Ô dùng chung của thuyết minh từ nguồn chung (đơn vị chủ trì, kinh phí tự túc, gói ký, dữ kiện cần nhập)."""
+    da_suy: set[str] = set()
+    tm = du_lieu["thuyet_minh"]
+
+    def dat(khoa: str, gia_tri: Any, tag: str) -> None:
+        if gia_tri in (None, "", [], {}):
+            return
+        tm[khoa] = gia_tri
+        nguon[f"thuyet_minh.{khoa}"] = tag
+        da_suy.add(f"thuyet_minh.{khoa}")
+
+    if n.don_vi_chu_tri:
+        du_lieu["dang_ky"]["don_vi_chu_tri"] = n.don_vi_chu_tri
+        dat("m10_don_vi_chu_tri", n.don_vi_chu_tri, "study_meta.json#administrative.don_vi_chu_tri (lùi pi_unit)")
+    dat("m10_thu_truong_don_vi", HSC.goi_ky(
+        f"họ tên và chữ ký của Thủ trưởng {n.don_vi_chu_tri or 'đơn vị chủ trì'} — ô «Họ và tên thủ trưởng đơn vị»"
+        " mục 10 và phần ký «Chỉ huy đơn vị chủ trì đề tài»"), "gói ký")
+    ns = du_lieu.get("nhan_su") or []
+    if n.chu_nhiem_ho_ten and ns:
+        ns[0]["ho_ten"] = n.chu_nhiem_ho_ten
+        ns[0]["khoa_ca_nhan"] = n.khoa_so if n.khoa_so in n.so else ns[0].get("khoa_ca_nhan")
+        if n.chuc_danh_ngan:
+            ns[0]["hoc_vi_tien_to"] = n.chuc_danh_ngan
+        if n.don_vi_cong_tac:
+            ns[0]["to_chuc"] = don_vi_ngan(n.don_vi_cong_tac)
+        nguon["nhan_su.0.ho_ten"] = "study_meta.json#administrative.principal_investigator"
+    for k, vai in ((1, "thư ký khoa học"), (2, "thành viên chính (nếu có)")):
+        if k < len(ns) and not _co(ns[k].get("ho_ten")):
+            ns[k]["ho_ten"] = HSC.can_nhap(f"họ tên {vai} — có khi chủ nhiệm phân công nhân sự")
+    if n.tu_tuc:
+        kp = n.kinh_phi.rstrip(".") or "Tự túc"
+        tag = "đề cương nộp — Thông tin chung (Kinh phí) + study_meta.json#gate_params.G2.external_funding"
+        dat("m4_tong_kinh_phi", f"{kp}.", tag)
+        dat("m5_khoan_chi", "Không áp dụng — đề tài tự túc kinh phí, không đề nghị cấp kinh phí nên không có"
+            " phương thức khoán chi.", tag)
+        dat("m27_kinh_phi", f"Không đề nghị cấp kinh phí từ ngân sách nhà nước — {kp[0].lower() + kp[1:]}.", tag)
+        khoan = du_tru_kinh_phi(md)
+        dat("phu_luc_tmdt", "Không lập dự toán kinh phí đề nghị cấp — đề tài tự túc kinh phí."
+            + (f" Các khoản chi thực hiện (tự túc) theo dự trù của đề cương nộp: {'; '.join(khoan)}." if khoan
+               else ""), tag + " + Dự trù kinh phí")
+        for hang in tm.get("m21_tien_do") or []:
+            if isinstance(hang, dict):
+                hang["kinh_phi"] = "Tự túc"
+        da_suy.add("thuyet_minh.m21_tien_do.kinh_phi")
+    td = [h for h in tm.get("m21_tien_do") or [] if isinstance(h, dict) and _co(h.get("noi_dung"))]
+    if td:
+        dat("m17_cong_viec", "Các công việc thực hiện chung cho các nội dung trên, theo tiến độ ở mục 21: "
+            + "; ".join(f"({i}) {h['noi_dung'].rstrip('.')}" for i, h in enumerate(td, 1)) + ".",
+            "đề cương nộp — tiến độ thực hiện")
+    # Tác động 25.2/25.3 — cùng câu trả lời «đóng góp khoa học»/«lợi ích» đã chốt ở hồ sơ Hội đồng Đạo đức
+    khoi_hdd = _lay(n.meta, *HSC.KHOI_HDD, "phu_luc_11", "muc", default={}) or {}
+    td25 = dict(tm.get("m25_tac_dong") or {})
+    for khoa, muc in (("25.2", "3c"), ("25.3", "3a")):
+        if _co(khoi_hdd.get(muc)):
+            td25[khoa] = "\n".join(ghi_nguon_tham_chieu(str(khoi_hdd[muc]).split("\n"), set()))
+            nguon[f"thuyet_minh.m25_tac_dong.{khoa}"] = ("study_meta.json#" + ".".join(HSC.KHOI_HDD)
+                                                         + f".phu_luc_11.muc.{muc}")
+            da_suy.add(f"thuyet_minh.m25_tac_dong.{khoa}")
+    tm["m25_tac_dong"] = td25
+    du_lieu["viec_bac_si"] = []
+    du_lieu["goi_ky"] = [
+        HSC.goi_ky("Đơn đăng ký chủ trì (Mẫu DKCT.01) — chủ nhiệm đề tài ký"),
+        HSC.goi_ky("Thuyết minh (Mẫu DKCT.02) — chủ nhiệm đề tài, chỉ huy đơn vị chủ trì và Thủ trưởng Bệnh viện ký,"
+                   " đóng dấu"),
+        HSC.goi_ky("Lý lịch khoa học (Mẫu DKCT.03) — từng người có tên ký"),
+    ]
+    return da_suy
+
+
+def _ghi_nguon_khoi(v: Any) -> Any:
+    if isinstance(v, dict):
+        return {k: _ghi_nguon_khoi(x) for k, x in v.items()}
+    if isinstance(v, str):
+        return "\n".join(ghi_nguon_tham_chieu(v.split("\n"), set()))
+    return v
+
+
+def ap_khoi_dtcs(du_lieu: dict, n: HSC.NguonDeTai, nguon: dict[str, str], ghi_chu: list[str],
+                 da_suy: set[str]) -> None:
+    """Áp khối `ho_so_don_vi.dtcs`: khoá `thuyet_minh.*` (trừ ô đã suy được) và `m21_hang` (người chủ trì, kết quả,
+    thời gian của từng dòng tiến độ — khớp theo đầu câu nội dung, lệch thì bỏ và báo). Khối ở vị trí cũ trong
+    gate_params không được đọc — báo để dời."""
+    cu = HSC.canh_bao_vi_tri_cu(n.meta, KHOI_DTCS)
+    if cu:
+        ghi_chu.append(cu)
+    khoi = _lay(n.meta, *KHOI_DTCS)
+    if not isinstance(khoi, dict) or not khoi:
+        return
+    tm = du_lieu["thuyet_minh"]
+    bo = []
+    for k, v in (khoi.get("thuyet_minh") or {}).items():
+        if f"thuyet_minh.{k}" in da_suy or k in ("m1_ten_de_tai", "m2_thoi_gian", "m13_muc_tieu", "m15", "m16_tltk",
+                                                 "m17_phuong_an", "m10_don_vi_chu_tri", "m12_phan_cong",
+                                                 "m24_pham_vi_ung_dung"):
+            bo.append(k)
+            continue
+        v = _ghi_nguon_khoi(v)  # «mục 2.6.1» trong khối trỏ về đề cương ⇒ thêm «của đề cương» như văn bản chép
+        if isinstance(v, dict) and isinstance(tm.get(k), dict):
+            tm[k] = {**tm[k], **{kk: copy.deepcopy(vv) for kk, vv in v.items()
+                                 if f"thuyet_minh.{k}.{kk}" not in da_suy}}
+        else:
+            tm[k] = copy.deepcopy(v)
+        nguon[f"thuyet_minh.{k}"] = "study_meta.json#" + ".".join(KHOI_DTCS) + f".thuyet_minh.{k}"
+    hang_td = [h for h in tm.get("m21_tien_do") or [] if isinstance(h, dict)]
+    for muc in khoi.get("m21_hang") or []:
+        dau = HSC.gon(muc.get("dau", ""))
+        h = next((x for x in hang_td if dau and HSC.gon(x.get("noi_dung", "")).startswith(dau)), None)
+        if h is None:
+            bo.append(f"m21_hang «{muc.get('dau', '')[:40]}»")
+            continue
+        for khoa in ("chu_tri", "ket_qua", "thoi_gian"):
+            if _co(muc.get(khoa)) and not _co(h.get(khoa)) or (khoa == "chu_tri" and _co(muc.get(khoa))):
+                h[khoa] = muc[khoa]
+    if bo:
+        ghi_chu.append(f"Khối {'.'.join(KHOI_DTCS)}: bỏ {len(bo)} khoá (thuộc nguồn chung hoặc dòng tiến độ đã đổi): "
+                       + ", ".join(bo[:8]))
+
+
+# --- Phiếu đề xuất nhiệm vụ — Mẫu DTCS-XDNV.01-PDX (22/11/2026) -----------------------------------------------------
+# Bước đầu tiên trước bộ DKCT: cùng luật trích tất định, cùng ba loại ô, cùng nguồn chung với thuyết minh.
+
+#: Mẫu chỉ ghi «không quá 04 trang giấy khổ A4». Ước tính thô (Times New Roman 13, lề chuẩn) ≈ 3.000 ký tự/trang.
+KY_TU_MOI_TRANG_UOC = 3000
+SO_TRANG_TOI_DA_PDX = 4
+_TRICH_DAN_NGOAC = re.compile(r"\s*\[\d{1,3}(?:\s*[,;–-]\s*\d{1,3})*\]")
+
+
+def ly_do_de_xuat(md: str) -> list[str]:
+    """Đoạn «ĐẶT VẤN ĐỀ» của đề cương nộp (tính cấp thiết), bỏ số trích dẫn «[n]» vì phiếu không kèm danh mục tài liệu
+    tham khảo; giữ nguyên câu chữ."""
+    than = HSC.than_muc(md, "ĐẶT VẤN ĐỀ", cap=1)
+    ra = []
+    for d in than.split("\n"):
+        d = d.strip()
+        if d.startswith("#"):
+            break  # tiểu mục (vd «Mục tiêu nghiên cứu») không thuộc lý do đề xuất
+        if not d or d.startswith(("|", "---")):
+            continue
+        d = re.sub(r"\*+", "", _TRICH_DAN_NGOAC.sub("", d)).strip()
+        if d:
+            ra.append(d)
+    return ra
+
+
+def phieu_de_xuat(du_lieu: dict, n: HSC.NguonDeTai, md: str, nguon: dict[str, str]) -> dict:
+    """Khối `phieu_de_xuat` — mọi ô lấy từ nguồn đã chốt hoặc từ chính thuyết minh vừa trích (một bản sự thật)."""
+    tm = du_lieu["thuyet_minh"]
+    khoi = _lay(n.meta, *KHOI_DTCS, "phieu_de_xuat", default={}) or {}
+    tg = tm.get("m2_thoi_gian") or {}
+    thoi_gian = (f"{tg['so_thang']} tháng (từ tháng {tg['tu']} đến tháng {tg['den']})"
+                 if isinstance(tg.get("so_thang"), int) else CAN_BO_SUNG)
+    noi_dung = [f"{x['tieu_de']}: {x['mo_ta']}" for x in tm.get("m17_noi_dung") or [] if isinstance(x, dict)]
+    if _co(tm.get("m17_cong_viec")):
+        noi_dung.append(tm["m17_cong_viec"])
+    ket_qua = [x for x in (tm.get("m22_san_pham"), tm.get("m22_2_trinh_do_khoa_hoc")) if _co(x)]
+    pd = {
+        "don_vi": don_vi_ngan(n.don_vi_chu_tri) if n.don_vi_chu_tri else CAN_BO_SUNG,
+        "ngay": HSC.goi_ky("ngày ký phiếu đề xuất nhiệm vụ"),
+        "ten_nhiem_vu": n.ten_de_tai or CAN_BO_SUNG,
+        "ly_do": ly_do_de_xuat(md) or [CAN_BO_SUNG],
+        "muc_tieu": [re.sub(r"\*+", "", x).strip() for x in tm.get("m13_muc_tieu") or []] or [CAN_BO_SUNG],
+        "ket_qua_chi_tieu": ket_qua or [CAN_BO_SUNG],
+        "noi_dung": noi_dung or [CAN_BO_SUNG],
+        "don_vi_ung_dung": _co(khoi.get("don_vi_ung_dung")) or CAN_BO_SUNG,
+        "phuong_an_su_dung": [re.sub(r"^\s*-\s*", "", x) for x in tm.get("m24_pham_vi_ung_dung") or [] if _co(x)]
+                             or [CAN_BO_SUNG],
+        "thoi_gian": thoi_gian,
+        "kinh_phi": tm.get("m4_tong_kinh_phi") if n.tu_tuc else CAN_BO_SUNG,
+        "ky": [HSC.goi_ky(f"Chỉ huy {don_vi_ngan(n.don_vi_chu_tri) if n.don_vi_chu_tri else 'đơn vị'} xác nhận —"
+                          " phiếu đề xuất nhiệm vụ (ký, ghi rõ họ tên)"),
+               HSC.goi_ky("Chủ nhiệm đề xuất nhiệm vụ ký, ghi rõ họ tên — phiếu đề xuất nhiệm vụ")],
+    }
+    for k, tag in (("ten_nhiem_vu", "study_meta.json#title"), ("ly_do", "đề cương nộp — Đặt vấn đề"),
+                   ("muc_tieu", "thuyết minh mục 13 (đề cương nộp — Mục tiêu)"),
+                   ("ket_qua_chi_tieu", "thuyết minh mục 22, 22.2"), ("noi_dung", "thuyết minh mục 17"),
+                   ("phuong_an_su_dung", "thuyết minh mục 24 (đề cương — phổ biến kết quả)"),
+                   ("thoi_gian", "thuyết minh mục 2"), ("kinh_phi", "thuyết minh mục 4")):
+        nguon[f"phieu_de_xuat.{k}"] = tag
+    if _co(khoi.get("don_vi_ung_dung")):
+        nguon["phieu_de_xuat.don_vi_ung_dung"] = "study_meta.json#" + ".".join(KHOI_DTCS) + ".phieu_de_xuat"
+    return pd
+
+
+_NHAN_PDX = (
+    ("Tên nhiệm vụ KHCN:", "ten_nhiem_vu"),
+    ("Lý do đề xuất", "ly_do"),
+    ("Mục tiêu:", "muc_tieu"),
+    ("Các kết quả chính và các chỉ tiêu cần đạt:", "ket_qua_chi_tieu"),
+    ("Các nội dung chính cần thực hiện:", "noi_dung"),
+    ("Dự kiến cơ quan, đơn vị ứng dụng các kết quả:", "don_vi_ung_dung"),
+    ("Phương án sử dụng kết quả:", "phuong_an_su_dung"),
+    ("Thời gian cần thực hiện:", "thoi_gian"),
+    ("Nhu cầu kinh phí cần thực hiện:", "kinh_phi"),
+)
+
+
+def dung_de_xuat(mau: Path, out: Path, d: dict, nhat_ky: list[str]) -> Path:
+    """Mẫu DTCS-XDNV.01-PDX — điền đơn vị, tên nhiệm vụ và 8 mục; ô ký/ngày ký giữ dòng chấm của mẫu (gói ký)."""
+    pd = d.get("phieu_de_xuat") or {}
+    tai_lieu = docx.Document(str(mau))
+    ps = tai_lieu.paragraphs
+    for p in ps:
+        if "(K-P-B-TT-V)" in p.text:
+            for r in p.runs:
+                if "…" in r.text or "..." in r.text:
+                    r.text = re.sub(r"…|\.\.\.", pd.get("don_vi", CAN_BO_SUNG), r.text, count=1)
+                    break
+            break
+    else:
+        nhat_ky.append("dòng «…(K-P-B-TT-V)»")
+    for nhan, khoa in reversed(_NHAN_PDX):
+        ps = tai_lieu.paragraphs
+        i = next((k for k, p in enumerate(ps) if p.text.strip().startswith(nhan)), None)
+        if i is None:
+            nhat_ky.append(nhan)
+            continue
+        gia_tri = pd.get(khoa, CAN_BO_SUNG)
+        dong = gia_tri if isinstance(gia_tri, list) else [str(gia_tri)]
+        if khoa in ("ten_nhiem_vu", "thoi_gian", "kinh_phi", "don_vi_ung_dung") and len(dong) == 1:
+            _noi_cuoi(ps[i], dong[0])
+            continue
+        q = ps[i]
+        for t in dong:
+            q = HDD.chen_sau(q, t, size=CO_CHU_BANG + 1)
+    tai_lieu.save(str(out))
+    return out
+
+
+def uoc_so_trang(p: Path) -> float:
+    """Số trang ước tính của một tệp Word theo số ký tự (thô — chỉ để cảnh báo phiếu dài quá giới hạn của mẫu)."""
+    return len("\n".join(HDD._van_ban_docx(p))) / KY_TU_MOI_TRANG_UOC if p.is_file() else 0.0
 
 
 def doc_json_da_bo_sung(exports_root: Path, study: str, p: Path) -> dict:
@@ -1757,7 +2061,9 @@ def _dien_nguoi(tai_lieu, nhan_muc: str, nhan_sau: str, hien: dict, nhat_ky: lis
         dat_hop(ps[k], 0, hien["gioi_tinh"] == "Nam")
         dat_hop(ps[k], 1, hien["gioi_tinh"] == "Nữ")
         if not hien["gioi_tinh"]:
-            _noi_cuoi(ps[k], CAN_BAC_SI_DIEN)
+            _noi_cuoi(ps[k], HSC.goi_ky("tự khai khi ký: giới tính"))
+        elif HSC.mo_ta_dau(hien["gioi_tinh"]):
+            _noi_cuoi(ps[k], hien["gioi_tinh"])
     k = _tim(ps, "Tên đơn vị đang công tác:", tu=i, den=j)
     if k is None:
         nhat_ky.append(f"{nhan_muc} › Tên đơn vị đang công tác")
@@ -2034,7 +2340,8 @@ def dung_ly_lich(mau: Path, out: Path, nguoi: dict, rec: dict, hien: dict, nhat_
     sp = " " * 8
 
     def o(v: Any, bat_buoc: bool = False) -> str:
-        return _co(v) or (CAN_BAC_SI_DIEN if bat_buoc else "")
+        # ô bắt buộc mà sổ lý lịch thiếu ⇒ tự khai khi ký (gói ký), không in «[CẦN]» (22/11/2026)
+        return _co(v) or (HSC.goi_ky("tự khai khi ký lý lịch khoa học") if bat_buoc else "")
 
     nlv = rec.get("noi_lam_viec") or {}
     dong_dien = {
@@ -2153,19 +2460,30 @@ def _ke_hoach(d: dict) -> list[tuple[str, str, dict | None]]:
     s = d["meta"]["study"]
     ra: list[tuple[str, str, dict | None]] = [("dang_ky", ten_ra("dang_ky", s), None),
                                               ("thuyet_minh", ten_ra("thuyet_minh", s), None)]
+    if d.get("phieu_de_xuat"):
+        ra.insert(0, ("de_xuat", ten_ra("de_xuat", s), None))
     for k, n in enumerate(d.get("nhan_su") or [], 1):
         if _co(n.get("ho_ten")):
             ra.append(("ly_lich", ten_ra("ly_lich", s, f"{k:02d}"), n))
     return ra
 
 
-def sinh_danh_muc(ra_dir: Path, d: dict, mau_dk: Path | None, so_can_tep: dict[str, int]) -> Path:
+def ba_loai_dtcs(d: dict, so: dict | None = None) -> dict[str, list[tuple[str, str]]]:
+    """Ba loại ô chưa điền của JSON thuyết minh (a: suy được · b: gói ký · c: dữ kiện cần nhập)."""
+    so = HSC.doc_so() if so is None else so
+    ns = d.get("nhan_su") or [{}]
+    khoa = (ns[0] or {}).get("khoa_ca_nhan") or HSC.slug((ns[0] or {}).get("ho_ten", ""))
+    return HSC.dem_ba_loai({k: v for k, v in d.items() if k not in ("viec_bac_si",)}, HSC.ham_so_co(so, khoa))
+
+
+def sinh_danh_muc(ra_dir: Path, d: dict, mau_dk: Path | None, so_can_tep: dict[str, int],
+                  dau_theo_tep: dict[str, dict[str, list[str]]] | None = None) -> Path:
+    """Danh mục: tệp trong bộ hồ sơ, GÓI KÝ (tài liệu ký đúng thứ tự), DỮ KIỆN CẦN NHẬP, cách nộp (22/11/2026)."""
     s = d["meta"]["study"]
     email, so_luong = doc_dong_mau_dang_ky(mau_dk)
+    dau_theo_tep = dau_theo_tep or {}
     dong = [
         f"# Danh mục hồ sơ đăng ký chủ trì đề tài cơ sở — {d['meta']['title']}",
-        "",
-        "> NHÁP do máy dựng từ dữ liệu đã chốt. Bác sĩ kiểm, điền ô «[CẦN…]», ký và nộp. Công cụ không ký, không gửi.",
         "",
         "## Tệp trong bộ hồ sơ",
         "",
@@ -2175,20 +2493,42 @@ def sinh_danh_muc(ra_dir: Path, d: dict, mau_dk: Path | None, so_can_tep: dict[s
         nhan = NHAN_MAU[loai] + (f" — {n.get('vai_tro')}: {n.get('ho_ten')}" if n else "")
         dong.append(f"- {nhan}: `{ten}`" + (f" — còn {so_can_tep.get(ten, 0)} ô «[CẦN»" if p.is_file()
                                               else " — **CHƯA có tệp**"))
-    thieu_ll = [n["vai_tro"] for n in d.get("nhan_su") or [] if not _co(n.get("ho_ten"))]
-    if thieu_ll:
-        dong.append(f"- Lý lịch khoa học chưa dựng (chưa có họ tên): {', '.join(thieu_ll)}")
+    ky: list[str] = []
+    for x in d.get("goi_ky") or []:
+        for _loai, mo_ta in HSC.mo_ta_dau(x) or [("b", str(x))]:
+            ky.append(mo_ta)
+    da_co = " ".join(ky).lower()
+    for ten in sorted(dau_theo_tep):
+        for x in dau_theo_tep[ten].get("goi_ky", []):
+            if x.lower() not in da_co:
+                ky.append(x)
+                da_co += " " + x.lower()
+        for x in dau_theo_tep[ten].get("tu_khai", []):
+            if x.lower() not in da_co:
+                ky.append(f"tự khai khi ký: {x} (tệp `{ten}`)")
+                da_co += " " + x.lower()
+    dong += ["", "## Gói ký — tài liệu ký, đúng thứ tự nộp", ""]
+    dong += [f"{i}. {x[0].upper() + x[1:]}{'' if x.endswith('.') else '.'}" for i, x in enumerate(ky, 1)]
+    nhap: dict[str, list[str]] = {}
+    for ten in sorted(dau_theo_tep):
+        for x in dau_theo_tep[ten].get("can_nhap", []):
+            tep = nhap.setdefault(x[0].upper() + x[1:], [])
+            if ten not in tep:
+                tep.append(ten)
+    for n in d.get("nhan_su") or []:
+        for _loai, mo_ta in HSC.mo_ta_dau(n.get("ho_ten", "")):
+            nhap.setdefault(mo_ta[0].upper() + mo_ta[1:], [])
+    dong += ["", "## Dữ kiện cần nhập (chỉ có khi triển khai; ô in dòng chấm trong văn bản)", ""]
+    dong += [f"- {x}" + (f" (tệp {', '.join(f'`{t}`' for t in tep)})" if tep else "") for x, tep in nhap.items()]
+    if not nhap:
+        dong.append("- Không có.")
     dong += ["", "## Nộp hồ sơ", ""]
-    dong.append(f"- {so_luong}" if so_luong else "- Số bộ hồ sơ và địa chỉ nhận bản điện tử: xem mẫu đơn DKCT.01.")
+    dong.append(f"- {so_luong}" if so_luong else "- Số bộ hồ sơ và địa chỉ nhận bản điện tử: theo mẫu đơn DKCT.01.")
     if email and (not so_luong or email not in so_luong):
-        dong.append(f"- Bản điện tử gửi: {email} (đọc từ mẫu đơn).")
-    dong += ["", "## Việc của bác sĩ", ""] + [f"- {v}" for v in d.get("viec_bac_si") or []]
-    dong += ["", "## Chưa có mẫu", "",
-             "- Bộ mẫu riêng của BVQY175 (DKCT.01–03) chưa gồm **báo cáo tổng kết / nghiệm thu đề tài cơ sở**. Hướng "
-             "dẫn chung (bản của Bệnh viện TƯQĐ 108, 2019) đã mô tả cấu trúc báo cáo tổng hợp kết quả trước/sau nghiệm "
-             "thu, phiếu nhận xét, danh sách cán bộ và bìa — chỉ là tham khảo; khi Phòng Khoa học quân sự BVQY175 cấp "
-             "mẫu riêng, bổ sung vào bộ mẫu để công cụ dựng tiếp.", "",
-             "Cần bác sĩ kiểm chứng.", ""]
+        dong.append(f"- Bản điện tử gửi: {email} (theo mẫu đơn).")
+    ba = ba_loai_dtcs(d)
+    dong += ["", f"Ô chưa điền trong JSON: (a) suy được từ nguồn {len(ba['a'])} · (b) gói ký {len(ba['b'])} · (c) dữ"
+                 f" kiện cần nhập {len(ba['c'])} — chạy `kiem --study {s}` để xem chi tiết.", ""]
     out = ra_dir / ten_ra("danh_muc", s)
     out.write_text("\n".join(dong), encoding="utf-8", newline="\n")
     return out
@@ -2236,6 +2576,17 @@ def lenh_dung(args: argparse.Namespace) -> int:
     bo_ghi = HDD.BoGhiAnToan(ra_dir)
     da_sinh: list[str] = []
     van_de: list[str] = []
+    dau_theo_tep: dict[str, dict[str, list[str]]] = {}
+
+    def _xong(ham: Any) -> Any:
+        """Dựng xong ⇒ giải dấu trong Word (sổ lý lịch → giá trị; gói ký/dữ kiện cần nhập → dòng chấm)."""
+        def _chay(o: Path) -> Any:
+            kq = ham(o)
+            if o.is_file() and o.suffix == ".docx":
+                dau_theo_tep[o.name] = HSC.hoan_thien_docx(o, so)
+            return kq
+        return _chay
+
     for loai, ten, n in ke_hoach:
         p_mau, trang = mau[loai]
         if trang != "docx":
@@ -2244,14 +2595,17 @@ def lenh_dung(args: argparse.Namespace) -> int:
             continue
         nhat_ky: list[str] = []
         out = ra_dir / ten
-        if loai == "dang_ky":
-            bo_ghi.ghi(out, lambda o, m=p_mau: dung_dang_ky(m, o, d, hien_ds[0], nhat_ky))
+        if loai == "de_xuat":
+            bo_ghi.ghi(out, _xong(lambda o, m=p_mau: dung_de_xuat(m, o, d, nhat_ky)))
+        elif loai == "dang_ky":
+            bo_ghi.ghi(out, _xong(lambda o, m=p_mau: dung_dang_ky(m, o, d, hien_ds[0], nhat_ky)))
         elif loai == "thuyet_minh":
-            bo_ghi.ghi(out, lambda o, m=p_mau: dung_thuyet_minh(m, o, d, hien_ds, nhat_ky,
-                                                                exports_root / args.study))
+            bo_ghi.ghi(out, _xong(lambda o, m=p_mau: dung_thuyet_minh(m, o, d, hien_ds, nhat_ky,
+                                                                      exports_root / args.study)))
         else:
             k = nhan_su.index(n)
-            bo_ghi.ghi(out, lambda o, m=p_mau, k=k: dung_ly_lich(m, o, nhan_su[k], rec_ds[k], hien_ds[k], nhat_ky))
+            bo_ghi.ghi(out, _xong(lambda o, m=p_mau, k=k: dung_ly_lich(m, o, nhan_su[k], rec_ds[k], hien_ds[k],
+                                                                       nhat_ky)))
         if nhat_ky:
             van_de.append(f"{ten}: mẫu không có nhãn {nhat_ky}")
         if out.is_file():
@@ -2259,7 +2613,7 @@ def lenh_dung(args: argparse.Namespace) -> int:
     so_can_tep = {t: _dem_can_word(ra_dir / t) for t in da_sinh}
     bo_ghi.luu()
     danh_muc = bo_ghi.ghi(ra_dir / ten_ra("danh_muc", args.study),
-                          lambda o: sinh_danh_muc(ra_dir, d, mau["dang_ky"][0], so_can_tep))
+                          lambda o: sinh_danh_muc(ra_dir, d, mau["dang_ky"][0], so_can_tep, dau_theo_tep))
     bo_ghi.luu()
     print(f"Đã sinh {len(da_sinh)} tệp Word + danh mục: {danh_muc}")
     for t in da_sinh:
@@ -2375,10 +2729,25 @@ def lenh_kiem(args: argparse.Namespace) -> int:
                      ("khong_dinh_danh", "không có PMID/DOI — kiểm tay")):
         if dem_tt.get(tt):
             con_viec.append(f"mục 16: {len(dem_tt[tt])} tài liệu {nhan}: {dem_tt[tt][:12]}")
-    thieu_ten = [n["vai_tro"] for n in d.get("nhan_su") or [] if not _co(n.get("ho_ten"))]
+    thieu_ten = [n["vai_tro"] for n in d.get("nhan_su") or [] if not _co(n.get("ho_ten"))
+                 and not HSC.mo_ta_dau(n.get("ho_ten", ""))]
     if thieu_ten:
         con_viec.append(f"nhân sự chưa có họ tên (chưa dựng lý lịch): {thieu_ten}")
-    so_can = _dem_can(d)
+    so_ca_nhan = HSC.doc_so()
+    ba = ba_loai_dtcs(d, so_ca_nhan)
+    so_can = len(ba["a"])
+    n_chung = HSC.NguonDeTai(exports_root, study, so_ca_nhan)
+    dau_cu = _lay(d_goc, "meta", "dau_nguon")
+    if dau_cu and dau_cu != n_chung.dau_nguon():
+        con_viec.append("nguồn đã chốt (đề cương nộp/study_meta/G3) đổi sau lượt trích — chạy lại `trich --ghi-de`"
+                        " rồi `dung --ghi`")
+    if HSC.canh_bao_vi_tri_cu(n_chung.meta, KHOI_DTCS):
+        con_viec.append(HSC.canh_bao_vi_tri_cu(n_chung.meta, KHOI_DTCS))
+    hdd = _doc_json(exports_root / study / "ho_so_hdd" / "HO_SO_HDD_BVQY175.json") or None
+    doi_chieu = HSC.doi_chieu(n_chung, hdd, d)
+    khop, lech, khong_do = HSC.tom_tat_doi_chieu(doi_chieu)
+    if lech:
+        van_de.append(f"ĐỐI CHIẾU NHẤT QUÁN: {lech} chỗ lệch giữa đề cương nộp, gói G2 và hai bộ hồ sơ (xem dưới)")
     word = sorted(p for p in ra_dir.glob("*.docx") if not p.name.startswith("~$")) if ra_dir.is_dir() else []
     moc = p_json.stat().st_mtime
     cu_hon = [p.name for p in word if p.stat().st_mtime < moc]
@@ -2389,6 +2758,8 @@ def lenh_kiem(args: argparse.Namespace) -> int:
     for p in word:
         van = "\n".join(HDD._van_ban_docx(p))
         can_word += van.count("[CẦN")
+        if HSC.DAU_DANH_DAU.search(van):
+            van_de.append(f"{p.name}: còn dấu nội bộ chưa giải — chạy lại `dung --ghi`")
         dau_vet += [f"{p.name}: {loai} «{doan}»" for loai, doan in tim_dau_vet_may(van)]
         if p.name.startswith("DKCT02_"):
             tham_chieu = dem_tham_chieu_chua_ghi_nguon(van)
@@ -2399,10 +2770,19 @@ def lenh_kiem(args: argparse.Namespace) -> int:
                         " chưa ghi «của đề cương» — chạy lại `trich --ghi-de` rồi `dung --ghi`")
     if thieu_tep:
         con_viec.append(f"thiếu tệp: {thieu_tep}")
+    trang = uoc_so_trang(ra_dir / ten_ra("de_xuat", study))
+    if trang > SO_TRANG_TOI_DA_PDX:
+        con_viec.append(f"phiếu đề xuất ước khoảng {trang:.1f} trang (> {SO_TRANG_TOI_DA_PDX} trang theo ghi chú của"
+                        " mẫu) — rút gọn đoạn lý do đề xuất ở đề cương hoặc khối phieu_de_xuat")
     print(f"=== Kiểm hồ sơ đăng ký chủ trì đề tài cơ sở BVQY175 — {study} ===")
-    print(f"Ô còn [CẦN...] trong JSON: {so_can}")
-    for khoa in ("dang_ky", "nhan_su", "thuyet_minh"):
-        print(f"  - {khoa}: {_dem_can(d.get(khoa))}")
+    print(f"Ô chưa điền trong JSON: (a) suy được từ nguồn đã chốt {len(ba['a'])} · (b) gói ký {len(ba['b'])}"
+          f" · (c) dữ kiện cần nhập {len(ba['c'])}")
+    for duong, gia_tri in ba["a"][:40]:
+        print(f"  (a) {duong}: {gia_tri[:110]}")
+    print(f"Đối chiếu nhất quán đề cương nộp ↔ gói G2 ↔ hồ sơ Hội đồng Đạo đức ↔ hồ sơ đề tài cơ sở: khớp {khop} ·"
+          f" lệch {lech} · không đo được {khong_do}")
+    for dong_dc in HSC.in_doi_chieu(doi_chieu):
+        print(dong_dc)
     if word:
         print(f"Tệp Word: {len(word)}; ô «[CẦN» trong Word: {can_word}"
               + (f" — CŨ HƠN JSON: {cu_hon} (chạy lại `dung --ghi`)" if cu_hon else ""))

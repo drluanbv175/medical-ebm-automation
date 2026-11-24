@@ -501,6 +501,156 @@ def doi_chieu_ket_qua_g6(study: str, out_dir: Path, manuscript_text: str,
     return {"status": "PASS", "evidence": "; ".join(k["evidence"] for k in ket)}
 
 
+TEP_DAC_TA_G6 = "G6_DAC_TA_SAP.json"   # đặc tả SAP G6 (tools/chay_sap_g6.py) — danh sách phân tích SAP cam kết
+#: nhãn đối chiếu bộ sinh G7 gắn vào mỗi dòng chép số G6 (run_g7_auto.NHAN_DOI_CHIEU_G6 — giữ trùng nguyên văn)
+NHAN_DOI_CHIEU_G6 = "[CẦN KẾT QUẢ THẬT — đối chiếu G6]"
+
+
+def muc_do_nhay_ban_thao(text: str) -> Optional[str]:
+    """Thân khối «§5 Phân tích nhạy cảm» trong mục III. KẾT QUẢ của bản thảo — tới tiêu đề in đậm kế tiếp không phải
+    tiêu đề một phân tích («**`mã`**»), «---» hoặc tiêu đề mục. None ⇒ bản thảo không có khối này."""
+    kq = _section(text or "", "III. KẾT QUẢ", "IV. BÀN LUẬN")
+    # 23/11/2026: thiết kế định tính gọi khối này «§5 Kiểm tra độ tin cậy (trustworthiness)» (SAP §9 Lincoln–Guba)
+    m = re.search(r"^\*\*§\s*5\s+(?:Phân tích nhạy cảm|Kiểm tra độ tin cậy)[^\n]*\n(.*?)(?=^\*\*(?!`)|^---|^##\s|\Z)",
+                  kq,
+                  re.MULTILINE | re.DOTALL)
+    return m.group(1) if m else None
+
+
+def doi_chieu_do_nhay_g6(out_dir: Path, manuscript_text: str) -> Optional[Dict[str, str]]:
+    """{status, evidence} — §5 bản thảo có ĐÚNG và ĐỦ mọi phân tích độ nhạy SAP cam kết (G7-AUTO-08, 23/11/2026).
+
+    Danh sách chuẩn: các mục vai «do_nhay» của đặc tả SAP G6 (`G6_DAC_TA_SAP.json`). Mỗi phân tích ở §5 là một tiêu đề
+    «**`mã`**» (bộ sinh G7 — `dung_do_nhay_g6`/`khoi_do_nhay_khung`). Thiếu mã, thừa mã hoặc lặp mã ⇒ CHẶN (báo cáo
+    chọn lọc so với SAP); đủ mã nhưng còn mục chờ kết quả («[CẦN» trên dòng tiêu đề) ⇒ REVIEW; đặc tả không đọc được
+    hoặc soạn trước khi SAP đổi ⇒ REVIEW (không đo được — không bao giờ đạt). Không có tệp đặc tả ⇒ None: đề tài chưa
+    lập danh sách máy đọc (đường R/chạy tay) — tiêu chí không áp dụng, không có dòng chấm."""
+    out_dir = Path(out_dir)
+    p = out_dir / TEP_DAC_TA_G6
+    if not p.is_file():
+        return None
+    dt = _read_json(p)
+    ds = dt.get("phan_tich") if isinstance(dt, dict) else None
+    if not isinstance(ds, list):
+        return {"status": "REVIEW", "evidence": f"{TEP_DAC_TA_G6} không đọc được danh sách phân tích — không đo được"}
+    sap = out_dir / str(dt.get("nguon_sap") or "")
+    if dt.get("nguon_sap") and sap.is_file() and dt.get("sha256_sap") and \
+            hashlib.sha256(sap.read_bytes()).hexdigest() != dt["sha256_sap"]:
+        return {"status": "REVIEW",
+                "evidence": f"SAP đã ĐỔI sau khi soạn {TEP_DAC_TA_G6} — danh sách phân tích độ nhạy chưa đối chiếu "
+                            "được; soạn lại đặc tả, chạy lại chay_sap_g6"}
+    can = [str(x["id"]) for x in ds if isinstance(x, dict) and x.get("vai") == "do_nhay" and x.get("id")]
+    s5 = muc_do_nhay_ban_thao(manuscript_text)
+    if s5 is None:
+        return {"status": "BLOCK" if can else "PASS",
+                "evidence": (f"bản thảo không có khối §5 Phân tích nhạy cảm trong mục Kết quả — SAP cam kết {len(can)} "
+                             f"phân tích độ nhạy: {', '.join(can)}") if can else
+                            "đặc tả G6 không cam kết phân tích độ nhạy nào"}
+    tieu_de = re.findall(r"^\*\*`([^`]+)`\*\*([^\n]*)$", s5, re.MULTILINE)
+    co = [ma for ma, _ in tieu_de]
+    thieu = [ma for ma in can if ma not in co]
+    thua = [ma for ma in dict.fromkeys(co) if ma not in can]
+    lap = [ma for ma in dict.fromkeys(co) if co.count(ma) > 1]
+    if thieu or thua or lap:
+        return {"status": "BLOCK",
+                "evidence": f"§5 có {len(co)} phân tích, đặc tả G6 cam kết {len(can)}"
+                            + (f"; thiếu: {', '.join(thieu)}" if thieu else "")
+                            + (f"; ngoài đặc tả: {', '.join(thua)}" if thua else "")
+                            + (f"; lặp: {', '.join(lap)}" if lap else "")}
+    # nhãn đối chiếu số G6 trên dòng tiêu đề (tác giả đối chiếu xong thì gỡ) không phải «mục chờ kết quả»
+    cho = [ma for ma, duoi in tieu_de if "[CẦN" in duoi.replace(NHAN_DOI_CHIEU_G6, "").upper()]
+    if cho:
+        return {"status": "REVIEW", "evidence": f"§5 đủ {len(can)}/{len(can)} phân tích độ nhạy của đặc tả G6; còn chờ "
+                                                f"kết quả: {', '.join(cho)}"}
+    return {"status": "PASS", "evidence": f"§5 đủ {len(can)}/{len(can)} phân tích độ nhạy của đặc tả G6"
+                                          + (f": {', '.join(can)}" if can else "")}
+
+
+def o_cho_co_du_kien(out_dir: Path, study: str, text: str, design_code: Optional[str] = None) -> List[str]:
+    """Ô chờ bộ sinh G7 để lại ở chỗ ĐÃ CÓ dữ kiện đã chốt để viết (23/11/2026 — giả lập: Bàn luận «Điểm mạnh» còn ô chờ
+    dù G3 đã chốt cỡ mẫu và G1 đã chốt biện pháp kiểm soát sai lệch; ô rơi về «chưa có thông tin»). Mỗi quy tắc: dấu
+    hiệu ô bộ sinh in khi THIẾU dữ kiện + nguồn dữ kiện đã chốt; thấy dấu hiệu trong khi nguồn có ⇒ lỗi bộ sinh (sửa bộ
+    sinh rồi sinh lại, không điền tay). Trả danh sách «chỗ: dấu hiệu» (rỗng = sạch).
+
+    23/11/2026 (giả lập định tính): thêm loại thứ hai — ô chờ/dòng định lượng cho trường KHÔNG ÁP DỤNG với thiết kế
+    hoặc với dữ kiện G1 (ô «ai thực hiện can thiệp» khi thiết kế không có can thiệp; ô kết cục phụ khi G1 chốt không có
+    hoặc thiết kế định tính; «Dữ liệu thiếu/Phân tích độ nhạy», «α … 95%CI», «Định nghĩa biến cố», nhãn «Outcomes» cho
+    định tính; «N kế hoạch = 0» khi G3 đã chốt N). `design_code` vắng ⇒ đọc sống từ gate_contract."""
+    out_dir = Path(out_dir)
+    import run_g7_auto as G7  # noqa: PLC0415 — import lười (run_g7_auto nhập module này)
+
+    g3 = _read_json(out_dir / "G3_checkpoint.json")
+    co_mau = bool(g3.get("n_adjusted") or g3.get("confirmed_n"))
+    sai_lech = [x for x in G7.bang_sai_lech_chot_g7(out_dir) if G7._gia_tri_chot(x.get("bien_phap"))]
+    sap = G7._sap_tom_tat(out_dir, study)
+    quy_tac = (
+        ("Bàn luận §4 điểm mạnh (2) — cỡ mẫu đã chốt ở G3", "*(2)* [CẦN thêm điểm mạnh", co_mau),
+        ("Bàn luận §4 điểm mạnh (3) — biện pháp kiểm soát sai lệch đã chốt ở G1", "*(3)* [CẦN — điểm mạnh khác",
+         bool(sai_lech)),
+        ("Phương pháp §6b — sổ sai lệch đã chốt ở G1", "[CẦN — liệt kê nguồn sai lệch tiềm ẩn", bool(sai_lech)),
+        ("Phương pháp §5 — cỡ mẫu đã chốt ở G3", "[CẦN CỠ MẪU TỪ G3", co_mau),
+        ("Phương pháp §6 — phần mềm SAP §10", "Phần mềm: [CẦN", bool(sap.get("phan_mem"))),
+        ("Phương pháp §6 — phân tích độ nhạy SAP §9", "Phân tích độ nhạy: [CẦN", bool(sap.get("do_nhay"))),
+        ("Phương pháp §6 — dữ liệu thiếu SAP §6", "Dữ liệu thiếu: [CẦN", bool(sap.get("du_lieu_thieu"))),
+        ("Giới thiệu §1 — bối cảnh/gánh nặng vấn đề đã chốt ở G1", "[CẦN bổ sung: dịch tễ học/tỷ lệ mắc",
+         bool(str(G7._g1_g2_g7(out_dir)[0].get("background_problem") or "").strip())),
+    )
+    if design_code is None:
+        try:
+            design_code = GC.resolve_design_code(out_dir)[0]
+        except Exception:  # noqa: BLE001 — không đọc được thiết kế ⇒ chỉ đo quy tắc không phụ thuộc thiết kế
+            design_code = ""
+    phu_g1 = G7._g1_g2_g7(out_dir)[0].get("secondary_outcomes")
+    dinh_tinh = design_code == "qualitative"
+    khong_phu = dinh_tinh or (isinstance(phu_g1, list) and not [x for x in phu_g1 if str(x).strip()])
+    ly_do_phu = "thiết kế định tính" if dinh_tinh else "G1 chốt không có kết cục phụ"
+    khong_ap_dung = (
+        (f"Không áp dụng với thiết kế «{design_code}» (không có can thiệp) — ô ai thực hiện can thiệp",
+         "[CẦN bổ sung: ai thực hiện can thiệp", bool(design_code) and design_code not in G7.THIET_KE_CO_CAN_THIEP),
+        (f"Không áp dụng ({ly_do_phu}) — Tóm tắt, kết cục phụ", "Kết cục phụ: [CẦN]", khong_phu),
+        (f"Không áp dụng ({ly_do_phu}) — Phương pháp §4, kết cục phụ", "[CẦN — liệt kê từ SAP §2]", khong_phu),
+        (f"Không áp dụng ({ly_do_phu}) — Kết quả §4, kết cục phụ",
+         "[CẦN KẾT QUẢ THẬT — tóm tắt G6 không chứa kết cục phụ", khong_phu),
+        ("Không áp dụng với thiết kế định tính — dữ liệu thiếu/gán đa trị", "Dữ liệu thiếu: [CẦN", dinh_tinh),
+        ("Không áp dụng với thiết kế định tính — phân tích độ nhạy định lượng", "Phân tích độ nhạy: [CẦN", dinh_tinh),
+        ("Không áp dụng với thiết kế định tính — ngưỡng α và KTC 95%", "Ngưỡng ý nghĩa thống kê", dinh_tinh),
+        ("Không áp dụng với thiết kế định tính — định nghĩa biến cố", "*Định nghĩa biến cố:*", dinh_tinh),
+        ("Không áp dụng với thiết kế định tính — nhãn kết cục định lượng của Tóm tắt", "**Outcomes:** Kết cục chính",
+         dinh_tinh),
+        ("Tóm tắt — N kế hoạch = 0 dù G3 đã chốt cỡ mẫu", "N kế hoạch = 0;", co_mau),
+    )
+    return [f"{ten}: «{dau_hieu}»" for ten, dau_hieu, co in (*quy_tac, *khong_ap_dung)
+            if co and dau_hieu in (text or "")]
+
+
+def lech_alpha_g7(out_dir: Path, study: str, text: str) -> List[str]:
+    """α và số phía trong bản thảo khớp α ĐÃ CHỐT (SAP §12, vắng thì G3) — 23/11/2026: bản thảo thử nghiệm không kém
+    hơn ghi «α = 0.025 (two-sided)» trong khi SAP §12 khoá kiểm định MỘT phía, số viết dấu chấm thập phân. Quét thân
+    bài (trước Tài liệu tham khảo/Phụ lục) mọi «α|alpha = số (…)»: số khác α đã chốt, số phía khác, hoặc dấu chấm thập
+    phân ⇒ một lỗi. Không có α đã chốt ⇒ [] (không có gì để đối chiếu)."""
+    import run_g7_auto as G7  # noqa: PLC0415 — import lười
+
+    out_dir = Path(out_dir)
+    g3 = _read_json(out_dir / "G3_checkpoint.json")
+    a, phia, _khung = G7.alpha_theo_sap_g7(G7._sap_tom_tat(out_dir, study), g3.get("alpha"),
+                                           str(g3.get("hypothesis_type") or ""))
+    if not isinstance(a, (int, float)) or isinstance(a, bool):
+        return []
+    than = re.split(r"^##\s+(?:TÀI LIỆU THAM KHẢO|PHỤ LỤC)", text or "", maxsplit=1, flags=re.MULTILINE)[0]
+    loi: List[str] = []
+    for m in re.finditer(r"(?:α|\balpha)\s*=\s*(\d+(?:[.,]\d+)?)(?:\s*\(([^)]*)\))?", than):
+        so, ngoac = m.group(1), m.group(2) or ""
+        if "." in so:
+            loi.append(f"«{m.group(0)}» — số thập phân viết dấu phẩy theo quy ước tiếng Việt ({G7.so_viet(a)})")
+        if abs(float(so.replace(",", ".")) - float(a)) > 1e-12:
+            loi.append(f"«{m.group(0)}» lệch α đã chốt {G7.so_viet(a)} (SAP §12/G3)")
+        ghi = ("một phía" if re.search(r"one-sided|một phía", ngoac, re.IGNORECASE) else
+               "hai phía" if re.search(r"two-sided|hai phía", ngoac, re.IGNORECASE) else None)
+        if ghi and ghi != phia:
+            loi.append(f"«{m.group(0)}» ghi {ghi}, SAP §12/G3 chốt kiểm định {phia}")
+    return list(dict.fromkeys(loi))
+
+
 def evaluate_g7_quality(
     *,
     manuscript_text: str,
@@ -513,12 +663,20 @@ def evaluate_g7_quality(
     tien_de: Optional[Mapping[str, Mapping[str, str]]] = None,
     ket_qua_g6: Optional[Mapping[str, str]] = None,
     citation_detail: str = "",
+    do_nhay_g6: Optional[Mapping[str, str]] = None,
+    o_cho_du_kien: Optional[List[str]] = None,
+    lech_alpha: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Chấm G7 theo hai tầng: máy kiểm được vs người thật phải chốt.
 
     `checkpoints` là dict {"G0": {...}, "G1": {...}, …, "G7": {...}}.
     `tien_de` (04/10/2026, G7-01): trạng thái SỐNG G0–G6 do evaluate_study tính (tien_de_song); vắng ⇒ «không đo được»
     — KHÔNG BAO GIỜ đạt. `ket_qua_g6` (G7-05): kết quả doi_chieu_ket_qua_g6; vắng ⇒ không đạt.
+    `do_nhay_g6` (23/11/2026): kết quả doi_chieu_do_nhay_g6 — có ⇒ thêm G7-AUTO-08; None ⇒ đề tài không có đặc tả G6
+    (tiêu chí không áp dụng). `o_cho_du_kien` (23/11/2026): ô chờ ở chỗ bộ sinh đã có dữ kiện để viết (o_cho_co_du_kien,
+    gộp bản thảo hiện tại với bản bộ sinh vừa sinh — ghi ở G7_checkpoint) — có ⇒ G7-AUTO-05 CHẶN. `lech_alpha`
+    (23/11/2026, lech_alpha_g7): α/số phía ghi trong bản thảo trái α SAP §12/G3 đã chốt — khẳng định trái cổng trước
+    ⇒ G7-AUTO-06 CHẶN.
     """
     artifact_paths = artifact_paths or {}
     automatic: List[Dict[str, str]] = []
@@ -625,12 +783,18 @@ def evaluate_g7_quality(
         con_trong = [f"{ph['total']} ô [CẦN…]"] if ph["total"] else []
     # Lỗi CẤU TRÚC đứng trước (bằng chứng chỉ hiện 3 dòng đầu).
     con_trong = [f"ô «[CẦN» KHÔNG đóng ngoặc: «{x}…»" for x in o_can_chua_dong(_chuan_hoa_chinh_ta(text))] + con_trong
+    # 23/11/2026: ô chờ ở chỗ bộ sinh ĐÃ CÓ dữ kiện đã chốt để viết là LỖI BỘ SINH (không phải phần tác giả còn nợ)
+    # ⇒ CHẶN, kể cả khi người điền đã lấp ô đó (bộ sinh ghi ô của bản vừa sinh vào G7_checkpoint).
+    o_du_kien = list(dict.fromkeys(o_cho_du_kien or []))
     automatic.append(_criterion(
         "G7-AUTO-05", "Không còn ô trống / ô mẫu chưa soạn trong phần bản thảo gửi tạp chí",
-        "PASS" if not con_trong and ph["results"] == 0 else "REVIEW",
-        (f"còn {len(con_trong)} dòng chưa soạn: {' · '.join(con_trong[:3])}" if con_trong
-         else "không còn ô trống/ô mẫu") + f"; [CẦN KẾT QUẢ THẬT]={ph['results']}",
-        "Điền nội dung thật (kết quả, trích dẫn, tác giả/tạp chí/năm) — KHÔNG nộp khi còn ô này.",
+        "BLOCK" if o_du_kien else "PASS" if not con_trong and ph["results"] == 0 else "REVIEW",
+        (f"ô chờ ở chỗ bộ sinh đã có dữ kiện đã chốt, hoặc ô/dòng cho trường không áp dụng với thiết kế (lỗi bộ sinh): "
+         f"{' · '.join(o_du_kien)}; " if o_du_kien else "")
+        + (f"còn {len(con_trong)} dòng chưa soạn: {' · '.join(con_trong[:3])}" if con_trong
+           else "không còn ô trống/ô mẫu") + f"; [CẦN KẾT QUẢ THẬT]={ph['results']}",
+        "Điền nội dung thật (kết quả, trích dẫn, tác giả/tạp chí/năm) — KHÔNG nộp khi còn ô này. Ô ở chỗ đã có dữ kiện "
+        "đã chốt: sửa bộ sinh run_g7_auto.py rồi sinh lại — không điền tay.",
     ))
 
     # ── Khẳng định trần về việc chưa làm (G7-02) ─────────────────────────────
@@ -645,7 +809,7 @@ def evaluate_g7_quality(
         "db_locked": td["G5"]["status"] == "PASS",
         "consent": g2_ok and not mien_dong_thuan,
     }
-    claims = find_unsupported_claims(text, signals)
+    claims = find_unsupported_claims(text, signals) + [f"α/số phía trái SAP đã chốt: {x}" for x in (lech_alpha or [])]
     automatic.append(_criterion(
         "G7-AUTO-06", "Không khẳng định việc chưa có bằng chứng ở cổng trước",
         "BLOCK" if claims else "PASS",
@@ -666,6 +830,15 @@ def evaluate_g7_quality(
         "Chạy agent `kiem-chung-trich-dan` + tools/check_citation_retraction.py --study <mã>, ghi kết quả vào "
         "A12_CITATION_VERIFICATION_<study>.md — run_g10_assemble.py sẽ CHẶN nếu thiếu.",
     ))
+
+    # ── §5 đủ phân tích độ nhạy SAP cam kết (23/11/2026) ─────────────────────
+    if do_nhay_g6 is not None:
+        automatic.append(_criterion(
+            "G7-AUTO-08", "§5 có đủ mọi phân tích độ nhạy SAP cam kết (đặc tả G6 vai «do_nhay»)",
+            str(do_nhay_g6.get("status") or "REVIEW"), str(do_nhay_g6.get("evidence") or ""),
+            "Chạy `chay_sap_g6.py chay` đủ đặc tả trên dữ liệu đã khoá rồi sinh lại bản thảo (run_g7_auto.py) — §5 "
+            "phải có mọi mục vai «do_nhay», không bỏ mục nào, không thêm mục ngoài đặc tả.",
+        ))
 
     # ── Tầng HUMAN — giá trị phải là NỘI DUNG THẬT (G7-06) ──────────────────
     g7 = _g7_meta(meta)
@@ -930,6 +1103,10 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True,
         tien_de=tien_de,
         ket_qua_g6=ket_qua_g6,
         citation_detail=citation_detail,
+        do_nhay_g6=doi_chieu_do_nhay_g6(out_dir, text),
+        lech_alpha=lech_alpha_g7(out_dir, study, text),
+        o_cho_du_kien=o_cho_co_du_kien(out_dir, study, text)
+        + [str(x) for x in ((checkpoints.get("G7") or {}).get("o_cho_co_du_kien_khi_sinh") or [])],
     )
     if write:
         write_quality_report(study, out_dir, report)

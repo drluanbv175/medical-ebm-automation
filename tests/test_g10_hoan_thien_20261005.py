@@ -695,6 +695,9 @@ def test_chung_h_studyspec_nhan_khoa_g1_thay_the_va_theo_thiet_ke(khoa_g1, khoa_
     ({"blinding": "Người đánh giá kết cục được làm mù"}, "Người đánh giá kết cục được làm mù"),
     ({"blinding_who": "Người đánh giá", "blinding_how": "Mã hoá nhóm"}, "Người đánh giá — Mã hoá nhóm"),
     ({}, f"{G10A.TAG_BS} — {G10A.TAG_BS}"),
+    # 22/11/2026: PI khai riêng cách làm mù (cho bản thảo G7) ⇒ «ai» là câu G1 đã chốt, không ô hỏi lại
+    ({"blinding": "Người đo huyết áp được làm mù", "blinding_how": "Phiếu đo không ghi nhánh"},
+     "Người đo huyết áp được làm mù — Phiếu đo không ghi nhánh"),
 ])
 def test_chung_h_dong_lam_mu_doc_quyet_dinh_g1_khi_chua_tach(ds, co):
     """Quyết định làm mù chốt ở G1 là MỘT câu (ai + cách) — §6.3 in nguyên câu đó khi PI chưa tách ai/cách."""

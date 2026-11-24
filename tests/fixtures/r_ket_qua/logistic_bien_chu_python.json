@@ -11,7 +11,8 @@
   "outcome_type": "binary",
   "time": null,
   "event": null,
-  "cot_cum": null
+  "cot_cum": null,
+  "kc_hieu_so": "wald"
  },
  "primary_outcome": {
   "outcome_type": "binary",
@@ -40,7 +41,9 @@
    0.1837
   ],
   "p_value": 0.0127,
-  "test": "Chi-square"
+  "test": "Chi-square",
+  "risk_diff_ci_method": "wald",
+  "risk_diff_ci_ten": "Wald (xấp xỉ chuẩn, z = 1,96)"
  },
  "multivariate": {
   "error": "Pandas data cast to numpy dtype of object. Check input data with np.asarray(data).",

@@ -67,12 +67,19 @@ SAI_LECH_PI: Dict[str, List[Dict[str, str]]] = {
          "bien_phap": "Cùng bộ câu hỏi cho ca và chứng; người phỏng vấn không biết giả thuyết; đối chiếu với hồ sơ đơn "
                       "thuốc",
          "chieu": "Ca khai phơi nhiễm đầy đủ hơn chứng làm tỷ số chênh được ước lượng cao hơn thực tế"},
+        # 23/11/2026 (G7 phát hiện SAP «logistic có điều kiện» / G6 logistic không điều kiện): khâu sai đầu tiên là
+        # G1 — «ghép theo giới và nhóm tuổi» không nói ghép cặp cá thể hay theo tần suất, rồi biện pháp nhiễu ghi
+        # «logistic có điều kiện» trong khi dữ liệu không có mã bộ ghép. Thiết kế thật của kịch bản: ghép THEO TẦN SUẤT
+        # (phân bố giới–nhóm tuổi của chứng như của ca; dữ liệu mô phỏng sinh tuổi/giới độc lập với nhóm ca/chứng) ⇒
+        # logistic KHÔNG điều kiện, hiệu chỉnh theo các biến ghép.
         {"sai_lech": "Sai lệch chọn nhóm chứng từ người khám ngoại trú",
-         "bien_phap": "Chọn chứng cùng cơ sở và cùng tuần với ca, ghép theo giới và nhóm tuổi 5 năm",
+         "bien_phap": "Chọn chứng cùng cơ sở và cùng tuần với ca, ghép theo tần suất theo giới và nhóm tuổi 5 năm "
+                      "(không ghép cặp cá thể)",
          "chieu": "Nếu người khám ngoại trú dùng NSAID nhiều hơn quần thể nguồn, tỷ số chênh được ước lượng thấp hơn "
                   "thực tế"},
         {"sai_lech": "Nhiễu do thuốc chống đông, chống kết tập tiểu cầu và tiền sử loét",
-         "bien_phap": "Thu thập và hiệu chỉnh trong mô hình hồi quy logistic có điều kiện",
+         "bien_phap": "Thu thập và hiệu chỉnh trong mô hình hồi quy logistic không điều kiện, cùng các biến ghép "
+                      "theo tần suất (giới, tuổi)",
          "chieu": "Nhiễu còn sót có thể làm tỷ số chênh được ước lượng cao hơn thực tế"},
     ],
     "cross_sectional": [
@@ -180,8 +187,11 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 # 21/11/2026 — K15: câu bối cảnh không nguồn «thường được kê kéo dài» ⇒ dẫn nguồn đã kiểm của kịch bản
                 "background_problem": vi("Dùng thuốc ức chế bơm proton đi kèm nguy cơ gãy xương cao hơn "
                                          "(PMID 26462494), nên việc kê kéo dài ở người cao tuổi cần được đánh giá lại"),
-                "evidence_summary": vi("Phân tích gộp quan sát (PMID 26462494) báo nguy cơ gãy xương mọi vị trí "
-                                       "tăng vừa phải ở người dùng PPI"),
+                # 22/11/2026 — SANRA mục 6 (số liệu kết cục có nguồn): câu bằng chứng chép đúng số trong abstract PubMed
+                # của PMID đã kiểm chứng (kho A12 giả lập), không còn câu định tính không số.
+                "evidence_summary": vi("Phân tích gộp 18 nghiên cứu quan sát (PMID 26462494) báo dùng PPI làm tăng "
+                                       "vừa phải nguy cơ gãy xương hông (RR 1,26; KTC 95%: 1,16–1,36) và gãy xương "
+                                       "mọi vị trí (RR 1,33; KTC 95%: 1,15–1,54)"),
                 "knowledge_gap": vi("Thiếu thuần tập trên người cao tuổi ngoại trú Việt Nam"),
                 "benefit_risk_rationale": vi("Không can thiệp; nguy cơ duy nhất là lộ dữ liệu — khử định danh trước "
                                              "phân tích"),
@@ -280,10 +290,12 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "case_definition": ("Người từ 60 tuổi nhập viện vì nôn máu hoặc đi ngoài phân đen, nội soi xác định "
                                     "tổn thương chảy máu ở thực quản, dạ dày hoặc tá tràng"),
                 # 21/11/2026 (K17 STROBE 6a): PI nêu lý do chọn chứng ngay trong nguồn chọn chứng
-                "control_source": ("Người khám ngoại trú cùng cơ sở trong cùng tuần với ca, ghép theo giới và nhóm "
-                                   "tuổi "
-                                   "5 năm, tỷ lệ 2 chứng : 1 ca, để nhóm chứng đại diện cho phân bố phơi nhiễm NSAID "
-                                   "của quần thể nguồn sinh ra ca trong cùng thời gian"),
+                "control_source": ("Người khám ngoại trú cùng cơ sở trong cùng tuần với ca, ghép theo tần suất theo "
+                                   "giới và nhóm tuổi 5 năm (phân bố giới–nhóm tuổi của nhóm chứng như của nhóm ca, "
+                                   "không ghép cặp cá thể), tỷ lệ 2 chứng : 1 ca, để nhóm chứng đại diện cho phân bố "
+                                   "phơi nhiễm NSAID của quần thể nguồn sinh ra ca trong cùng thời gian"),
+                # 23/11/2026: PI chốt kiểu ghép (khung_de_tai.kieu_ghep_benh_chung) ⇒ SAP §4 logistic không điều kiện
+                "matching_type": "frequency",
                 "recruitment_strategy": "Tuyển liên tiếp ca đủ tiêu chuẩn; chọn chứng theo danh sách khám cùng tuần",
                 "follow_up_schedule": "Không theo dõi — phỏng vấn một lần và trích hồ sơ",
                 "estimand": {"population": "Người từ 60 tuổi tại cơ sở",
@@ -293,12 +305,16 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                              "population_summary_measure": "Tỷ số chênh (OR) hiệu chỉnh"},
                 "background_problem": vi("Nguy cơ biến chứng tiêu hoá trên khác nhau theo từng thuốc chống viêm không "
                                          "steroid (PMID 23137151)"),
-                "evidence_summary": vi("Phân tích gộp quan sát (PMID 23137151) báo nguy cơ biến chứng tiêu hoá trên "
-                                       "tăng với mọi NSAID, khác nhau theo loại"),
+                # 22/11/2026 — SANRA mục 6 (số liệu kết cục có nguồn): câu bằng chứng chép đúng số trong abstract PubMed
+                # của PMID đã kiểm chứng (kho A12 giả lập), không còn câu định tính không số.
+                "evidence_summary": vi("Phân tích gộp 28 nghiên cứu quan sát (PMID 23137151) báo nguy cơ tương đối "
+                                       "biến chứng tiêu hoá trên khác nhau theo từng NSAID, từ 1,43 (KTC 95%: "
+                                       "0,65–3,15) với aceclofenac đến 18,45 (KTC 95%: 10,99–30,97) với azapropazone, "
+                                       "với ibuprofen là 1,84 (KTC 95%: 1,54–2,20)"),
                 "knowledge_gap": vi("Thiếu số liệu phơi nhiễm theo loại NSAID ở người cao tuổi Việt Nam"),
                 "benefit_risk_rationale": vi("Không can thiệp; chỉ phỏng vấn và trích hồ sơ"),
-                "study_schema_timeline": "Xác định ca → chọn 2 chứng ghép → phỏng vấn phơi nhiễm → trích hồ sơ đơn "
-                                         "thuốc",
+                "study_schema_timeline": "Xác định ca → chọn 2 chứng ghép theo tần suất giới–nhóm tuổi → phỏng vấn "
+                                         "phơi nhiễm → trích hồ sơ đơn thuốc",
                 "intervention_dose_adherence": "Không can thiệp; phơi nhiễm đo bằng phỏng vấn có hình thuốc và hồ sơ",
                 "stopping_rescue_rules": "Không áp dụng — nghiên cứu quan sát",
                 "critical_to_quality": vi("Người phỏng vấn không biết giả thuyết; cùng bộ câu hỏi cho ca và chứng"),
@@ -402,6 +418,9 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "stopping_rescue_rules": "Không áp dụng — không can thiệp; kết quả bất thường chuyển bác sĩ điều trị",
                 "critical_to_quality": vi("Làm mù người đo đàn hồi với FIB-4; tiêu chuẩn đo hợp lệ thống nhất"),
                 "monitoring_plan": vi("Kiểm chất lượng đo đàn hồi hằng tháng"),
+                # 22/11/2026 (STARD 2015 mục 13a, 13b): che giấu kết quả hai chiều
+                "blinding": vi("Xét nghiệm đánh giá (FIB-4) được tính từ tuổi, AST, ALT và tiểu cầu trước khi có kết "
+                               "quả tiêu chuẩn tham chiếu; người đo độ đàn hồi gan không biết kết quả FIB-4"),
             },
             "G3": {
                 "effect_size": 0.76, "effect_type": "AUC", "prevalence": 0.3, "dropout": 0.1,
@@ -494,7 +513,11 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                              "population_summary_measure": "Chỉ số C, độ dốc hiệu chuẩn, đường cong hiệu chuẩn"},
                 "background_problem": vi("Người suy tim ngoại trú có nguy cơ nhập viện khác nhau nhưng lịch tái khám "
                                          "như nhau"),
-                "evidence_summary": vi("Các mô hình nguy cơ suy tim hiện có chủ yếu từ quần thể châu Âu và Bắc Mỹ"),
+                # 22/11/2026 — SANRA mục 6 (số liệu kết cục có nguồn): câu bằng chứng chép đúng số trong abstract PubMed
+                # của PMID đã kiểm chứng (kho A12 giả lập), không còn câu định tính không số.
+                "evidence_summary": vi("Tổng quan hệ thống 117 mô hình tiên lượng trong 55 bài (PMID 25194294) báo "
+                                       "khả năng phân biệt còn khiêm tốn: C-statistic trung bình 0,71 với mô hình dự "
+                                       "báo tử vong và 0,68 với mô hình dự báo nhập viện vì suy tim"),
                 "knowledge_gap": vi("Thiếu mô hình kiểm định cho người suy tim ngoại trú Việt Nam"),
                 "benefit_risk_rationale": vi("Quan sát, không can thiệp; nguy cơ tối thiểu"),
                 "study_schema_timeline": "Tuyển → đo yếu tố dự báo → theo dõi 12 tháng → phát triển và kiểm định nội",
@@ -503,6 +526,12 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "critical_to_quality": vi("Định nghĩa yếu tố dự báo và kết cục cố định trước; người xác định kết cục "
                                           "không biết giá trị yếu tố dự báo"),
                 "monitoring_plan": vi("Kiểm dữ liệu thiếu và biến cố mỗi quý"),
+                # 22/11/2026 (TRIPOD+AI 2024 mục 9b): cách đo và thời điểm đo yếu tố dự báo
+                "predictor_measurement_timing": vi("Mọi yếu tố dự báo được đo và ghi nhận tại lần khám tuyển: tuổi, "
+                                                   "giới, NYHA, đái tháo đường và tiền sử nhập viện qua phỏng vấn và "
+                                                   "hồ sơ; NT-proBNP, eGFR, natri, hemoglobin từ xét nghiệm máu trong "
+                                                   "ngày khám tuyển; phân suất tống máu từ siêu âm tim gần nhất trong "
+                                                   "3 tháng trước khám tuyển"),
             },
             "G3": {
                 "confirmed_n": 900, "dropout": 0.05, "alpha": 0.05,
@@ -575,7 +604,10 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "population": ("Người trưởng thành đái tháo đường típ 2 không có suy tim lúc vào nghiên cứu"),
                 "inclusion_criteria": ["Thử nghiệm ngẫu nhiên có đối chứng", "Người trưởng thành ĐTĐ típ 2",
                                        "So sánh thuốc ức chế SGLT2 với giả dược hoặc điều trị chuẩn",
-                                       "Báo cáo nhập viện vì suy tim"],
+                                       "Báo cáo nhập viện vì suy tim",
+                                       # 22/11/2026 (PRISMA-P 2015 mục 8 — đặc điểm báo cáo)
+                                       "Không giới hạn ngôn ngữ, năm công bố hay tình trạng xuất bản (gồm cả thử "
+                                       "nghiệm đã đăng ký có kết quả chưa công bố)"],
                 "exclusion_criteria": ["Thử nghiệm chỉ tuyển người suy tim lúc đầu", "Theo dõi < 24 tuần",
                                        "Không tách được số liệu nhóm không suy tim"],
                 "setting": "Tổng quan dữ liệu đã công bố (không có cơ sở tuyển)",
@@ -587,6 +619,11 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "search_strategy": ("Chiến lược tìm kết hợp MeSH và từ khoá cho thuốc ức chế SGLT2, ĐTĐ típ 2 và bộ "
                                     "lọc RCT Cochrane; báo cáo theo PRISMA-S"),
                 "search_last_date": "2027-06-30",
+                # 22/11/2026 (PRISMA-P 2015 mục 9, 11a): khoảng thời gian bao phủ và cách quản lý hồ sơ tìm kiếm
+                "search_period": "Từ khi thành lập mỗi cơ sở dữ liệu đến ngày tìm cuối 30/06/2027",
+                "records_management": vi("Kết quả tìm kiếm được nhập vào EndNote để loại bản trùng; sàng lọc tiêu đề–"
+                                         "tóm tắt và toàn văn trên Rayyan; bảng trích xuất kép lưu trên máy có phân "
+                                         "quyền, sao lưu hằng tuần"),
                 "study_selection_process": ("Hai người sàng lọc độc lập tiêu đề–tóm tắt rồi toàn văn; bất đồng do "
                                             "người thứ ba quyết định"),
                 "recruitment_strategy": "Không áp dụng — dữ liệu đã công bố",
@@ -615,6 +652,9 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
             },
             "G3": {
                 "confirmed_n": 25462, "dropout": 0.0, "alpha": 0.05,
+                # 22/11/2026: tham số RIS CÓ CẤU TRÚC (thống kê viên ghim) — G3 tính lại RIS theo Wetterslev 2009 và
+                # đối chiếu N đã chốt; trước đây chỉ có trong lời chốt nên checkpoint ghi lực 0,8 · p0 0,3 mặc định máy
+                "p0": 0.03, "power": 0.90, "ris_giam_nguy_co_tuong_doi": 0.25, "ris_d2": 0.25,
                 "hypothesis_type": "superiority",
                 "confirmed_n_method": ("RIS cho kết cục chính: tỷ lệ biến cố nhóm chứng GIẢ ĐỊNH 3%, giảm nguy cơ "
                                        "tương "
@@ -698,6 +738,10 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "data_collection_method": "Phỏng vấn sâu bán cấu trúc 45–60 phút, ghi âm có đồng ý, gỡ băng nguyên văn",
                 "saturation_criterion": "Dừng khi 3 phỏng vấn liên tiếp không xuất hiện mã mới (tối thiểu 12 phỏng "
                                         "vấn)",
+                # 22/11/2026 (COREQ 2007, SRQR 2014): PI chốt quy trình định tính khi thiết kế — khoá ở
+                # hon_hop.KHOA_QUY_TRINH_DINH_TINH; khớp đội ngũ (2 người phỏng vấn và mã hoá được tập huấn), SAP §5/§10
+                # (bộ mã, hai người mã hoá, bảng tính, không phần mềm QDA) và đặc tả phản tư ở G10
+                **QUY_TRINH_DINH_TINH_INSULIN,
                 "primary_outcome": {"name": "Trải nghiệm và rào cản khi bắt đầu tiêm insulin",
                                     "measure": "Chủ đề rút ra từ phỏng vấn sâu bán cấu trúc (phân tích chủ đề)",
                                     "timepoint": "Trong 3 tháng sau khi được chỉ định insulin", "type": "định tính"},
@@ -718,7 +762,11 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                              "population_summary_measure": "Không áp dụng"},
                 "background_problem": vi("Lý do người ĐTĐ típ 2 đã có chỉ định insulin nhưng trì hoãn bắt đầu điều trị "
                                          "chưa được mô tả tại phòng khám ngoại trú ở Việt Nam"),
-                "evidence_summary": vi("Y văn quốc tế mô tả «kháng insulin tâm lý»; bối cảnh Việt Nam chưa được mô tả"),
+                # 22/11/2026 — SANRA mục 6 (số liệu kết cục có nguồn): câu bằng chứng chép đúng số trong abstract PubMed
+                # của PMID đã kiểm chứng (kho A12 giả lập), không còn câu định tính không số.
+                "evidence_summary": vi("Khảo sát trực tuyến 1.400 người ĐTĐ típ 2 chưa dùng insulin ở tám nước phương "
+                                       "Tây (PMID 21469914) ghi nhận tỷ lệ không sẵn lòng bắt đầu insulin («kháng "
+                                       "insulin tâm lý») là 17,2%, dao động từ 5,9% (Tây Ban Nha) đến 37,3% (Ý)"),
                 "knowledge_gap": vi("Chưa có dữ liệu định tính ở người ngoại trú Việt Nam"),
                 "benefit_risk_rationale": vi("Phỏng vấn có đồng ý; nguy cơ khó chịu cảm xúc thấp, có thể dừng bất cứ "
                                              "lúc nào"),
@@ -752,6 +800,44 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
 _CO_KHONG = "0, Không | 1, Có"
 _GIOI = "0, Nữ | 1, Nam"
 
+#: 22/11/2026 — quy trình định tính PI chốt ở G1 cho đề tài định tính «bắt đầu insulin» (khoá
+#: `hon_hop.KHOA_QUY_TRINH_DINH_TINH`); kịch bản định tính chân thực thừa hưởng nguyên khối G1 này.
+QUY_TRINH_DINH_TINH_INSULIN = {
+    "research_paradigm": ("Hệ hình kiến tạo – diễn giải: trải nghiệm bắt đầu insulin được hiểu qua ý nghĩa người "
+                          "bệnh gán cho nó, phù hợp với mục tiêu tìm hiểu sâu từ góc nhìn của chính người bệnh"),
+    "interviewer": ("Người phỏng vấn là điều dưỡng của phòng khám nội tiết (hai người, đều là nữ, trình độ cử "
+                    "nhân điều dưỡng), đã được tập huấn phỏng vấn định tính trước khi thu thập; hai điều dưỡng "
+                    "trực tiếp phỏng vấn, không điều trị và không quen biết người tham gia trước nghiên cứu"),
+    "participant_information": ("Trước khi phỏng vấn, người phỏng vấn giới thiệu bản thân, vai trò trong nghiên "
+                                "cứu và mục đích nghiên cứu khi đọc bản thông tin và phiếu đồng ý với người tham "
+                                "gia"),
+    "researcher_reflexivity": ("Nhóm nghiên cứu là nhân viên y tế của phòng khám, có thể mang giả định rằng hướng"
+                               " dẫn kỹ thuật tiêm là rào cản chính; người phỏng vấn ghi nhật ký phản tư sau mỗi "
+                               "cuộc phỏng vấn và nhóm thảo luận ảnh hưởng của vai trò nhân viên y tế lên câu trả"
+                               " lời"),
+    "participant_approach": ("Điều dưỡng mời trực tiếp người bệnh đủ tiêu chuẩn tại phòng khám khi tái khám; "
+                             "người không đến tái khám được liên hệ qua điện thoại"),
+    "non_participation": ("Số người từ chối tham gia hoặc rút lui và lý do được ghi vào sổ tuyển chọn"),
+    "interview_setting": ("Phỏng vấn tại phòng riêng của phòng khám; chỉ có người phỏng vấn và người tham gia, "
+                          "không có người khác có mặt"),
+    "interview_guide_pilot": ("Hướng dẫn phỏng vấn bán cấu trúc gồm câu hỏi chính và câu hỏi gợi mở (Phụ lục C), "
+                              "đã thử trước trên 2 người ngoài mẫu và giữ nguyên trong suốt quá trình thu thập"),
+    "repeat_interviews": ("Mỗi người tham gia được phỏng vấn một lần, không phỏng vấn lại"),
+    "recording_field_notes": ("Mọi cuộc phỏng vấn được ghi âm bằng máy ghi âm kỹ thuật số khi người tham gia đồng"
+                              " ý; người phỏng vấn ghi chép thực địa ngay sau mỗi cuộc phỏng vấn"),
+    "transcript_return": ("Không gửi lại bản gỡ băng cho người tham gia; bản tóm tắt chủ đề được kiểm tra lại với"
+                          " người tham gia"),
+    "coding_process": ("Bộ mã do hai người mã hoá độc lập xây dựng từ 3 bản gỡ băng đầu, cây mã trình bày ở phụ "
+                       "lục; chủ đề rút ra từ dữ liệu theo hướng quy nạp, phân tích tiến hành song song với thu "
+                       "thập dữ liệu; mã được quản lý bằng bảng tính có kiểm soát phiên bản, không dùng phần mềm "
+                       "phân tích định tính chuyên dụng; nhật ký quyết định mã hoá được lưu; bản tóm tắt chủ đề "
+                       "được kiểm tra lại với người tham gia; kết quả trình bày theo chủ đề kèm trích lời minh "
+                       "hoạ đã khử định danh có mã người tham gia, cùng mô tả dày bối cảnh để người đọc đánh giá "
+                       "khả năng chuyển giao"),
+}
+_CHAN_DOAN_KHAC = ("1, Không có hoặc xơ hoá nhẹ (F0–F1) | 2, Xơ hoá đáng kể chưa tiến triển (F2) | "
+                   "3, Bệnh gan khác kèm theo")
+
 
 def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
     """Bộ biến (tên, loại, nhãn, lựa chọn, kiểm, mục) + ma trận của 6 kịch bản mới."""
@@ -763,6 +849,9 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                 ("tuoi", "text", "Tuổi tại ngày bắt đầu theo dõi (năm)", "", so, "Trích hồ sơ"),
                 ("gioi", "radio", "Giới", _GIOI, "", "Trích hồ sơ"),
                 ("ppi_dai_han", "radio", "Dùng PPI liên tục ≥ 12 tháng (PHƠI NHIỄM)", _CO_KHONG, "", "Phơi nhiễm"),
+                # 22/11/2026: thang đo gốc của phơi nhiễm — định nghĩa thay thế SAP §9 (mỗi 1 SD)
+                ("so_thang_ppi", "text", "Số tháng dùng PPI liên tục trước ngày bắt đầu theo dõi", "", so,
+                 "Phơi nhiễm"),
                 ("corticoid", "yesno", "Dùng corticoid toàn thân ≥ 3 tháng", "", "", "Hiệp biến"),
                 ("loang_xuong", "yesno", "Chẩn đoán loãng xương trước ngày bắt đầu", "", "", "Hiệp biến"),
                 ("gay_xuong_3nam", "radio", "Gãy xương mới trong 3 năm (KẾT CỤC CHÍNH)", _CO_KHONG, "", "Kết cục"),
@@ -773,6 +862,9 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                  "Hồ sơ + phim X-quang", "§4"),
                 ("1", "Dùng thuốc ức chế bơm proton kéo dài", "phoi_nhiem", "ppi_dai_han", "nhi_phan", "PN1",
                  "Đơn thuốc cấp phát", "§4"),
+                ("1", "Dùng thuốc ức chế bơm proton kéo dài", "dinh_nghia_thay_the", "so_thang_ppi", "lien_tuc", "PN2",
+                 "Thời lượng dùng PPI ở thang liên tục (tháng), hiệu ứng trên mỗi 1 SD — thang đo gốc thay cho ngưỡng "
+                 "≥ 12 tháng (Altman & Royston 2006, PMID 16675816)", "§9"),
                 ("1", "Tuổi", "hiep_bien", "tuoi", "lien_tuc", "HB1", "Hồ sơ", "§5"),
                 ("1", "Corticoid toàn thân", "hiep_bien", "corticoid", "nhi_phan", "HB2", "Đơn thuốc", "§5"),
                 ("1", "Loãng xương trước đó", "hiep_bien", "loang_xuong", "nhi_phan", "HB3", "Hồ sơ", "§5"),
@@ -787,16 +879,25 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                 ("gioi", "radio", "Giới", _GIOI, "", "Phỏng vấn"),
                 ("nsaid_30ngay", "radio", "Dùng NSAID trong 30 ngày trước ngày chỉ điểm (PHƠI NHIỄM)", _CO_KHONG, "",
                  "Phơi nhiễm"),
+                ("so_ngay_nsaid_30", "text", "Số ngày dùng NSAID trong 30 ngày trước ngày chỉ điểm", "", so,
+                 "Phơi nhiễm"),
                 ("chong_dong", "yesno", "Dùng thuốc chống đông/chống kết tập", "", "", "Phơi nhiễm"),
                 ("tien_su_loet", "yesno", "Tiền sử loét dạ dày–tá tràng", "", "", "Hiệp biến"),
             ],
             "ma_tran": [
                 ("1", "Xuất huyết tiêu hoá trên", "ket_cuc_chinh", "nhom_ca", "nhi_phan", "TC1",
                  "Định nghĩa ca qua nội soi", "§4"),
+                ("1", "Phơi nhiễm NSAID trong 30 ngày", "dinh_nghia_thay_the", "so_ngay_nsaid_30", "lien_tuc", "PN2",
+                 "Số ngày dùng NSAID trong 30 ngày ở thang liên tục, hiệu ứng trên mỗi 1 SD — thang đo gốc thay cho "
+                 "«có dùng» (Altman & Royston 2006, PMID 16675816)", "§9"),
                 ("1", "Phơi nhiễm NSAID trong 30 ngày", "phoi_nhiem", "nsaid_30ngay", "nhi_phan", "PN1",
                  "Phỏng vấn có hình thuốc + hồ sơ", "§4"),
                 ("1", "Thuốc chống đông", "hiep_bien", "chong_dong", "nhi_phan", "PN2", "Phỏng vấn + hồ sơ", "§5"),
                 ("1", "Tiền sử loét", "hiep_bien", "tien_su_loet", "nhi_phan", "HB1", "Phỏng vấn + hồ sơ", "§5"),
+                # 23/11/2026: biến ghép theo tần suất — bắt buộc vào mô hình logistic không điều kiện (G1 matching_type)
+                ("1", "Tuổi (biến ghép theo tần suất)", "hiep_bien", "tuoi", "lien_tuc", "HB2", "Phỏng vấn + hồ sơ",
+                 "§5"),
+                ("1", "Giới (biến ghép theo tần suất)", "hiep_bien", "gioi", "nhi_phan", "HB3", "Phỏng vấn", "§5"),
             ],
         },
         "chan_doan": {
@@ -809,14 +910,24 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                 ("tieu_cau", "text", "Tiểu cầu (G/L)", "", so, "Xét nghiệm"),
                 ("fib4", "calc", "FIB-4 (XÉT NGHIỆM CẦN ĐÁNH GIÁ)",
                  "round(([tuoi]*[ast])/([tieu_cau]*sqrt([alt])),2)", "", "Xét nghiệm"),
+                ("fib4_tren_1_3", "calc", "FIB-4 ≥ 1,3 (ngưỡng loại trừ — máy tự tính)", "if([fib4] >= 1.3, 1, 0)",
+                 "", "Xét nghiệm"),
                 ("lsm_kpa", "text", "Độ đàn hồi gan (kPa)", "", "number", "Tiêu chuẩn tham chiếu"),
                 ("xo_hoa_tien_trien", "radio", "Xơ hoá tiến triển theo đo đàn hồi ≥ 10 kPa (KẾT CỤC CHÍNH)",
                  _CO_KHONG, "", "Tiêu chuẩn tham chiếu"),
+                # 22/11/2026 (STARD 2015 mục 21b): người đọc chuẩn tham chiếu ghi chẩn đoán ở người KHÔNG có bệnh đích
+                # (chỉ hỏi khi xơ hoá tiến triển = Không — logic nhánh ở `meta_bien`); ≥ 3 lựa chọn để G6 trình bày
+                # thành biến phân loại có nhãn ở Bảng 1 theo chuẩn tham chiếu
+                ("chan_doan_khac", "radio", "Chẩn đoán theo chuẩn tham chiếu ở người không có xơ hoá tiến triển",
+                 _CHAN_DOAN_KHAC, "", "Tiêu chuẩn tham chiếu"),
             ],
+            "meta_bien": {"chan_doan_khac": {"nhanh": "[xo_hoa_tien_trien] = '0'"}},
             "ma_tran": [
                 ("1", "Xơ hoá gan tiến triển", "ket_cuc_chinh", "xo_hoa_tien_trien", "nhi_phan", "TC1",
                  "Đo độ đàn hồi gan thoáng qua", "§4"),
                 ("1", "Chỉ số FIB-4", "phoi_nhiem", "fib4", "lien_tuc", "XN4", "Xét nghiệm máu", "§4"),
+                ("1", "Chỉ số FIB-4", "dinh_nghia_thay_the", "fib4_tren_1_3", "nhi_phan", "XN5",
+                 "Dương tính theo ngưỡng loại trừ FIB-4 ≥ 1,3 (Shah 2009, PMID 19523535)", "§9"),
                 ("1", "Tuổi", "mo_ta", "tuoi", "lien_tuc", "B1", "Phiếu ban đầu", "§4"),
             ],
         },
@@ -828,6 +939,8 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                 ("lvef", "text", "Phân suất tống máu thất trái (%)", "", so, "Yếu tố dự báo"),
                 ("nyha", "radio", "Phân độ NYHA", "1, I | 2, II | 3, III | 4, IV", "", "Yếu tố dự báo"),
                 ("ntprobnp", "text", "NT-proBNP (pg/mL)", "", "number", "Yếu tố dự báo"),
+                ("ntprobnp_can2", "calc", "Căn bậc hai NT-proBNP (máy tự tính)", "sqrt([ntprobnp])", "",
+                 "Yếu tố dự báo"),
                 ("egfr", "text", "eGFR (mL/phút/1,73 m²)", "", so, "Yếu tố dự báo"),
                 ("natri", "text", "Natri máu (mmol/L)", "", so, "Yếu tố dự báo"),
                 ("hb", "text", "Hemoglobin (g/dL)", "", "number", "Yếu tố dự báo"),
@@ -842,12 +955,19 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                 ("1", "Tuổi", "yeu_to", "tuoi", "lien_tuc", "YT1", "Phiếu ban đầu", "§4"),
                 ("1", "Phân suất tống máu", "yeu_to", "lvef", "lien_tuc", "YT3", "Siêu âm tim", "§4"),
                 ("1", "NT-proBNP", "yeu_to", "ntprobnp", "lien_tuc", "YT5", "Xét nghiệm", "§4"),
+                ("1", "NT-proBNP", "dinh_nghia_thay_the", "ntprobnp_can2", "lien_tuc", "YT5b",
+                 "NT-proBNP biến đổi căn bậc hai (đa thức phân số bậc 0,5) cho biến lệch phải, giữ thang liên tục "
+                 "(Royston, Altman & Sauerbrei 2006, PMID 16217841)", "§9"),
                 ("1", "eGFR", "yeu_to", "egfr", "lien_tuc", "YT6", "Xét nghiệm", "§4"),
             ],
         },
         "tong_quan_gop": {
             "bo_bien": [
                 ("study_id", "text", "Mã thử nghiệm (tác giả–năm)", "", "", "Trích xuất"),
+                # 22/11/2026 (PRISMA 2020 mục 17): định danh báo cáo nguồn của từng thử nghiệm — bản ghi đăng ký thử
+                # nghiệm (PRISMA 2020 coi bản ghi đăng ký là một «báo cáo» của nghiên cứu); người trích ghi để trích dẫn
+                ("ma_dang_ky", "text", "Mã đăng ký thử nghiệm (bản ghi đăng ký là báo cáo nguồn)", "", "",
+                 "Trích xuất"),
                 ("thuoc_sglt2", "dropdown", "Thuốc ức chế SGLT2",
                  "1, Empagliflozin | 2, Dapagliflozin | 3, Canagliflozin | 4, Ertugliflozin | 5, Khác", "",
                  "Trích xuất"),
@@ -878,6 +998,9 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                 ("da_bat_dau_insulin", "yesno", "Đã bắt đầu tiêm insulin", "", "", "Đặc điểm người tham gia"),
                 ("thoi_gian_dtd", "text", "Thời gian mắc ĐTĐ (năm)", "", so, "Đặc điểm người tham gia"),
                 ("chu_de", "notes", "Chủ đề/mã rút ra từ phỏng vấn (KẾT CỤC CHÍNH)", "", "", "Phân tích"),
+                # 22/11/2026 (SAP §9 confirmability): người mã hoá thứ hai gán độc lập theo cùng bộ mã ⇒ kappa
+                ("chu_de_nguoi_2", "notes", "Chủ đề/mã do người mã hoá thứ hai gán độc lập (cùng bộ mã)", "", "",
+                 "Phân tích"),
             ],
             "ma_tran": [
                 ("1", "Trải nghiệm và rào cản khi bắt đầu tiêm insulin", "ket_cuc_chinh", "chu_de", "van_ban", "PV",
@@ -969,6 +1092,21 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
             "ky_G2": {**_ky_g2("NOT_APPLICABLE", "REGISTERED", mien_icf=True,
                                quyet_dinh="EXEMPT", registry="PROSPERO", ma_dk="CRD42099999999"),
                       "--g2-first-search-date": "<+15>"},
+            # 22/11/2026 (PRISMA 2020 mục 16b): nhóm sàng lọc ghi các báo cáo đọc toàn văn có vẻ đạt tiêu chí (thuốc ức
+            # chế SGLT2, kết cục nhập viện vì suy tim, thử nghiệm ngẫu nhiên) nhưng bị loại — thử nghiệm THẬT, PMID và
+            # tác giả đầu đã tra PubMed 22/11/2026, kiểm rút bài (check_citation_retraction.py: không rút); lý do loại
+            # đọc từ phần Phương pháp của tóm tắt bài gốc (quần thể chỉ gồm người suy tim lúc vào nghiên cứu ⇒ trái tiêu
+            # chí loại «chỉ tuyển người suy tim lúc đầu»), thuộc nhóm «Sai quần thể» của sổ sàng lọc
+            "sang_loc_toan_van_loai": [
+                {"bao_cao": "DAPA-HF", "trich_dan": "McMurray và cộng sự 2019, PMID 31535829",
+                 "nhom_ly_do": "Sai quần thể",
+                 "ly_do": "chỉ tuyển người suy tim phân suất tống máu ≤ 40%, có hoặc không đái tháo đường"},
+                {"bao_cao": "EMPEROR-Reduced", "trich_dan": "Packer và cộng sự 2020, PMID 32865377",
+                 "nhom_ly_do": "Sai quần thể", "ly_do": "chỉ tuyển người suy tim phân suất tống máu ≤ 40%"},
+                {"bao_cao": "SOLOIST-WHF", "trich_dan": "Bhatt và cộng sự 2021, PMID 33200892",
+                 "nhom_ly_do": "Sai quần thể",
+                 "ly_do": "chỉ tuyển người đái tháo đường típ 2 vừa nhập viện vì suy tim nặng lên"},
+            ],
         },
         "dinh_tinh": {
             "G2": {**chung, "public_title": "Trải nghiệm bắt đầu tiêm insulin",
@@ -1007,6 +1145,8 @@ KHOANG_HOP_LE: Dict[str, Tuple[str, str]] = {
     "n_can_thiep": ("1", "100000"), "n_chung": ("1", "100000"),            # người/nhánh của một thử nghiệm
     "bien_co_can_thiep": ("0", "100000"), "bien_co_chung": ("0", "100000"),
     "theo_doi_thang": ("0", "240"),         # tháng
+    "so_thang_ppi": ("0", "240"),           # tháng dùng PPI liên tục trước mốc
+    "so_ngay_nsaid_30": ("0", "30"),        # ngày trong cửa sổ 30 ngày
 }
 
 
@@ -1018,7 +1158,9 @@ def bien_so_them() -> Dict[str, Dict[str, list]]:
         return KHOANG_HOP_LE.get(ten, ("", "")) if kiem in ("integer", "number") else ("", "")
 
     return {ma: {"bo_bien": [(t, k, n, lc, v, *_khoang(t, v)) for t, k, n, lc, v, _muc in hs["bo_bien"]],
-                 "ma_tran": list(hs["ma_tran"])}
+                 "ma_tran": list(hs["ma_tran"]),
+                 # 22/11/2026: logic nhánh của phiếu (vd «chẩn đoán khác» chỉ hỏi ở người không có bệnh đích)
+                 **({"meta_bien": dict(hs["meta_bien"])} if hs.get("meta_bien") else {})}
             for ma, hs in _ho_so_bien_6().items()}
 
 
@@ -1049,10 +1191,11 @@ def _nhom_gioi(ma_nam: int, ma_nu: int) -> List[Dict[str, Any]]:
 
 
 def _sd_khong_ap_dung(ly_do: str) -> Dict[str, Any]:
-    return {"id": "DN_dinh_nghia_1SD", "vai": "do_nhay", "sap_muc": "§9",
-            # 17/11/2026: khuôn SAP §9 bỏ «±1 SD» (vô nghĩa với biến nhị phân) — neo theo câu mới
-            "sap_neo": "Định nghĩa thay thế của phơi nhiễm/kết cục, khai trước khi xem dữ liệu",
-            "mo_ta": "Định nghĩa thay thế của phơi nhiễm/kết cục", "chua_tu_dong": ly_do}
+    """22/11/2026: định nghĩa thay thế nay khai ở ma trận G3 (vai trò dinh_nghia_thay_the) và SAP §9 chép cụ thể —
+    mục hồ sơ chỉ còn là DẤU để bộ giả lập dựng mục đặc tả TỪ ma trận (tools/dinh_nghia_thay_the.py). `ly_do` cũ giữ
+    trong mô tả để đọc lịch sử."""
+    return {"id": "DN_dinh_nghia", "vai": "do_nhay", "sap_muc": "§9", "tu_ma_tran": "dinh_nghia_thay_the",
+            "mo_ta": f"Định nghĩa thay thế (dựng từ ma trận G3; trước đây: {ly_do})"}
 
 
 # Bản diễn giải (G6.5) do người diễn giải viết TỪ tệp kết quả thật: số trong bảng lấy từ tóm tắt phân tích (bộ giả lập
@@ -1101,8 +1244,19 @@ _TAC_GIA_G7: Dict[str, Any] = {
                             "tích, phân tích số liệu, duyệt bản thảo (CRediT)",
     "coi_declared": "Các tác giả không có xung đột lợi ích liên quan đề tài",
     "funding_declared": "Không có tài trợ bên ngoài",
-    "data_sharing_statement": ("Dữ liệu cá thể không chia sẻ công khai theo cam kết bảo mật với người tham gia; kịch "
-                               "bản phân tích kèm gói phát hành"),
+    # 22/11/2026 (chiều, K18 CONSORT 4 / TRIPOD+AI 18e–18f): tuyên bố của tác giả nêu CÁCH truy cập mã và từ điển dữ
+    # liệu (bản cũ «kịch bản phân tích kèm gói phát hành» không nói người đọc lấy bằng cách nào); phiếu G9 chép đúng
+    # câu này.
+    "data_sharing_statement": ("Dữ liệu cá thể không chia sẻ công khai theo cam kết bảo mật với người tham gia; mã "
+                               "phân tích (kịch bản R) và từ điển dữ liệu được cung cấp theo yêu cầu gửi tác giả "
+                               "liên lạc"),
+    # 22/11/2026 (chiều, K18 CONSORT 3/10, STARD 29, TRIPOD+AI 18c, PRISMA 24b/24c): tác giả khai nơi truy cập đề cương
+    # và thay đổi so với đề cương — khớp phiếu G9 (`results_match_locked_analysis`, `analysis_deviations_disclosed`)
+    # và bảng «PHẦN 4 — THAY ĐỔI SAU KHI KHOÁ» trống của SAP các đề tài giả lập.
+    "protocol_access_statement": ("Đề cương nghiên cứu và kế hoạch phân tích thống kê đã khoá được cung cấp theo yêu "
+                                  "cầu gửi tác giả liên lạc"),
+    "protocol_changes_statement": ("Không có thay đổi nào so với đề cương và kế hoạch phân tích đã khoá sau khi bắt "
+                                   "đầu nghiên cứu"),
     "ai_use_declared": "Bản thảo được soạn với hỗ trợ của công cụ trí tuệ nhân tạo; tác giả đã đọc lại, đối chiếu số "
                        "liệu và chịu trách nhiệm toàn văn",
     "ai_manuscript_statement": ("Bản thảo được soạn với hỗ trợ của công cụ trí tuệ nhân tạo để dựng khung và chép số "
@@ -1159,12 +1313,27 @@ _PHAN_BIEN_THUAN_TAP: Dict[str, Any] = {
 }
 
 
+#: 23/11/2026: lời khai SAP §5 cho biến cố hiếm theo Firth (khớp g4_quality_gate.phuong_phap_bien_co_hiem_sap «firth»)
+TRA_LOI_FIRTH = ("hồi quy logistic Firth (hợp lý phạt Jeffreys, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt) khi số "
+                 "biến cố dưới 10 × số tham số; áp cho mọi phân tích nhị phân của SAP, kể cả tổn hại")
+#: 23/11/2026 (chiều): lời khai SAP §5 cho bệnh–chứng GHÉP CẶP CÁ THỂ — Firth có điều kiện (khớp «firth_dk»)
+TRA_LOI_FIRTH_DK = ("hồi quy logistic có điều kiện có phạt Firth theo bộ ghép (Heinze–Puhr 2010; KTC hợp lý phạt hồ "
+                    "sơ, p tỷ số hợp lý phạt) khi số ca dưới 10 × số tham số; áp cho mọi phân tích của SAP")
+#: lời khai mô tả chính xác — thiết kế CỤM giữ phương pháp này (Firth không có sai số chuẩn theo cụm)
+TRA_LOI_MO_TA_CHINH_XAC = ("mô tả số biến cố từng nhóm + KTC chính xác Clopper–Pearson + p chính xác Fisher, "
+                           "không chạy hồi quy khi số biến cố dưới 10 × số tham số; áp cho mọi phân tích nhị phân của "
+                           "SAP, kể cả tổn hại")
+
+
 def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
     nhom_gioi = "Giới (nam/nữ) — ghi trước khi xem dữ liệu"
     gia_dinh_poisson = "Kiểm quá phân tán (Pearson χ²/df), dạng tuyến tính của tuổi, VIF < 5"
     return {
         "rct_nhi_phan": {
-            "tra_loi_G4": _tra_loi_sap(
+            # 23/11/2026 (điều phối giao: «Firth khi SAP khai Firth cho biến cố hiếm»): thống kê viên RCT chọn hồi quy
+            # Firth cho biến cố hiếm (tổn hại nghiêm trọng chỉ vài biến cố) — G6 chạy Firth, đối chiếu R logistf. Mẫu
+            # cụ thể đứng TRƯỚC mẫu chung «bien co hiem» (mô tả chính xác) của TRA_LOI_CHUNG.
+            "tra_loi_G4": [(r"bien co hiem", TRA_LOI_FIRTH)] + _tra_loi_sap(
                 "Biến cố bất lợi do tin nhắn (phàn nàn, lo âu) ghi theo phiếu biến cố", "tuổi và giới là yếu tố "
                 "tiên lượng mạnh của kiểm soát huyết áp, hiệu chỉnh để tăng độ chính xác (không phải gây nhiễu do "
                 "đã ngẫu nhiên hoá)", "Kiểm dạng tuyến tính của tuổi; VIF < 5", nhom_gioi,
@@ -1246,6 +1415,15 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                                "PPI theo tháng; kết cục dựa hồ sơ có phim — có thể bỏ sót gãy không đi khám",
                 "vietnamese_references_not_applicable": "PubMed không có nghiên cứu trong nước cùng câu hỏi; chưa tra "
                                                         "tay tạp chí trong nước; bổ sung khi có",
+                # 22/11/2026 (chiều, RECORD 6.2 + 12.1): PI khai cách kiểm định mã chọn quần thể/kết cục và mức truy
+                # cập cơ sở dữ liệu — khớp định nghĩa kết cục đã chốt (mã ICD-10 + phim X-quang trong hồ sơ), phiếu thử
+                # trên 20 hồ sơ và đội 2 người trích hồ sơ ở trên
+                "routine_code_validation": ("Chưa có nghiên cứu kiểm định mã ICD-10 gãy xương tại cơ sở; nhóm tự "
+                                            "kiểm định bằng cách đối chiếu mã chẩn đoán với phim X-quang trong hồ sơ "
+                                            "cho mọi ca gãy xương và đối chiếu 20 hồ sơ của đợt thử phiếu trích"),
+                "routine_database_access": ("Nhóm nghiên cứu được đơn vị cấp quyền truy xuất hồ sơ bệnh án điện tử "
+                                            "ngoại trú của người đủ tiêu chuẩn giai đoạn 2020–2025; 2 người trích hồ "
+                                            "sơ truy xuất, người phân tích chỉ nhận bộ dữ liệu đã khử định danh"),
             },
             "tham_so_G8": {"primary_outcome": "Gãy xương mọi vị trí trong 3 năm (gay_xuong_3nam)",
                            "ai_use_declared": True, "ai_tools": "bộ giả lập trọn vòng của hệ",
@@ -1258,17 +1436,19 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
         "benh_chung": {
             "tra_loi_G4": _tra_loi_sap(
                 "Không áp dụng — nghiên cứu bệnh–chứng, không có can thiệp", "thuốc chống đông/chống kết tập và "
-                "tiền sử loét liên quan cả việc dùng NSAID lẫn xuất huyết (gây nhiễu)",
+                "tiền sử loét liên quan cả việc dùng NSAID lẫn xuất huyết (gây nhiễu); giới và tuổi là biến ghép theo "
+                "tần suất nên bắt buộc có trong mô hình logistic không điều kiện",
                 "Kiểm dạng tuyến tính của tuổi; VIF < 5", nhom_gioi, "Loại người dùng thuốc chống đông"),
             "g6": [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
                     "mo_ta": "NSAID 30 ngày và xuất huyết tiêu hoá trên (OR hiệu chỉnh)",
                     "tham_so": {"outcome": "nhom_ca", "group": "nsaid_30ngay",
-                                "covariates": ["chong_dong", "tien_su_loet"]}},
+                                "covariates": ["chong_dong", "tien_su_loet", "tuoi", "gioi"]}},
                    *_nhom_gioi(1, 0), _CC_MI,
                    _sd_khong_ap_dung("phơi nhiễm và kết cục nhị phân — định nghĩa thay thế chưa khai cụ thể"),
                    {"id": "DN_khong_chong_dong", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Loại người dùng thuốc chống đông", "mo_ta": "Chỉ người không dùng chống đông",
-                    "ke_thua": True, "tham_so": {"loc": "chong_dong == 0", "covariates": ["tien_su_loet"]}}],
+                    "ke_thua": True, "tham_so": {"loc": "chong_dong == 0",
+                                                 "covariates": ["tien_su_loet", "tuoi", "gioi"]}}],
         },
         "chan_doan": {"tra_loi_G4": _tra_loi_sap(
             "Không áp dụng — nghiên cứu chẩn đoán, chỉ lấy máu xét nghiệm thường quy", "Không áp dụng — mục tiêu "
@@ -1296,12 +1476,20 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                    _sd_khong_ap_dung("mô hình dự báo — định nghĩa thay thế chưa khai cụ thể"),
                    {"id": "DN_bootstrap", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Bootstrap 500 lần để hiệu chỉnh lạc quan",
-                    "mo_ta": "Hiệu chỉnh lạc quan bằng bootstrap",
-                    "chua_tu_dong": "chạy rms::validate trong kịch bản R đã sinh (r/G6_du_bao.R, B tuỳ SAP) — "
-                                    "engine Python báo C-statistic trong mẫu"}]},
+                    "mo_ta": "Hiệu chỉnh lạc quan bằng bootstrap 500 lần: C, độ dốc hiệu chuẩn, CITL",
+                    # 22/11/2026 (việc B): chạy THẬT — kế thừa mô hình chính (cùng quần thể, cùng yếu tố dự báo) +
+                    # bootstrap 500 lần; Python + R cùng thuật toán + rms::validate, đối chiếu theo sai số Monte Carlo
+                    # (trước: «chưa tự động», chỉ có C-statistic trong mẫu)
+                    "ke_thua": True, "tham_so": {"bootstrap": 500}}]},
         "tong_quan_gop": {"tra_loi_G4": [
             # 16/11/2026: SAP tổng quan–gộp có khung riêng (§5 tổng hợp, §6 thiếu cấp nghiên cứu, §10 metafor)
             (r"thuoc do hieu ung", "RR (nguy cơ tương đối) — kết cục nhị phân nhập viện vì suy tim"),
+            # 22/11/2026 (PRISMA-P 2015 mục 15a, 15d)
+            (r"dieu kien gop", "Chỉ gộp khi có ít nhất 2 thử nghiệm báo cùng kết cục và tương đồng lâm sàng về quần "
+                               "thể, can thiệp và định nghĩa nhập viện vì suy tim"),
+            (r"tong hop khi khong gop", "Tổng hợp mô tả theo hướng dẫn SWiM: nhóm thử nghiệm theo thuốc, trình bày RR "
+                                        "và KTC 95% từng thử nghiệm trong bảng và biểu đồ rừng không có ước lượng "
+                                        "gộp"),
             (r"phan mem", "R 4.6 (metafor 4.6); kiểm chéo SPSS 31"),
             (r"packages", "metafor 4.6, meta 8.0"),
         ] + _tra_loi_sap(
@@ -1321,8 +1509,9 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                    {"id": "DN_co_dinh", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Hiệu ứng cố định so với hiệu ứng ngẫu nhiên",
                     "mo_ta": "RR gộp hiệu ứng cố định (nghịch đảo phương sai)",
-                    "chua_tu_dong": "đã tính cùng phân tích chính — khoá rr_gop_co_dinh/ci_95_co_dinh trong "
-                                    "G6_analysis_summary.json, kiểm chéo metafor method=\"FE\" trong r/G6_gop.R"},
+                    # 22/11/2026: engine gộp tính cả hai mô hình trong một lượt; mo_hinh «co_dinh» báo ước lượng
+                    # cố định làm kết quả mục này, kiểm chéo metafor method = "FE" (trước ghi «chờ làm tay»)
+                    "ke_thua": True, "tham_so": {"mo_hinh": "co_dinh"}},
                    {"id": "DN_rob_thap", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Loại nghiên cứu nguy cơ sai lệch cao", "mo_ta": "Loại thử nghiệm RoB 2 «cao»",
                     "ke_thua": True, "tham_so": {"loc": "rob2_tong != 3"}}]},
@@ -1352,13 +1541,15 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                    {"id": "NC_chua_tiem", "vai": "nhom_con", "sap_muc": "§7", "sap_neo": "Tiêu chí đa dạng",
                     "mo_ta": "Chủ đề ở người CHƯA bắt đầu insulin", "ke_thua": True,
                     "tham_so": {"loc": "da_bat_dau_insulin == 0"}},
-                   *[{"id": f"TT_{ma}", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": neo, "mo_ta": neo,
-                      "chua_tu_dong": ly_do} for ma, neo, ly_do in (
-                       ("credibility", "Credibility",
-                        "kiểm tra lại với người tham gia — quy trình của nhóm nghiên cứu, không phải phép tính"),
-                       ("transferability", "Transferability", "mô tả dày bối cảnh — viết trong bản thảo"),
-                       ("dependability", "Dependability", "nhật ký quyết định mã hoá — lưu cùng bộ mã"))],
+                   # 22/11/2026: độ tin cậy định tính = kiểm BẰNG CHỨNG THỦ TỤC (nhật ký kiểm lại với người tham
+                   # gia · nhật ký quyết định mã hoá · mô tả dày bối cảnh) — tools/bang_chung_dinh_tinh.py
+                   *[{"id": f"TT_{ma}", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": neo, "mo_ta": mo,
+                      "tham_so": {"bang_chung": ma}} for ma, neo, mo in (
+                       ("credibility", "Credibility", "Bằng chứng kiểm lại với người tham gia (member checking)"),
+                       ("transferability", "Transferability", "Bằng chứng mô tả dày bối cảnh và người tham gia"),
+                       ("dependability", "Dependability", "Bằng chứng nhật ký quyết định mã hoá (audit trail)"))],
+                   # 22/11/2026: người mã hoá thứ hai gán mã độc lập (cột chu_de_nguoi_2) ⇒ kappa Cohen tự tính
                    {"id": "DN_hai_nguoi_ma", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Confirmability",
-                    "mo_ta": "Độ thống nhất mã hoá giữa hai người",
-                    "chua_tu_dong": "cần bộ mã của người mã hoá thứ hai để tính kappa — nhóm nghiên cứu làm"}]},
+                    "mo_ta": "Độ thống nhất mã hoá giữa hai người (kappa Cohen)", "ke_thua": True,
+                    "tham_so": {"chu_de_nguoi_2": "chu_de_nguoi_2"}}]},
     }

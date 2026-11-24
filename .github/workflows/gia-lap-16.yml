@@ -27,6 +27,10 @@ on:
       - "requirements.lock.txt"
       - ".github/workflows/gia-lap-16.yml"
   workflow_dispatch:
+  # 23/11/2026 (bác sĩ duyệt CI hai làn): chạy đủ ma trận mỗi đêm 02:00 giờ Việt Nam — bắt lỗi phụ thuộc ngày giờ
+  # (vd lượt qua nửa đêm làm G2 bị từ chối ký) và lệch phụ thuộc mà PR không đụng tới.
+  schedule:
+    - cron: "0 19 * * *"
 
 permissions:
   contents: read
@@ -60,6 +64,11 @@ jobs:
           - { kb: cohort_vong_sua, node: "test_gia_lap_bien_the_kho[cohort_vong_sua]" }
           - { kb: rct_kinh_te, node: "test_gia_lap_bien_the_kho[rct_kinh_te]" }
           - { kb: rct_hon_hop, node: "test_gia_lap_bien_the_kho[rct_hon_hop]" }
+          # 23/11/2026 — bệnh–chứng ghép cặp cá thể: logistic có điều kiện theo bộ ghép (đối chiếu R clogit, SPSS COXREG)
+          - { kb: case_control_ghep_cap, node: "test_gia_lap_bien_the_kho[case_control_ghep_cap]" }
+          # 23/11/2026 (chiều) — ghép cặp cá thể: gán đa trị giữ cấu trúc ghép · biến cố hiếm Firth có điều kiện
+          - { kb: case_control_ghep_cap_thieu, node: "test_gia_lap_bien_the_kho[case_control_ghep_cap_thieu]" }
+          - { kb: case_control_ghep_cap_hiem, node: "test_gia_lap_bien_the_kho[case_control_ghep_cap_hiem]" }
           # 17/11/2026 — 8 kịch bản CHÂN THỰC (phiếu nhiều phần, sàng lọc, nhánh, calc, dữ liệu sinh từ từ điển G5) +
           # phép kiểm độ chính xác: ước lượng chính phải tìm lại tham số dùng để sinh dữ liệu (tools/gia_lap_chan_thuc.py)
           - { kb: rct_chan_thuc, node: "test_gia_lap_chan_thuc[rct_chan_thuc]" }
@@ -117,9 +126,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Cả 24 kịch bản phải xanh (huỷ/bỏ qua cũng là ĐỎ)
+      - name: Cả 27 kịch bản phải xanh (huỷ/bỏ qua cũng là ĐỎ)
         env:
           KET_QUA: ${{ needs.kich-ban.result }}
         run: |
           [ "$KET_QUA" = "success" ] || { echo "kich-ban: $KET_QUA" >&2; exit 1; }
-          echo "✅ 24/24 kịch bản giả lập khoá được gói G10 (8 kịch bản chân thực tìm lại đúng tham số)"
+          echo "✅ 27/27 kịch bản giả lập khoá được gói G10 (8 kịch bản chân thực tìm lại đúng tham số)"

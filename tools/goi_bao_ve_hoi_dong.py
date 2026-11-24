@@ -9,11 +9,14 @@ không triệu tập hội đồng, không gọi agent, không gọi API (CLAUDE
 
 Đầu ra (tên MỚI — không đè artifact hợp đồng nào; `exports/` bị .gitignore nên không vào git):
   exports/<mã>/GOI_BAO_VE_DAN_SLIDE_<mã>.md  (+ .docx)  — dàn slide theo đúng các mục của đề cương nộp;
-  exports/<mã>/GOI_BAO_VE_CAU_HOI_<mã>.md    (+ .docx)  — câu hỏi phản biện dự kiến, mỗi câu ghi nguồn.
-Word dựng bằng `tools/md_sang_docx_times.py` của REPO GỐC (Times New Roman, `--trang-de-cuong`: mỗi slide một trang).
+  exports/<mã>/GOI_BAO_VE_CAU_HOI_<mã>.md    (+ .docx)  — câu hỏi phản biện dự kiến, mỗi câu ghi nguồn;
+  exports/<mã>/GOI_BAO_VE_TRINH_CHIEU_<mã>.pptx         — tệp trình chiếu 16:9 dựng từ CHÍNH dàn slide (22/11/2026).
+Word dựng bằng `tools/md_sang_docx_times.py` của REPO GỐC (Times New Roman, `--trang-de-cuong`: mỗi slide một trang);
+.pptx dựng bằng python-pptx (requirements.txt).
 
 Nguồn CHỈ ĐỌC: `DE_CUONG_NOP_HOI_DONG_<mã>.md`, `hoi_dong/G*/` (biên bản tranh biện, biên bản xử lý việc sửa, sổ
-quyết định bác sĩ), `PHAN_BIEN_DE_CUONG_NOP*_<mã>.md` (bản mới nhất), `G3_checkpoint.json` (N đã chốt).
+quyết định bác sĩ), `hoi_dong_khoa_hoc/QUYET_DINH_HOI_DONG_*.md` (sổ quyết định có căn cứ của hội đồng nghiên cứu),
+`PHAN_BIEN_DE_CUONG_NOP*_<mã>.md` (bản mới nhất), `G3_checkpoint.json` (N đã chốt), `bieu-bang/` (hình của đề cương).
 
 Luật:
   S1  Mỗi slide trỏ đúng mục và số dòng đề cương; nội dung là CÂU NGUYÊN VĂN chọn từ mục đó — không cắt câu, không
@@ -28,6 +31,11 @@ Luật:
       trong đề cương hiện hành (không còn ⇒ cảnh báo, không trình như đã sửa).
   Q4  Đề tài chưa có biên bản tranh biện ⇒ nói rõ; câu hỏi lấy từ báo cáo phản biện + mục hạn chế/sai số của đề cương,
       ghi nhãn từng nhóm.
+  Q5  Sổ quyết định của hội đồng nghiên cứu: mỗi mục «### <mã> — <vấn đề>» là một câu (nhóm D), gợi ý chép NGUYÊN VĂN
+      quyết định và căn cứ; phần «Mới» thay vào đề cương nộp được đối chiếu với bản hiện hành (không còn ⇒ cảnh báo).
+  S3  Tệp trình chiếu: mỗi trang là slide của dàn (câu nguyên văn, chân trang + ghi chú trỏ mục/dòng), bảng nguồn thành
+      bảng thật, hình `bieu-bang/` nhúng đúng tệp; chữ thân ≥ 18 pt; khung chữ đo bằng phông thật, không vừa thì sang
+      trang «(tiếp)»; `kiem_pptx` mở lại tệp và kiểm số trang, nguồn, ảnh, nguyên văn, tràn khung.
   P1  Quét mẫu định danh (SĐT · CCCD · email — cùng bộ mẫu biên bản hội đồng dùng) trên cả hai đầu ra; có ⇒ KHÔNG ghi.
 
 Ranh giới: TƯ VẤN cho chủ nhiệm — không sửa đề cương/biên bản/sổ cái, không ký, không mở/chặn cổng. Nội dung chuyên
@@ -37,13 +45,15 @@ Lệnh:
   python3 tools/goi_bao_ve_hoi_dong.py --study <mã> [--xem] [--json]          # CHẠY KHÔ (mặc định): không ghi gì
   python3 tools/goi_bao_ve_hoi_dong.py --study <mã> --ghi [--khong-word]       # ghi vào exports/<mã>/
   python3 tools/goi_bao_ve_hoi_dong.py --study <mã> --ghi --thu-muc-ra <dir>   # ghi bản xem thử ra thư mục khác
-Mã thoát: 0 xong · 1 đã ghi .md nhưng chưa xuất được Word · 2 thiếu đề cương nộp · 3 tham số sai / đầu ra có mẫu PII.
+Mã thoát: 0 xong · 1 đã ghi .md nhưng chưa xuất được Word hoặc tệp trình chiếu chưa đạt kiểm · 2 thiếu đề cương nộp ·
+3 tham số sai / đầu ra có mẫu PII.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import subprocess
@@ -164,6 +174,8 @@ class Cau:
     la_muc_ds: bool = False
     dau_doan: bool = False
     phu: str = ""
+    # tiêu đề NGUYÊN VĂN của hai cột bảng nguồn (ô đầu, cột «biện pháp») — tệp trình chiếu dựng lại bảng thật
+    cot: Tuple[str, str] = ("", "")
 
 
 def tach_cau(van: str) -> List[str]:
@@ -195,14 +207,16 @@ def cau_cua_bang(dong: Sequence[str], muc: Muc) -> List[Cau]:
         s = dong[i - 1].strip()
         if not (s.startswith("|") and re.match(r"^\|[\s:|-]+\|?\s*$", dong[i].strip())):
             continue
-        dau = [_chuan(o) for o in s.strip("|").split("|")]
+        goc = [o.strip() for o in s.strip("|").split("|")]
+        dau = [_chuan(o) for o in goc]
         k_bp = next((k for k, o in enumerate(dau) if "biện pháp" in o), None)
+        cot = (goc[0], goc[k_bp] if k_bp is not None else "")
         ra: List[Cau] = []
         j = i + 2
         while j <= muc.het and dong[j - 1].strip().startswith("|"):
             o = [x.strip() for x in dong[j - 1].strip().strip("|").split("|")]
             if o and o[0]:
-                ra.append(Cau(o[0], j, phu=o[k_bp] if k_bp is not None and k_bp < len(o) else ""))
+                ra.append(Cau(o[0], j, phu=o[k_bp] if k_bp is not None and k_bp < len(o) else "", cot=cot))
             j += 1
         return ra
     return []
@@ -899,6 +913,101 @@ def cau_hoi_de_cuong(dong: Sequence[str]) -> List[CauHoi]:
     return ra
 
 
+# ── Câu hỏi từ sổ quyết định của hội đồng nghiên cứu (22/11/2026) ─────────────────────────────────────────────────────
+# Sổ `hoi_dong_khoa_hoc/QUYET_DINH_HOI_DONG_*.md`: mỗi mục «### <mã> — <vấn đề>» là một vấn đề hội đồng nghiên cứu của
+# hệ đã nêu, kèm «- Quyết định:», các dòng «- Căn cứ:» và các khối «- Thay ở `<tệp>` dòng N» với «  - Cũ:»/«  - Mới:».
+# Vấn đề ⇒ câu Hội đồng bệnh viện có thể hỏi; gợi ý trả lời CHỈ chép nguyên văn quyết định, căn cứ và phần đề cương đã
+# thay (luật Q2) — phần «Mới» trỏ vào đề cương nộp được xác minh còn nguyên văn trong bản hiện hành (cùng tinh thần Q3).
+THU_MUC_HDKH = "hoi_dong_khoa_hoc"
+MAU_SO_QD = "QUYET_DINH_HOI_DONG_*.md"
+_QD_MUC_RE = re.compile(r"^###\s+(\S+)\s+—\s+(.+\S)\s*$")
+_QD_THAY_RE = re.compile(r"^- Thay ở `([^`]+)` dòng (\d+)")
+_QD_CU_MOI_RE = re.compile(r"^\s+- (Cũ|Mới):\s?(.*)$")
+_QD_PHAN_RE = re.compile(r"^## (?:Thành viên|Tài liệu)")
+
+
+def doc_so_quyet_dinh(p: Path) -> List[Dict[str, Any]]:
+    """[{ma, van_de, dong, quyet_dinh, can_cu: [...], thay: [{tep, dong, moi}]}] của MỘT sổ quyết định."""
+    try:
+        dong = p.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        return []
+    ra: List[Dict[str, Any]] = []
+    cur: Optional[Dict[str, Any]] = None
+    thay: Optional[Dict[str, Any]] = None
+    dang_moi = False
+    for i, d in enumerate(dong, 1):
+        m = _QD_MUC_RE.match(d)
+        # Đoạn «Cũ»/«Mới» chép nguyên khối đề cương nên có thể chứa đề mục «## 3.7. …» hay dòng «- …»: trong khối thay,
+        # chỉ đề mục cấu trúc của sổ («## Thành viên…», «## Tài liệu…») và ba gạch đầu dòng của sổ mới kết thúc khối.
+        if m or (d.startswith("## ") and (thay is None or _QD_PHAN_RE.match(d))):
+            cur, thay, dang_moi = None, None, False
+            if m:
+                cur = {"ma": m.group(1), "van_de": m.group(2), "dong": i, "quyet_dinh": "", "can_cu": [], "thay": []}
+                ra.append(cur)
+            continue
+        if cur is None:
+            continue
+        if d.startswith(("- Quyết định:", "- Căn cứ:", "- Thay ở ")) or (thay is None and d.startswith("- ")):
+            dang_moi = False
+            thay = None
+            if d.startswith("- Quyết định:"):
+                cur["quyet_dinh"] = d[len("- Quyết định:"):].strip()
+            elif d.startswith("- Căn cứ:"):
+                cur["can_cu"].append(d[len("- Căn cứ:"):].strip())
+            else:
+                mt = _QD_THAY_RE.match(d)
+                if mt:
+                    thay = {"tep": mt.group(1), "dong": int(mt.group(2)), "moi": []}
+                    cur["thay"].append(thay)
+            continue
+        mk = _QD_CU_MOI_RE.match(d)
+        if thay is not None and mk:
+            dang_moi = mk.group(1) == "Mới"
+            if dang_moi:
+                thay["moi"].append(mk.group(2).strip())
+            continue
+        if dang_moi and thay is not None and d.strip():
+            thay["moi"].append(d.strip())
+    return ra
+
+
+def cau_hoi_so_quyet_dinh(out_dir: Path, dong: Sequence[str], ten_dc: str) -> Tuple[List[CauHoi], List[str]]:
+    """Nhóm câu hỏi D: vấn đề trong các sổ quyết định của hội đồng nghiên cứu (mới nhất trước theo tên tệp)."""
+    tep = sorted((Path(out_dir) / THU_MUC_HDKH).glob(MAU_SO_QD))
+    van_dc = "\n".join(dong)
+    ra: List[CauHoi] = []
+    for p in tep:
+        for qd in doc_so_quyet_dinh(p):
+            ch = CauHoi("", "D", f"{qd['ma']} — sổ {p.name}", qd["van_de"],
+                        f"{THU_MUC_HDKH}/{p.name}, dòng {qd['dong']}")
+            if la_noi_bo(ch.chat_van):
+                ch.noi_bo = loai_noi_bo(ch.chat_van)
+            if qd["quyet_dinh"]:
+                ch.goi_y.append(GoiY("Quyết định của hội đồng nghiên cứu:", qd["quyet_dinh"]))
+            for cc in qd["can_cu"]:
+                ch.goi_y.append(GoiY("Căn cứ:", cc))
+            khac: List[str] = []
+            for t in qd["thay"]:
+                if Path(t["tep"]).name != ten_dc:
+                    khac.append(Path(t["tep"]).name)
+                    continue
+                mau = next((x for x in t["moi"] if x.strip()), "")
+                k = next((n for n, x in enumerate(dong, 1) if mau and mau in x), None)
+                if k is None or mau not in van_dc:
+                    ch.goi_y.append(GoiY(f"⚠ Phần đề cương thay theo quyết định (dòng gốc {t['dong']}) không còn "
+                                         "nguyên văn trong bản hiện hành — đối chiếu lại trước khi trả lời.",
+                                         canh_bao=True))
+                else:
+                    ch.goi_y.append(GoiY(f"Đề cương hiện hành, dòng {k} (phần đã thay theo quyết định):",
+                                         _cau_chua(dong[k - 1], mau[:80])))
+            if khac:
+                ch.goi_y.append(GoiY("Quyết định còn thay ở tài liệu khác, không thuộc đề cương nộp: "
+                                     + ", ".join(dict.fromkeys(khac)) + "."))
+            ra.append(ch)
+    return ra, [p.name for p in tep]
+
+
 # ── Kết xuất bộ câu hỏi ──────────────────────────────────────────────────────────────────────────────────────────────
 
 def _dong_goi_y(g: GoiY) -> str:
@@ -913,14 +1022,18 @@ def _noi_bo(nh: NhomBienBan) -> List[CauHoi]:
     return [c for c in nh.cau if c.noi_bo]
 
 
-def _danh_so(nhom_bb: Sequence[NhomBienBan], cau_b: Sequence[CauHoi], cau_c: Sequence[CauHoi]) -> None:
-    """Đánh số đúng thứ tự kết xuất: A (khoa học/đạo đức — phần chính rồi lượt cũ) · B · C · N (quy trình nội bộ)."""
+def _danh_so(nhom_bb: Sequence[NhomBienBan], cau_b: Sequence[CauHoi], cau_c: Sequence[CauHoi],
+             cau_d: Sequence[CauHoi] = ()) -> None:
+    """Đánh số đúng thứ tự kết xuất: A (khoa học/đạo đức — phần chính rồi lượt cũ) · B · D (sổ quyết định hội đồng
+    nghiên cứu) · C · N (quy trình nội bộ)."""
     chinh = [x for x in nhom_bb if x.cu_hon is None]
     cu = [x for x in nhom_bb if x.cu_hon is not None]
     for i, ch in enumerate([c for nh in chinh + cu for c in _khoa_hoc(nh)], 1):
         ch.ma = f"A{i}"
     for i, ch in enumerate(cau_b, 1):
         ch.ma = f"B{i}"
+    for i, ch in enumerate(cau_d, 1):
+        ch.ma = f"D{i}"
     for i, ch in enumerate(cau_c, 1):
         ch.ma = f"C{i}"
     for i, ch in enumerate([c for nh in chinh + cu for c in _noi_bo(nh)], 1):
@@ -982,7 +1095,7 @@ def _render_nhom_bb(nh: NhomBienBan, cau: Sequence[CauHoi], co_chung: bool) -> L
 
 def render_cau_hoi(ten_de_tai: str, ten_dc: str, so_dong: int, sha: str, nhom_bb: Sequence[NhomBienBan],
                    dem_bb: Dict[str, int], bc: Optional[BaoCao], cau_b: Sequence[CauHoi],
-                   cau_c: Sequence[CauHoi]) -> str:
+                   cau_c: Sequence[CauHoi], cau_d: Sequence[CauHoi] = (), tep_qd: Sequence[str] = ()) -> str:
     chinh = [x for x in nhom_bb if x.cu_hon is None]
     cu = [x for x in nhom_bb if x.cu_hon is not None]
     so_a = sum(len(_khoa_hoc(x)) for x in nhom_bb)
@@ -1001,13 +1114,16 @@ def render_cau_hoi(ten_de_tai: str, ten_dc: str, so_dong: int, sha: str, nhom_bb
         out.append(f"| Biên bản không đọc được | {dem_bb['hong']} (bỏ qua) |")
     out.append(f"| Báo cáo phản biện đề cương | {'`' + bc.tep.name + '` (ngày ' + bc.ngay + ')' if bc else 'không có'}"
                + (f"; bản cũ hơn không dùng: {', '.join(bc.tep_khac)}" if bc and bc.tep_khac else "") + " |")
+    out.append(f"| Sổ quyết định hội đồng nghiên cứu | {len(tep_qd)} sổ"
+               + (f" ({', '.join('`' + x + '`' for x in tep_qd)})" if tep_qd else "") + f", {len(cau_d)} vấn đề |")
     out += ["", f"Tổng: {so_a} câu từ biên bản (nhóm A) · {len(cau_b)} câu từ báo cáo phản biện (nhóm B)"
+            + (f" · {len(cau_d)} câu từ sổ quyết định hội đồng nghiên cứu (nhóm D)" if cau_d else "")
             + (f" · {len(cau_c)} câu từ đề cương (nhóm C)" if cau_c else "")
             + (f" · {so_n} phản đối thiên về quy trình nội bộ để tra (nhóm N, cuối tài liệu)" if so_n else "") + ".",
             ""]
-    # bảng tra theo mục phiếu nhận xét (các câu khoa học A, B, C; không gồm nhóm N)
+    # bảng tra theo mục phiếu nhận xét (các câu khoa học A, B, D, C; không gồm nhóm N)
     theo_tc: Dict[str, List[str]] = {}
-    for ch in [c for nh in nhom_bb for c in _khoa_hoc(nh)] + list(cau_b) + list(cau_c):
+    for ch in [c for nh in nhom_bb for c in _khoa_hoc(nh)] + list(cau_b) + list(cau_d) + list(cau_c):
         theo_tc.setdefault(tieu_chi_phieu(ch)[0], []).append(ch.ma)
     if theo_tc:
         out += ["Xếp theo mục của Phiếu nhận xét (Phụ lục 2 hướng dẫn chung; gợi ý máy theo từ khoá):", "",
@@ -1044,6 +1160,14 @@ def render_cau_hoi(ten_de_tai: str, ten_dc: str, so_dong: int, sha: str, nhom_bb
                 "(bảng có cột «Vấn đề/Góp ý»; mục «Đ1./O1.» có trường «Vấn đề») — chủ nhiệm đọc trực tiếp.", ""]
     for ch in cau_b:
         out += _render_cau(ch)
+    if tep_qd:
+        out += ["## D. Từ sổ quyết định của hội đồng nghiên cứu (vấn đề đã nêu và quyết định có căn cứ)", "",
+                "Mỗi câu là một vấn đề hội đồng nghiên cứu của hệ đã nêu khi rà đề tài; gợi ý trả lời chép nguyên văn "
+                "quyết định, căn cứ và phần đề cương đã thay (phần thay được đối chiếu với đề cương hiện hành).", ""]
+        if not cau_d:
+            out += ["Các sổ không có mục vấn đề «### <mã> — <vấn đề>» nào đọc được.", ""]
+        for ch in cau_d:
+            out += _render_cau(ch)
     if cau_c:
         out += ["## C. Từ chính đề cương (nhãn: KHÔNG phải phản đối thật — chỉ dùng khi chưa có biên bản)", ""]
         for ch in cau_c:
@@ -1058,6 +1182,451 @@ def render_cau_hoi(ten_de_tai: str, ten_dc: str, so_dong: int, sha: str, nhom_bb
     while out and out[-1] in ("", "---"):
         out.pop()
     return "\n".join(out) + "\n"
+
+
+# ── Tệp trình chiếu .pptx (22/11/2026) ───────────────────────────────────────────────────────────────────────────────
+# Bác sĩ (22/11/2026): «Những vấn đề còn lại … có nền hay chưa có nền hãy hoàn thiện, bổ sung và nâng cấp đạt chuẩn».
+# Dàn slide .md/.docx chưa trình chiếu được. Tệp .pptx dựng từ CHÍNH các slide của dàn (luật S1: mọi câu nguyên văn, mỗi
+# slide trỏ mục và số dòng đề cương ở chân trang và ghi chú người trình bày), bảng nguồn dựng lại thành bảng thật, hình
+# và biểu đồ của đề cương (`bieu-bang/`) nhúng đúng tệp, mỗi hình một slide kèm ghi chú nguyên văn của hình.
+# Trình bày: 16:9, Times New Roman; thân chữ thử 24 → 18 pt (18 pt là cỡ nhỏ nhất đọc được từ cuối phòng họp), không vừa
+# một trang ở 20 pt thì sang trang «(tiếp)» ở 20 pt — không thu chữ nhỏ hơn, không cắt câu. Khung chữ được ĐO bằng phông
+# thật (PIL) để không tràn; `kiem_pptx` mở lại tệp và đo lại.
+TEN_PPTX = "GOI_BAO_VE_TRINH_CHIEU_{study}.pptx"
+KHO_SLIDE = (13.333, 7.5)  # inch, 16:9
+LE = 0.55
+KHUNG_TIEU_DE = (LE, 0.3, KHO_SLIDE[0] - 2 * LE, 1.0)
+KHUNG_THAN = (LE, 1.4, KHO_SLIDE[0] - 2 * LE, 5.4)
+KHUNG_CHAN = (LE, 6.95, KHO_SLIDE[0] - 2 * LE, 0.4)
+CO_TIEU_DE = (30, 28, 26, 24)
+CO_THAN = (24, 22, 20, 18)
+CO_THAN_TRANG = 20  # cỡ khi phải sang trang «(tiếp)»
+CO_CHAN = 12
+GIAN_DONG = 1.2   # chiều cao dòng = 1,2 × cỡ chữ (dãn dòng đơn của PowerPoint)
+CACH_DOAN = 6     # pt sau mỗi đoạn
+LUI_GACH = 0.3    # inch, thụt treo của gạch đầu dòng
+LE_TRONG = (0.1, 0.05)  # inch, lề trong khung chữ (trái/phải, trên/dưới)
+DU_PHONG = 0.95   # khung chữ chỉ được dùng tới 95% chiều cao (sai số đo phông)
+MAU_TIEU_DE = (0x1F, 0x3A, 0x5F)
+MAU_CHAN = (0x59, 0x59, 0x59)
+_PHONG: Dict[bool, Any] = {}
+_HINH_RE = re.compile(r"^!\[[^\]]*\]\(([^)]+)\)\s*$")
+_CHU_HINH_RE = re.compile(r"^\*\*((?:Hình|Biểu đồ)\s+\d+\.\d+)\.\s+(.+?)\.?\*\*\s*$")
+
+
+def _duong_phong(dam: bool) -> str:
+    """Tệp phông Times New Roman (máy không có — vd CI Linux — thì phông có chân mặc định của matplotlib; phép đo và
+    phép kiểm dùng cùng một phông nên vẫn nhất quán)."""
+    import logging  # noqa: PLC0415
+
+    logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+    from matplotlib import font_manager as fm  # noqa: PLC0415
+
+    return fm.findfont(fm.FontProperties(family="Times New Roman", weight="bold" if dam else "normal"))
+
+
+def _emu_tron_len(inch: float) -> int:
+    """Inch → EMU làm tròn LÊN (23/11/2026). `pptx.util.Inches` cắt phần lẻ: 0,92 inch tính ra 841 247,9999… EMU bị
+    ghi 841 247 — hàng bảng thấp hơn chiều cao đã đo 1 EMU (≈ 1,09·10⁻⁶ inch, vượt dung sai 10⁻⁶ của `kiem_pptx`).
+    Trên CI Linux (phông DejaVu) một hàng rơi đúng biên đó ⇒ 6 test đỏ. Làm tròn lên ⇒ khung không bao giờ thấp hơn
+    chữ đo được."""
+    return int(math.ceil(inch * 914400 - 1e-6))
+
+
+def _rong_pt(van: str, co: float, dam: bool) -> float:
+    """Bề rộng (pt) của chuỗi ở cỡ `co` pt — đo bằng phông thật."""
+    from PIL import ImageFont  # noqa: PLC0415
+
+    if dam not in _PHONG:
+        _PHONG[dam] = ImageFont.truetype(_duong_phong(dam), 100)
+    return _PHONG[dam].getlength(van) * co / 100.0
+
+
+def so_dong_chu(van: str, co: float, dam: bool, rong_in: float) -> int:
+    """Số dòng khi ngắt từ trong khung rộng `rong_in` inch (thuật toán ngắt tham lam như PowerPoint)."""
+    rong = rong_in * 72.0
+    tong = 0
+    for doan in str(van).split("\n"):
+        dong, cur = 1, 0.0
+        for tu in doan.split():
+            w = _rong_pt(tu, co, dam)
+            cach = _rong_pt(" ", co, dam) if cur else 0.0
+            if cur and cur + cach + w > rong:
+                dong += 1
+                cur = w
+            else:
+                cur += cach + w
+            while cur > rong:  # một từ dài hơn cả dòng — PowerPoint ngắt giữa từ
+                dong += 1
+                cur -= rong
+        tong += dong
+    return tong
+
+
+def do_cao_doan(doan: Sequence[Tuple[str, float, bool, float]], rong_in: float) -> float:
+    """Chiều cao (inch) của các đoạn [(chữ, cỡ, đậm, thụt trái inch)] trong khung rộng `rong_in` (đã trừ lề trong)."""
+    cao = 0.0
+    for van, co, dam, lui in doan:
+        cao += so_dong_chu(van, co, dam, rong_in - lui) * co * GIAN_DONG / 72.0 + CACH_DOAN / 72.0
+    return cao
+
+
+def _chu_tron(v: str) -> str:
+    """Bỏ dấu nhấn Markdown (**, ***, `) — chữ vẫn nguyên văn."""
+    return re.sub(r"\*{2,3}|`", "", _bo_nhan_manh(str(v))).strip()
+
+
+def hinh_de_cuong(dong: Sequence[str], out_dir: Path) -> List[Dict[str, Any]]:
+    """Mọi hình/biểu đồ của đề cương: [{rel, tep, so, ten, dong, ghi_chu, co_tep}] theo thứ tự xuất hiện."""
+    ra = []
+    for i, d in enumerate(dong):
+        m = _HINH_RE.match(d.strip())
+        if not m:
+            continue
+        j = i + 1
+        while j < len(dong) and not dong[j].strip():
+            j += 1
+        mc = _CHU_HINH_RE.match(dong[j].strip()) if j < len(dong) else None
+        if not mc:
+            continue
+        g = j + 1
+        while g < len(dong) and not dong[g].strip():
+            g += 1
+        ghi = dong[g].strip() if g < len(dong) and _GHI_CHU_RE.match(dong[g].strip()) else ""
+        tep = (Path(out_dir) / m.group(1)).resolve()
+        ra.append({"rel": m.group(1), "tep": tep, "so": mc.group(1), "ten": mc.group(2), "dong": j + 1,
+                   "ghi_chu": re.sub(r"^\*?\s*Ghi chú\s*:\s*\*?\s*", "", ghi).strip(),
+                   "co_tep": tep.is_file() and Path(out_dir).resolve() in tep.parents})
+    return ra
+
+
+def _neo_hinh(ten: str) -> str:
+    """Slide mà hình đứng ngay sau: sơ đồ chọn ⇒ «Phương pháp chọn mẫu»; khung lý thuyết ⇒ «Khoảng trống»; sơ đồ nhân
+    quả ⇒ «Xử lý và phân tích»; còn lại (khung bảng/biểu đồ dự kiến) ⇒ «Dự kiến kết quả». Sơ đồ nhân quả xét TRƯỚC:
+    tên kiểu «Sơ đồ nhân quả (DAG) lựa chọn biến» cũng chứa chữ «chọn»."""
+    if re.search(r"nhân quả|\bDAG\b", ten):
+        return "phan_tich"
+    if re.search(r"[Ss]ơ đồ.*(?:chọn|tuyển|STROBE|CONSORT|STARD|PRISMA|TRIPOD|COREQ)", ten):
+        return "chon_mau"
+    if re.search(r"khung (?:lý thuyết|khái niệm)", ten, re.I):
+        return "khoang_trong"
+    return "du_kien"
+
+
+def _muc_ngan(nguon: Sequence[str]) -> str:
+    """Chân trang: các mục đề cương của slide («mục 2.5.2 «Phương pháp chọn mẫu»» ⇒ «mục 2.5.2»)."""
+    ra = []
+    for x in nguon:
+        m = re.match(r"^mục (\S.*?) «", x)
+        t = f"mục {m.group(1)}" if m else re.split(r", dòng | ở dòng ", x)[0]
+        if t not in ra:
+            ra.append(t)
+    return "; ".join(ra)
+
+
+@dataclass
+class TrangPptx:
+    """Một trang của tệp trình chiếu (trước khi ghi): khối chữ/bảng hoặc một hình."""
+    loai: str  # noi_dung · hinh · ten_de_tai
+    tieu_de: str
+    chan: str
+    ghi: str
+    khoi: List[Tuple[str, Any]] = field(default_factory=list)  # ("chu", [(van, dam, gach)]) · ("bang", (cot, hang))
+    co: float = CO_THAN[0]
+    hinh: Optional[Dict[str, Any]] = None
+    nguon: List[str] = field(default_factory=list)
+
+
+def _khoi_cua_slide(s: Slide) -> List[Tuple[str, Any]]:
+    """Khối hiển thị của một slide dàn: nhãn phụ in đậm, câu nguyên văn có gạch đầu dòng, hàng bảng ⇒ bảng thật."""
+    ra: List[Tuple[str, Any]] = []
+    for nhan_phu, ds in s.khoi:
+        chu: List[Tuple[str, bool, bool]] = [(nhan_phu, True, False)] if nhan_phu else []
+        if ds and all(c.phu for c in ds) and ds[0].cot[1]:
+            if chu:
+                ra.append(("chu", chu))
+            ra.append(("bang", (ds[0].cot, [(_chu_tron(c.van), _chu_tron(c.phu)) for c in ds])))
+            continue
+        chu += [(_chu_tron(c.van), False, True) for c in ds]
+        if chu:
+            ra.append(("chu", chu))
+    return ra
+
+
+def _cao_khoi(k: Tuple[str, Any], co: float, rong: float) -> float:
+    if k[0] == "chu":
+        return do_cao_doan([(v, co, d, LUI_GACH if g else 0.0) for v, d, g in k[1]], rong - 2 * LE_TRONG[0]) + \
+            2 * LE_TRONG[1]
+    cot, hang = k[1]
+    return _cao_hang_bang(cot, co, rong, True) + sum(_cao_hang_bang(h, co, rong) for h in hang)
+
+
+def _cao_hang_bang(hang: Tuple[str, str], co: float, rong: float, dam: bool = False) -> float:
+    """Chiều cao (inch) một hàng bảng hai cột 40% / 60% ở cỡ `co`."""
+    r = (rong * 0.4, rong * 0.6)
+    return max(so_dong_chu(_chu_tron(v), co, dam, w - 2 * LE_TRONG[0]) for v, w in zip(hang, r)) \
+        * co * GIAN_DONG / 72.0 + 2 * LE_TRONG[1] + 0.02
+
+
+def _chia_trang(khoi: List[Tuple[str, Any]], co: float, cao_toi_da: float, rong: float) -> List[List[Tuple[str, Any]]]:
+    """Chia các khối vào trang ở cỡ `co`: không cắt câu; khối chữ chia theo đoạn, bảng chia theo hàng (lặp tiêu đề)."""
+    trang: List[List[Tuple[str, Any]]] = [[]]
+    cao = 0.0
+    for k in khoi:
+        manh: List[Tuple[str, Any]] = ([("chu", [x]) for x in k[1]] if k[0] == "chu"
+                                       else [("bang", (k[1][0], [h])) for h in k[1][1]])
+        for m in manh:
+            h = _cao_khoi(m, co, rong)
+            if trang[-1] and cao + h > cao_toi_da:
+                trang.append([])
+                cao = 0.0
+            cuoi = trang[-1][-1] if trang[-1] else None
+            if cuoi and cuoi[0] == m[0] == "chu":
+                trang[-1][-1] = ("chu", cuoi[1] + m[1])
+            elif cuoi and cuoi[0] == m[0] == "bang" and cuoi[1][0] == m[1][0]:
+                trang[-1][-1] = ("bang", (cuoi[1][0], cuoi[1][1] + m[1][1]))
+            else:
+                trang[-1].append(m)
+            cao = sum(_cao_khoi(x, co, rong) for x in trang[-1])
+    return [t for t in trang if t]
+
+
+def dung_trang_pptx(slides: Sequence[Slide], ten_de_tai: str, dong: Sequence[str], out_dir: Path,
+                    ten_dc: str) -> Tuple[List[TrangPptx], List[str]]:
+    """Các trang trình chiếu + cảnh báo (hình thiếu tệp…). Mỗi trang mang nguồn (mục, dòng) của slide dàn."""
+    rong, cao_than = KHUNG_THAN[2], KHUNG_THAN[3] * DU_PHONG
+    canh_bao: List[str] = []
+    hinh = hinh_de_cuong(dong, out_dir)
+    theo_neo: Dict[str, List[Dict[str, Any]]] = {}
+    for h in hinh:
+        if not h["co_tep"]:
+            canh_bao.append(f"{h['so']}: không thấy tệp {h['rel']} — không nhúng (dựng lại hình của đề cương trước)")
+            continue
+        theo_neo.setdefault(_neo_hinh(h["ten"]), []).append(h)
+    ra: List[TrangPptx] = []
+    for s in slides:
+        ghi = ("Ghi chú người trình bày — nguồn: " + ("; ".join(s.nguon) if s.nguon else "không có") + ".")
+        ghi += "".join(f"\n⚠ {c}." for c in s.canh_bao)
+        if s.khoa == "ten_de_tai":
+            ra.append(TrangPptx("ten_de_tai", ten_de_tai or "Tên đề tài", f"Đề cương nộp: {ten_dc}", ghi,
+                                [("chu", [("Chủ nhiệm đề tài: ……………………… (điền tay)", False, False),
+                                          ("Đơn vị: ……………………… (điền tay)", False, False)])], 24, nguon=s.nguon))
+        else:
+            khoi = _khoi_cua_slide(s) or [("chu", [("(Đề cương không có nội dung cho slide này — xem ghi chú.)",
+                                                     False, False)])]
+            co = next((c for c in CO_THAN if sum(_cao_khoi(k, c, rong) for k in khoi) <= cao_than), None)
+            phan = [khoi] if co is not None else _chia_trang(khoi, CO_THAN_TRANG, cao_than, rong)
+            co = co or CO_THAN_TRANG
+            for k, p in enumerate(phan):
+                td = f"{s.so}. {s.tieu_de}" + (" (tiếp)" if k else "")
+                ra.append(TrangPptx("noi_dung", td, f"Đề cương nộp: {_muc_ngan(s.nguon)}", ghi, p, co, nguon=s.nguon))
+        for h in theo_neo.get(s.khoa, []):
+            g = (f"Ghi chú người trình bày — nguồn: {h['rel']}, {h['so']} ở dòng {h['dong']} của đề cương nộp.")
+            if h["ghi_chu"]:
+                g += f"\nGhi chú của hình (nguyên văn): {h['ghi_chu']}"
+            ra.append(TrangPptx("hinh", f"{h['so']}. {h['ten']}", f"Đề cương nộp: {h['so']} (dòng {h['dong']})", g,
+                                hinh=h, nguon=[f"{h['so']} ở dòng {h['dong']}"]))
+    return ra, canh_bao
+
+
+def _rgb(m: Tuple[int, int, int]):
+    from pptx.dml.color import RGBColor  # noqa: PLC0415
+
+    return RGBColor(*m)
+
+
+def _ghi_doan(tf, doan: Sequence[Tuple[str, float, bool, bool]], mau: Optional[Tuple[int, int, int]] = None,
+              giua: bool = False) -> None:
+    """Ghi các đoạn [(chữ, cỡ, đậm, gạch đầu dòng)] vào khung chữ; gạch đầu dòng có thụt treo."""
+    from pptx.enum.text import MSO_AUTO_SIZE, PP_ALIGN  # noqa: PLC0415
+    from pptx.oxml.ns import qn  # noqa: PLC0415
+    from pptx.util import Inches, Pt  # noqa: PLC0415
+
+    tf.word_wrap = True
+    tf.auto_size = MSO_AUTO_SIZE.NONE
+    tf.margin_left = tf.margin_right = Inches(LE_TRONG[0])
+    tf.margin_top = tf.margin_bottom = Inches(LE_TRONG[1])
+    for i, (van, co, dam, gach) in enumerate(doan):
+        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        p.space_after = Pt(CACH_DOAN)
+        if giua:
+            p.alignment = PP_ALIGN.CENTER
+        r = p.add_run()
+        r.text = van
+        r.font.size = Pt(co)
+        r.font.bold = dam
+        r.font.name = "Times New Roman"
+        if mau:
+            r.font.color.rgb = _rgb(mau)
+        if gach:
+            ppr = p._p.get_or_add_pPr()
+            ppr.set("marL", str(int(Inches(LUI_GACH))))
+            ppr.set("indent", str(-int(Inches(LUI_GACH))))
+            bu = ppr.makeelement(qn("a:buChar"), {"char": "•"})
+            ppr.append(bu)
+
+
+def _vung_noi_dung(im, nguong: int = 245, dem: float = 0.02) -> Tuple[int, int, int, int]:
+    """Khung (x0, y0, x1, y1) chứa nét vẽ của ảnh (điểm tối hơn `nguong`), nới thêm `dem` mỗi phía; ảnh trắng trơn ⇒
+    cả ảnh."""
+    w, h = im.size
+    hop = im.convert("L").point(lambda v: 255 if v < nguong else 0).getbbox()
+    if not hop:
+        return 0, 0, w, h
+    dx, dy = int(w * dem), int(h * dem)
+    return max(0, hop[0] - dx), max(0, hop[1] - dy), min(w, hop[2] + dx), min(h, hop[3] + dy)
+
+
+def _o_chu(slide, khung: Tuple[float, float, float, float], ten: str):
+    from pptx.util import Inches  # noqa: PLC0415
+
+    hop = slide.shapes.add_textbox(*(Inches(x) for x in khung))
+    hop.name = ten
+    return hop
+
+
+def ghi_pptx(trang: Sequence[TrangPptx], dich: Path) -> Path:
+    """Ghi tệp .pptx (ghi tệp tạm rồi đổi tên)."""
+    from PIL import Image  # noqa: PLC0415
+    from pptx import Presentation  # noqa: PLC0415
+    from pptx.util import Emu, Inches  # noqa: PLC0415
+
+    prs = Presentation()
+    prs.slide_width, prs.slide_height = Inches(KHO_SLIDE[0]), Inches(KHO_SLIDE[1])
+    trang_trong = prs.slide_layouts[6]
+    tong = len(trang)
+    for so, t in enumerate(trang, 1):
+        sl = prs.slides.add_slide(trang_trong)
+        rong_td = KHUNG_TIEU_DE[2] - 2 * LE_TRONG[0]
+        if t.loai == "ten_de_tai":
+            co_td = next((c for c in (36, 32, 30, 28, 26, 24) if do_cao_doan([(t.tieu_de, c, True, 0.0)], rong_td)
+                          <= 3.2 * DU_PHONG), 24)
+            hop = _o_chu(sl, (LE, 1.5, KHUNG_TIEU_DE[2], 3.3), "TieuDe")
+            _ghi_doan(hop.text_frame, [(t.tieu_de, co_td, True, False)], MAU_TIEU_DE, giua=True)
+            hop = _o_chu(sl, (LE, 5.0, KHUNG_TIEU_DE[2], 1.4), "Than")
+            _ghi_doan(hop.text_frame, [(v, t.co, d, g) for v, d, g in t.khoi[0][1]], giua=True)
+        else:
+            co_td = next((c for c in CO_TIEU_DE if do_cao_doan([(t.tieu_de, c, True, 0.0)], rong_td)
+                          <= (KHUNG_TIEU_DE[3] - 2 * LE_TRONG[1]) * DU_PHONG), None)
+            khung_td = KHUNG_TIEU_DE
+            if co_td is None:  # tên hình dài: nới khung tiêu đề xuống phần thân (ảnh co lại), chữ không dưới 18 pt
+                khung_td = (LE, 0.3, KHUNG_TIEU_DE[2], 1.6)
+                co_td = next((c for c in (24, 22, 20, 18) if do_cao_doan([(t.tieu_de, c, True, 0.0)], rong_td)
+                              <= (khung_td[3] - 2 * LE_TRONG[1]) * DU_PHONG), 18)
+            hop = _o_chu(sl, khung_td, "TieuDe")
+            _ghi_doan(hop.text_frame, [(t.tieu_de, co_td, True, False)], MAU_TIEU_DE)
+            if t.loai == "hinh":
+                with Image.open(t.hinh["tep"]) as im:
+                    w, h = im.size
+                    x0, y0, x1, y1 = _vung_noi_dung(im)
+                top = khung_td[1] + khung_td[3] + 0.1
+                ch_cao = KHUNG_CHAN[1] - 0.1 - top
+                tl = min(KHUNG_THAN[2] / (x1 - x0), ch_cao / (y1 - y0))
+                ww, hh = (x1 - x0) * tl, (y1 - y0) * tl
+                pic = sl.shapes.add_picture(str(t.hinh["tep"]), Inches(LE + (KHUNG_THAN[2] - ww) / 2), Inches(top),
+                                            Inches(ww), Inches(hh))
+                # lề trắng của ảnh (sơ đồ matplotlib để trống nhiều) được XÉN HIỂN THỊ — tệp nhúng vẫn đúng từng byte
+                pic.crop_left, pic.crop_top = x0 / w, y0 / h
+                pic.crop_right, pic.crop_bottom = 1 - x1 / w, 1 - y1 / h
+                pic.name = "Hinh"
+            else:
+                y = KHUNG_THAN[1]
+                for k in t.khoi:
+                    cao = _cao_khoi(k, t.co, KHUNG_THAN[2])
+                    if k[0] == "chu":
+                        hop = _o_chu(sl, (LE, y, KHUNG_THAN[2], cao / DU_PHONG), "Than")
+                        _ghi_doan(hop.text_frame, [(v, t.co, d, g) for v, d, g in k[1]])
+                        y += cao / DU_PHONG
+                    else:
+                        cot, hang = k[1]
+                        ds = [cot] + list(hang)
+                        gf = sl.shapes.add_table(len(ds), 2, Inches(LE), Inches(y), Inches(KHUNG_THAN[2]),
+                                                 Emu(_emu_tron_len(cao)))
+                        gf.name = "Bang"
+                        bang = gf.table
+                        bang.columns[0].width = Emu(int(Inches(KHUNG_THAN[2] * 0.4)))
+                        bang.columns[1].width = Emu(int(Inches(KHUNG_THAN[2] * 0.6)))
+                        for r, h in enumerate(ds):
+                            bang.rows[r].height = Emu(_emu_tron_len(_cao_hang_bang(h, t.co, KHUNG_THAN[2], r == 0)))
+                            for c, v in enumerate(h):
+                                o = bang.cell(r, c)
+                                o.margin_left = o.margin_right = Inches(LE_TRONG[0])
+                                o.margin_top = o.margin_bottom = Inches(LE_TRONG[1])
+                                o.text_frame.clear()
+                                _ghi_doan(o.text_frame, [(_chu_tron(v), t.co, r == 0, False)])
+                        y += cao + 0.1
+        hop = _o_chu(sl, KHUNG_CHAN, "ChanTrang")
+        _ghi_doan(hop.text_frame, [(f"{t.chan} · trang {so}/{tong}", CO_CHAN, False, False)], MAU_CHAN)
+        sl.notes_slide.notes_text_frame.text = t.ghi
+    dich = Path(dich)
+    dich.parent.mkdir(parents=True, exist_ok=True)
+    tam = dich.with_name(dich.stem + ".tam.pptx")
+    prs.save(str(tam))
+    os.replace(tam, dich)
+    return dich
+
+
+def kiem_pptx(p: Path, trang: Sequence[TrangPptx], dong: Sequence[str]) -> List[str]:
+    """Mở lại tệp bằng python-pptx và kiểm: số trang; mỗi trang trỏ đúng nguồn (chân trang + ghi chú); ảnh nhúng trùng
+    từng byte tệp hình của đề cương; mọi câu thân/ô bảng là nguyên văn đề cương (S1); không khung chữ nào tràn (đo lại
+    bằng phông thật); cỡ chữ thân ≥ 18 pt. Rỗng = đạt."""
+    from pptx import Presentation  # noqa: PLC0415
+    from pptx.util import Emu  # noqa: PLC0415
+
+    loi: List[str] = []
+    prs = Presentation(str(p))
+    sl = list(prs.slides)
+    if len(sl) != len(trang):
+        loi.append(f"số trang {len(sl)} khác số trang dựng {len(trang)}")
+    van_dc = _chu_tron(" ".join(re.sub(r"\s+", " ", d) for d in dong))
+    in_ = 914400.0
+    for so, (s, t) in enumerate(zip(sl, trang), 1):
+        ghi = s.notes_slide.notes_text_frame.text if s.has_notes_slide else ""
+        for x in t.nguon:
+            if x not in ghi:
+                loi.append(f"trang {so}: ghi chú người trình bày thiếu nguồn «{x[:60]}»")
+        chan = next((sh for sh in s.shapes if sh.name == "ChanTrang"), None)
+        if chan is None or not chan.text_frame.text.startswith(t.chan):
+            loi.append(f"trang {so}: chân trang không trỏ mục đề cương")
+        if t.loai == "hinh":
+            anh = [sh for sh in s.shapes if sh.shape_type == 13]
+            sha = hashlib.sha256(Path(t.hinh["tep"]).read_bytes()).hexdigest()
+            if len(anh) != 1 or hashlib.sha256(anh[0].image.blob).hexdigest() != sha:
+                loi.append(f"trang {so}: ảnh nhúng không trùng tệp {t.hinh['rel']}")
+            elif anh[0].top + anh[0].height > int(KHUNG_CHAN[1] * in_) or anh[0].left + anh[0].width > \
+                    int((KHO_SLIDE[0] - LE + 0.01) * in_):
+                loi.append(f"trang {so}: ảnh {t.hinh['rel']} tràn khung")
+        for sh in s.shapes:
+            if sh.has_text_frame:
+                doan = [("".join(r.text for r in pp.runs), (pp.runs[0].font.size or Emu(0)).pt if pp.runs else 0,
+                         bool(pp.runs and pp.runs[0].font.bold),
+                         LUI_GACH if pp._p.pPr is not None and pp._p.pPr.get("marL") else 0.0)
+                        for pp in sh.text_frame.paragraphs]
+                cao = do_cao_doan(doan, sh.width / in_ - 2 * LE_TRONG[0]) + 2 * LE_TRONG[1]
+                if cao > sh.height / in_ + 1e-6:
+                    loi.append(f"trang {so}: khung «{sh.name}» tràn chữ ({cao:.2f} > {sh.height / in_:.2f} inch)")
+                if sh.name == "Than":
+                    for v, co, dam, lui in doan:
+                        if co and co < 18:
+                            loi.append(f"trang {so}: cỡ chữ thân {co:g} pt < 18 pt")
+                        if t.loai == "noi_dung" and lui and _chu_tron(v) not in van_dc:
+                            loi.append(f"trang {so}: câu không nguyên văn đề cương «{v[:60]}»")
+            if sh.has_table:
+                bang = sh.table
+                cao = 0.0
+                for r, row in enumerate(bang.rows):
+                    o = [row.cells[c].text_frame.text for c in range(len(bang.columns))]
+                    chay = row.cells[0].text_frame.paragraphs[0].runs[0]
+                    can = _cao_hang_bang((o[0], o[1]), chay.font.size.pt, sh.width / in_, bool(chay.font.bold))
+                    if can > row.height / in_ + 1e-6:
+                        loi.append(f"trang {so}: hàng bảng {r + 1} tràn chữ")
+                    cao += row.height / in_
+                    for v in o:
+                        if _chu_tron(v) not in van_dc:
+                            loi.append(f"trang {so}: ô bảng không nguyên văn đề cương «{v[:60]}»")
+                if sh.top / in_ + cao > KHUNG_CHAN[1] + 1e-6:
+                    loi.append(f"trang {so}: bảng tràn xuống chân trang")
+    return loi
 
 
 # ── PII · Word · điều phối ───────────────────────────────────────────────────────────────────────────────────────────
@@ -1123,9 +1692,11 @@ def dung_goi(study: str, out_dir: Path) -> Dict[str, Any]:
     cac_muc = doc_muc(dong)
     cau_b = cau_hoi_bao_cao(bc, cac_muc, sha) if bc else []
     cau_c = cau_hoi_de_cuong(dong) if not dem_bb.get("tranh_bien") else []
-    _danh_so(nhom_bb, cau_b, cau_c)
+    cau_d, tep_qd = cau_hoi_so_quyet_dinh(out_dir, dong, p_dc.name)
+    _danh_so(nhom_bb, cau_b, cau_c, cau_d)
     slide_md = render_slide(slides, ten_de_tai, p_dc.name, len(dong), sha)
-    cau_hoi_md = render_cau_hoi(ten_de_tai, p_dc.name, len(dong), sha, nhom_bb, dem_bb, bc, cau_b, cau_c)
+    cau_hoi_md = render_cau_hoi(ten_de_tai, p_dc.name, len(dong), sha, nhom_bb, dem_bb, bc, cau_b, cau_c, cau_d,
+                                tep_qd)
     canh_bao_sua = sum(1 for nh in nhom_bb for g in nh.chung if g.canh_bao)
     da_xac_minh = sum(1 for nh in nhom_bb for g in nh.chung if g.nhan.startswith("Đề cương hiện hành, dòng")
                       and "chưa xác minh" not in g.nhan)
@@ -1138,10 +1709,13 @@ def dung_goi(study: str, out_dir: Path) -> Dict[str, Any]:
                     "A_bien_ban_tranh_bien": dem_bb.get("tranh_bien", 0),
                     "A_cong": sorted({x.gate for x in nhom_bb}, key=lambda g: HD.CONG.index(g) if g in HD.CONG else 99),
                     "A_trich_de_cuong_da_xac_minh": da_xac_minh, "A_canh_bao": canh_bao_sua,
-                    "B_bao_cao": len(cau_b), "B_tep": bc.tep.name if bc else None, "C_de_cuong": len(cau_c)},
+                    "B_bao_cao": len(cau_b), "B_tep": bc.tep.name if bc else None, "C_de_cuong": len(cau_c),
+                    "D_so_quyet_dinh": len(cau_d), "D_tep": list(tep_qd),
+                    "D_canh_bao": sum(1 for c in cau_d for g in c.goi_y if g.canh_bao)},
         "pii": quet_pii(slide_md, (sha[:12],)) + quet_pii(cau_hoi_md, (sha[:12],)),
     }
-    return {"slide_md": slide_md, "cau_hoi_md": cau_hoi_md, "tom_tat": tom_tat}
+    return {"slide_md": slide_md, "cau_hoi_md": cau_hoi_md, "tom_tat": tom_tat, "slides": slides,
+            "ten_de_tai": ten_de_tai, "dong": dong, "ten_dc": p_dc.name}
 
 
 def _in_tom_tat(t: Dict[str, Any], ghi: bool, dich: Path, study: str) -> None:
@@ -1159,6 +1733,9 @@ def _in_tom_tat(t: Dict[str, Any], ghi: bool, dich: Path, study: str) -> None:
         print("  Câu hỏi A: CHƯA CÓ BIÊN BẢN HỘI ĐỒNG CỔNG — chỉ dùng báo cáo phản biện + đề cương (đã ghi nhãn)")
     print(f"  Câu hỏi B (báo cáo phản biện): {c['B_bao_cao']} câu" + (f" từ {c['B_tep']}" if c["B_tep"] else
                                                                        " (không có báo cáo)"))
+    if c.get("D_tep"):
+        print(f"  Câu hỏi D (sổ quyết định hội đồng nghiên cứu): {c['D_so_quyet_dinh']} câu từ {len(c['D_tep'])} sổ"
+              f" · {c['D_canh_bao']} cảnh báo phần đề cương đã thay không còn nguyên văn")
     if c["C_de_cuong"]:
         print(f"  Câu hỏi C (từ đề cương — không phải phản đối thật): {c['C_de_cuong']} câu")
     if t["pii"]:
@@ -1176,6 +1753,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--ghi", action="store_true", help="ghi tệp (mặc định CHẠY KHÔ)")
     ap.add_argument("--thu-muc-ra", type=Path, help="ghi vào thư mục này thay vì exports/<mã>/ (bản xem thử)")
     ap.add_argument("--khong-word", action="store_true", help="không xuất .docx")
+    ap.add_argument("--khong-pptx", action="store_true", help="không xuất tệp trình chiếu .pptx")
     ap.add_argument("--xem", action="store_true", help="in toàn văn hai tài liệu ra màn hình")
     ap.add_argument("--json", action="store_true", help="in tóm tắt dạng JSON")
     a = ap.parse_args(argv)
@@ -1194,6 +1772,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print("\n" + "=" * 100 + "\n")
         print(goi["cau_hoi_md"])
     ma = 0
+    trang: List[TrangPptx] = []
+    if not a.khong_pptx:
+        try:
+            trang, cb_hinh = dung_trang_pptx(goi["slides"], goi["ten_de_tai"], goi["dong"], out_dir, goi["ten_dc"])
+            t["pptx"] = {"so_trang": len(trang), "so_hinh": sum(1 for x in trang if x.loai == "hinh"),
+                         "canh_bao": cb_hinh}
+        except ImportError as exc:  # thiếu Pillow/matplotlib để đo phông
+            t["pptx"] = {"loi": f"không dựng được tệp trình chiếu: {exc}"}
     if t["pii"]:
         ma = 3
     elif a.ghi:
@@ -1207,12 +1793,36 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 t["word"][p.name] = msg
                 if not ok:
                     ma = 1
+        if trang:
+            try:
+                p = ghi_pptx(trang, dich / TEN_PPTX.format(study=a.study))
+                loi = kiem_pptx(p, trang, goi["dong"])
+                t["pptx"].update({"tep": p.name, "kiem": loi})
+                if loi:
+                    ma = 1
+            except ImportError as exc:  # chưa cài python-pptx (requirements.txt)
+                t["pptx"] = {"loi": f"chưa cài python-pptx: {exc}"}
+                ma = 1
+        elif "loi" in (t.get("pptx") or {}):
+            ma = 1
     if a.json:
         print(json.dumps(t, ensure_ascii=False, indent=2))
     else:
         _in_tom_tat(t, a.ghi and ma != 3, dich, a.study)
         for ten, msg in (t.get("word") or {}).items():
             print(f"  Word {ten}: {msg}")
+        px = t.get("pptx") or {}
+        if px.get("loi"):
+            print(f"  ⚠ Trình chiếu: {px['loi']}")
+        elif px:
+            print(f"  Trình chiếu: {px['so_trang']} trang ({px['so_hinh']} trang hình)"
+                  + (f" · đã ghi {px['tep']}" if px.get("tep") else " · sẽ ghi " + TEN_PPTX.format(study=a.study)))
+            for x in px.get("canh_bao") or []:
+                print(f"    ⚠ {x}")
+            if "kiem" in px:
+                print("  Kiểm tệp trình chiếu: " + ("ĐẠT" if not px["kiem"] else f"{len(px['kiem'])} lỗi"))
+                for x in px["kiem"][:20]:
+                    print(f"    ✗ {x}")
         print(f"  {LOI_DAN}")
     return ma
 

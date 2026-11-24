@@ -36,6 +36,10 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
    MỘT bên ở `hoi_dong_cong.PHAN_CONG`: nhiệm vụ agent (`G3-T1`) · vai NGƯỜI quyết/ký kèm nhiệm vụ agent phải chuẩn bị hồ
    sơ + lệnh (`STATISTICIAN@G3-T1`) · cổng tiền đề (`^G0,G1`). Test đối chiếu bảng với tập mã bộ chấm phát ra (cây cú
    pháp) và với mục 4b của từng `dieu-phoi-gN.md` — thêm tiêu chí mà quên gán ⇒ đỏ.
+1b. **Mọi CÔNG CỤ có chủ** (22/11/2026): mỗi tệp `tools/*.py|*.sh` của repo y khoa có đúng một mục ở
+   `config/phan_cong_cong_cu.json` — một agent chủ gắn cổng, người dùng phụ, người kiểm, chốt kiểm, nguyên tắc (tổng ·
+   8 nguyên tắc · 5 tiêu chí đề cương tốt) kèm lý do — hoặc «ngoài phạm vi» kèm lý do. Bộ chấm `gN_quality_gate.py` do
+   `dieu-phoi-gN` làm chủ. Đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`; thêm công cụ mà chưa vào sổ ⇒ đỏ.
 2. **Chuỗi trách nhiệm:** agent nhiệm vụ → điều phối cổng → điều phối tổng. Điều phối cổng giao việc, đòi làm lại tới khi
    tiêu chí của agent đạt, bảo đảm người có thẩm quyền nhận đủ hồ sơ + lệnh, báo cổng tiền đề khi bị chặn từ trước.
 3. **Thước đo duy nhất (chỉ đọc, không tốn agent):** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate

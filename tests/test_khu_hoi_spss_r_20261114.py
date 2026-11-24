@@ -33,7 +33,7 @@ def _co_lap_khoi_e4_noi_dung(monkeypatch):
 
 
 FX = Path(__file__).resolve().parent / "fixtures" / "spss_khu_hoi"
-# biến môi trường EBM_SPSS_PYTHON/EBM_RSCRIPT được trả nguyên (không kiểm tồn tại) ⇒ tự kiểm tệp có thật
+# EBM_SPSS_PYTHON/EBM_RSCRIPT trỏ tệp không có ⇒ danh sách rỗng (17/11 · 23/11/2026); vẫn tự kiểm tệp có thật
 CO_SPSS = any(p.is_file() for p in C.ung_vien_python_spss())
 CO_R = any(p.is_file() for p in R.ung_vien_rscript())
 

@@ -83,6 +83,33 @@ LUU_Y_TIEP_XUC_NGUOI_THAM_GIA = (
     "tục); chỉ đề nghị miễn khi lập luận được điều kiện (i) — không khả thi nếu không miễn."
 )
 
+# ── Bảo vệ dữ liệu cá nhân trong kế hoạch quản lý dữ liệu (TÀI LIỆU 6 của gói G2) — 22/11/2026 ───────────────────────
+# Hội đồng đề tài (vòng 22/11/2026, hai đề tài BVQY175) đọc nguyên văn:
+# - Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 (Công báo số 971+972 ngày 24/7/2025; hiệu lực 01/01/2026, Điều 38):
+#   Điều 23 khoản 1 — thông báo cơ quan chuyên trách bảo vệ dữ liệu cá nhân chậm nhất 72 giờ kể từ khi phát hiện vi
+#   phạm; bên xử lý báo kịp thời cho bên kiểm soát. Điều 3 khoản 3 — dữ liệu cá nhân «được lưu trữ trong khoảng thời
+#   gian phù hợp với mục đích xử lý dữ liệu cá nhân, trừ trường hợp pháp luật có quy định khác» (câu chữ khoản 3 đối
+#   chiếu thêm qua trích đoạn thuvienphapluat.vn ngày 22/11/2026).
+# - Nghị định 356/2025/NĐ-CP (Công báo số 18 ngày 18/01/2026): Điều 28 — nội dung thông báo vi phạm.
+# Khuôn cũ ghi «Theo NĐ 356/2025/NĐ-CP Điều 23: báo cáo nội bộ trong 24 giờ · thông báo cơ quan trong 72 giờ · thông
+# báo người tham gia ngay» là SAI: Điều 23 của Nghị định là trách nhiệm tổ chức kinh doanh dịch vụ xử lý dữ liệu; mốc
+# 72 giờ nằm ở Điều 23 khoản 1 của LUẬT; «24 giờ nội bộ» và «thông báo người tham gia ngay» không có trong hai văn bản.
+
+#: Hạn thông báo cơ quan chuyên trách khi có vi phạm.
+HAN_THONG_BAO_VI_PHAM = (
+    "Thông báo cơ quan chuyên trách bảo vệ dữ liệu cá nhân chậm nhất 72 giờ kể từ khi phát hiện "
+    "(Luật 91/2025/QH15, Điều 23 khoản 1)"
+)
+#: Nơi quy định nội dung thông báo vi phạm.
+NOI_DUNG_THONG_BAO_VI_PHAM = "nội dung thông báo theo Nghị định 356/2025/NĐ-CP, Điều 28"
+#: Căn cứ cho thời hạn lưu trữ đã chốt của đề tài.
+CAN_CU_THOI_HAN_LUU = "chỉ lưu trong thời gian phù hợp với mục đích xử lý — Luật 91/2025/QH15, Điều 3 khoản 3"
+#: Căn cứ SAI cho lưu trữ đã từng ghi cứng: Thông tư 38/2018/TT-BYT là thông tư hướng dẫn công tác thi đua, khen
+#: thưởng ngành y tế (hội đồng tra ngày 22/11/2026), không quy định thời hạn lưu trữ hồ sơ hay dữ liệu nghiên cứu.
+DAU_HIEU_CAN_CU_LUU_TRU_SAI = ("TT38/2018", "38/2018/TT-BYT")
+#: Căn cứ SAI cho thông báo vi phạm đã từng ghi cứng (Điều 23 của Nghị định 356, không phải của Luật 91).
+DAU_HIEU_CAN_CU_VI_PHAM_SAI = ("NĐ 356/2025/NĐ-CP Điều 23", "NĐ 356 Điều 23", "72 giờ theo NĐ 356")
+
 # Chuỗi căn cứ SAI đã từng ghi cứng — dùng để nhận diện và thay khi nâng cấp hồ sơ cũ.
 DAU_HIEU_CAN_CU_SAI = ("Điều 15", "§29", "§ 29")
 
@@ -90,3 +117,8 @@ DAU_HIEU_CAN_CU_SAI = ("Điều 15", "§29", "§ 29")
 def can_cu_sai(van_ban: str) -> bool:
     """True khi chuỗi căn cứ còn mang số điều SAI đã biết (TT43 Điều 15 hoặc Helsinki §29)."""
     return any(d in (van_ban or "") for d in DAU_HIEU_CAN_CU_SAI)
+
+
+def can_cu_du_lieu_sai(van_ban: str) -> list:
+    """Các căn cứ SAI đã biết về lưu trữ (TT38/2018) và thông báo vi phạm (NĐ 356 Điều 23) còn trong văn bản."""
+    return [d for d in DAU_HIEU_CAN_CU_LUU_TRU_SAI + DAU_HIEU_CAN_CU_VI_PHAM_SAI if d in (van_ban or "")]

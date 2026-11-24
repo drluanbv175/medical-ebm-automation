@@ -87,6 +87,7 @@ Loại thiết kế + giả thuyết (superiority/NI/equivalence) · biến kế
 
 **C. Chọn công thức đúng chuẩn** (nêu tên + công thức):
 - So sánh **2 tỷ lệ** → công thức 2-proportion (kiểm định z); với cỡ mẫu nhỏ/tỷ lệ gần biên dùng **hiệu chỉnh liên tục Fleiss** (continuity correction).
+- **Bệnh–chứng ghép cặp cá thể** → Dupont 1988 (PMID 3233252): cần p0, OR, M = số chứng mỗi ca (`gate_params.G3.so_chung_moi_ca`), φ = tương quan phơi nhiễm trong bộ (`gate_params.G3.phi` + `phi_source`, lấy từ y văn/pilot, không bịa; φ càng lớn càng cần nhiều bộ). `run_g3_auto` tự dùng công thức này khi `kieu_ghep = ca_the`: n_per_group = số bộ, N = số bộ × (1+M); thiếu M/φ ⇒ «[CẦN …]»; KHÔNG dùng công thức hai tỷ lệ không ghép. Đối chiếu epiR::epi.sscc(method="matched"). G3-AUTO-08 đòi `phi_source`; G3-AUTO-09 kiểm N = số bộ × (1+M).
 - So sánh **2 trung bình** → công thức 2-mean (dựa SD + Δ).
 - **Ước lượng một tỷ lệ/trung bình** (cắt ngang) → theo độ chính xác (sai số biên d), `n₀ = z²·p(1−p)/d²` (Lwanga-Lemeshow/WHO); nếu quần thể hữu hạn → áp FPC ở bước D.
 - **Độ chính xác chẩn đoán** → cỡ mẫu cho Se và Sp riêng theo độ rộng CI, **rồi quy ra TỔNG N qua prevalence**: `N_Se = n_Se/prevalence`, `N_Sp = n_Sp/(1−prevalence)` → lấy max. **So sánh 2 test trên cùng đối tượng** = thiết kế ghép cặp → **McNemar** (dựa tỷ lệ bất đồng discordant), KHÔNG dùng công thức 2 nhóm độc lập.
@@ -182,6 +183,12 @@ Trước khi trả việc cho điều phối cổng: chạy lệnh đo của c�
 ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ hồ sơ + đúng lệnh, KHÔNG làm thay người có
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
+
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/run_g1_auto.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: tự động hoá G1: thiết kế + đề cương lõi + SAP khung; chốt kiểm `tools/g1_quality_gate.py`; nguyên tắc: khoa học · phương pháp phù hợp · khách quan.
+- Công cụ `tools/run_g4_auto.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: SAP final + chứng chỉ khoá SAP; chốt kiểm `tools/g4_quality_gate.py`; nguyên tắc: khách quan · đạt chuẩn định trước · kết quả kiểm chứng được.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 

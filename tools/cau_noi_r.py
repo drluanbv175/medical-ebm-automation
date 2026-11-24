@@ -72,7 +72,9 @@ BASE = S.BASE
 MA_OK, MA_LECH, MA_KHONG_DO, MA_TU_CHOI = S.MA_OK, S.MA_LECH, S.MA_KHONG_DO, S.MA_TU_CHOI
 CAN_KIEM = S.CAN_KIEM
 TuChoi, KhongDoDuoc = S.TuChoi, S.KhongDoDuoc
-GOI_CAN = ("jsonlite", "sandwich", "lmtest", "survival", "ordinal")
+GOI_CAN = ("jsonlite", "sandwich", "lmtest", "survival", "ordinal", "mice",  # mice: chỉ khi có Bảng 5 (MI)
+           "DescTools",  # DescTools: chỉ khi SAP khai KTC Newcombe cho hiệu số nguy cơ (23/11/2026)
+           "logistf")  # logistf: chỉ khi Python chạy Firth cho biến cố hiếm SAP §5 (23/11/2026)
 KHO_CRAN = "https://cloud.r-project.org"
 # keep_default_na của pandas 2.x — chỉ dùng khi máy sinh script không có pandas (bình thường đọc thẳng từ pandas).
 NA_PANDAS_DU_PHONG = (
@@ -144,7 +146,9 @@ def ung_vien_rscript(he: str | None = None, goc_cai: list[Path] | None = None) -
     """Mọi Rscript chạy được, ưu tiên: EBM_RSCRIPT › PATH › chỗ cài mặc định (Mac / Windows). Không trùng lặp."""
     env = os.environ.get("EBM_RSCRIPT", "").strip()
     if env:
-        return [Path(env)]
+        # 23/11/2026: biến trỏ tệp KHÔNG có ⇒ «không tìm thấy R» (KhongDoDuoc) như máy không cài — cùng luật với
+        # EBM_SPSS_PYTHON (17/11/2026), không đưa đường hỏng cho subprocess.
+        return [Path(env)] if Path(env).is_file() else []
     he = he or ("nt" if os.name == "nt" else sys.platform)
     ra: list[Path] = []
     w = shutil.which("Rscript")
@@ -424,98 +428,10 @@ def xac_dinh_loai(dt: dict, tom: dict) -> str:
 
 # ───────────────────────────── script R ─────────────────────────────
 
-MAU_R = r"""# ══════════════════════════════════════════════════════════════════════════════════════════════════
-# Kiểm chéo G6 bằng R — @@STUDY@@
-# Sinh bởi tools/cau_noi_r.py cu-phap (@@LUC@@) — tái lập ĐÚNG các mô hình của run_stats_analysis.py theo đặc tả G6
-# (khoá dac_ta_phan_tich của G6_analysis_summary.json). KHÔNG sửa tay — sinh lại bằng cu-phap.
-# Chạy:    Rscript --vanilla @@STUDY@@_phan_tich.R [<CSV đã khoá> [<tệp JSON ra>]]
-# RStudio: sửa DU_LIEU / TEP_RA ở mục 0 rồi Source. Gói cần: jsonlite, sandwich, lmtest, survival, ordinal.
-# Kiểm chéo kỹ thuật — không thay thống kê viên, không đổi trạng thái cổng G6. Cần bác sĩ kiểm chứng.
-# ══════════════════════════════════════════════════════════════════════════════════════════════════
-
-# ── 0. Tham số (sinh từ đặc tả G6) ────────────────────────────────────────────────────────────────
-DU_LIEU <- @@DU_LIEU@@
-SHA256_KHOA <- @@SHA@@
-TEP_RA <- @@TEP_RA@@
-.doi_so <- commandArgs(trailingOnly = TRUE)
-if (length(.doi_so) >= 1) DU_LIEU <- .doi_so[1]
-if (length(.doi_so) >= 2) TEP_RA <- .doi_so[2]
-KET_CUC <- @@KET_CUC@@
-NHOM <- @@NHOM@@
-HIEP_BIEN <- @@HIEP_BIEN@@
-NHOM_BIEN <- @@NHOM_BIEN@@  # Poisson: mỗi phần tử = biến của MỘT mô hình PR thô (biến phân loại: các biến giả của nó)
-LOAI_KET_CUC <- @@LOAI@@  # binary | continuous | ordinal | poisson_pr | auto (auto: luật detect_var_type của Python)
-THOI_GIAN <- @@THOI_GIAN@@
-BIEN_CO <- @@BIEN_CO@@
-CUM <- @@CUM@@
-DON_VI_PHOI_NHIEM <- @@DON_VI@@  # --don-vi-phoi-nhiem của Python (chỉ nhánh thứ tự)
-# Chuỗi pandas.read_csv coi là THIẾU (keep_default_na) — chép từ pandas @@PANDAS@@ lúc sinh script.
-NA_PANDAS <- @@NA_PANDAS@@
-GOI_CAN <- c("jsonlite", "sandwich", "lmtest", "survival", "ordinal")
-
-dung <- function(ma, ...) {
-  thong_diep <- paste0(...)
-  if (interactive()) stop(thong_diep, call. = FALSE)
-  message(thong_diep)
-  quit(save = "no", status = ma)
-}
-for (.g in GOI_CAN) {
-  if (!requireNamespace(.g, quietly = TRUE)) {
-    dung(2, "LOI_GOI thiếu gói R «", .g, "» — cài: python3 tools/cau_noi_r.py cai-goi --ap-dung")
-  }
-}
-suppressPackageStartupMessages(library(survival))
-
-# ── 1. Bộ dữ liệu ĐÃ KHOÁ: SHA-256 phải khớp manifest khoá G5 ────────────────────────────────────────
-sha256_tep <- function(p) {
-  if (exists("sha256sum", envir = asNamespace("tools"), inherits = FALSE)) return(unname(tools::sha256sum(p)))
-  if (requireNamespace("digest", quietly = TRUE)) return(digest::digest(file = p, algo = "sha256"))
-  NA_character_
-}
-if (!file.exists(DU_LIEU)) dung(2, "LOI_DU_LIEU không thấy tệp ", DU_LIEU)
-SHA_THUC <- tolower(sha256_tep(DU_LIEU))
-if (is.na(SHA_THUC)) dung(2, "LOI_SHA R < 4.5 cần gói digest để tính SHA-256")
-if (!identical(SHA_THUC, tolower(SHA256_KHOA))) {
-  dung(3, "LOI_KHOA SHA-256 dữ liệu (", SHA_THUC, ") KHÁC manifest khoá (", SHA256_KHOA, ") — dừng")
-}
-
-# ── 2. Nạp dữ liệu GIỐNG HỆT pandas.read_csv(encoding="utf-8-sig") của run_stats_analysis.load_data ─────
-# Chỉ chuỗi NA_PANDAS là thiếu. Mã thiếu cấp dự án (BTR, 998…) KHÔNG đổi thành thiếu — Python cũng không đổi.
-# Cột có MỌI giá trị là số ⇒ số (mã 1/2 vẫn là SỐ như pandas); cột True/False không thiếu ⇒ 1/0; còn lại là chữ.
-RE_SO <- "^\\s*[+-]?((\\d+\\.?\\d*)|(\\.\\d+))([eE][+-]?\\d+)?\\s*$|^\\s*[+-]?(inf|infinity)\\s*$"
-doc_nhu_pandas <- function(p) {
-  d <- utils::read.csv(p, colClasses = "character", na.strings = NA_PANDAS, check.names = FALSE,
-                       fileEncoding = "UTF-8-BOM", encoding = "UTF-8")
-  dung_sai <- c("True", "TRUE", "true", "False", "FALSE", "false")
-  for (cot in names(d)) {
-    x <- d[[cot]]
-    v <- x[!is.na(x)]
-    if (length(v) && !anyNA(x) && all(v %in% dung_sai)) {
-      d[[cot]] <- as.numeric(x %in% dung_sai[1:3])
-    } else if (all(grepl(RE_SO, v, perl = TRUE, ignore.case = TRUE))) {
-      d[[cot]] <- suppressWarnings(as.numeric(x))
-    }
-  }
-  d
-}
-D <- doc_nhu_pandas(DU_LIEU)
-
-KET <- list()
-LOI <- list()
-CANH_BAO <- character(0)
-khoi <- function(ten, bt) {
-  withCallingHandlers(
-    tryCatch(bt, error = function(e) {
-      LOI[[ten]] <<- conditionMessage(e)
-      NULL
-    }),
-    warning = function(w) {
-      CANH_BAO <<- c(CANH_BAO, paste0(ten, ": ", conditionMessage(w)))
-      invokeRestart("muffleWarning")
-    }
-  )
-}
-co <- function(x) length(x) == 1 && !is.na(x) && nzchar(x)
+#: Hàm R dùng chung của mọi kịch bản mô hình (22/11/2026 — MỘT cầu nối R): quy ước biến giả, khung công thức tên an
+#: toàn, bảng hệ số Wald theo z hoặc t(G−1), sandwich theo cụm CR1. MAU_R (kiểm chéo mô hình chính) và kịch bản phân
+#: tích SAP bổ sung (`kich_ban_bo_sung`) cùng nhúng NGUYÊN khối này, nên ước lượng hai đường so được trực tiếp.
+R_HAM_MO_HINH = r"""co <- function(x) length(x) == 1 && !is.na(x) && nzchar(x)
 # Thứ tự như sorted() của Python: số theo giá trị, chữ theo mã ký tự (không theo locale).
 sap_xep <- function(x) if (is.numeric(x)) sort(unique(x)) else sort(unique(x), method = "radix")
 # Bỏ dòng thiếu ở ĐÚNG các cột của mô hình (DataFrame.dropna trên các cột đó).
@@ -580,9 +496,157 @@ trung_vi_lifelines <- function(thoi_gian, n_nguy_co, n_bien_co) {
   }
   list(tv = tv, thay = thay)
 }
+# Luật Rubin (22/11/2026, Bảng 5): Q = ma trận hệ số (m × p), U = danh sách ma trận hiệp phương sai trong bộ.
+# Q̄ = trung bình; T = Ū + (1 + 1/m)·B; KTC/p theo t(df_t) (cụm: G − 1) hoặc z (df_t = Inf) — như Python _gop_rubin.
+gop_rubin <- function(Q, U, df_t = Inf) {
+  m <- nrow(Q)
+  qbar <- colMeans(Q)
+  B <- stats::cov(Q)
+  Tt <- Reduce(`+`, U) / m + (1 + 1 / m) * B
+  se <- sqrt(diag(Tt))
+  q <- if (is.finite(df_t)) stats::qt(0.975, df_t) else stats::qnorm(0.975)
+  p <- if (is.finite(df_t)) 2 * stats::pt(-abs(qbar / se), df_t) else 2 * stats::pnorm(-abs(qbar / se))
+  list(b = qbar, se = se, lo = qbar - q * se, hi = qbar + q * se, p = p, mcse = sqrt(diag(B) / m),
+       suy_luan = if (is.finite(df_t)) "t(G-1)" else "z")
+}
 # <<< ham-kiem-thu
 vc_cum <- function(fit, cum) sandwich::vcovCL(fit, cluster = cum, type = "HC1", cadjust = TRUE)
 df_cum <- function(cum) max(length(unique(cum)) - 1, 1)  # suy luận t(G−1) như Python (use_t=True, N11)
+# 24/11/2026 — phương pháp gán tự định nghĩa của mice (method = "pmmboot"): PMM kiểu 1 tham số BOOTSTRAP, k = 10 người
+# cho chọn RIÊNG từng ca, phá thế trùng ngẫu nhiên — cùng phương pháp với BoGanPMM của Python (cài đặt độc lập, dãy ngẫu
+# nhiên khác ⇒ đối chiếu theo sai số Monte Carlo). Thay "pmm" mặc định của mice: matchindex tách đồng hạng theo thứ tự
+# cố định và tham số không bootstrap; với dự báo rời rạc (vài ô trung bình dự đoán) cách này quy về ABB theo ô (Rubin &
+# Schenker 1986). k = 10 theo Morris, White & Royston 2014 (PMID 24903709).
+mice.impute.pmmboot <- function(y, ry, x, wy = NULL, donors = 10L, ...) {
+  if (is.null(wy)) wy <- !ry
+  yy <- as.numeric(y)
+  x <- cbind(1, as.matrix(x))
+  obs <- which(ry)
+  b <- obs[sample.int(length(obs), length(obs), replace = TRUE)]  # mẫu bootstrap của người cho
+  beta <- qr.coef(qr(x[b, , drop = FALSE]), yy[b])
+  beta[is.na(beta)] <- 0
+  thang <- sqrt(mean((yy[obs] - mean(yy[obs]))^2))
+  if (!is.finite(thang) || thang == 0) thang <- 1
+  dcho <- round(drop(x[b, , drop = FALSE] %*% beta) / thang, 10)
+  dnhan <- round(drop(x[wy, , drop = FALSE] %*% beta) / thang, 10)
+  vcho <- yy[b]
+  k <- min(as.integer(donors), length(b))
+  vapply(dnhan, function(r) {
+    dd <- abs(dcho - r)
+    dk <- sort(dd, partial = k)[k]
+    gan <- which(dd < dk)
+    bang <- which(dd == dk)
+    if (stats::runif(1) * k < length(gan)) vcho[gan[sample.int(length(gan), 1L)]]
+    else vcho[bang[sample.int(length(bang), 1L)]]
+  }, numeric(1))
+}
+"""
+
+MAU_R = r"""# ══════════════════════════════════════════════════════════════════════════════════════════════════
+# Kiểm chéo G6 bằng R — @@STUDY@@
+# Sinh bởi tools/cau_noi_r.py cu-phap (@@LUC@@) — tái lập ĐÚNG các mô hình của run_stats_analysis.py theo đặc tả G6
+# (khoá dac_ta_phan_tich của G6_analysis_summary.json). KHÔNG sửa tay — sinh lại bằng cu-phap.
+# Chạy:    Rscript --vanilla @@STUDY@@_phan_tich.R [<CSV đã khoá> [<tệp JSON ra>]]
+# RStudio: sửa DU_LIEU / TEP_RA ở mục 0 rồi Source. Gói cần: jsonlite, sandwich, lmtest, survival, ordinal (+ mice
+# khi có Bảng 5 gán đa trị).
+# Kiểm chéo kỹ thuật — không thay thống kê viên, không đổi trạng thái cổng G6. Cần bác sĩ kiểm chứng.
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+# ── 0. Tham số (sinh từ đặc tả G6) ────────────────────────────────────────────────────────────────
+DU_LIEU <- @@DU_LIEU@@
+SHA256_KHOA <- @@SHA@@
+TEP_RA <- @@TEP_RA@@
+.doi_so <- commandArgs(trailingOnly = TRUE)
+if (length(.doi_so) >= 1) DU_LIEU <- .doi_so[1]
+if (length(.doi_so) >= 2) TEP_RA <- .doi_so[2]
+KET_CUC <- @@KET_CUC@@
+NHOM <- @@NHOM@@
+HIEP_BIEN <- @@HIEP_BIEN@@
+NHOM_BIEN <- @@NHOM_BIEN@@  # Poisson: mỗi phần tử = biến của MỘT mô hình PR thô (biến phân loại: các biến giả của nó)
+LOAI_KET_CUC <- @@LOAI@@  # binary | continuous | ordinal | poisson_pr | auto (auto: luật detect_var_type của Python)
+THOI_GIAN <- @@THOI_GIAN@@
+BIEN_CO <- @@BIEN_CO@@
+CUM <- @@CUM@@
+DON_VI_PHOI_NHIEM <- @@DON_VI@@  # --don-vi-phoi-nhiem của Python (mọi họ mô hình)
+TY_LE <- @@TY_LE@@  # Bảng 1b: cột tính tỷ lệ + KTC Wilson (--ty-le)
+NGUONG_TY_LE <- @@NGUONG_TY_LE@@  # --nguong-ty-le (sự kiện = giá trị ≥ ngưỡng); NA ⇒ cột 0/1
+KC_HIEU_SO <- @@KC_HIEU_SO@@  # --kc-hieu-so: phương pháp KTC hiệu số nguy cơ SAP §4 khai (newcombe | wald)
+BIEN_CO_HIEM <- @@BIEN_CO_HIEM@@  # Python chạy mô tả chính xác (biến cố hiếm SAP §5, rào EPV chặn hồi quy) ⇒ R tính lại
+FIRTH <- @@FIRTH@@  # Python chạy hồi quy Firth (biến cố hiếm SAP §5) ⇒ R tính lại bằng logistf (pl = TRUE)
+FIRTH_DK <- @@FIRTH_DK@@  # Python chạy Firth CÓ ĐIỀU KIỆN (ghép cặp) ⇒ R tính lại trên survival::clogit (hợp lý phạt)
+BO_GHEP <- @@BO_GHEP@@  # mã bộ ghép (bệnh–chứng ghép cặp cá thể) ⇒ hồi quy logistic có điều kiện survival::clogit
+# Chuỗi pandas.read_csv coi là THIẾU (keep_default_na) — chép từ pandas @@PANDAS@@ lúc sinh script.
+NA_PANDAS <- @@NA_PANDAS@@
+@@KHOI_MI@@
+GOI_CAN <- c("jsonlite", "sandwich", "lmtest", "survival", "ordinal", if (MI_CO) "mice",
+             if (identical(KC_HIEU_SO, "newcombe")) "DescTools", if (isTRUE(FIRTH)) "logistf")
+
+dung <- function(ma, ...) {
+  thong_diep <- paste0(...)
+  if (interactive()) stop(thong_diep, call. = FALSE)
+  message(thong_diep)
+  quit(save = "no", status = ma)
+}
+for (.g in GOI_CAN) {
+  if (!requireNamespace(.g, quietly = TRUE)) {
+    dung(2, "LOI_GOI thiếu gói R «", .g, "» — cài: python3 tools/cau_noi_r.py cai-goi --ap-dung")
+  }
+}
+suppressPackageStartupMessages(library(survival))
+
+# ── 1. Bộ dữ liệu ĐÃ KHOÁ: SHA-256 phải khớp manifest khoá G5 ────────────────────────────────────────
+sha256_tep <- function(p) {
+  if (exists("sha256sum", envir = asNamespace("tools"), inherits = FALSE)) return(unname(tools::sha256sum(p)))
+  if (requireNamespace("digest", quietly = TRUE)) return(digest::digest(file = p, algo = "sha256"))
+  NA_character_
+}
+if (!file.exists(DU_LIEU)) dung(2, "LOI_DU_LIEU không thấy tệp ", DU_LIEU)
+SHA_THUC <- tolower(sha256_tep(DU_LIEU))
+if (is.na(SHA_THUC)) dung(2, "LOI_SHA R < 4.5 cần gói digest để tính SHA-256")
+if (!identical(SHA_THUC, tolower(SHA256_KHOA))) {
+  dung(3, "LOI_KHOA SHA-256 dữ liệu (", SHA_THUC, ") KHÁC manifest khoá (", SHA256_KHOA, ") — dừng")
+}
+
+# ── 2. Nạp dữ liệu GIỐNG HỆT pandas.read_csv(encoding="utf-8-sig") của run_stats_analysis.load_data ─────
+# Chỉ chuỗi NA_PANDAS là thiếu. Mã thiếu cấp dự án (BTR, 998…) KHÔNG đổi thành thiếu — Python cũng không đổi.
+# Cột có MỌI giá trị là số ⇒ số (mã 1/2 vẫn là SỐ như pandas); cột True/False không thiếu ⇒ 1/0; còn lại là chữ.
+RE_SO <- "^\\s*[+-]?((\\d+\\.?\\d*)|(\\.\\d+))([eE][+-]?\\d+)?\\s*$|^\\s*[+-]?(inf|infinity)\\s*$"
+doc_nhu_pandas <- function(p) {
+  d <- utils::read.csv(p, colClasses = "character", na.strings = NA_PANDAS, check.names = FALSE,
+                       fileEncoding = "UTF-8-BOM", encoding = "UTF-8")
+  dung_sai <- c("True", "TRUE", "true", "False", "FALSE", "false")
+  for (cot in names(d)) {
+    x <- d[[cot]]
+    v <- x[!is.na(x)]
+    if (length(v) && !anyNA(x) && all(v %in% dung_sai)) {
+      d[[cot]] <- as.numeric(x %in% dung_sai[1:3])
+    } else if (all(grepl(RE_SO, v, perl = TRUE, ignore.case = TRUE))) {
+      d[[cot]] <- suppressWarnings(as.numeric(x))
+    }
+  }
+  d
+}
+D <- doc_nhu_pandas(DU_LIEU)
+
+KET <- list()
+LOI <- list()
+CANH_BAO <- character(0)
+khoi <- function(ten, bt) {
+  withCallingHandlers(
+    tryCatch(bt, error = function(e) {
+      LOI[[ten]] <<- conditionMessage(e)
+      NULL
+    }),
+    warning = function(w) {
+      CANH_BAO <<- c(CANH_BAO, paste0(ten, ": ", conditionMessage(w)))
+      invokeRestart("muffleWarning")
+    }
+  )
+}
+""" + R_HAM_MO_HINH + r"""
+# 22/11/2026: đơn vị phơi nhiễm cho MỌI họ mô hình (như run_stats_analysis) — nhánh thứ tự chia riêng ở mục 5
+if (!is.na(DON_VI_PHOI_NHIEM) && co(NHOM) && !identical(LOAI_KET_CUC, "ordinal"))
+  D[[NHOM]] <- suppressWarnings(as.numeric(D[[NHOM]])) / DON_VI_PHOI_NHIEM
 
 LOAI <- LOAI_KET_CUC
 if (co(KET_CUC) && LOAI == "auto") {
@@ -615,10 +679,28 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
       or_tho <- (e1 / (n1 - e1)) / (e0 / (n0 - e0))
       se_log <- sqrt(1 / e0 + 1 / (n0 - e0) + 1 / e1 + 1 / (n1 - e1))
       bang <- table(y, g)
+      # 23/11/2026: hiệu số nguy cơ p1 − p0 + KTC theo ĐÚNG phương pháp SAP khai — Newcombe qua gói DescTools
+      # (cài đặt ĐỘC LẬP với Python; method = "score" là Newcombe hybrid score, phương pháp 10), Wald tính tay với
+      # phân vị chính xác qnorm(0.975) (23/11/2026: Python cũng bỏ 1,96 làm tròn — SPSS dùng phân vị chính xác)
+      p1 <- e1 / n1
+      p0 <- e0 / n0
+      rd_ci <- if (identical(KC_HIEU_SO, "newcombe")) {
+        b <- DescTools::BinomDiffCI(e1, n1, e0, n0, conf.level = 0.95, method = "score")
+        as.numeric(b[1, c("lwr.ci", "upr.ci")])
+      } else if (identical(KC_HIEU_SO, "wald")) {
+        (p1 - p0) + c(-1, 1) * stats::qnorm(0.975) * sqrt(p0 * (1 - p0) / n0 + p1 * (1 - p1) / n1)
+      } else {
+        stop("phương pháp KTC hiệu số nguy cơ «", KC_HIEU_SO, "» chưa hỗ trợ — không tự lùi về Wald")
+      }
       list(loai = "binary", nhom = muc, n = c(n0, n1), bien_co = c(e0, e1), or = or_tho,
-           ci = exp(log(or_tho) + c(-1.96, 1.96) * se_log),  # Python dùng 1,96 cố định
+           ci = exp(log(or_tho) + c(-1, 1) * stats::qnorm(0.975) * se_log),  # phân vị chính xác, như Python
            p_yates = suppressWarnings(stats::chisq.test(bang, correct = TRUE)$p.value),
-           p_pearson = suppressWarnings(stats::chisq.test(bang, correct = FALSE)$p.value))
+           p_pearson = suppressWarnings(stats::chisq.test(bang, correct = FALSE)$p.value),
+           rd = p1 - p0, rd_ci = rd_ci, rd_phuong_phap = KC_HIEU_SO,
+           # 23/11/2026: biến cố hiếm — KTC chính xác Clopper–Pearson (binom.test) + p chính xác Fisher (fisher.test)
+           bien_co_hiem = if (isTRUE(BIEN_CO_HIEM)) list(
+             ci0 = as.numeric(stats::binom.test(e0, n0)$conf.int), ci1 = as.numeric(stats::binom.test(e1, n1)$conf.int),
+             fisher_p = stats::fisher.test(matrix(c(e0, n0 - e0, e1, n1 - e1), 2, byrow = TRUE))$p.value) else NULL)
     } else {
       s0 <- s0[is.finite(s0)]
       s1 <- s1[is.finite(s1)]
@@ -662,7 +744,23 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
   }
   # ── 4. Đa biến — multivariate_model() ──────────────────────────────────────────────────────────────
   if (!POISSON) {
-  .kq <- khoi("da_bien", {
+  if (co(BO_GHEP) && LOAI == "binary") .kq <- khoi("da_bien", {
+    # 23/11/2026: bệnh–chứng ghép cặp cá thể — conditional_logit_model(): hợp lý có điều kiện CHÍNH XÁC theo bộ ghép
+    # (cài đặt độc lập với statsmodels), KTC Wald theo z; OR thô có điều kiện (chỉ phơi nhiễm) trên CÙNG tập ca
+    suppressPackageStartupMessages(library(survival))
+    hb <- HIEP_BIEN[HIEP_BIEN %in% names(D)]
+    dm <- ca_du(D, c(KET_CUC, NHOM, hb, BO_GHEP))
+    gt <- sap_xep(dm[[KET_CUC]])
+    k <- khung(as.numeric(dm[[KET_CUC]] == gt[length(gt)]), ma_tran_du_bao(dm, c(NHOM, hb)), list(.bo = dm[[BO_GHEP]]))
+    fit <- clogit(stats::as.formula(paste(".y ~", k$ve_phai, "+ strata(.bo)")), data = k$df, method = "exact")
+    vn <- names(k$ten)[k$ten == NHOM | startsWith(k$ten, paste0(NHOM, "_"))]
+    tho <- clogit(stats::as.formula(paste(".y ~", paste(vn, collapse = " + "), "+ strata(.bo)")), data = k$df,
+                  method = "exact")
+    list(thuong = list(mo_hinh = "logistic_dk", thang = "OR", n = nrow(dm),
+                       he_so = bang_he_so(coef(fit), stats::vcov(fit), k$ten, Inf, TRUE)),
+         tho = list(mo_hinh = "logistic_dk", thang = "OR", n = nrow(dm),
+                    he_so = bang_he_so(coef(tho), stats::vcov(tho), k$ten[vn], Inf, TRUE)))
+  }) else .kq <- khoi("da_bien", {
     hb <- HIEP_BIEN[HIEP_BIEN %in% names(D)]
     dm <- ca_du(D, c(KET_CUC, NHOM, hb, if (co(CUM)) CUM))
     k <- khung(as.numeric(dm[[KET_CUC]]), ma_tran_du_bao(dm, c(NHOM, hb)))
@@ -684,7 +782,71 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
   })
   KET$da_bien <- .kq$thuong
   KET$da_bien_cum <- .kq$cum
+  KET$da_bien_tho <- .kq$tho
   }
+  # 23/11/2026: biến cố hiếm theo Firth (firth_logistic_model) — logistf, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt;
+  # CÙNG ma trận thiết kế với mô hình đa biến, biến cố = giá trị LỚN của kết cục (như Python)
+  if (isTRUE(FIRTH) && LOAI == "binary") KET$firth <- khoi("firth", {
+    hb <- HIEP_BIEN[HIEP_BIEN %in% names(D)]
+    dm <- ca_du(D, c(KET_CUC, NHOM, hb))
+    gt <- sap_xep(dm[[KET_CUC]])
+    k <- khung(as.numeric(dm[[KET_CUC]] == gt[length(gt)]), ma_tran_du_bao(dm, c(NHOM, hb)))
+    fi <- logistf::logistf(stats::as.formula(paste(".y ~", k$ve_phai)), data = k$df, pl = TRUE,
+                           control = logistf::logistf.control(maxit = 500, lconv = 1e-10, gconv = 1e-10, xconv = 1e-10),
+                           plcontrol = logistf::logistpl.control(maxit = 500, lconv = 1e-10, xconv = 1e-10))
+    he <- list()
+    for (v in names(k$ten)) {
+      i <- match(v, names(fi$coefficients))
+      he[[k$ten[[v]]]] <- list(uoc_luong = exp(fi$coefficients[[i]]), ci = exp(c(fi$ci.lower[[i]], fi$ci.upper[[i]])),
+                              p = fi$prob[[i]], b = unname(fi$coefficients[[i]]))
+    }
+    list(mo_hinh = "firth", thang = "OR", n = nrow(dm), so_bien_co = sum(k$df$.y), he_so = he)
+  })
+  # 23/11/2026: biến cố hiếm của bệnh–chứng ghép cặp (firth_conditional_logit_model) — hợp lý CÓ ĐIỀU KIỆN có phạt
+  # Firth (Heinze & Puhr 2010): ℓ_c và I_c lấy từ survival::clogit(method = "exact") tại β (iter.max = 0, cài đặt độc
+  # lập với Python), cực đại bằng optim; KTC hợp lý phạt hồ sơ (uniroot), p tỷ số hợp lý phạt
+  if (isTRUE(FIRTH_DK) && LOAI == "binary" && co(BO_GHEP)) KET$firth_dk <- khoi("firth_dk", {
+    hb <- HIEP_BIEN[HIEP_BIEN %in% names(D)]
+    dm <- ca_du(D, c(KET_CUC, NHOM, hb, BO_GHEP))
+    gt <- sap_xep(dm[[KET_CUC]])
+    k <- khung(as.numeric(dm[[KET_CUC]] == gt[length(gt)]), ma_tran_du_bao(dm, c(NHOM, hb)), list(.bo = dm[[BO_GHEP]]))
+    ct <- stats::as.formula(paste(".y ~", k$ve_phai, "+ strata(.bo)"))
+    vn <- names(k$ten)
+    pll <- function(b) {
+      f <- suppressWarnings(survival::clogit(ct, data = k$df, method = "exact", init = b,
+                                             control = survival::coxph.control(iter.max = 0)))
+      f$loglik[2] + 0.5 * as.numeric(determinant(solve(f$var), logarithm = TRUE)$modulus)
+    }
+    dk <- list(reltol = 1e-15, maxit = 5000)
+    o <- stats::optim(rep(0, length(vn)), function(b) -pll(b), method = "BFGS", control = dk)
+    lmax <- -o$value
+    ho_so <- function(j, v) {
+      if (length(vn) == 1) return(pll(v))
+      g <- function(bb) {
+        b <- numeric(length(vn))
+        b[j] <- v
+        b[-j] <- bb
+        -pll(b)
+      }
+      -stats::optim(o$par[-j], g, method = "BFGS", control = dk)$value
+    }
+    se <- sqrt(diag(solve(-stats::optimHess(o$par, pll))))
+    he <- list()
+    for (j in seq_along(vn)) {
+      h <- function(v) 2 * (lmax - ho_so(j, v)) - stats::qchisq(0.95, 1)
+      can <- function(huong) {
+        xa <- o$par[j] + huong * 2 * se[j]
+        for (lan in 1:60) {
+          if (h(xa) > 0) return(stats::uniroot(h, sort(c(o$par[j], xa)), tol = 1e-10)$root)
+          xa <- xa + huong * se[j]
+        }
+        NA
+      }
+      he[[k$ten[[vn[j]]]]] <- list(uoc_luong = exp(o$par[j]), ci = exp(c(can(-1), can(1))),
+                                    p = stats::pchisq(2 * (lmax - ho_so(j, 0)), 1, lower.tail = FALSE), b = o$par[j])
+    }
+    list(mo_hinh = "firth_dk", thang = "OR", n = nrow(dm), so_bien_co = sum(k$df$.y), he_so = he)
+  })
 }
 
 # ── 4b. Poisson log-link, SE vững HC0 — poisson_pr_model() (F2; Zou 2004) ─────────────────────────────
@@ -744,6 +906,158 @@ if (co(KET_CUC) && co(NHOM) && LOAI == "ordinal") {
       list(cov_type = "HC3", thang = "B", n = nrow(dm),
            he_so = bang_he_so(coef(fit), sandwich::vcovHC(fit, type = "HC3"), k$ten, Inf))
     }
+  })
+}
+
+# ── 5b. Gán đa trị — multiple_imputation_model() (Bảng 5; 22/11/2026) ─────────────────────────────────
+# mice pmm (MI_M bộ, 10 vòng) → mô hình phân tích trên TỪNG bộ → gộp Rubin: Q̄, T = Ū + (1 + 1/m)·B. Có cụm ⇒
+# sandwich theo cụm CR1 (vc_cum) + suy luận t(G−1); không cụm ⇒ z — đúng quy ước Python (Poisson không cụm: HC0).
+# Gán theo NHÁNH (như _mi_tu_lap của Python): cột nguồn có Branching Logic không làm biến dự báo cho cột khác, giá trị
+# ở hàng nhánh không thoả không vào dữ liệu gán, sau mỗi bộ trở lại «không áp dụng» rồi TÍNH LẠI biến phái sinh từ công
+# thức đã duyệt. 24/11/2026: gán bằng mice + phương pháp "pmmboot" (cùng phương pháp với BoGanPMM của Python, cài
+# đặt độc lập, mỗi bộ một chuỗi) ⇒ đối chiếu theo sai số Monte Carlo (cau_noi_r.doi_chieu), không đòi khớp từng bộ.
+if (!is.na(MI_KHONG_DUNG_DUOC)) KET$mi_khong_dung_duoc <- MI_KHONG_DUNG_DUOC
+if (MI_CO && co(KET_CUC) && co(NHOM)) {
+  KET$mi <- khoi("mi", {
+    so_hoa <- function(x) suppressWarnings(as.numeric(x))
+    d0 <- if (co(CUM)) D[!is.na(D[[CUM]]), , drop = FALSE] else D
+    if (co(MI_BO_GHEP)) d0 <- d0[!is.na(d0[[MI_BO_GHEP]]), , drop = FALSE]
+    pt <- MI_BIEN_PT[MI_BIEN_PT %in% names(d0)]
+    khung_cot <- setdiff(pt, MI_THU_DONG)
+    # 23/11/2026: ghép cặp cá thể — biến dùng để ghép vào mô hình GÁN (Seaman & Keogh 2015), không vào mô hình phân tích
+    khung_cot <- c(khung_cot, setdiff(MI_BIEN_GHEP[MI_BIEN_GHEP %in% names(d0)], khung_cot))
+    for (v in MI_THU_DONG) khung_cot <- c(khung_cot, setdiff(MI_NGUON[[v]], khung_cot))
+    nhanh <- names(MI_NHANH)[names(MI_NHANH) %in% khung_cot]
+    for (s in nhanh) for (x in MI_DIEU_KIEN[[s]]) {
+      if (!x %in% khung_cot && x %in% names(d0) && anyNA(so_hoa(d0[[x]]))) khung_cot <- c(khung_cot, x)
+    }
+    k <- as.data.frame(lapply(d0[khung_cot], so_hoa), check.names = FALSE)
+    an <- stats::setNames(paste0("v", seq_along(khung_cot)), khung_cot)  # tên an toàn cho mice
+    names(k) <- unname(an)
+    kiem_nhanh <- list()
+    for (s in nhanh) {
+      th <- MI_NHANH[[s]](d0)
+      ngoai <- !is.na(th) & !th
+      k[[an[[s]]]][ngoai] <- NA
+      kiem_nhanh[[s]] <- list(so_hang_ngoai_nhanh = sum(ngoai),
+                              con_gia_tri_ngoai_nhanh = sum(!is.na(k[[an[[s]]]][ngoai])))
+    }
+    pred <- mice::make.predictorMatrix(k)
+    for (s in nhanh) pred[rownames(pred) != an[[s]], an[[s]]] <- 0
+    for (s in nhanh) kiem_nhanh[[s]]$so_cot_dung_lam_du_bao <- sum(pred[, an[[s]]])
+    # 24/11/2026: "pmmboot" (PMM kiểu 1 tham số bootstrap, k = 10 người cho chọn riêng từng ca — hàm ở khối dùng chung)
+    # thay "pmm" + use.matcher: phân xử bằng độ phủ KTC 95 % qua mô phỏng 500 lần lặp (dự báo rời rạc/liên tục, có/không
+    # cụm) — xem tests/test_mi_pmm_do_phu_20261124.py.
+    imp <- mice::mice(k, m = MI_M, method = "pmmboot", predictorMatrix = pred, maxit = 10, seed = MI_HAT,
+                      printFlag = FALSE)
+    bo <- lapply(seq_len(MI_M), function(i) {
+      di <- d0
+      ci <- mice::complete(imp, i)
+      for (c in khung_cot) di[[c]] <- ci[[an[[c]]]]
+      for (s in nhanh) {
+        th <- MI_NHANH[[s]](di)
+        di[[s]][is.na(th) | !th] <- NA
+      }
+      if (length(MI_THU_DONG)) di <- .mi_tinh_lai(di)
+      di
+    })
+    con <- sum(vapply(bo, function(di) sum(!stats::complete.cases(di[, pt, drop = FALSE])), 0))
+    if (con > 0) stop("còn ", con, " hàng thiếu biến phân tích sau gán (biến phái sinh không xác định ngoài nhóm con)")
+    muc <- lapply(stats::setNames(MI_PHAN_LOAI, MI_PHAN_LOAI),
+                  function(c) sort(unique(unlist(lapply(bo, function(di) so_hoa(di[[c]]))))))
+    df_t <- if (co(CUM)) df_cum(d0[[CUM]]) else Inf
+    Q <- NULL
+    U <- list()
+    ten <- NULL
+    for (di in bo) {
+      X <- list()
+      for (b in pt[-1]) {
+        if (b %in% MI_PHAN_LOAI) {
+          for (mm in muc[[b]][-1]) X[[paste0(b, "_", as.integer(mm))]] <- as.numeric(so_hoa(di[[b]]) == mm)
+        } else {
+          X[[b]] <- so_hoa(di[[b]])
+        }
+      }
+      if (MI_LOAI == "clogit") {  # hồi quy logistic có điều kiện theo bộ ghép trong từng bộ gán (như Python)
+        yy <- so_hoa(di[[pt[1]]])
+        kh <- khung(as.numeric(yy == max(yy, na.rm = TRUE)), X, list(.bo = di[[MI_BO_GHEP]]))
+      } else {
+        kh <- khung(so_hoa(di[[pt[1]]]), X)
+      }
+      ct <- stats::as.formula(paste(".y ~", kh$ve_phai, if (MI_LOAI == "clogit") "+ strata(.bo)" else ""))
+      fit <- switch(MI_LOAI,
+        clogit = survival::clogit(ct, data = kh$df, method = "exact"),
+        poisson = stats::glm(ct, data = kh$df, family = stats::poisson(link = "log"),
+                             control = stats::glm.control(1e-10, 200)),
+        binary = stats::glm(ct, data = kh$df, family = stats::binomial(), control = stats::glm.control(1e-10, 200)),
+        stats::lm(ct, data = kh$df))
+      V <- if (co(CUM)) vc_cum(fit, di[[CUM]]) else if (MI_LOAI == "poisson") sandwich::vcovHC(fit, type = "HC0")
+           else stats::vcov(fit)
+      if (!is.null(ten) && !identical(names(coef(fit)), colnames(Q))) stop("tham số khác nhau giữa các bộ gán")
+      Q <- rbind(Q, coef(fit))
+      U[[length(U) + 1]] <- V
+      ten <- kh$ten
+    }
+    g <- gop_rubin(Q, U, df_t)
+    mu <- MI_LOAI != "continuous"
+    he <- list()
+    for (vk in names(ten)) {
+      ci <- c(g$lo[[vk]], g$hi[[vk]])
+      he[[ten[[vk]]]] <- list(uoc_luong = if (mu) exp(g$b[[vk]]) else g$b[[vk]], ci = if (mu) exp(ci) else ci,
+                              p = g$p[[vk]], b = g$b[[vk]], se = g$se[[vk]], mcse = g$mcse[[vk]])
+    }
+    ma_gan <- list()
+    for (v in MI_THU_DONG) {
+      thieu <- is.na(so_hoa(d0[[v]]))
+      tab <- table(unlist(lapply(bo, function(di) so_hoa(di[[v]])[thieu])))
+      ma_gan[[v]] <- as.list(stats::setNames(as.integer(tab), names(tab)))
+    }
+    list(mo_hinh = MI_MO_HINH, m = nrow(Q), n = nrow(d0), suy_luan = g$suy_luan,
+         so_cum = if (co(CUM)) length(unique(d0[[CUM]])) else NA, he_so = he,
+         ma_da_gan = if (length(ma_gan)) ma_gan else NULL, kiem_nhanh = if (length(kiem_nhanh)) kiem_nhanh else NULL)
+  })
+}
+
+# ── 5c. Tỷ lệ + KTC 95% Wilson (Bảng 1b) — ty_le_wilson_cum() (22/11/2026) ─────────────────────────────
+# Wilson = KTC của stats::prop.test(correct = FALSE) — cài đặt RIÊNG của R (nhận cả x, n không nguyên), không chép
+# công thức Python. Có cụm: DE từ phương sai tuyến tính hoá K/(K−1)·Σ(t_c − p·m_c)²/n² chia p(1−p)/n, chặn dưới 1;
+# Wilson trên n/DE × (z/t_{K−1})² (Dean & Pagano 2015, doi:10.1093/jssam/smv024) — đúng phép SAP khoá cho Python.
+ktc_wilson <- function(e, n) {
+  if (n <= 0) return(c(NA_real_, NA_real_))
+  as.numeric(suppressWarnings(stats::prop.test(e, n, correct = FALSE))$conf.int)
+}
+if (length(TY_LE)) {
+  KET$ty_le <- khoi("ty_le", {
+    ra <- list()
+    for (cot in TY_LE) {
+      dd <- ca_du(D, c(cot, if (co(CUM)) CUM))
+      x <- suppressWarnings(as.numeric(dd[[cot]]))
+      if (anyNA(x)) stop("«", cot, "» phải là số")
+      if (is.na(NGUONG_TY_LE) && !all(x %in% c(0, 1))) stop("«", cot, "» không phải 0/1 — cần --nguong-ty-le")
+      y <- if (is.na(NGUONG_TY_LE)) x else as.numeric(x >= NGUONG_TY_LE)
+      n <- length(y)
+      if (n == 0) stop("không còn quan sát sau khi bỏ dữ liệu thiếu")
+      e <- sum(y)
+      p <- e / n
+      mot <- list(n = n, so_su_kien = e, ty_le = p,
+                  ci_doc_lap = ktc_wilson(e, n))
+      if (co(CUM)) {
+        t_c <- tapply(y, dd[[CUM]], sum)
+        m_c <- tapply(y, dd[[CUM]], length)
+        K <- length(m_c)
+        if (K < 2) stop("cần ≥ 2 cụm để hiệu chỉnh (đang có ", K, ")")
+        var_lin <- K / (K - 1) * sum((t_c - p * m_c)^2) / n^2
+        var_srs <- p * (1 - p) / n
+        de <- if (var_srs > 0) max(1, var_lin / var_srs) else 1
+        hs <- (stats::qnorm(0.975) / stats::qt(0.975, K - 1))^2
+        mot$so_cum <- K
+        mot$de <- de
+        n_hd <- n / de * hs
+        mot$ci <- ktc_wilson(p * n_hd, n_hd)
+      }
+      ra[[cot]] <- mot
+    }
+    ra
   })
 }
 
@@ -819,9 +1133,90 @@ def ma_r_bien_gia(dt: dict) -> str:
     return "# ── 2c. Biến giả hiệp biến phân loại (tham chiếu = mã nhỏ nhất) ──\n" + "\n".join(dong) + "\n"
 
 
+#: Hạt giống cố định của khối gán đa trị R — lượt chạy lại cho đúng cùng số (tái lập); khác hạt giống Python (bộ sinh
+#: số khác nhau), nên đối chiếu MI dùng sai số Monte Carlo.
+HAT_GIONG_MI_R = 20261122
+_MO_HINH_MI = {"poisson_hc0_mi": "poisson", "poisson_cluster_mi": "poisson", "logistic_mi": "binary",
+               "linear_mi": "continuous", "logistic_dk_mi": "clogit"}
+
+
+def nhanh_sang_r(bt: str) -> str:
+    """Branching Logic REDCap ⇒ hàm R vector hoá `function(d) (...)` trên data.frame. Dùng CÙNG bộ tách token với
+    `nhap_lieu_excel.danh_gia_logic` (một ngữ pháp): [biến] ⇒ số, '1' ⇒ 1, = ⇒ ==, <> ⇒ !=, and/or ⇒ & / |. Hằng chữ
+    không phải số ⇒ LogicKhongHo (không đoán phép so chữ)."""
+    import nhap_lieu_excel as NLE  # noqa: PLC0415
+
+    ra = []
+    for loai, v in NLE._tach_token(bt):
+        if loai == "ref":
+            m = re.fullmatch(r"\[([A-Za-z0-9_]+)(?:\(([A-Za-z0-9_-]+)\))?\]", v)
+            ten = f"{m.group(1)}___{m.group(2)}" if m.group(2) else m.group(1)
+            ra.append(f"suppressWarnings(as.numeric(d[[{chuoi_r(ten)}]]))")
+        elif loai == "str":
+            try:
+                ra.append(repr(float(v[1:-1])))
+            except ValueError as e:
+                raise NLE.LogicKhongHo(f"so sánh chữ «{v}» chưa hỗ trợ ở bản R") from e
+        elif loai == "num":
+            ra.append(repr(float(v)))
+        elif loai == "op":
+            ra.append({"=": "==", "<>": "!="}.get(v, v))
+        elif loai == "kw":
+            ra.append("&" if v.lower() == "and" else "|")
+        else:
+            ra.append(v)
+    return "function(d) (" + " ".join(ra) + ")"
+
+
+def khoi_mi_r(tom: dict, d: Path, csv_p: Path) -> str:
+    """Tham số khối gán đa trị R (mục 0 của script) từ lượt Python: Bảng 5 có kết quả ⇒ MI_CO TRUE, cùng biến phân tích,
+    cùng m, cùng mô hình; gán theo nhánh ⇒ nhánh dịch sang R + hàm tính lại biến phái sinh (tools/bien_phai_sinh.py).
+    Python không chạy MI (không thiếu, bỏ qua, lỗi) ⇒ MI_CO FALSE."""
+    mi = (tom or {}).get("multiple_imputation") or {}
+    dt = (tom or {}).get("dac_ta_phan_tich") or {}
+    tat = ("MI_CO <- FALSE\nMI_M <- 0L\nMI_HAT <- 0L\nMI_LOAI <- \"\"\nMI_MO_HINH <- \"\"\nMI_BIEN_PT <- character(0)\n"
+           "MI_BIEN_GHEP <- character(0)\nMI_BO_GHEP <- NA_character_\n"
+           "MI_PHAN_LOAI <- character(0)\nMI_THU_DONG <- character(0)\nMI_NGUON <- list()\nMI_NHANH <- list()\n"
+           "MI_DIEU_KIEN <- list()\n.mi_tinh_lai <- function(di) di\nMI_KHONG_DUNG_DUOC <- NA_character_\n")
+    if not mi.get("results") or mi.get("skipped") or mi.get("error") or mi.get("model") not in _MO_HINH_MI:
+        return tat
+    import bien_phai_sinh as BPS  # noqa: PLC0415
+
+    gn = mi.get("gan_theo_nhanh") or {}
+    thu_dong = list((gn.get("bien") or {}).keys())
+    nguon = {v: list((gn["bien"][v] or {}).get("nguon") or []) for v in thu_dong}
+    nhanh = dict(gn.get("nhanh") or {})
+    tinh_lai = "function(di) di"
+    if thu_dong:
+        ma = BPS.ma_r_tinh_lai(d, csv_p, thu_dong, ((tom.get("bien_phai_sinh") or {}).get("cot_ngay")), "di")
+        tinh_lai = "function(di) {\n" + ma + "di\n}"
+    bien = [dt.get("outcome"), dt.get("group"), *(dt.get("covariates") or [])]
+    return "\n".join([
+        "# Bảng 5 — gán đa trị (sinh từ multiple_imputation của lượt Python)",
+        "MI_CO <- TRUE",
+        f"MI_M <- {int(mi.get('n_imputations') or 0)}L",
+        f"MI_HAT <- {HAT_GIONG_MI_R}L",
+        f"MI_LOAI <- {chuoi_r(_MO_HINH_MI[mi['model']])}",
+        f"MI_MO_HINH <- {chuoi_r(mi['model'])}",
+        f"MI_BIEN_PT <- {vec_r([b for b in bien if b])}",
+        # 23/11/2026: gán đa trị ghép cặp — biến ghép (mô hình gán) + mã bộ ghép (mô hình có điều kiện)
+        f"MI_BIEN_GHEP <- {vec_r(list(mi.get('bien_ghep') or []))}",
+        f"MI_BO_GHEP <- {gia_tri_r(mi.get('bo_ghep'))}",
+        f"MI_PHAN_LOAI <- {vec_r(list((dt.get('hiep_bien_phan_loai') or {}).keys()))}",
+        f"MI_THU_DONG <- {vec_r(thu_dong)}",
+        "MI_NGUON <- list(" + ", ".join(f"{chuoi_r(v)} = {vec_r(ds)}" for v, ds in nguon.items()) + ")",
+        "MI_NHANH <- list(" + ", ".join(f"{chuoi_r(c)} = {nhanh_sang_r(bt)}" for c, bt in nhanh.items()) + ")",
+        "MI_DIEU_KIEN <- list(" + ", ".join(f"{chuoi_r(c)} = {vec_r(BPS.cot_cua_nhanh(bt))}"
+                                            for c, bt in nhanh.items()) + ")",
+        f".mi_tinh_lai <- {tinh_lai}",
+        "MI_KHONG_DUNG_DUOC <- NA_character_",
+        "",
+    ])
+
+
 def sinh_script_r(
     study: str, csv_p: Path, sha: str, tep_ra: Path, dt: dict, loai: str, don_vi: float | None,
-    khoi_phai_sinh: str = "",
+    khoi_phai_sinh: str = "", khoi_mi: str | None = None,
 ) -> str:
     na, ver_pd = na_pandas()
     thay = {
@@ -839,8 +1234,16 @@ def sinh_script_r(
         "@@BIEN_CO@@": gia_tri_r(dt.get("event")),
         "@@CUM@@": gia_tri_r(dt.get("cot_cum")),
         "@@DON_VI@@": gia_tri_r(don_vi, so=True),
+        "@@TY_LE@@": vec_r(dt.get("ty_le") or []),
+        "@@NGUONG_TY_LE@@": gia_tri_r(dt.get("nguong_ty_le"), so=True),
+        "@@KC_HIEU_SO@@": chuoi_r(dt.get("kc_hieu_so") or "wald"),
+        "@@BIEN_CO_HIEM@@": "TRUE" if dt.get("bien_co_hiem_da_chay") == "mo_ta_chinh_xac" else "FALSE",
+        "@@FIRTH@@": "TRUE" if dt.get("bien_co_hiem_da_chay") == "firth" else "FALSE",
+        "@@FIRTH_DK@@": "TRUE" if dt.get("bien_co_hiem_da_chay") == "firth_dk" else "FALSE",
+        "@@BO_GHEP@@": gia_tri_r(dt.get("bo_ghep")),
         "@@PANDAS@@": ver_pd,
         "@@NA_PANDAS@@": vec_r(na),
+        "@@KHOI_MI@@": khoi_mi if khoi_mi is not None else khoi_mi_r({}, Path("."), csv_p),
     }
     # MỘT lượt thay (regex): giá trị đã thay KHÔNG bị quét lại — tên cột chứa «@@…@@» không thể kéo mã R khác vào
     # script (lượt rà 14/11/2026: thay tuần tự từng khoá đã cho tiêm mã R qua tên cột).
@@ -886,13 +1289,16 @@ def ascii_hoa_chuoi_r(vb: str) -> str:
 def _dac_ta_hop_le(dt: dict) -> None:
     if bool(dt.get("time")) != bool(dt.get("event")):
         raise TuChoi("--time và --event phải đi cùng nhau (như run_stats_analysis.py)")
-    if not dt.get("outcome") and not dt.get("time"):
+    if not dt.get("outcome") and not dt.get("time") and not dt.get("ty_le"):
         raise TuChoi(
             "thiếu đặc tả: chưa có G6_analysis_summary.json với khoá dac_ta_phan_tich — truyền --outcome/--group/"
-            "--covariates (hoặc --time/--event) như run_stats_analysis.py"
+            "--covariates (hoặc --time/--event, hoặc tỷ lệ --ty-le) như run_stats_analysis.py"
         )
-    if not dt.get("group"):
+    if (dt.get("outcome") or dt.get("time")) and not dt.get("group"):
         raise TuChoi("thiếu --group (phơi nhiễm chính) — Python cũng không chạy mô hình chính khi thiếu nhóm")
+
+
+ty_le_tu_tom_tat = S.ty_le_tu_tom_tat  # 23/11/2026: dùng chung với cầu nối SPSS (Bảng 1b hai phần mềm)
 
 
 def lenh_cu_phap(args) -> int:
@@ -904,10 +1310,13 @@ def lenh_cu_phap(args) -> int:
         raise TuChoi("manifest khoá không ghi SHA-256 — không kiểm được bộ dữ liệu khoá")
     td_p = kiem_pii(args.study, csv_p, args.dictionary)
     dt = S.dac_ta(args)
-    _dac_ta_hop_le(dt)
     tom = S._doc_json(d / f"{args.gate}_analysis_summary.json")
+    dt["ty_le"], dt["nguong_ty_le"] = ty_le_tu_tom_tat(tom)  # 22/11/2026: Bảng 1b có bản R
+    _dac_ta_hop_le(dt)
     loai = xac_dinh_loai(dt, tom)
     don_vi = args.don_vi_phoi_nhiem
+    if don_vi is None:  # 22/11/2026: đặc tả lượt Python ghi đơn vị cho MỌI họ mô hình (không riêng nhánh thứ tự)
+        don_vi = (tom.get("dac_ta_phan_tich") or {}).get("don_vi_phoi_nhiem")
     if don_vi is None:
         don_vi = ((tom.get("ordinal") or {}).get("don_vi_phoi_nhiem") or {}).get("don_vi")
     import bien_phai_sinh as BPS  # noqa: PLC0415
@@ -924,6 +1333,7 @@ def lenh_cu_phap(args) -> int:
         raise TuChoi(f"lọc quần thể: {e}") from e
     khoi_ps += ma_r_bien_gia(dt)  # biến giả SAU biến phái sinh (biến phái sinh cũng có thể là biến phân loại)
     thieu = [dt[k] for k in ("outcome", "group", "time", "event", "cot_cum") if dt.get(k) and dt[k] not in tieu_de]
+    thieu += [c for c in dt.get("ty_le") or [] if c not in tieu_de]
     if thieu:
         raise TuChoi(f"bộ dữ liệu khoá không có cột: {', '.join(thieu)}")
     canh_bao = []
@@ -938,9 +1348,17 @@ def lenh_cu_phap(args) -> int:
     (r_dir / "ket_qua").mkdir(parents=True, exist_ok=True)
     tep_ra = r_dir / "ket_qua" / f"{args.study}_r_tho.json"
     script = r_dir / f"{args.study}_phan_tich.R"
+    import nhap_lieu_excel as NLE  # noqa: PLC0415
+
+    try:
+        khoi_mi = khoi_mi_r(tom, d, csv_p)
+    except (BPS.TuChoi, BPS.LoiCongThuc, NLE.LogicKhongHo) as e:
+        # không dựng được khối R của Bảng 5 ⇒ khối tắt; đối chiếu sẽ ghi «không so được» kèm lý do (không im lặng)
+        khoi_mi = khoi_mi_r({}, d, csv_p) + f"MI_KHONG_DUNG_DUOC <- {chuoi_r(str(e)[:200])}\n"
+        canh_bao.append(f"Bảng 5 (MI) không dựng được khối R: {e}")
     script.write_text(
-        sinh_script_r(args.study, csv_p, man["sha256"], tep_ra, dt, loai, don_vi, khoi_ps), encoding="utf-8",
-        newline="\n",
+        sinh_script_r(args.study, csv_p, man["sha256"], tep_ra, dt, loai, don_vi, khoi_ps, khoi_mi),
+        encoding="utf-8", newline="\n",
     )
     dac = {
         "study": args.study,
@@ -1849,16 +2267,20 @@ def _co_ci(ci) -> bool:
     return bool(ci) and len(ci) == 2 and None not in ci
 
 
-def _dong(ten: str, py: dict, r: dict, *, ghi_chu: str | None = None, n_py=None, n_r=None) -> dict:
+def _dong(ten: str, py: dict, r: dict, *, ghi_chu: str | None = None, n_py=None, n_r=None,
+          tran: float | None = None) -> dict:
     """Một dòng đối chiếu: py/r = {uoc_luong, ci, p}. Trạng thái khop · lech · khong_so_duoc (không còn «lệch nhỏ»).
 
     Thêm hai luật so với `so_mot` của SPSS: (1) SỐ CA khác nhau ⇒ LỆCH dù số trùng tình cờ; (2) KTC hoặc p chỉ có ở MỘT
-    phía ⇒ phần đó không so được và cả dòng là «không so được» (không chấm khớp chỉ bằng ước lượng điểm)."""
+    phía ⇒ phần đó không so được và cả dòng là «không so được» (không chấm khớp chỉ bằng ước lượng điểm).
+    `tran` (22/11/2026): dung sai TUYỆT ĐỐI cho phép tất định (Bảng 1b) — thay dung sai tương đối chung."""
     py, r = py or {}, r or {}
-    kt = {"uoc_luong": S._gan(r.get("uoc_luong"), py.get("uoc_luong"), S.TOL_UOC)}
+    kt = {"uoc_luong": (S._gan(r.get("uoc_luong"), py.get("uoc_luong"), S.TOL_UOC) if tran is None
+                        else S._gan(r.get("uoc_luong"), py.get("uoc_luong"), tran=tran))}
     mot_phia = []
     if _co_ci(py.get("ci")) and _co_ci(r.get("ci")):
-        kt["ci"] = all(S._gan(a, b, S.TOL_CI) for a, b in zip(r["ci"], py["ci"]))
+        kt["ci"] = all((S._gan(a, b, S.TOL_CI) if tran is None else S._gan(a, b, tran=tran))
+                       for a, b in zip(r["ci"], py["ci"]))
     else:
         kt["ci"] = None
         if _co_ci(py.get("ci")) != _co_ci(r.get("ci")):
@@ -1972,7 +2394,7 @@ def _ket_cuc_chinh(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
                 n_py=n_py,
                 n_r=n_r,
             )
-        ]
+        ] + _hieu_so_nguy_co(pc, rc, n_py, n_r) + _bien_co_hiem_r(tom, rc)
     if lp in ("continuous", "categorical") and lr == "continuous":
         test = str(pc.get("test", "")).lower()
         if "welch" in test:
@@ -2012,6 +2434,62 @@ def _ket_cuc_chinh(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
             )
         ]
     return [_khong_so(ten, f"loại kết cục khác nhau: Python «{lp}», R «{lr}»", n_py=n_py, n_r=n_r)]
+
+
+def _hieu_so_nguy_co(pc: dict, rc: dict, n_py, n_r) -> list[dict]:
+    """Hiệu số nguy cơ thô + KTC (23/11/2026): R tính lại bằng ĐÚNG phương pháp Python ghi (Newcombe qua DescTools —
+    cài đặt độc lập; Wald tính tay). Phép tất định ⇒ dung sai = đơn vị làm tròn của Python. Khác phương pháp ⇒ không
+    so được."""
+    if pc.get("risk_diff") is None:
+        return []  # bệnh–chứng (không ước lượng được hiệu số) hoặc một nhóm rỗng — Python không ghi
+    pp_py = pc.get("risk_diff_ci_method") or "wald"
+    ten = f"Kết cục chính — hiệu số nguy cơ thô (nhóm sau − nhóm trước), KTC 95 % {pp_py}"
+    py = {"uoc_luong": pc.get("risk_diff"), "ci": list(pc.get("risk_diff_ci_95") or []) or None, "p": None}
+    if rc.get("rd") is None:
+        return [_khong_so(ten, "R không ra hiệu số nguy cơ (script R cũ — sinh lại bằng cu-phap)", py=py,
+                          n_py=n_py, n_r=n_r)]
+    if rc.get("rd_phuong_phap") != pp_py:
+        return [_khong_so(ten, f"phương pháp KTC khác nhau: Python «{pp_py}», R «{rc.get('rd_phuong_phap')}»", py=py,
+                          r={"uoc_luong": rc.get("rd"), "ci": rc.get("rd_ci")}, n_py=n_py, n_r=n_r)]
+    return [_dong(ten, py, {"uoc_luong": rc.get("rd"), "ci": rc.get("rd_ci"), "p": None}, n_py=n_py, n_r=n_r,
+                  tran=S.DUNG_SAI_TY_LE)]
+
+
+def _bien_co_hiem_r(tom: dict, rc: dict) -> list[dict]:
+    """Biến cố hiếm (23/11/2026): KTC Clopper–Pearson từng nhóm + p Fisher của Python ↔ R (binom.test/fisher.test).
+    Phép tất định ⇒ dung sai = đơn vị làm tròn 4 chữ số của Python."""
+    b = tom.get("bien_co_hiem")
+    if not isinstance(b, dict) or b.get("error") or b.get("phuong_phap") in ("firth", "firth_dk"):  # _firth_r so
+        return []
+    rb = rc.get("bien_co_hiem") or {}
+    if not rb:
+        return [_khong_so("Biến cố hiếm — KTC chính xác/Fisher", "R không ra khối biến cố hiếm (script R cũ — sinh "
+                          "lại bằng cu-phap)")]
+    ra = []
+    for i, g in enumerate(b.get("nhom") or []):
+        ra.append(_dong(f"Biến cố hiếm — tỷ lệ + KTC 95% Clopper–Pearson, nhóm `{g.get('gia_tri')}`",
+                        {"uoc_luong": g.get("ty_le"), "ci": g.get("ci_95_clopper_pearson"), "p": None},
+                        {"uoc_luong": (rc.get("bien_co") or [None, None])[i] / (rc.get("n") or [1, 1])[i]
+                         if rc.get("bien_co") else None, "ci": rb.get(f"ci{i}"), "p": None},
+                        n_py=g.get("n"), n_r=(rc.get("n") or [None, None])[i], tran=S.DUNG_SAI_TY_LE))
+    if "fisher_p_hai_phia" in b:
+        ra.append(_dong("Biến cố hiếm — p chính xác Fisher (hai phía)", {"uoc_luong": b["fisher_p_hai_phia"]},
+                        {"uoc_luong": rb.get("fisher_p")}, tran=S.DUNG_SAI_TY_LE))
+    return ra
+
+
+def _firth_r(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
+    """Biến cố hiếm theo Firth (23/11/2026): OR + KTC hợp lý phạt hồ sơ + p tỷ số hợp lý phạt của Python
+    (firth_logistic_model) ↔ R logistf(pl = TRUE) — hai cài đặt độc lập của cùng đại lượng, từng hệ số hai chiều."""
+    b = tom.get("bien_co_hiem")
+    pp = b.get("phuong_phap") if isinstance(b, dict) else None
+    # 23/11/2026: Firth CÓ ĐIỀU KIỆN (ghép cặp) so với khối firth_dk của R (survival::clogit + hợp lý phạt)
+    khoa = "firth_dk" if (pp == "firth_dk" or (pp != "firth" and kq.get("firth_dk"))) else "firth"
+    if pp != khoa and not kq.get(khoa):
+        return []
+    ten = ("Biến cố hiếm — Firth có điều kiện theo bộ ghép (OR, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt)"
+           if khoa == "firth_dk" else "Biến cố hiếm — Firth (OR, KTC hợp lý phạt hồ sơ, p tỷ số hợp lý phạt)")
+    return _he_so_hai_phia(ten, b, kq.get(khoa), loi_r.get(khoa), ("OR_adj",))
 
 
 def _ket_cuc_chinh_cum(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
@@ -2211,6 +2689,142 @@ def _kaplan_meier(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
     return ra
 
 
+# ── Bảng 5 (gán đa trị) — dung sai theo SAI SỐ MONTE CARLO (22/11/2026) ──
+# Python (BoGanPMM) và R (mice + "pmmboot") gán bằng CÙNG phương pháp (PMM kiểu 1 tham số bootstrap, 24/11/2026) nhưng
+# cài đặt độc lập, dãy ngẫu nhiên khác ⇒ KHÔNG đòi khớp từng bộ gán; đòi khớp KẾT LUẬN GỘP. Căn cứ: sai số
+# Monte Carlo của ước lượng gộp là √(B/m) (White, Royston &
+# Wood, Stat Med 2011, PMID 21225900); B ước lượng với m − 1 bậc tự do (B̂ ~ B·χ²(m−1)/(m−1)) nên dao động rộng ⇒ lấy B
+# LỚN hơn của hai phía và lượng tử t(m−1).
+#   • ước lượng gộp b (thang mô hình: log PR/OR, β):  |b_R − b_Py| ≤ c·√(B*/m_Py + B*/m_R),  c = t(1 − α/2; m − 1)
+#   • sai số chuẩn gộp:  |SE_R/SE_Py − 1| ≤ c·√2·½·λ*·√(2/(m − 1)) + MI_SAN_SE  (λ* = (1 + 1/m)·B*/SE² — phần SE do B;
+#     MI_SAN_SE cho biến thiên của Ū giữa hai lượt gán)
+#   • KTC: mỗi cận ≤ dung sai b + q·dung sai SE (q: lượng tử suy luận của chính phép); cách suy luận (t(G−1) / z) và số
+#     ca phải trùng.
+# Hiệu chỉnh trên mô phỏng Poisson theo cụm (72 phép so Python ↔ R, m = 20): |Δb|/√(2B*/m) độ lệch chuẩn 1,11, lớn nhất
+# 2,9; lệch SE/σ lớn nhất 2,66; hệ số FMI thấp lệch SE ≤ 0,98 % — dưới ngưỡng c ≈ 4,9 (α = 10⁻⁴, m = 20).
+# Kiểm lại 24/11/2026 với bộ gán mới hai phía (BoGanPMM ↔ mice "pmmboot"): 2.000 phép so (500 lần lặp × 2 kịch bản cụm
+# — dự báo rời rạc / liên tục, MAR — × 2 hệ số, cùng dữ liệu, dãy ngẫu nhiên độc lập): |Δb|/√(2B*/m) SD 0,91–1,03, lớn
+# nhất 3,35; 0 phép vượt dung sai b hoặc SE (lớn nhất 68 % và 79 % dung sai).
+# m < MI_M_TOI_THIEU ⇒ B không chặn được ⇒ «không so được».
+MI_M_TOI_THIEU = 10
+MI_ALPHA = 1e-4
+MI_SAN_SE = 0.01
+
+
+def dung_sai_mi(py: dict, r: dict, m_py: int, m_r: int) -> dict:
+    """Dung sai đối chiếu MỘT hệ số của Bảng 5 (xem chú thích trên). py/r: {b, se, mcse} trên thang mô hình."""
+    from scipy import stats as st  # noqa: PLC0415
+
+    df = max(min(m_py, m_r) - 1, 1)
+    c = float(st.t.ppf(1 - MI_ALPHA / 2, df))
+    b_lon = max(m_py * float(py["mcse"]) ** 2, m_r * float(r["mcse"]) ** 2)
+    tol_b = c * (b_lon / m_py + b_lon / m_r) ** 0.5 + 1e-6
+    lam = min(1.0, max((1 + 1 / m_py) * b_lon / float(py["se"]) ** 2, (1 + 1 / m_r) * b_lon / float(r["se"]) ** 2))
+    tol_se = c * 2 ** 0.5 * 0.5 * lam * (2 / df) ** 0.5 + MI_SAN_SE
+    return {"c": round(c, 3), "df": df, "B_lon": b_lon, "tol_b": tol_b, "tol_se_tuong_doi": tol_se}
+
+
+def _mi(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
+    """Đối chiếu Bảng 5 (MI) theo sai số Monte Carlo — mỗi hệ số một dòng; Python có MI mà R không ra ⇒ «không so được»
+    kèm lý do (không bao giờ im lặng như trước 22/11/2026, khi Bảng 5 không có bản R)."""
+    import math  # noqa: PLC0415
+
+    mi, rr = tom.get("multiple_imputation"), kq.get("mi")
+    if not mi or mi.get("skipped"):
+        return [] if rr is None else [_khong_so("Gán đa trị (Bảng 5) — toàn mô hình", "R chạy MI mà Python bỏ qua")]
+    if mi.get("error") or not mi.get("results"):
+        return [_khong_so("Gán đa trị (Bảng 5) — toàn mô hình", f"Python KHÔNG ra Bảng 5: {_loi_py(mi)}")]
+    ten_mh = f"Gán đa trị ({mi.get('model')}, m = {mi.get('n_imputations')})"
+    if rr is None:
+        ly_do = (kq.get("mi_khong_dung_duoc") or loi_r.get("mi")
+                 or "vắng trong G6_r_ket_qua.json (script R cũ — sinh lại)")
+        return [_khong_so(f"{ten_mh} — toàn mô hình", f"R KHÔNG ra Bảng 5: {ly_do}")]
+    m_py, m_r = int(mi.get("n_imputations") or 0), int(rr.get("m") or 0)
+    if min(m_py, m_r) < MI_M_TOI_THIEU:
+        return [_khong_so(f"{ten_mh} — toàn mô hình", f"m = {min(m_py, m_r)} < {MI_M_TOI_THIEU}: sai số Monte Carlo "
+                                                     "không chặn được (B ước lượng với m − 1 bậc tự do)")]
+    suy_py = "t(G-1)" if mi.get("cluster") else "z"
+    ra, da_dung = [], set()
+    mu = mi.get("model") != "linear_mi"
+    for x in mi["results"]:
+        v = x.get("variable")
+        ten_r, hr = _tim(rr.get("he_so"), v)
+        if ten_r:
+            da_dung.add(ten_r)
+        uoc = next((x[k] for k in ("PR_adj", "OR_adj", "beta") if k in x), None)
+        py = {"uoc_luong": uoc, "ci": x.get("CI_95"), "p": x.get("p")}
+        if hr is None:
+            ra.append(_khong_so(f"{ten_mh} — {v}", "R không có hệ số cùng tên", py=py))
+            continue
+        if uoc is None or any(x.get(k) is None for k in ("b", "se", "mcse")):
+            ly = ("Python: mô hình không hội tụ — đã gỡ số" if uoc is None
+                  else "Python không ghi b/se/mcse (tóm tắt G6 cũ — chạy lại run_stats_analysis.py)")
+            ra.append(_khong_so(f"{ten_mh} — {v}", ly, py=py, r=_r(hr)))
+            continue
+        ds = dung_sai_mi(x, hr, m_py, m_r)
+        db = abs(float(hr["b"]) - float(x["b"]))
+        dse = abs(float(hr["se"]) / float(x["se"]) - 1)
+        q = max((math.log(x["CI_95"][1]) if mu else x["CI_95"][1]) - float(x["b"]), 0) / float(x["se"]) \
+            if x.get("CI_95") else 1.96
+        tol_ci = ds["tol_b"] + q * ds["tol_se_tuong_doi"] * float(x["se"])
+        bien = (lambda a: math.log(a)) if mu else (lambda a: a)
+        dci = (max(abs(bien(a) - bien(b)) for a, b in zip(hr["ci"], x["CI_95"]))
+               if _co_ci(hr.get("ci")) and _co_ci(x.get("CI_95")) else None)
+        kiem = {"b": db <= ds["tol_b"], "se": dse <= ds["tol_se_tuong_doi"],
+                "ci": None if dci is None else dci <= tol_ci, "suy_luan": rr.get("suy_luan") == suy_py}
+        ghi = (f"|Δb| {db:.4f} ≤ {ds['tol_b']:.4f} · |SE_R/SE_Py − 1| {dse:.3f} ≤ {ds['tol_se_tuong_doi']:.3f}"
+               + (f" · |ΔKTC| {dci:.4f} ≤ {tol_ci:.4f}" if dci is not None else "")
+               + f" (c = t(1 − α/2; {ds['df']}) = {ds['c']}, α = {MI_ALPHA:g}; dung sai theo sai số Monte Carlo)")
+        if not kiem["suy_luan"]:
+            ghi += f" · SUY LUẬN KHÁC: Python {suy_py}, R {rr.get('suy_luan')}"
+        tt = "khop" if all(v_ is not False for v_ in kiem.values()) else "lech"
+        n_py, n_r = mi.get("n_total"), rr.get("n")
+        if n_py is not None and n_r is not None and int(n_py) != int(n_r):
+            tt = "lech"
+            ghi += f" · SỐ CA KHÁC: Python {n_py}, R {n_r}"
+        ra.append({"muc": f"{ten_mh} — {v}" + (f" (R: {ten_r})" if ten_r != v else ""), "python": py, "r": _r(hr),
+                   "kiem": kiem, "trang_thai": tt, "ghi_chu": ghi, "n": {"python": n_py, "r": n_r}, "dung_sai": ds})
+    for ten_r, hr in (rr.get("he_so") or {}).items():
+        if ten_r not in da_dung:
+            ra.append(_khong_so(f"{ten_mh} — {ten_r}", "Python không có hệ số này", r=_r(hr)))
+    return ra
+
+
+DUNG_SAI_TY_LE, DUNG_SAI_DE = S.DUNG_SAI_TY_LE, S.DUNG_SAI_DE  # căn cứ: cau_noi_spss.DUNG_SAI_TY_LE
+
+
+def _ty_le(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
+    """Bảng 1b: tỷ lệ + KTC Wilson độc lập (R: prop.test) và theo cụm (n/DE × (z/t)²) — mỗi cột một/hai dòng + DE."""
+    ds, rr = [x for x in tom.get("ty_le") or [] if isinstance(x, dict)], kq.get("ty_le")
+    if not ds:
+        return [] if rr is None else [_khong_so("Tỷ lệ Wilson (Bảng 1b)", "R tính tỷ lệ mà Python không có")]
+    if rr is None:
+        return [_khong_so("Tỷ lệ Wilson (Bảng 1b) — toàn bộ",
+                          f"R KHÔNG ra tỷ lệ: {loi_r.get('ty_le') or 'vắng (script R cũ — sinh lại)'}")]
+    ra = []
+    for x in ds:
+        cot = x.get("cot")
+        r = rr.get(cot) if isinstance(rr, dict) else None
+        if x.get("error"):
+            ra.append(_khong_so(f"Tỷ lệ — {cot}", f"Python lỗi: {x['error']}", r=r and {"uoc_luong": r.get("ty_le")}))
+            continue
+        if r is None:
+            ra.append(_khong_so(f"Tỷ lệ — {cot}", "R không có cột này", py={"uoc_luong": x.get("ty_le")}))
+            continue
+        ra.append(_dong(f"Tỷ lệ + KTC Wilson độc lập — {cot}",
+                        {"uoc_luong": x.get("ty_le"), "ci": x.get("CI_95_wilson_doc_lap")},
+                        {"uoc_luong": r.get("ty_le"), "ci": r.get("ci_doc_lap")}, n_py=x.get("n"), n_r=r.get("n"),
+                        tran=DUNG_SAI_TY_LE))
+        if x.get("CI_95") is not None or r.get("ci") is not None:
+            ra.append(_dong(f"Tỷ lệ + KTC Wilson theo cụm (n/DE·(z/t)²) — {cot}",
+                            {"uoc_luong": x.get("ty_le"), "ci": x.get("CI_95")},
+                            {"uoc_luong": r.get("ty_le"), "ci": r.get("ci")}, n_py=x.get("n"), n_r=r.get("n"),
+                            tran=DUNG_SAI_TY_LE))
+            ra.append(_dong(f"Hiệu ứng thiết kế (DE) — {cot}", {"uoc_luong": x.get("hieu_ung_thiet_ke")},
+                            {"uoc_luong": r.get("de")}, n_py=x.get("n"), n_r=r.get("n"), tran=DUNG_SAI_DE))
+    return ra
+
+
 def doi_chieu(tom: dict, r: dict) -> list[dict]:
     """Đối chiếu tóm tắt G6 (Python) với KẾT QUẢ R ĐẦY ĐỦ (`G6_r_ket_qua.json`: ket_qua · loi · so_ca_doc)."""
     kq = r.get("ket_qua") or {}
@@ -2234,6 +2848,10 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
     cum = bool(dt.get("cot_cum")) or (mv or {}).get("cov_type") == "cluster"
     nguon = kq.get("da_bien_cum") if cum else kq.get("da_bien")
     mo_hinh = (mv or {}).get("model") or (nguon or {}).get("mo_hinh") or ("ordinal_logit_po" if la_tt else "?")
+    # 23/11/2026: rào EPV chặn hồi quy và Python chạy phương pháp biến cố hiếm SAP §5 thay thế (đã so ở dòng «Biến cố
+    # hiếm») ⇒ mô hình hồi quy KHÔNG phải ước lượng của lượt — không so hệ số R với một mô hình Python cố ý không chạy.
+    if (mv or {}).get("thay_the_theo_sap"):
+        mv, nguon = None, None
     dong += _he_so_hai_phia(
         f"Đa biến ({mo_hinh}{', SE cụm CR1 t(G−1)' if cum else ''})",
         mv,
@@ -2256,6 +2874,16 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
         dong += _he_so_hai_phia("Poisson HC0 — PR thô", tho_py, kq.get("poisson_tho"), loi_r.get("poisson"), ("PR",))
         dong += _he_so_hai_phia("Poisson HC0 — PR hiệu chỉnh", pr, kq.get("poisson_hieu_chinh"), loi_r.get("poisson"),
                                 ("PR_adj",))  # fmt: skip
+    # rào EPV chặn hồi quy có điều kiện (thay bằng Firth có điều kiện theo SAP) ⇒ không so OR thô của mô hình cố ý không
+    # chạy (R vẫn khớp clogit) — như mô hình hiệu chỉnh ở trên
+    if ((mv or {}).get("model") == "logistic_dk" or kq.get("da_bien_tho")) and not (
+            tom.get("multivariate") or {}).get("thay_the_theo_sap"):
+        tho = {"results": (mv or {}).get("crude"), "n": (mv or {}).get("n")} if mv and not mv.get("error") else mv
+        dong += _he_so_hai_phia("Logistic có điều kiện theo bộ ghép — OR thô (chỉ phơi nhiễm)", tho,
+                                kq.get("da_bien_tho"), loi_r.get("da_bien"), ("OR_adj",))
+    dong += _firth_r(tom, kq, loi_r)
+    dong += _mi(tom, kq, loi_r)
+    dong += _ty_le(tom, kq, loi_r)
     dong += _song_con(tom, kq, loi_r)
     dong += _kaplan_meier(tom, kq, loi_r)
     return dong
@@ -2263,9 +2891,12 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
 
 def _dac_ta_lech(dt_py: dict, dt_r: dict) -> list[str]:
     lech = []
-    for k in ("outcome", "group", "time", "event", "cot_cum", "loc"):
+    for k in ("outcome", "group", "time", "event", "cot_cum", "loc", "nguong_ty_le", "kc_hieu_so", "bo_ghep",
+              "bien_ghep"):
         if (dt_py.get(k) or None) != (dt_r.get(k) or None):
             lech.append(f"{k}: Python={dt_py.get(k)!r} · R={dt_r.get(k)!r}")
+    if dt_py.get("ty_le") is not None and list(dt_py.get("ty_le") or []) != list(dt_r.get("ty_le") or []):
+        lech.append(f"ty_le: Python={dt_py.get('ty_le')} · R={dt_r.get('ty_le')}")
     if list(dt_py.get("covariates") or []) != list(dt_r.get("covariates") or []):
         lech.append(f"covariates: Python={dt_py.get('covariates')} · R={dt_r.get('covariates')}")
     return lech
@@ -2303,6 +2934,8 @@ def lenh_doi_chieu(args) -> int:
             "p_tuyet_doi": S.TOL_P,
             "p_tuong_doi": NGUONG_P_TUONG_DOI,
             "p_san_tuyet_doi": SAN_P_TUYET_DOI,
+            "mi": {"alpha": MI_ALPHA, "m_toi_thieu": MI_M_TOI_THIEU, "san_se": MI_SAN_SE,
+                   "can_cu": "sai số Monte Carlo √(B/m), B lớn hơn của hai phía, lượng tử t(m − 1)"},
         },
         "r_phien_ban": kq.get("r_phien_ban"),
         "goi_phien_ban": kq.get("goi_phien_ban"),
@@ -2323,7 +2956,9 @@ def lenh_doi_chieu(args) -> int:
         "",
         f"{kq.get('r_phien_ban') or 'R ?'} ({goi or '?'}) · {ket['luc']} · dữ liệu khoá SHA-256 {sha_r[:16]}… · "
         f"ngưỡng: ước lượng ±{S.TOL_UOC:.1%}, KTC ±{S.TOL_CI:.1%}, p lệch ≤ {S.TOL_P} VÀ ≤ max({SAN_P_TUYET_DOI:g}; "
-        f"{NGUONG_P_TUONG_DOI:.0%} của p lớn hơn); số ca phải bằng nhau; không có miễn trừ «khác phương pháp».",
+        f"{NGUONG_P_TUONG_DOI:.0%} của p lớn hơn); số ca phải bằng nhau; không có miễn trừ «khác phương pháp». "
+        f"Bảng 5 (gán đa trị): dung sai theo sai số Monte Carlo √(B/m), B lớn hơn của hai phía, t(m − 1), "
+        f"α = {MI_ALPHA:g}, m ≥ {MI_M_TOI_THIEU} (chi tiết ở từng dòng).",
         "",
         f"Tổng: {dem['khop']} khớp · {dem['lech']} lệch · {dem['khong_so_duoc']} không so được"
         + (" — CHƯA đối chiếu trọn: có mục chỉ một phía ra số (mã 2)." if dem["khong_so_duoc"] else "."),
@@ -2359,6 +2994,474 @@ def lenh_doi_chieu(args) -> int:
     if dem["khong_so_duoc"] or not dem["khop"]:
         return MA_KHONG_DO  # còn mục chỉ một phía ra số (vd Python sập mô hình) ⇒ CHƯA đo trọn, không phải «khớp»
     return MA_OK
+
+
+# ═══════════════════════ Kịch bản R của phân tích SAP bổ sung (phan_tich_sap_bo_sung.py) ═══════════════════════
+# 22/11/2026 (gộp về MỘT cầu nối R): các phân tích SAP mà đường Python của G6 không có — biến thể mô hình thứ tự
+# (spline, phân vị, tương tác, gộp mức kết cục, bỏ điểm ảnh hưởng, mô hình riêng từng yếu tố), tỷ số chênh tương xứng
+# một phần, hệ
+# số chặn ngẫu nhiên, logistic Firth, trọng số hậu phân tầng/ước lượng theo thiết kế, trung gian thăm dò. Dùng NGUYÊN
+# `R_HAM_MO_HINH` (ma_tran_du_bao, khung, bang_he_so, vc_cum, df_cum, ca_du, co, sap_xep) và `tim_r`/`chay_r` của tệp
+# này. Quy ước dấu: mọi OR là cho mức kết cục CAO HƠN (cùng chiều polr/OrderedModel); với hệ số danh nghĩa của
+# clm(nominal = ~ x), hệ số tại ngưỡng «j|j+1» cộng vào logit P(Y ≤ j) ⇒ OR cho Y > j là exp(−hệ số) (đã kiểm bằng mô
+# phỏng). Đối số dòng lệnh: <dữ liệu CSV> <kết quả JSON> <cấu hình JSON>.
+
+#: Gói R mỗi loại cần (kiểm trước khi chạy; thiếu ⇒ không đo được, không bao giờ «đạt»).
+GOI_CAN_BO_SUNG = {
+    "thu_tu": ("jsonlite", "ordinal", "sandwich", "Hmisc", "MASS", "brant", "mice"),
+    "ppo": ("jsonlite", "ordinal", "MASS", "brant"),
+    "hon_hop": ("jsonlite", "ordinal"),
+    "firth": ("jsonlite", "logistf", "sandwich"),
+    "trong_so": ("jsonlite", "survey"),
+    "trung_gian": ("jsonlite", "MASS"),
+}
+
+R_KHUNG_BO_SUNG = (r"""# ── Khung chung phân tích bổ sung (sinh bởi tools/cau_noi_r.py kich_ban_bo_sung) ──
+suppressPackageStartupMessages(library(jsonlite))
+.a <- commandArgs(trailingOnly = TRUE)
+if (length(.a) < 3) stop("cần 3 đối số: <dữ liệu CSV> <kết quả JSON> <cấu hình JSON>")
+CH <- jsonlite::fromJSON(.a[3], simplifyVector = TRUE)
+D <- utils::read.csv(.a[1], stringsAsFactors = FALSE, na.strings = c("", "NA"), check.names = FALSE)
+TEP_KQ <- .a[2]
+CANH_BAO <- character(0)
+""" + R_HAM_MO_HINH + r"""# Vỏ mỏng trên hàm dùng chung: biến PHÂN LOẠI khai rõ (mã số vẫn là phân loại)
+# ⇒ biến giả <b>_<mã>, tham chiếu = mã
+# nhỏ nhất; biến còn lại ép số — rồi giao cho ma_tran_du_bao của cầu nối R.
+ma_tran <- function(d, bien, phan_loai) {
+  for (b in bien) d[[b]] <- if (b %in% phan_loai) as.character(d[[b]]) else suppressWarnings(as.numeric(d[[b]]))
+  ma_tran_du_bao(d, bien)
+}
+# bang_he_so của cầu nối R, thang tỷ số (exp) mặc định; khoá KTC đổi «ci» → «ci_95» theo khuôn tóm tắt bổ sung.
+doi_ci <- function(r) {
+  names(r)[names(r) == "ci"] <- "ci_95"
+  r
+}
+he_so_or <- function(b, V, ten, df_t, mu = TRUE) lapply(bang_he_so(b, V, ten, df_t, mu), doi_ci)
+mot_he_so <- function(est, se, df_t, mu = TRUE) {
+  he_so_or(c(.a = est), matrix(se^2, 1, 1, dimnames = list(".a", ".a")), c(.a = ".a"), df_t, mu)[[".a"]]
+}
+kq_thu_tu <- function(y) {
+  y <- suppressWarnings(as.numeric(y))
+  if (anyNA(y)) stop("kết cục thứ tự phải là mã số có thứ tự (vd 1–5)")
+  muc <- sort(unique(y))
+  if (length(muc) < 3) stop("kết cục chỉ có ", length(muc), " mức — hồi quy thứ tự cần ≥ 3 mức")
+  factor(y, levels = muc, ordered = TRUE)
+}
+# Hồi quy thứ tự tỷ lệ odds + sandwich theo cụm — cùng quy ước mô hình chính.
+clm_cum <- function(dm, y_ten, bien, phan_loai, cum) {
+  k <- khung(kq_thu_tu(dm[[y_ten]]), ma_tran(dm, bien, phan_loai))
+  fit <- ordinal::clm(stats::as.formula(paste(".y ~", k$ve_phai)), data = k$df, link = "logit")
+  if (fit$convergence$code != 0) CANH_BAO <<- c(CANH_BAO, "clm báo hội tụ chưa sạch")
+  V <- vc_cum(fit, dm[[cum]])
+  list(fit = fit, V = V, k = k, df_t = df_cum(dm[[cum]]), n = nrow(dm), so_cum = length(unique(dm[[cum]])))
+}
+ghi_kq <- function(kq) {
+  kq$canh_bao <- I(CANH_BAO)
+  kq$phien_ban_r <- paste(R.version$major, R.version$minor, sep = ".")
+  goi <- unique(c("jsonlite", CH$goi_can))
+  kq$phien_ban_goi <- stats::setNames(lapply(goi, function(g) as.character(utils::packageVersion(g))), goi)
+  jsonlite::write_json(kq, TEP_KQ, auto_unbox = TRUE, digits = NA, null = "null", na = "null", pretty = TRUE)
+}
+""")
+
+# ─────────────────────────────── thứ tự: các biến thể trên mô hình chính ───────────────────────────────
+# CH: outcome, x, x_don_vi, x_phan_loai (TRUE: phơi nhiễm/yếu tố là biến phân loại), covariates, phan_loai, cum,
+#     bien_the ∈ thuong · rcs · phan_vi · tuong_tac · gop_muc · anh_huong · yeu_to; tuong_tac: z, z_don_vi;
+#     anh_huong: cột .giu (1 = giữ sau khi bỏ điểm ảnh hưởng — Python đã đánh dấu); phan_vi: cột .q (nhóm tứ phân vị).
+R_THU_TU = r"""
+x <- CH$x
+bien <- c(x, CH$covariates)
+can <- unique(c(CH$outcome, bien, CH$cum, if (co(CH$z)) CH$z))
+dm <- ca_du(D, can)
+if (!isTRUE(CH$x_phan_loai) && co(CH$x_don_vi)) dm[[x]] <- suppressWarnings(as.numeric(dm[[x]])) / CH$x_don_vi
+pl <- c(CH$phan_loai, if (isTRUE(CH$x_phan_loai)) x)
+bt <- CH$bien_the
+kq <- list(bien_the = bt, n = nrow(dm), so_cum = length(unique(dm[[CH$cum]])),
+           phuong_sai = "sandwich theo cụm CR1 (vcovCL HC1), suy luận t(G−1)")
+he_so_x <- function(m) {
+  ds <- names(m$k$ten)[m$k$ten == x | startsWith(m$k$ten, paste0(x, "_"))]
+  he_so_or(m$fit$beta, m$V, m$k$ten[ds], m$df_t)
+}
+if (bt %in% c("thuong", "yeu_to", "gop_muc")) {
+  m <- clm_cum(dm, CH$outcome, bien, pl, CH$cum)
+  kq$x <- he_so_x(m)
+  kq$so_quan_sat_theo_muc <- as.list(table(dm[[CH$outcome]]))
+  if (isTRUE(CH$kiem_po)) {  # kiểm định Brant cho giả định tỷ lệ odds (SAP: cùng quy tắc mô hình chính)
+    p <- MASS::polr(stats::as.formula(paste(".y ~", m$k$ve_phai)), data = m$k$df, Hess = TRUE)
+    br <- utils::capture.output(bt_po <- suppressWarnings(brant::brant(p)))
+    pv <- bt_po[-1, "probability"]
+    names(pv) <- m$k$ten[rownames(bt_po)[-1]]
+    kq$brant <- list(tong_p = unname(bt_po[1, "probability"]), theo_bien = as.list(pv))
+  }
+  if (co(CH$mi)) {  # gán đa trị cho biến nền/phơi nhiễm (pmm), kết cục làm biến dự báo, KHÔNG gán kết cục
+    dd <- D[!is.na(D[[CH$outcome]]) & !is.na(D[[CH$cum]]), unique(c(CH$outcome, bien, CH$cum)), drop = FALSE]
+    if (!isTRUE(CH$x_phan_loai) && co(CH$x_don_vi)) dd[[x]] <- suppressWarnings(as.numeric(dd[[x]])) / CH$x_don_vi
+    cot_gan <- unique(c(CH$outcome, bien))
+    pm <- mice::make.predictorMatrix(dd[, cot_gan, drop = FALSE])
+    phuong_phap <- stats::setNames(ifelse(colSums(is.na(dd[, cot_gan, drop = FALSE])) > 0, "pmmboot", ""), cot_gan)
+    phuong_phap[CH$outcome] <- ""
+    gan <- mice::mice(dd[, cot_gan, drop = FALSE], m = CH$mi, method = phuong_phap, predictorMatrix = pm,
+                      seed = CH$hat_giong, printFlag = FALSE)
+    q <- list(); u <- list()
+    for (i in seq_len(CH$mi)) {
+      di <- mice::complete(gan, i)
+      di[[CH$cum]] <- dd[[CH$cum]]
+      mi_fit <- clm_cum(di, CH$outcome, bien, pl, CH$cum)
+      ds <- names(mi_fit$k$ten)[mi_fit$k$ten == x | startsWith(mi_fit$k$ten, paste0(x, "_"))]
+      q[[i]] <- mi_fit$fit$beta[ds]; u[[i]] <- diag(mi_fit$V)[ds]; ten_x <- mi_fit$k$ten[ds]
+    }
+    Q <- do.call(rbind, q); U <- do.call(rbind, u)
+    qb <- colMeans(Q); ub <- colMeans(U); b <- apply(Q, 2, stats::var)
+    tt <- ub + (1 + 1 / CH$mi) * b
+    nu <- (CH$mi - 1) * (1 + ub / ((1 + 1 / CH$mi) * b))^2
+    df_mi <- pmin(nu, df_cum(dd[[CH$cum]]))
+    kq$mi <- list(so_lan_gan = CH$mi, n = nrow(dd), so_dong_co_thieu = sum(!stats::complete.cases(dd)),
+                  hat_giong = CH$hat_giong,
+                  x = lapply(stats::setNames(seq_along(qb), ten_x), function(j) mot_he_so(qb[[j]], sqrt(tt[[j]]),
+                                                                                         df_mi[[j]])),
+                  cach = paste("mice pmmboot (PMM tham số bootstrap, 10 người cho) cho biến nền/phơi nhiễm có thiếu,",
+                               "kết cục làm biến dự báo không gán;",
+                               "mỗi bộ: clm + sandwich theo cụm; gộp Rubin, bậc tự do min(Rubin, G−1)"))
+  }
+} else if (bt == "anh_huong") {
+  m0 <- clm_cum(dm, CH$outcome, bien, pl, CH$cum)
+  d1 <- dm[dm$.giu == 1, , drop = FALSE]
+  m1 <- clm_cum(d1, CH$outcome, bien, pl, CH$cum)
+  kq$x_day_du <- he_so_x(m0)
+  kq$x_bo_anh_huong <- he_so_x(m1)
+  kq$so_bo <- nrow(dm) - nrow(d1)
+  kq$n_sau_bo <- nrow(d1)
+} else if (bt == "phan_vi") {
+  dm$.q <- as.integer(dm$.q)
+  m <- clm_cum(dm, CH$outcome, c(".q", CH$covariates), c(CH$phan_loai, ".q"), CH$cum)
+  ds <- names(m$k$ten)[startsWith(m$k$ten, ".q_")]
+  hs <- he_so_or(m$fit$beta, m$V, m$k$ten[ds], m$df_t)
+  names(hs) <- paste0("Q", sub("^\\.q_", "", names(hs)), " so với Q1")
+  kq$nhom_phan_vi <- hs
+} else if (bt == "rcs") {
+  xs <- suppressWarnings(as.numeric(dm[[x]]))
+  nut <- Hmisc::rcspline.eval(xs, nk = 3, knots.only = TRUE)
+  B <- Hmisc::rcspline.eval(xs, knots = nut, inclx = TRUE)
+  dm$.rcs1 <- B[, 1]
+  dm$.rcs2 <- B[, 2]
+  m <- clm_cum(dm, CH$outcome, c(".rcs1", ".rcs2", CH$covariates), CH$phan_loai, CH$cum)
+  v <- names(m$k$ten)[match(c(".rcs1", ".rcs2"), m$k$ten)]
+  b <- m$fit$beta[v]
+  Vb <- m$V[v, v]
+  w <- b[2] / sqrt(Vb[2, 2])
+  kq$p_phi_tuyen <- 2 * stats::pt(-abs(w), m$df_t)
+  q <- stats::quantile(xs, c(0.25, 0.5, 0.75), names = FALSE)
+  E <- Hmisc::rcspline.eval(q, knots = nut, inclx = TRUE)
+  doi <- function(i, j) {
+    dlt <- E[i, ] - E[j, ]
+    est <- sum(dlt * b)
+    se <- sqrt(as.numeric(t(dlt) %*% Vb %*% dlt))
+    mot_he_so(est, se, m$df_t)
+  }
+  dv <- if (co(CH$x_don_vi)) CH$x_don_vi else 1
+  kq$nut <- nut * dv
+  kq$diem_phan_vi <- list(p25 = q[1] * dv, p50 = q[2] * dv, p75 = q[3] * dv)
+  kq$or_p75_so_p25 <- doi(3, 1)
+  kq$or_p50_so_p25 <- doi(2, 1)
+  kq$don_vi_x <- CH$x_don_vi
+} else if (bt == "tuong_tac") {
+  dm[[CH$z]] <- suppressWarnings(as.numeric(dm[[CH$z]])) / CH$z_don_vi
+  dm$.xz <- dm[[x]] * dm[[CH$z]]
+  m <- clm_cum(dm, CH$outcome, c(x, CH$z, ".xz", CH$covariates), CH$phan_loai, CH$cum)
+  v <- names(m$k$ten)[match(c(x, CH$z, ".xz"), m$k$ten)]
+  b <- m$fit$beta[v]
+  Vb <- m$V[v, v]
+  kq$tuong_tac <- mot_he_so(b[[3]], sqrt(Vb[3, 3]), m$df_t)
+  zq <- stats::quantile(dm[[CH$z]], c(0.25, 0.5, 0.75), names = FALSE)
+  kq$diem_z <- list(p25 = zq[1] * CH$z_don_vi, p50 = zq[2] * CH$z_don_vi, p75 = zq[3] * CH$z_don_vi)
+  kq$or_x_tai_z <- lapply(stats::setNames(zq, c("p25", "p50", "p75")), function(z) {
+    l <- c(1, 0, z)
+    mot_he_so(sum(l * b), sqrt(as.numeric(t(l) %*% Vb %*% l)), m$df_t)
+  })
+} else {
+  stop("bien_the không hỗ trợ: ", bt)
+}
+ghi_kq(kq)
+"""
+
+# ─────────────────────────────── tỷ số chênh tương xứng một phần ───────────────────────────────
+# CH: outcome, x, x_don_vi, covariates, phan_loai, cum, nguong_brant (α §12), so_lap, hat_giong.
+R_PPO = r"""
+x <- CH$x
+bien <- c(x, CH$covariates)
+dm <- ca_du(D, unique(c(CH$outcome, bien, CH$cum)))
+if (co(CH$x_don_vi)) dm[[x]] <- suppressWarnings(as.numeric(dm[[x]])) / CH$x_don_vi
+X <- ma_tran(dm, bien, CH$phan_loai)
+k <- khung(kq_thu_tu(dm[[CH$outcome]]), X)
+goc <- function(t) {  # tên biến giả ⇒ biến gốc
+  for (b in bien) if (identical(t, b) || startsWith(t, paste0(b, "_"))) return(b)
+  t
+}
+p <- MASS::polr(stats::as.formula(paste(".y ~", k$ve_phai)), data = k$df, Hess = TRUE)
+br <- utils::capture.output(bt <- suppressWarnings(brant::brant(p)))
+pv <- bt[-1, "probability"]
+names(pv) <- k$ten[rownames(bt)[-1]]
+vi_pham <- unique(vapply(names(pv)[pv < CH$nguong_brant], goc, ""))
+kq <- list(n = nrow(dm), so_cum = length(unique(dm[[CH$cum]])), nguong_brant = CH$nguong_brant,
+           brant = lapply(stats::setNames(seq_along(pv), names(pv)), function(i) list(p = unname(pv[i]))),
+           brant_tong_p = unname(bt[1, "probability"]), bien_vi_pham = I(vi_pham))
+muc <- levels(k$df$.y)
+if (length(vi_pham) == 0) {
+  kq$ket_luan <- "không biến nào vi phạm giả định tỷ lệ odds theo kiểm định Brant — mô hình chính giữ nguyên"
+} else {
+  vv <- names(k$ten)[vapply(k$ten, goc, "") %in% vi_pham]
+  loc_v <- setdiff(names(k$ten), vv)
+  f_loc <- stats::as.formula(paste(".y ~", if (length(loc_v)) paste(loc_v, collapse = " + ") else "1"))
+  f_dn <- stats::as.formula(paste("~", paste(vv, collapse = " + ")))
+  vx <- names(k$ten)[k$ten == x]
+  uoc <- function(dd) {
+    f <- ordinal::clm(f_loc, nominal = f_dn, data = dd, link = "logit")
+    if (f$convergence$code != 0) stop("không hội tụ")
+    a <- f$alpha
+    ra <- c()
+    if (!vx %in% vv) ra[paste0(x, "@chung")] <- f$beta[[vx]]  # phơi nhiễm không vi phạm: hệ số chung
+    for (v in vv) for (j in seq_len(length(muc) - 1)) {
+      nh <- paste0(muc[j], "|", muc[j + 1], ".", v)
+      ra[paste0(k$ten[[v]], "@Y>", muc[j])] <- -a[[nh]]
+    }
+    ra
+  }
+  goc_uoc <- uoc(k$df)
+  set.seed(CH$hat_giong)
+  cum <- dm[[CH$cum]]
+  ds_cum <- unique(cum)
+  mau <- matrix(NA_real_, CH$so_lap, length(goc_uoc), dimnames = list(NULL, names(goc_uoc)))
+  hong <- 0
+  for (r in seq_len(CH$so_lap)) {
+    chon <- sample(ds_cum, length(ds_cum), replace = TRUE)
+    idx <- unlist(lapply(chon, function(cc) which(cum == cc)), use.names = FALSE)
+    u <- tryCatch(uoc(k$df[idx, , drop = FALSE]), error = function(e) NULL)
+    if (is.null(u) || length(u) != length(goc_uoc) || anyNA(u)) { hong <- hong + 1; next }
+    mau[r, ] <- u[names(goc_uoc)]
+  }
+  mau <- mau[stats::complete.cases(mau), , drop = FALSE]
+  kq$theo_nguong <- lapply(stats::setNames(names(goc_uoc), names(goc_uoc)), function(t) {
+    ci <- stats::quantile(mau[, t], c(0.025, 0.975), names = FALSE)
+    list(or = exp(goc_uoc[[t]]), ci_95 = exp(ci), b = goc_uoc[[t]])
+  })
+  kq$bootstrap <- list(so_lap = CH$so_lap, hong = hong, dung = nrow(mau), hat_giong = CH$hat_giong,
+                       cach = "bootstrap theo cụm (lấy lại bàn khám có hoàn lại), KTC bách phân vị")
+  kq$ket_luan <- paste("mô hình tỷ số chênh tương xứng một phần: biến vi phạm có hệ số riêng cho từng ngưỡng",
+                       "(ordinal::clm nominal), các biến khác giữ hệ số chung")
+}
+ghi_kq(kq)
+"""
+
+# ─────────────────────────────── hệ số chặn ngẫu nhiên theo cụm ───────────────────────────────
+# CH: outcome, x, x_don_vi, covariates, phan_loai, cum, nguong_cum (số cụm dưới ngưỡng ⇒ là phân tích chính, SAP §4).
+R_HON_HOP = r"""
+x <- CH$x
+bien <- c(x, CH$covariates)
+dm <- ca_du(D, unique(c(CH$outcome, bien, CH$cum)))
+if (co(CH$x_don_vi)) dm[[x]] <- suppressWarnings(as.numeric(dm[[x]])) / CH$x_don_vi
+k <- khung(kq_thu_tu(dm[[CH$outcome]]), ma_tran(dm, bien, CH$phan_loai))
+k$df$.cum <- factor(dm[[CH$cum]])
+fit <- ordinal::clmm(stats::as.formula(paste(".y ~", k$ve_phai, "+ (1 | .cum)")), data = k$df, link = "logit")
+s <- summary(fit)$coefficients
+vx <- names(k$ten)[k$ten == x]
+sd_u <- as.numeric(fit$ST[[1]])
+K <- length(unique(dm[[CH$cum]]))
+kq <- list(n = nrow(dm), so_cum = K, x = mot_he_so(s[vx, 1], s[vx, 2], Inf),
+           sd_he_so_chan = sd_u, icc_tiem_an = sd_u^2 / (sd_u^2 + pi^2 / 3),
+           nguong_cum = CH$nguong_cum, la_phan_tich_chinh = K < CH$nguong_cum,
+           ghi_chu = paste("ordinal::clmm, xấp xỉ Laplace; KTC Wald theo z; ICC trên thang tiềm ẩn logistic",
+                           "= σ²/(σ² + π²/3)"))
+ghi_kq(kq)
+"""
+
+# ─────────────────────────────── logistic nhị phân: hợp lý cực đại hoặc Firth ───────────────────────────────
+# CH: outcome (0/1), muc_bien_co_epv (giá trị đếm làm «biến cố» cho EPV — trường hợp chưa hài lòng), x, x_don_vi,
+#     covariates, phan_loai, cum, nguong_epv.
+R_FIRTH = r"""
+suppressPackageStartupMessages(library(logistf))
+x <- CH$x
+bien <- c(x, CH$covariates)
+dm <- ca_du(D, unique(c(CH$outcome, bien, CH$cum)))
+if (co(CH$x_don_vi)) dm[[x]] <- suppressWarnings(as.numeric(dm[[x]])) / CH$x_don_vi
+y <- suppressWarnings(as.numeric(dm[[CH$outcome]]))
+if (!all(y %in% c(0, 1))) stop("kết cục nhị phân phải là 0/1")
+k <- khung(y, ma_tran(dm, bien, CH$phan_loai))
+so_tham_so <- length(k$ten)
+bien_co <- sum(y == CH$muc_bien_co_epv)
+epv <- bien_co / so_tham_so
+ct <- stats::as.formula(paste(".y ~", k$ve_phai))
+cb <- character(0)
+ml <- withCallingHandlers(stats::glm(ct, data = k$df, family = stats::binomial(),
+                                     control = stats::glm.control(1e-10, 200)),
+                          warning = function(w) { cb <<- c(cb, conditionMessage(w)); invokeRestart("muffleWarning") })
+tach <- any(grepl("fitted probabilities numerically 0 or 1", cb)) || !ml$converged
+vx <- names(k$ten)[k$ten == x]
+kq <- list(n = nrow(dm), so_tham_so = so_tham_so, so_bien_co_epv = bien_co, epv = epv, nguong_epv = CH$nguong_epv,
+           tach_biet = tach, canh_bao_glm = I(cb))
+kq$hop_ly_cuc_dai <- if (!tach) mot_he_so(coef(ml)[[vx]], sqrt(vc_cum(ml, dm[[CH$cum]])[vx, vx]),
+                                         df_cum(dm[[CH$cum]])) else NULL
+fi <- tryCatch(logistf::logistf(ct, data = k$df, pl = TRUE), error = function(e) e)
+if (inherits(fi, "error")) {
+  kq$firth <- list(loi = conditionMessage(fi))
+} else {
+  i <- match(vx, names(fi$coefficients))
+  kq$firth <- list(uoc_luong = exp(fi$coefficients[[i]]), ci_95 = exp(c(fi$ci.lower[[i]], fi$ci.upper[[i]])),
+                   p = fi$prob[[i]], b = fi$coefficients[[i]],
+                   cach = "logistf, khoảng tin cậy theo hợp lý có phạt (profile penalized likelihood)")
+}
+kq$quy_tac <- if (epv >= CH$nguong_epv && !tach) "hop_ly_cuc_dai" else
+  if (is.null(kq$firth$loi)) "firth" else "chi_bao_ty_le"
+kq$giai_thich_quy_tac <- paste0("EPV = ", round(epv, 2), " (", bien_co, " trường hợp / ", so_tham_so,
+                                " tham số); ngưỡng ", CH$nguong_epv, "; tách biệt: ", if (tach) "có" else "không")
+ghi_kq(kq)
+"""
+
+# ─────────────────────── trọng số hậu phân tầng · thiết kế · giới hạn người bỏ về ───────────────────────
+# Dùng nguyên hàm thuần `g6_trong_so_survey.R_HAM` (một quy tắc gộp tầng/kích hoạt cho mọi đường G6) rồi bọc thêm:
+# CH: che_do ∈ kich_hoat · thiet_ke · gioi_han_bo_ve; tep_n_tang, tep_bo_ve (đường dẫn đã kiểm ở Python);
+#     outcome, nguong_hai_long, nguong_lech, n_toi_thieu, bien_ngay, bien_khung, cum, x, x_don_vi, covariates,
+#     phan_loai, alpha.
+R_TRONG_SO = r"""
+suppressPackageStartupMessages(library(survey))
+N_his <- utils::read.csv(CH$tep_n_tang, stringsAsFactors = FALSE)
+bo_ve <- if (co(CH$tep_bo_ve) && file.exists(CH$tep_bo_ve)) {
+  utils::read.csv(CH$tep_bo_ve, stringsAsFactors = FALSE)
+} else NULL
+for (b in CH$phan_loai) D[[b]] <- factor(D[[b]])
+TS <- list(bien_cum = CH$cum, ten_tang = "tang", bien_ngay = CH$bien_ngay, bien_khung = CH$bien_khung,
+           ket_cuc = CH$outcome, muc_ket_cuc = c(1, 2, 3, 4, 5), nguong_hai_long = CH$nguong_hai_long,
+           nguong_lech = CH$nguong_lech, n_toi_thieu = CH$n_toi_thieu, alpha = CH$alpha, chay_svyolr = FALSE,
+           phoi_nhiem = CH$x, don_vi_phoi_nhiem = CH$x_don_vi, hiep_bien = CH$covariates,
+           chay_gioi_han = identical(CH$che_do, "gioi_han_bo_ve"))
+tmp <- tempfile("trong_so_")
+kq <- chay_trong_so_va_gioi_han(D, N_his, bo_ve, TS, tmp)
+kq$che_do <- CH$che_do
+can_svyolr <- (identical(CH$che_do, "kich_hoat") && isTRUE(kq$quy_tac$kich_hoat)) || identical(CH$che_do, "thiet_ke")
+if (can_svyolr) {
+  b0 <- bang_tang(D, N_his, CH$bien_ngay, CH$bien_khung)
+  gop <- gop_tang_nho(b0, CH$n_toi_thieu)
+  kh <- bang_kich_hoat(gop$bang, CH$nguong_lech)
+  diem <- suppressWarnings(as.numeric(D[[CH$outcome]]))
+  d <- D[!is.na(diem), , drop = FALSE]
+  d$.y <- factor(diem[!is.na(diem)], levels = c(1, 2, 3, 4, 5), ordered = TRUE)
+  d$.x <- suppressWarnings(as.numeric(d[[CH$x]])) / CH$x_don_vi
+  o <- sprintf("N%s_K%s", d[[CH$bien_ngay]], d[[CH$bien_khung]])
+  d$tang <- gop$bang$nhom[match(o, sprintf("N%s_K%s", gop$bang$ngay, gop$bang$khung))]
+  tk0 <- suppressWarnings(survey::svydesign(ids = stats::as.formula(paste0("~", CH$cum)), data = d))
+  dan_so <- data.frame(tang = kh$bang$nhom, Freq = kh$bang$N_h)
+  tk <- survey::postStratify(tk0, strata = ~tang, population = dan_so)
+  du <- stats::complete.cases(d[, c(".x", CH$covariates), drop = FALSE])
+  tk_du <- subset(tk, du)
+  fit <- survey::svyolr(stats::as.formula(paste(".y ~", paste(c(".x", CH$covariates), collapse = " + "))),
+                        design = tk_du)
+  hs <- coef(fit)[[".x"]]
+  se <- sqrt(diag(stats::vcov(fit)))[[".x"]]
+  kq$svyolr <- c(mot_he_so(hs, se, Inf), list(n = sum(du), don_vi_phut = CH$x_don_vi,
+                                                ghi_chu = "survey::svyolr trên thiết kế chùm + hậu phân tầng"))
+}
+if (identical(CH$che_do, "gioi_han_bo_ve")) {
+  tg <- suppressWarnings(as.numeric(D[[CH$x]]))
+  tg <- tg[!is.na(tg)]
+  kq$so_sanh_thoi_gian_cho <- list(
+    duoc_kham = list(n = length(tg), trung_vi = stats::median(tg),
+                     p25 = unname(stats::quantile(tg, 0.25)), p75 = unname(stats::quantile(tg, 0.75))),
+    bo_ve = if (is.null(bo_ve)) NULL else list(trung_vi = bo_ve$cho_trung_vi[1], p25 = bo_ve$cho_p25[1],
+                                              p75 = bo_ve$cho_p75[1], n = bo_ve$luot_bo_ve[1]),
+    ghi_chu = "mô tả, không kiểm định (HIS chỉ cung cấp số tổng hợp của nhóm bỏ về)")
+}
+ghi_kq(kq)
+"""
+
+# ─────────────────────────────── trung gian thăm dò: mô phỏng quasi-Bayes ───────────────────────────────
+# Thuật toán Imai, Keele, Tingley 2010 (PMID 20954780), biến trung gian và kết cục đều logistic thứ tự (MASS::polr):
+# rút tham số hai mô hình từ phân phối chuẩn nhiều chiều (ước lượng + ma trận hiệp phương sai), mỗi lần rút tính xác
+# suất hài lòng (Y ≥ ngưỡng) phản thực của từng người, tác động gián tiếp tự nhiên (ACME) và trực tiếp tự nhiên (ADE)
+# khi thời gian chờ tăng một đơn vị (x_don_vi phút) so với giá trị quan sát. Độ nhạy với nhiễu không đo giữa biến trung
+# gian và kết cục: thu nhỏ dần hệ số M → Y (0 %, 25 %, 50 %, 75 %, 100 % phần bị nhiễu giải thích) và tính lại ACME.
+# CH: outcome, m, x, x_don_vi, covariates, phan_loai, nguong_hai_long, so_mo_phong, hat_giong.
+R_TRUNG_GIAN = r"""
+x <- CH$x
+bien <- c(x, CH$covariates)
+dm <- ca_du(D, unique(c(CH$outcome, CH$m, bien)))
+dm[[x]] <- suppressWarnings(as.numeric(dm[[x]])) / CH$x_don_vi
+Xc <- ma_tran(dm, bien, CH$phan_loai)
+kM <- khung(kq_thu_tu(dm[[CH$m]]), Xc)
+fm <- MASS::polr(stats::as.formula(paste(".y ~", kM$ve_phai)), data = kM$df, Hess = TRUE)
+XcY <- c(Xc, stats::setNames(list(suppressWarnings(as.numeric(dm[[CH$m]]))), CH$m))
+kY <- khung(kq_thu_tu(dm[[CH$outcome]]), XcY)
+fy <- MASS::polr(stats::as.formula(paste(".y ~", kY$ve_phai)), data = kY$df, Hess = TRUE)
+muc_m <- as.numeric(levels(kM$df$.y))
+muc_y <- as.numeric(levels(kY$df$.y))
+j_hl <- which(muc_y >= CH$nguong_hai_long)[1]  # P(Y ≥ ngưỡng) = 1 − P(Y ≤ mức liền dưới)
+Zm <- as.matrix(kM$df[, names(kM$ten), drop = FALSE])
+Zy <- as.matrix(kY$df[, names(kY$ten), drop = FALSE])
+ix_m <- which(kM$ten == x)
+ix_y <- which(kY$ten == x)
+ix_mm <- which(kY$ten == CH$m)
+p_m <- function(beta, zeta, Z) {  # ma trận n × số mức của biến trung gian
+  eta <- as.numeric(Z %*% beta)
+  cu <- sapply(zeta, function(z) stats::plogis(z - eta))
+  cu <- cbind(cu, 1)
+  cbind(cu[, 1], cu[, -1, drop = FALSE] - cu[, -ncol(cu), drop = FALSE])
+}
+p_hl <- function(beta, zeta, Z) 1 - stats::plogis(zeta[j_hl - 1] - as.numeric(Z %*% beta))
+mot_lan <- function(bm, zm, by, zy, he_so_m = 1) {
+  by[ix_mm] <- by[ix_mm] * he_so_m
+  Z0 <- Zm; Z1 <- Zm; Z1[, ix_m] <- Z1[, ix_m] + 1
+  P0 <- p_m(bm, zm, Z0); P1 <- p_m(bm, zm, Z1)
+  E <- function(t, P) {  # E[Y(t, M(·))] cho mọi người, M lấy phân phối P
+    Y <- Zy; Y[, ix_y] <- Y[, ix_y] + t
+    tong <- 0
+    for (j in seq_along(muc_m)) { Y[, ix_mm] <- muc_m[j]; tong <- tong + P[, j] * p_hl(by, zy, Y) }
+    mean(tong)
+  }
+  e00 <- E(0, P0); e01 <- E(0, P1); e10 <- E(1, P0); e11 <- E(1, P1)
+  c(acme0 = e01 - e00, acme1 = e11 - e10, ade0 = e10 - e00, ade1 = e11 - e01, tong = e11 - e00)
+}
+set.seed(CH$hat_giong)
+tham <- function(f) c(coef(f), f$zeta)
+rut_m <- MASS::mvrnorm(CH$so_mo_phong, tham(fm), stats::vcov(fm))
+rut_y <- MASS::mvrnorm(CH$so_mo_phong, tham(fy), stats::vcov(fy))
+nb_m <- length(coef(fm)); nb_y <- length(coef(fy))
+mo_phong <- function(he_so_m) t(sapply(seq_len(CH$so_mo_phong), function(s) {
+  rm <- rut_m[s, ]; ry <- rut_y[s, ]
+  mot_lan(rm[seq_len(nb_m)], sort(rm[-seq_len(nb_m)]), ry[seq_len(nb_y)], sort(ry[-seq_len(nb_y)]), he_so_m)
+}))
+tom <- function(S) {
+  acme <- (S[, "acme0"] + S[, "acme1"]) / 2
+  ade <- (S[, "ade0"] + S[, "ade1"]) / 2
+  bt <- function(v) list(uoc_luong = stats::median(v), ci_95 = unname(stats::quantile(v, c(0.025, 0.975))))
+  list(acme = bt(acme), ade = bt(ade), tong = bt(S[, "tong"]), ty_le_trung_gian = bt(acme / S[, "tong"]),
+       acme_dieu_kien_x0 = bt(S[, "acme0"]), acme_dieu_kien_x1 = bt(S[, "acme1"]))
+}
+S <- mo_phong(1)
+kq <- list(n = nrow(dm), so_mo_phong = CH$so_mo_phong, hat_giong = CH$hat_giong, don_vi_x = CH$x_don_vi,
+           nguong_hai_long = CH$nguong_hai_long, thang = "chênh xác suất hài lòng (G1 ≥ ngưỡng)", uoc_luong = tom(S),
+           do_nhay = lapply(stats::setNames(c(0.75, 0.5, 0.25, 0), c("25%", "50%", "75%", "100%")), function(h) {
+             r <- tom(mo_phong(h))$acme
+             list(he_so_m_con_lai = h, acme = r)
+           }),
+           ghi_chu = paste("Mô phỏng quasi-Bayes (Imai 2010), mô hình trung gian và kết cục MASS::polr, biến",
+                           "trung gian dạng số trong mô hình kết cục; gom cụm theo bàn khám KHÔNG tính trong ước",
+                           "lượng trung gian"))
+ghi_kq(kq)
+"""
+
+THAN_BO_SUNG = {"thu_tu": R_THU_TU, "ppo": R_PPO, "hon_hop": R_HON_HOP, "firth": R_FIRTH, "trong_so": R_TRONG_SO,
+        "trung_gian": R_TRUNG_GIAN}
+
+
+def kich_ban_bo_sung(loai: str) -> str:
+    """Script R đầy đủ của một loại (khung chung + thân; `trong_so` chèn thêm hàm thuần của g6_trong_so_survey)."""
+    if loai not in THAN_BO_SUNG:
+        raise KeyError(loai)
+    phan = [R_KHUNG_BO_SUNG]
+    if loai == "trong_so":
+        import g6_trong_so_survey as TS  # noqa: PLC0415 — một quy tắc gộp tầng/kích hoạt cho mọi đường G6
+
+        phan.append(TS.R_HAM)
+    phan.append(THAN_BO_SUNG[loai])
+    return "\n".join(phan)
 
 
 # ───────────────────────────── CLI ─────────────────────────────

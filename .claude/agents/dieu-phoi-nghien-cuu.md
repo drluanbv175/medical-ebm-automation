@@ -445,6 +445,40 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 Bạn là nhạc trưởng nghiên cứu: điều phối + giữ cổng, KHÔNG tự bịa dữ liệu, KHÔNG bỏ qua đạo đức/đăng ký. Liên kết đề tài QY175 ở `Projects/` khi phù hợp.
 
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/api_claude_nc.py` (chủ) — cầu nối Claude API dùng chung cho kiểm máy của hệ nghiên cứu; chốt kiểm `tools/duyet_kiem_may_api.py`; nguyên tắc: kiểm chứng khách quan · trung thực–minh bạch.
+- Công cụ `tools/approve_gate.py` (chủ) — ghi phê duyệt của người vào sổ cái niêm phong — vai có thẩm quyền tự chạy, agent không chạy; chốt kiểm `tools/stakeholder_review_audit.py`; nguyên tắc: đạo đức · đạt chuẩn định trước · trung thực–minh bạch.
+- Công cụ `tools/approve_gate_synthetic_admin.py` (chủ) — phê duyệt quản trị CHỈ cho đề tài tổng hợp/thử nghiệm đã đánh dấu; chốt kiểm `tools/mark_study_synthetic.py`; nguyên tắc: trung thực–minh bạch · đạo đức.
+- Công cụ `tools/buoc_dang_mo.py` (chủ) — khâu đang mở và gói ký theo thứ tự G0→G10 (chấm sống; READY và «không đo được» không bao giờ là khoá); chốt kiểm `tests/test_buoc_dang_mo_20261122.py`; nguyên tắc: đạt chuẩn định trước · kiểm soát chất lượng liên tục.
+- Công cụ `tools/dau_may_sinh.py` (chủ) — dấu bản máy sinh cho hồ sơ G2/G4 để phân biệt bản người đã biên tập; chốt kiểm `tests/test_sinh_lai_g2_g4_g3_20261114.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/gia_lap_bien_the_kho.py` (chủ) — kịch bản biến thể khó của giả lập trọn vòng; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
+- Công cụ `tools/gia_lap_chan_thuc.py` (chủ) — kịch bản giả lập chân thực (dữ liệu, sai sót nhập liệu); chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
+- Công cụ `tools/gia_lap_dinh_ky.py` (chủ) — giả lập định kỳ (canary tháng) hệ nghiên cứu; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
+- Công cụ `tools/gia_lap_ho_so_sau_g6.py` (chủ) — hồ sơ vai G6.5→G10 cho các thiết kế ngoài thuần tập trong giả lập; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
+- Công cụ `tools/gia_lap_kich_ban_them.py` (chủ) — các kịch bản giả lập bổ sung để phủ đủ 8 thiết kế; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
+- Công cụ `tools/gia_lap_tron_vong.py` (chủ) — giả lập trọn vòng G0→G10 như một đề tài thật cho 8 thiết kế; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
+- Công cụ `tools/gia_lap_van_ban_tac_tu.py` (chủ) — văn bản do agent soạn trong giả lập trọn vòng; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
+- Công cụ `tools/hoi_dong_cong.py` (chủ) — danh mục nhiệm vụ, phân công tiêu chí, biên bản đánh giá chéo/tranh biện, bảng trách nhiệm; chốt kiểm `tools/tieu_chuan_hoan_thien.py`; nguyên tắc: kiểm chứng khách quan · khách quan · kiểm soát chất lượng.
+- Công cụ `tools/hoi_dong_cong_batch.py` (chủ) — hội đồng cổng qua Claude Batch API, cùng biên bản và luật với workflow; chốt kiểm `tools/hoi_dong_cong.py`; nguyên tắc: kiểm chứng khách quan · tái lập.
+- Công cụ `tools/kiem_chi_tiet_he_nghien_cuu.py` (chủ) — kiểm chi tiết 11 cổng × 5 trục của một đề tài; chốt kiểm `tests/test_kiem_chi_tiet_he_nghien_cuu_20260902.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
+- Công cụ `tools/kiem_gia_lap_16.py` (chủ) — cổng CI của giả lập 16 kịch bản: khoá được G10, 0 ô lỗi, đề cương đạt; chốt kiểm `tests/test_gia_lap_ci_20261117.py`; nguyên tắc: đạt chuẩn định trước · kiểm soát chất lượng.
+- Công cụ `tools/kiem_newline_vung_ky.py` (chủ) — bất biến newline vùng chuỗi được băm trong chữ ký (CI); chốt kiểm `tests/test_kiem_newline_vung_ky_mask_comment_vs_string_20260912.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/list_studies.py` (chủ) — liệt kê và theo dõi mọi đề tài trong exports/; chốt kiểm `tools/cong_song.py`; nguyên tắc: kiểm soát chất lượng.
+- Công cụ `tools/mark_study_synthetic.py` (chủ) — đánh dấu đề tài là dữ liệu tổng hợp/thử nghiệm (bước 1/2 quản trị); chốt kiểm `tools/verify_exports_integrity.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/retry_loop.py` (chủ) — vòng lặp thử lại có cấu trúc cho pipeline nghiên cứu; chốt kiểm `tools/run_pipeline.py`; nguyên tắc: kiểm soát chất lượng.
+- Công cụ `tools/run_pipeline.py` (chủ) — nhạc trưởng tự động chuỗi G0→G10, dừng ở cổng cứng; chốt kiểm `tools/kiem_gia_lap_16.py`; nguyên tắc: đạt chuẩn định trước · tái lập · kiểm soát chất lượng.
+- Công cụ `tools/setup_gate_approval_key.py` (chủ) — thiết lập khoá ký theo vai — chỉ bác sĩ tự chạy, agent không chạy, không đọc khoá; chốt kiểm `tools/approve_gate.py`; nguyên tắc: đạo đức · trung thực–minh bạch.
+- Công cụ `tools/sinh_tai_lieu_trach_nhiem.py` (chủ) — sinh khối trách nhiệm trong tệp agent từ hoi_dong_cong; chốt kiểm `tools/tieu_chuan_hoan_thien.py`; nguyên tắc: trung thực–minh bạch · kiểm soát chất lượng.
+- Công cụ `tools/stakeholder_review_audit.py` (chủ) — xem trạng thái phê duyệt các vai G2/G4/G8/G9 đối chiếu chữ ký; chốt kiểm `tests/test_stakeholder_review_audit.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/thu_dau_cuoi_cong_nghien_cuu.py` (chủ) — canary đầu–cuối cho chuỗi cổng nghiên cứu; chốt kiểm `tests/test_thu_dau_cuoi_cong_nghien_cuu.py`; nguyên tắc: kiểm chứng khách quan · kiểm soát chất lượng.
+- Công cụ `tools/tieu_chuan_hoan_thien.py` (chủ) — tiêu chuẩn hoàn thiện agent, điều phối và sổ phân công công cụ (C1–C6); chốt kiểm `tests/test_tieu_chuan_hoan_thien_20261010.py`; nguyên tắc: đạt chuẩn định trước · kiểm soát chất lượng.
+- Công cụ `tools/trinh_ky_cong.py` (chủ) — trợ lý trình ký G2 (Hội đồng Đạo đức) và G8 (phản biện độc lập); chốt kiểm `tools/gate_contract.py`; nguyên tắc: đạo đức · khách quan.
+- Công cụ `tools/verify_exports_integrity.py` (chủ) — kiểm liêm chính nội dung tài liệu trong exports/ (pre-commit); chốt kiểm `tests/test_verify_exports_integrity_20260927_pmid_nhan_dem.py`; nguyên tắc: trung thực–minh bạch · kiểm soát chất lượng.
+- Công cụ `tools/kiem_dot_bien_dinh_ky.py` (chủ) — kiểm đột biến định kỳ theo sổ `config/dot_bien_dinh_ky.json` (CI hằng tuần): mỗi chốt quan trọng bị làm yếu thì test khai báo phải đỏ; đột biến sống sót, sổ lệch mã hay nền đỏ ⇒ đỏ. Viết chốt mới quan trọng thì thêm đột biến vào sổ; sửa chốt thì sửa sổ cùng lúc, không xoá đột biến để CI xanh; chốt kiểm `tests/test_kiem_dot_bien_dinh_ky_20261123.py`; nguyên tắc: kiểm soát chất lượng liên tục · kiểm chứng khách quan.
+- Công cụ `tools/dung_goi_ky.py` (chủ) — MỘT lệnh dựng gói ký cho đề tài thật theo đúng thứ tự khâu (`--study <mã> [--ghi]`): khâu đang mở → xuất Word bản nộp → lắp G10 → K1–K21 (K21 liệt kê đơn vị chưa đọc) → hồ sơ HĐĐĐ/ĐTCS/phiếu đề xuất → đối chiếu 9 trường → gói ký theo thứ tự cổng (vai · tài liệu + SHA-256 · lệnh người ký tự chạy · điều kiện tiên quyết); khâu nào đỏ thì dừng đúng khâu đó; KHÔNG ký, không ghi sổ cái; chốt kiểm `tests/test_dung_goi_ky_20261123.py`; nguyên tắc: đạt chuẩn định trước mới sang bước sau · trung thực–minh bạch.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

@@ -448,9 +448,13 @@ def build_protocol_core(
 - Tiêu chuẩn tham chiếu (reference standard): {_text(g1.get("reference_standard"))}
 """
     elif internal == "case_control":
+        _kieu, _can_cu = KD.kieu_ghep_benh_chung(g1)
+        _dong_kieu = (f"{KD.KIEU_GHEP[_kieu][0]} — phân tích chính: {KD.KIEU_GHEP[_kieu][1]} ({_can_cu})" if _kieu
+                      else f"[CẦN CHỐT — {_can_cu}; khai gate_params.G1.matching_type: individual | frequency | none]")
         design_specific_core = f"""
 - Định nghĩa ca bệnh: {_text(g1.get("case_definition"))}
 - Nguồn và cách chọn nhóm chứng: {_text(g1.get("control_source"))}
+- Kiểu ghép nhóm chứng: {_dong_kieu}
 """
     elif internal == "prediction":
         design_specific_core = f"""
@@ -1309,6 +1313,37 @@ def _criterion(
     }
 
 
+_RE_LOGISTIC_DK = re.compile(r"logistic\s+co\s+dieu\s+kien|conditional\s+logistic|\bclogit\b")
+_RE_LOGISTIC_KDK = re.compile(r"logistic\s+khong\s+dieu\s+kien|unconditional\s+logistic")
+_RE_PHU_DINH_DK = re.compile(r"khong\s+(?:dung|ap\s+dung|chay)\s+(?:mo\s+hinh\s+)?(?:hoi\s+quy\s+)?"
+                             r"logistic\s+co\s+dieu\s+kien")
+
+
+def _kiem_kieu_ghep(internal: str, g1: Mapping[str, Any], a2_text: str) -> Tuple[str, str, str]:
+    """Phần bệnh–chứng của G1-AUTO-04c (23/11/2026): (trạng thái PASS|BLOCK, bằng chứng, việc phải làm).
+
+    Đề tài BỆNH–CHỨNG phải CHỐT kiểu ghép nhóm chứng, và phương pháp G1 nêu (biện pháp sai lệch + khung SAP trong A2)
+    phải khớp kiểu ghép đó — khâu sai đầu tiên của lệch «SAP logistic có điều kiện / G6 logistic không điều kiện» là G1
+    nói «ghép» mà không nói ghép cặp cá thể hay theo tần suất (STROBE 12d). Thiết kế khác ⇒ ("PASS", "", "")."""
+    if internal != "case_control":
+        return "PASS", "", ""
+    kieu, can_cu = KD.kieu_ghep_benh_chung(g1)
+    if kieu is None:
+        return ("BLOCK", f"bệnh–chứng: chưa chốt kiểu ghép nhóm chứng — {can_cu}",
+                "PI chốt kiểu ghép: gate_params.G1.matching_type = individual (ghép cặp cá thể ⇒ logistic có điều kiện "
+                "theo bộ ghép, dữ liệu phải có mã bộ ghép) | frequency (ghép theo tần suất ⇒ logistic không điều kiện "
+                "hiệu chỉnh biến ghép) | none; sửa lời control_source cho khớp rồi chạy lại G1.")
+    chu = " ".join(str(b.get("bien_phap") or "") for b in g1.get("bias_controls") or [] if isinstance(b, Mapping))
+    bd = KD._bo_dau_d(chu + "\n" + (a2_text or ""))
+    mau_trai = _RE_LOGISTIC_KDK if kieu == "ca_the" else _RE_LOGISTIC_DK
+    trai = mau_trai.search(_RE_PHU_DINH_DK.sub(" ", bd))
+    if trai:
+        return ("BLOCK",
+                f"bệnh–chứng: kiểu ghép = {KD.KIEU_GHEP[kieu][0]} ({can_cu}) nhưng G1/A2 nêu «{trai.group(0)}»",
+                f"Sửa biện pháp sai lệch / khung SAP theo kiểu ghép: {KD.KIEU_GHEP[kieu][1]}.")
+    return "PASS", f"bệnh–chứng: kiểu ghép = {KD.KIEU_GHEP[kieu][0]} ({can_cu}) — {KD.KIEU_GHEP[kieu][1]}", ""
+
+
 def evaluate_g1_quality(
     *,
     design: Mapping[str, Any],
@@ -1630,16 +1665,21 @@ def evaluate_g1_quality(
     for pattern in conflict_patterns.get(internal, ()):
         if pattern.casefold() in a2_text.casefold():
             method_conflicts.append(pattern)
+    # 23/11/2026: bệnh–chứng — kiểu ghép chưa chốt hoặc phương pháp trái kiểu ghép cũng là «khuôn phân tích mâu thuẫn
+    # với thiết kế» (gộp vào G1-AUTO-04c, không mở mã mới, để phân công trách nhiệm cổng giữ một chủ).
+    ghep_tt, ghep_bc, ghep_hd = _kiem_kieu_ghep(internal, _g1_meta(meta), a2_text)
     automatic.append(_criterion(
         "G1-AUTO-04c",
         "SAP không chứa khuôn phân tích mâu thuẫn với thiết kế",
-        "BLOCK" if method_conflicts else "PASS",
-        (
+        "BLOCK" if method_conflicts or ghep_tt == "BLOCK" else "PASS",
+        "; ".join(x for x in (
             f"mâu thuẫn={', '.join(method_conflicts)}"
             if method_conflicts
-            else f"không phát hiện khuôn sai cho {internal}"
-        ),
-        "Sinh lại A2 bằng template theo đúng thiết kế; không vá một khuôn RCT cho mọi loại.",
+            else f"không phát hiện khuôn sai cho {internal}",
+            ghep_bc,
+        ) if x),
+        " ".join(x for x in ("Sinh lại A2 bằng template theo đúng thiết kế; không vá một khuôn RCT cho mọi loại.",
+                             ghep_hd if ghep_tt == "BLOCK" else "") if x),
     ))
 
     # LƯU Ý PHẠM VI (audit tautology vòng 2, 2026-07-31): mọi tiêu đề mục

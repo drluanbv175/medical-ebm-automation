@@ -74,11 +74,8 @@ def _bao_cao(thu_muc, ten, **kw):
          "du_lieu": {"de_cuong_nop": {"ma": 0},
                      "g6": {"bieu_do": {"dem": {"DA_VE": 8, "LOI": 0}, "loi": [], "thieu_bat_buoc": [],
                                         "co_tep": True}}}}
-    # 22/11/2026: báo cáo ĐẠT phải có số đo chuẩn báo cáo theo mục (K18) khớp sổ nợ bánh cóc của kịch bản
-    no = (json.loads(KG.SO_NO_K18.read_text(encoding="utf-8")).get("kich_ban") or {}).get(ten)
-    if no is not None:
-        j["chuan_bao_cao"] = {"ban_thao_thieu": no["ban_thao"], "bao_cao_thieu": no["bao_cao"],
-                              "bao_cao_cau_truc": []}
+    # 22/11/2026: báo cáo ĐẠT phải có số đo chuẩn báo cáo theo mục (K18) với 0 mục thiếu (không còn sổ nợ)
+    j["chuan_bao_cao"] = {"ban_thao_thieu": [], "bao_cao_thieu": [], "bao_cao_cau_truc": []}
     for k, v in kw.items():
         j[k] = v
     (thu_muc / f"{ten}.json").write_text(json.dumps(j), encoding="utf-8", newline="\n")
@@ -115,6 +112,34 @@ def test_cong_phan_khau_9_10_20261122(tmp_path, ghi_de, cum):
     assert any(cum in x for x in loi), loi
 
 
+def test_cong_phan_do_khi_g6_co_phan_tich_loi_20261123(tmp_path):
+    """Phân tích SAP mà G6 xếp LỖI (vd thiết kế đặc thù khi máy không có R/SPSS trước bản vá 23/11/2026) ⇒ đỏ; phân
+    tích DA_CHAY/DA_KIEM với kiểm chéo KHONG_DO_DUOC không làm đỏ."""
+    g6 = _du_lieu_g6()
+    g6["g6"]["phan_tich"] = [{"id": "MT1_chinh", "trang_thai": "DA_CHAY", "kiem_cheo": "KHONG_DO_DUOC"},
+                             {"id": "BC_dinh_tinh", "trang_thai": "DA_KIEM"}]
+    _bao_cao(tmp_path, "rct_nhi_phan", du_lieu=g6)
+    assert KG.kiem_mot(tmp_path / "rct_nhi_phan.json") == []
+    g6["g6"]["phan_tich"].append({"id": "KT_chi_phi_hieu_qua", "trang_thai": "LOI"})
+    _bao_cao(tmp_path, "rct_nhi_phan", du_lieu=g6)
+    loi = KG.kiem_mot(tmp_path / "rct_nhi_phan.json")
+    assert any("G6 chạy LỖI 1 phân tích SAP: KT_chi_phi_hieu_qua" in x for x in loi), loi
+
+
+@pytest.mark.parametrize("kc", ["LECH", "LOI", "TU_CHOI"])
+def test_cong_phan_do_khi_kiem_cheo_khong_khop_20261123(tmp_path, kc):
+    """Kiểm chéo SPSS/R LỆCH/LỖI/TỪ CHỐI ⇒ đỏ; KHOP và KHONG_DO_DUOC (máy không có R/SPSS) không đỏ."""
+    g6 = _du_lieu_g6()
+    g6["g6"]["phan_tich"] = [{"id": "MT1_chinh", "trang_thai": "DA_CHAY", "kiem_cheo": "KHOP"},
+                             {"id": "NC_nu", "trang_thai": "DA_CHAY", "kiem_cheo": "KHONG_DO_DUOC"}]
+    _bao_cao(tmp_path, "rct_nhi_phan", du_lieu=g6)
+    assert KG.kiem_mot(tmp_path / "rct_nhi_phan.json") == []
+    g6["g6"]["phan_tich"][0]["kiem_cheo"] = kc
+    _bao_cao(tmp_path, "rct_nhi_phan", du_lieu=g6)
+    loi = KG.kiem_mot(tmp_path / "rct_nhi_phan.json")
+    assert any(f"kiểm chéo SPSS/R không khớp ở 1 phân tích: MT1_chinh={kc}" in x for x in loi), loi
+
+
 def test_cong_phan_bo_qua_bieu_do_khi_g6_khong_tu_dong(tmp_path):
     """Thiết kế chưa có engine phân tích chính (g6.khong_tu_dong) — không đòi biểu đồ (đã có cổng khác giữ)."""
     _bao_cao(tmp_path, "rct_nhi_phan", du_lieu={"de_cuong_nop": {"ma": 0}, "g6": {"khong_tu_dong": "…"}})
@@ -123,8 +148,17 @@ def test_cong_phan_bo_qua_bieu_do_khi_g6_khong_tu_dong(tmp_path):
 
 @pytest.mark.parametrize("ten", list(KG.KICH_BAN.values()))
 def test_moi_kich_ban_co_nen_g0_trong_fixtures(ten):
-    """CI chạy offline ⇒ mỗi kịch bản phải có nền G0 đã lưu (thiếu thì Phần A «không đo được» ⇒ 0/16)."""
-    assert (REPO / "tests" / "fixtures" / "gia_lap_nen_g0" / ten / "_nen.json").is_file()
+    """CI chạy offline ⇒ mỗi kịch bản phải có nền G0 đã lưu (thiếu thì Phần A «không đo được» ⇒ 0/16). Kịch bản kế thừa
+    CÙNG đề tài/chủ đề (khoá `nen_g0_tu`, 23/11/2026: bệnh–chứng ghép cặp cá thể) đọc nền của kịch bản gốc khi không có
+    nền riêng — đúng luật GiaLap._nen_g0."""
+    nen = REPO / "tests" / "fixtures" / "gia_lap_nen_g0"
+    kb = TV.GL.KICH_BAN.get(ten) or TV._kich_ban_kho()[ten]
+    tu = kb.get("nen_g0_tu")
+    goc = nen / str(tu) if tu and not (nen / ten).is_dir() else nen / ten
+    assert (goc / "_nen.json").is_file()
+    if tu:  # kế thừa nền chỉ hợp lệ khi đề tài và chủ đề trùng gốc (G0 trùng hệt)
+        g = TV.GL.KICH_BAN.get(tu) or TV._kich_ban_kho()[tu]
+        assert (kb["study"], kb["topic"], kb.get("query_en")) == (g["study"], g["topic"], g.get("query_en")), ten
 
 
 def test_bien_spss_tro_tep_khong_co_la_khong_co_spss(monkeypatch, tmp_path):
@@ -139,3 +173,16 @@ def test_bien_spss_tro_tep_khong_co_la_khong_co_spss(monkeypatch, tmp_path):
     that.write_text("", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_SPSS_PYTHON", str(that))
     assert SP.ung_vien_python_spss() == [that]
+
+
+def test_bien_rscript_tro_tep_khong_co_la_khong_co_r_20261123(monkeypatch, tmp_path):
+    """EBM_RSCRIPT trỏ tệp không có ⇒ «không tìm thấy R» (KhongDoDuoc), cùng luật với EBM_SPSS_PYTHON."""
+    import cau_noi_r as CR
+    monkeypatch.setenv("EBM_RSCRIPT", str(tmp_path / "khong-co" / "Rscript"))
+    assert CR.ung_vien_rscript() == []
+    with pytest.raises(CR.KhongDoDuoc):
+        CR.tim_r()
+    that = tmp_path / "Rscript"
+    that.write_text("", encoding="utf-8", newline="\n")
+    monkeypatch.setenv("EBM_RSCRIPT", str(that))
+    assert CR.ung_vien_rscript() == [that]

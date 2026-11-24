@@ -28,7 +28,10 @@ tính trên đó) để bác sĩ tự chạy lại trong RStudio/SPSS.
 Dùng (thường qua chay_sap_g6 — đặc tả có `loai_dac_thu`):
   python3 tools/phan_tich_thiet_ke_dac_thu.py --study <mã> --gate G6 --loai chan_doan --tham-chieu xo_hoa --chi-so fib4
       --nguong 2.67 [--kiem-cheo]
-Mã thoát: 0 xong (kiểm chéo, nếu có, KHOP) · 1 lỗi/lệch · 2 tham số sai/chưa khoá. Cần bác sĩ kiểm chứng.
+Mã thoát: 0 xong (kiểm chéo, nếu có, KHOP hoặc KHONG_DO_DUOC — máy không có R/SPSS) · 1 lỗi/lệch
+(kiểm chéo LECH/LOI) · 2 tham số sai/chưa khoá. Trạng thái kiểm chéo luôn ghi ở `<gate>_kiem_cheo.json`
+(chay_sap_g6 chép vào chỉ mục).
+Cần bác sĩ kiểm chứng.
 """
 from __future__ import annotations
 
@@ -65,8 +68,24 @@ LOAI = {
     "dinh_tinh": ("chu_de",),
     "kinh_te": ("nhom", "chi_phi", "hieu_qua", "nguong_wtp"),
 }
-#: tham số TUỲ CHỌN theo loại (22/11/2026): gộp — biến phân nhóm tiền định của SAP §7 (Q giữa nhóm)
-LOAI_TUY_CHON = {"gop": ("phan_nhom",)}
+#: tham số TUỲ CHỌN theo loại (22/11/2026): gộp — biến phân nhóm tiền định của SAP §7 (Q giữa nhóm) và `mo_hinh`
+#: («ngau_nhien» mặc định = DerSimonian–Laird của phân tích chính; «co_dinh» = nghịch đảo phương sai — độ nhạy SAP §9
+#: «Hiệu ứng cố định so với hiệu ứng ngẫu nhiên»). Cả hai luôn được tính trong MỘT lượt; `mo_hinh` chọn ước lượng báo
+#: làm kết quả của mục đặc tả và đại lượng kiểm chéo metafor (method = "DL" hay "FE"). Dự báo — số lần bootstrap hiệu
+#: chỉnh lạc quan (SAP §9).
+LOAI_TUY_CHON = {"gop": ("phan_nhom", "mo_hinh"),
+                 # định tính: cột mã của người mã hoá THỨ HAI (cùng bộ mã, gán độc lập) ⇒ kappa Cohen (SAP §9
+                 # confirmability) — số và tỷ lệ cặp trùng báo kèm
+                 "dinh_tinh": ("chu_de_nguoi_2",),
+                 "du_bao": ("bootstrap",)}
+MO_HINH_GOP = ("ngau_nhien", "co_dinh")
+#: tham số tuỳ chọn KHÔNG phải tên cột dữ liệu (số lần bootstrap, lựa chọn mô hình gộp) — không vào danh sách cột
+THAM_SO_KHONG_PHAI_COT = frozenset({"bootstrap", "mo_hinh"})
+#: Bootstrap hiệu chỉnh lạc quan (Harrell, Lee & Mark, Stat Med 1996, PMID 8668867): hạt giống cố định; R dùng cùng
+#: thuật toán với bộ sinh số của R ⇒ đối chiếu theo sai số Monte Carlo √(Var(lạc quan)/B), lượng tử z(1 − α/2).
+HAT_GIONG_BOOT = 20261115
+ALPHA_BOOT = 1e-4
+DUNG_SAI_CUNG_MAU = 1e-6  # R tự lặp ↔ rms::validate khi rút cùng mẫu bootstrap (xem so_khop_bootstrap)
 SO_LAP_KT, HAT_GIONG_KT = 2000, 20261115  # bootstrap kinh tế: số lần lặp + seed (ghi vào kết quả, R dùng cùng seed)
 BOI_SO_WTP = (0.0, 0.25, 0.5, 1.0, 1.5, 2.0, 3.0)  # CEAC: λ = bội số × ngưỡng WTP SAP khai
 NHAN_GOC = {"dong_bac": "Đông Bắc (tốn hơn, hiệu quả hơn)", "dong_nam": "Đông Nam (rẻ hơn, hiệu quả hơn)",
@@ -135,7 +154,70 @@ def chan_doan(hang: List[Dict[str, Any]], tham_chieu: str, chi_so: str, nguong: 
     return kq
 
 
-def du_bao(hang: List[Dict[str, Any]], outcome: str, covariates: List[str]) -> Dict[str, Any]:
+def _auc_nhanh(y, x) -> float:
+    """AUC = thống kê Mann–Whitney chuẩn hoá (hạng trung bình cho giá trị trùng) — như auc_mann_whitney, vector hoá."""
+    import numpy as np  # noqa: PLC0415
+    from scipy.stats import rankdata  # noqa: PLC0415
+
+    y = np.asarray(y)
+    r = rankdata(np.asarray(x, dtype=float))
+    n1 = float(y.sum())
+    n0 = float(len(y) - n1)
+    return float((r[y == 1].sum() - n1 * (n1 + 1) / 2) / (n1 * n0))
+
+
+def _chi_so_hieu_chuan(y, lp) -> tuple:
+    """(C, độ dốc hiệu chuẩn, calibration-in-the-large) của dự báo lp (thang logit) trên kết cục y: độ dốc = hệ số của
+    logit(P(y)) = a + b·lp; CITL = a khi cố định b = 1 (offset lp)."""
+    import numpy as np  # noqa: PLC0415
+    import statsmodels.api as sm  # noqa: PLC0415
+
+    c = _auc_nhanh(y, lp)
+    doc = sm.GLM(y, sm.add_constant(lp, has_constant="add"), family=sm.families.Binomial()).fit(tol=1e-10).params[1]
+    citl = sm.GLM(y, np.ones((len(y), 1)), family=sm.families.Binomial(), offset=lp).fit(tol=1e-10).params[0]
+    return float(c), float(doc), float(citl)
+
+
+def bootstrap_lac_quan(y, X, B: int, hat_giong: int = HAT_GIONG_BOOT) -> Dict[str, Any]:
+    """Hiệu chỉnh lạc quan bằng bootstrap (Harrell): mỗi lần lấy mẫu lại có hoàn lại n ca, khớp lại mô hình trên mẫu
+    bootstrap, lạc quan = chỉ số trên mẫu bootstrap − chỉ số của mô hình đó trên dữ liệu GỐC; chỉ số hiệu chỉnh = chỉ số
+    biểu kiến − trung bình lạc quan. Báo C hiệu chỉnh, độ dốc hiệu chuẩn hiệu chỉnh, CITL hiệu chỉnh + sai số Monte
+    Carlo √(Var(lạc quan)/B hợp lệ). Lần lấy mẫu chỉ một loại kết cục hoặc không hội tụ ⇒ bỏ, đếm."""
+    import numpy as np  # noqa: PLC0415
+    import statsmodels.api as sm  # noqa: PLC0415
+
+    rng = np.random.default_rng(hat_giong)
+    n = len(y)
+    m0 = sm.Logit(y, X).fit(disp=0, maxiter=200, method="newton", tol=1e-12)
+    bieu_kien = np.array(_chi_so_hieu_chuan(y, X @ m0.params))
+    lq, bo = [], 0
+    for _ in range(B):
+        idx = rng.integers(0, n, n)
+        yb, xb = y[idx], X[idx]
+        if yb.sum() in (0, n):
+            bo += 1
+            continue
+        try:
+            mb = sm.Logit(yb, xb).fit(disp=0, maxiter=200, method="newton", tol=1e-10)
+        except Exception:  # noqa: BLE001 — tách hoàn toàn trên mẫu bootstrap ⇒ bỏ lần đó, đếm
+            bo += 1
+            continue
+        if not mb.mle_retvals.get("converged", True):
+            bo += 1
+            continue
+        lq.append(np.array(_chi_so_hieu_chuan(yb, xb @ mb.params)) - np.array(_chi_so_hieu_chuan(y, X @ mb.params)))
+    lq = np.asarray(lq)
+    tb = lq.mean(axis=0)
+    mc = lq.std(axis=0, ddof=1) / np.sqrt(len(lq))
+    ten = ("c", "do_doc", "citl")
+    return {"B": B, "B_hop_le": int(len(lq)), "bo": bo, "hat_giong": hat_giong,
+            "bieu_kien": dict(zip(ten, map(float, bieu_kien))), "lac_quan_tb": dict(zip(ten, map(float, tb))),
+            "c_hieu_chinh": float(bieu_kien[0] - tb[0]), "do_doc_hieu_chinh": float(bieu_kien[1] - tb[1]),
+            "citl_hieu_chinh": float(bieu_kien[2] - tb[2]), "mcse": dict(zip(ten, map(float, mc))),
+            "phuong_phap": "bootstrap hiệu chỉnh lạc quan Harrell (khớp lại mô hình trên từng mẫu bootstrap)"}
+
+
+def du_bao(hang: List[Dict[str, Any]], outcome: str, covariates: List[str], B: int = 0) -> Dict[str, Any]:
     import numpy as np  # noqa: PLC0415
     import statsmodels.api as sm  # noqa: PLC0415
 
@@ -148,10 +230,14 @@ def du_bao(hang: List[Dict[str, Any]], outcome: str, covariates: List[str]) -> D
               "ci_95": [float(math.exp(lo)), float(math.exp(hi))], "p": float(pv)}
              for ten, b, (lo, hi), pv in zip(["(hằng số)", *covariates], m.params, ci, m.pvalues)]
     c = auc_mann_whitney([int(v) for v in y], [float(v) for v in p])
-    return {"he_so": he_so, "c_statistic": c, "brier": float(np.mean((y - p) ** 2)), "n": int(len(y)),
-            "n_bien_co": int(y.sum()), "epv": round(float(y.sum()) / max(1, len(covariates)), 2),
-            "ghi_chu": "C-statistic trong mẫu (lạc quan); hiệu chỉnh lạc quan bằng bootstrap ở kịch bản R "
-                       "(rms::validate)"}
+    ra = {"he_so": he_so, "c_statistic": c, "brier": float(np.mean((y - p) ** 2)), "n": int(len(y)),
+          "n_bien_co": int(y.sum()), "epv": round(float(y.sum()) / max(1, len(covariates)), 2),
+          "ghi_chu": "C-statistic trong mẫu (lạc quan)"}
+    if B:
+        ra["bootstrap"] = bootstrap_lac_quan(y, X, int(B))
+        ra["ghi_chu"] = (f"C-statistic trong mẫu (lạc quan) + hiệu chỉnh lạc quan bằng bootstrap {int(B)} lần "
+                         "(Python; kiểm chéo bằng R cùng thuật toán + rms::validate)")
+    return ra
 
 
 def _o_rr(a: float, n1: float, c: float, n0: float):
@@ -304,7 +390,20 @@ def gop(hang: List[Dict[str, Any]], nhan: str, a: str, n1: str, c: str, n0: str,
     return ra
 
 
-def dinh_tinh(hang: List[Dict[str, Any]], chu_de: str) -> Dict[str, Any]:
+def dong_thuan_hai_nguoi(hang: List[Dict[str, Any]], a: str, b: str) -> Dict[str, Any]:
+    """Kappa Cohen giữa hai người mã hoá trên các bản có CẢ HAI mã — dùng `phan_tich_sap_bo_sung._kappa` (một công thức
+    kappa cho mọi đường G6)."""
+    import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+    cap = [(str(r.get(a) or "").strip(), str(r.get(b) or "").strip()) for r in hang]
+    cap = [(x, y) for x, y in cap if x and y]
+    k = PSB._kappa([x for x, _ in cap], [y for _, y in cap]) if cap else None
+    return {"cot_nguoi_1": a, "cot_nguoi_2": b, "n_cap": len(cap), "n_trung": sum(1 for x, y in cap if x == y),
+            "ty_le_trung": (sum(1 for x, y in cap if x == y) / len(cap)) if cap else None, "kappa": k,
+            "cach_tinh": "kappa Cohen trên các bản có mã của cả hai người (một mã chính mỗi bản)"}
+
+
+def dinh_tinh(hang: List[Dict[str, Any]], chu_de: str, chu_de_nguoi_2: Optional[str] = None) -> Dict[str, Any]:
     dem: Dict[str, int] = {}
     for r in hang:
         v = str(r.get(chu_de) or "").strip()
@@ -314,7 +413,8 @@ def dinh_tinh(hang: List[Dict[str, Any]], chu_de: str) -> Dict[str, Any]:
     return {"n_ban_go_bang": n, "so_chu_de": len(dem),
             "chu_de": [{"chu_de": k, "n": v, "pct": 100 * v / n, "ty_le": v / n, "ci_95_wilson": wilson(v, n)}
                        for k, v in sorted(dem.items(), key=lambda x: -x[1])],
-            "ghi_chu": "Tần suất mô tả các mã đã gán — không thay phân tích chủ đề của nhóm nghiên cứu (COREQ/SRQR)"}
+            "ghi_chu": "Tần suất mô tả các mã đã gán — không thay phân tích chủ đề của nhóm nghiên cứu (COREQ/SRQR)",
+            **({"dong_thuan_hai_nguoi": dong_thuan_hai_nguoi(hang, chu_de, chu_de_nguoi_2)} if chu_de_nguoi_2 else {})}
 
 
 def _phan_vi(xs: Sequence[float], q: float) -> float:
@@ -379,13 +479,13 @@ def tinh(loai: str, hang: List[Dict[str, Any]], ts: Dict[str, Any],
     if loai == "chan_doan":
         return chan_doan(hang, ts["tham_chieu"], ts["chi_so"], float(ts["nguong"]))
     if loai == "du_bao":
-        return du_bao(hang, ts["outcome"], list(ts["covariates"]))
+        return du_bao(hang, ts["outcome"], list(ts["covariates"]), int(ts.get("bootstrap") or 0))
     if loai == "gop":
         return gop(hang, ts["nhan_nghien_cuu"], ts["su_kien_can_thiep"], ts["n_can_thiep"], ts["su_kien_chung"],
                    ts["n_chung"], ts.get("phan_nhom") or None, nhan_nhom)
     if loai == "kinh_te":
         return kinh_te(hang, ts["nhom"], ts["chi_phi"], ts["hieu_qua"], float(ts["nguong_wtp"]))
-    return dinh_tinh(hang, ts["chu_de"])
+    return dinh_tinh(hang, ts["chu_de"], ts.get("chu_de_nguoi_2") or None)
 
 
 def cac_so_doi_chieu(loai: str, kq: Dict[str, Any]) -> Dict[str, float]:
@@ -398,7 +498,10 @@ def cac_so_doi_chieu(loai: str, kq: Dict[str, Any]) -> Dict[str, float]:
                 **{f"or_{h['bien']}": h["or"] for h in kq["he_so"][1:]}}
     if loai == "gop":
         ra = {"rr_gop": kq["rr_gop_ngau_nhien"], "ci_duoi": kq["ci_95"][0], "ci_tren": kq["ci_95"][1],
-              "tau2": kq["tau2"], "i2": kq["i2_pct"]}
+              "tau2": kq["tau2"], "i2": kq["i2_pct"],
+              # hiệu ứng cố định (nghịch đảo phương sai) — metafor::rma(method = "FE"); so ở MỌI lượt gộp
+              "rr_gop_co_dinh": kq["rr_gop_co_dinh"], "ci_duoi_co_dinh": kq["ci_95_co_dinh"][0],
+              "ci_tren_co_dinh": kq["ci_95_co_dinh"][1]}
         hu = kq.get("hieu_ung_tuyet_doi") or {}
         if hu:
             ra |= {"nguy_co_chung": hu["nguy_co_nhom_chung"], "hieu_so_1000": hu["hieu_so_moi_1000"]}
@@ -416,7 +519,9 @@ def cac_so_doi_chieu(loai: str, kq: Dict[str, Any]) -> Dict[str, float]:
               "hieu_qua_tb_1": kq["hieu_qua_tb"]["can_thiep"], "hieu_qua_tb_0": kq["hieu_qua_tb"]["so_sanh"],
               "delta_c": kq["delta_c"], "delta_e": kq["delta_e"]}
         return ra | ({"icer": kq["icer"]} if kq["icer"] is not None else {})
-    return {f"n_{i}": c["n"] for i, c in enumerate(kq["chu_de"])}
+    ra = {f"n_{i}": c["n"] for i, c in enumerate(kq["chu_de"])}
+    dt = kq.get("dong_thuan_hai_nguoi") or {}
+    return ra | ({"kappa": dt["kappa"]} if dt.get("kappa") is not None else {})
 
 
 # ─────────────────────────────── dữ liệu khoá ───────────────────────────────
@@ -596,6 +701,76 @@ def _g4_da_khoa(study: str) -> None:
 
 
 # ─────────────────────────────── kịch bản R / SPSS ───────────────────────────────
+def _r_bootstrap(y: str, cv: List[str], B: int) -> str:
+    """R: CÙNG thuật toán bootstrap lạc quan với Python (lặp tay, glm) + rms::validate làm tham chiếu ngoài cho C và độ
+    dốc. Ghi chỉ số hiệu chỉnh + sai số Monte Carlo để đối chiếu."""
+    ct = f'{y} ~ {" + ".join(cv)}'
+    return (
+        "# ── Hiệu chỉnh lạc quan bằng bootstrap (Harrell) — cùng thuật toán với Python ──\n"
+        "auc_mw <- function(yy, xx) { r <- rank(xx); n1 <- sum(yy == 1); n0 <- length(yy) - n1\n"
+        "  (sum(r[yy == 1]) - n1 * (n1 + 1) / 2) / (n1 * n0) }\n"
+        "chi_so <- function(yy, lp) c(auc_mw(yy, lp), coef(glm(yy ~ lp, family = binomial()))[2],\n"
+        "  coef(glm(yy ~ 1, offset = lp, family = binomial()))[1])\n"
+        f"m0 <- glm({ct}, data = df, family = binomial(), control = glm.control(epsilon = 1e-14, maxit = 200))\n"
+        f"yy <- df[[\"{y}\"]]; X <- model.matrix(m0)\n"
+        "bk <- chi_so(yy, as.vector(X %*% coef(m0)))\n"
+        f"set.seed({HAT_GIONG_BOOT}); n <- nrow(df); LQ <- NULL; bo <- 0\n"
+        f"for (b in seq_len({B})) {{\n"
+        "  idx <- sample.int(n, n, replace = TRUE); yb <- yy[idx]; xb <- X[idx, , drop = FALSE]\n"
+        "  if (sum(yb) %in% c(0, n)) { bo <- bo + 1; next }\n"
+        "  mb <- tryCatch(suppressWarnings(glm.fit(xb, yb, family = binomial(), control = glm.control(1e-10, 200))),\n"
+        "                 error = function(e) NULL)\n"
+        "  if (is.null(mb) || !mb$converged) { bo <- bo + 1; next }\n"
+        "  LQ <- rbind(LQ, chi_so(yb, as.vector(xb %*% mb$coefficients)) -\n"
+        "              chi_so(yy, as.vector(X %*% mb$coefficients)))\n"
+        "}\n"
+        "tb <- colMeans(LQ); mc <- apply(LQ, 2, sd) / sqrt(nrow(LQ))\n"
+        'ghi("c_hieu_chinh", bk[1] - tb[1]); ghi("do_doc_hieu_chinh", bk[2] - tb[2]); '
+        'ghi("citl_hieu_chinh", bk[3] - tb[3])\n'
+        'ghi("mcse_c", mc[1]); ghi("mcse_do_doc", mc[2]); ghi("mcse_citl", mc[3]); ghi("B_hop_le", nrow(LQ))\n'
+        "# Tham chiếu ngoài: rms::validate (bootstrap của rms, cùng B) — C hiệu chỉnh = 0,5 + Dxy/2\n"
+        f"set.seed({HAT_GIONG_BOOT}); v <- rms::validate(rms::lrm({ct}, data = df, x = TRUE, y = TRUE), B = {B})\n"
+        'ghi("rms_c_hieu_chinh", 0.5 + v["Dxy", "index.corrected"] / 2); '
+        'ghi("rms_do_doc_hieu_chinh", v["Slope", "index.corrected"]); ghi("rms_B_hop_le", v["Dxy", "n"])\n'
+        "print(v)\n"
+    )
+
+
+def so_khop_bootstrap(bt: Dict[str, Any], r: Dict[str, float]) -> Dict[str, Any]:
+    """Đối chiếu chỉ số bootstrap Python ↔ R theo SAI SỐ MONTE CARLO: hai phía cùng thuật toán, khác bộ sinh số ⇒
+    |Py − R| ≤ z(1 − α/2)·√(MCSE_Py² + MCSE_R²).
+
+    R tự lặp ↔ rms::validate: cùng set.seed thì rms rút ĐÚNG các mẫu bootstrap như vòng lặp tay (đo 22/11/2026: C trùng
+    tuyệt đối, độ dốc lệch 7e-10 do ngưỡng hội tụ lrm ≠ glm.fit) ⇒ khi CẢ HAI giữ đủ B lần, so TẤT ĐỊNH |Δ| ≤ 1e-6 —
+    phép này bắt lỗi cách tính chỉ số (C, độ dốc) của vòng lặp tay, thứ dung sai Monte Carlo để lọt. Có lần bị bỏ (tách
+    hoàn toàn, không hội tụ) thì hai bên có thể bỏ khác lần ⇒ mẫu không còn trùng ⇒ dung sai z·√2·MCSE_R."""
+    from scipy.stats import norm  # noqa: PLC0415
+
+    z = float(norm.ppf(1 - ALPHA_BOOT / 2))
+    lech, chi_tiet = [], []
+    for k, kr in (("c", "c"), ("do_doc", "do_doc"), ("citl", "citl")):
+        khoa = f"{k}_hieu_chinh"
+        if khoa not in r or f"mcse_{kr}" not in r:
+            lech.append(f"{khoa}: R thiếu")
+            continue
+        tol = z * (bt["mcse"][k] ** 2 + r[f"mcse_{kr}"] ** 2) ** 0.5
+        d = abs(bt[khoa] - r[khoa])
+        chi_tiet.append(f"{khoa}: Python {bt[khoa]:.4f} · R {r[khoa]:.4f} · |Δ| {d:.4f} ≤ {tol:.4f}")
+        if d > tol:
+            lech.append(f"{khoa}: |Δ| {d:.4f} > dung sai Monte Carlo {tol:.4f}")
+    cung_mau = (r.get("B_hop_le") is not None and r.get("B_hop_le") == r.get("rms_B_hop_le") == bt.get("B"))
+    for k, kr in (("c", "rms_c_hieu_chinh"), ("do_doc", "rms_do_doc_hieu_chinh")):
+        if kr in r and f"{k}_hieu_chinh" in r:
+            tol = DUNG_SAI_CUNG_MAU if cung_mau else z * 2 ** 0.5 * r[f"mcse_{k}"]
+            d = abs(r[f"{k}_hieu_chinh"] - r[kr])
+            chi_tiet.append(f"R tự lặp ↔ rms::validate {k} ({'cùng mẫu, tất định' if cung_mau else 'Monte Carlo'}): "
+                            f"|Δ| {d:.2g} ≤ {tol:.2g}")
+            if d > tol:
+                lech.append(f"R tự lặp ↔ rms::validate {k}: |Δ| {d:.4f} > {tol:.4f}")
+    return {"trang_thai": "KHOP" if not lech else "LECH", "lech": lech, "chi_tiet": chi_tiet,
+            "dung_sai": f"z(1 − {ALPHA_BOOT:g}/2) = {z:.3f} × sai số Monte Carlo"}
+
+
 def kich_ban_r(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
     dau = (f'# R — {loai} (sinh bởi phan_tich_thiet_ke_dac_thu.py; chạy được trong RStudio)\n'
            f'df <- read.csv("{csv_p.as_posix()}", stringsAsFactors = FALSE, check.names = FALSE)\n'
@@ -619,9 +794,10 @@ def kich_ban_r(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
                 f'ghi("brier", mean((df[["{y}"]] - p)^2))\n'
                 + "".join(f'ghi("or_{c}", exp(coef(m)[["{c}"]]))\n' for c in cv)
                 + 'print(summary(m)); print(exp(cbind(OR = coef(m), confint.default(m))))\n'
-                  '# Hiệu chỉnh lạc quan (bootstrap 200 lần, seed cố định) — C hiệu chỉnh = Dxy/2 + 0.5:\n'
-                  f'set.seed(20261115); v <- rms::validate(rms::lrm({y} ~ {" + ".join(cv)}, data = df, x = TRUE, '
-                  'y = TRUE), B = 200)\nprint(v)\n')
+                + (_r_bootstrap(y, cv, int(ts["bootstrap"])) if ts.get("bootstrap") else
+                   '# Hiệu chỉnh lạc quan (bootstrap 200 lần, seed cố định) — C hiệu chỉnh = Dxy/2 + 0.5:\n'
+                   f'set.seed(20261115); v <- rms::validate(rms::lrm({y} ~ {" + ".join(cv)}, data = df, x = TRUE, '
+                   'y = TRUE), B = 200)\nprint(v)\n'))
     elif loai == "gop":
         than = (f'es <- metafor::escalc(measure = "RR", ai = df[["{ts["su_kien_can_thiep"]}"]], '
                 f'n1i = df[["{ts["n_can_thiep"]}"]], ci = df[["{ts["su_kien_chung"]}"]], '
@@ -630,6 +806,10 @@ def kich_ban_r(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
                 'm <- metafor::rma(yi, vi, data = es, method = "DL")\n'
                 'ghi("rr_gop", exp(as.numeric(m$b))); ghi("ci_duoi", exp(m$ci.lb)); ghi("ci_tren", exp(m$ci.ub))\n'
                 'ghi("tau2", m$tau2); ghi("i2", m$I2)\nprint(m)\n'
+                # SAP §9 «hiệu ứng cố định so với ngẫu nhiên»: nghịch đảo phương sai, cùng yi/vi
+                'mf <- metafor::rma(yi, vi, data = es, method = "FE")\n'
+                'ghi("rr_gop_co_dinh", exp(as.numeric(mf$b))); ghi("ci_duoi_co_dinh", exp(mf$ci.lb)); '
+                'ghi("ci_tren_co_dinh", exp(mf$ci.ub))\nprint(mf)\n'
                 # 22/11/2026: hiệu ứng tuyệt đối của bảng tóm tắt phát hiện (GRADE) — cùng cách tính Python
                 f'ncc <- sum(df[["{ts["su_kien_chung"]}"]]) / sum(df[["{ts["n_chung"]}"]])\n'
                 'ghi("nguy_co_chung", ncc); ghi("hieu_so_1000", 1000 * ncc * (exp(as.numeric(m$b)) - 1))\n'
@@ -665,7 +845,13 @@ def kich_ban_r(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
     else:
         cd = ts["chu_de"]
         than = (f'bang <- sort(table(df[["{cd}"]][df[["{cd}"]] != ""]), decreasing = TRUE)\n'
-                'for (i in seq_along(bang)) ghi(sprintf("n_%d", i - 1), as.numeric(bang[[i]]))\nprint(bang)\n')
+                'for (i in seq_along(bang)) ghi(sprintf("n_%d", i - 1), as.numeric(bang[[i]]))\nprint(bang)\n'
+                + (f'a <- trimws(df[["{cd}"]]); b <- trimws(df[["{ts["chu_de_nguoi_2"]}"]])\n'
+                   '# Kappa Cohen hai người mã hoá (cặp có cả hai mã)\n'
+                   'o <- !is.na(a) & !is.na(b) & a != "" & b != ""; a <- a[o]; b <- b[o]\n'
+                   'm <- sort(union(a, b)); po <- mean(a == b)\n'
+                   'pe <- sum(sapply(m, function(x) mean(a == x) * mean(b == x)))\n'
+                   'ghi("kappa", (po - pe) / (1 - pe))\n' if ts.get("chu_de_nguoi_2") else ""))
     return dau + than + "close(out)\n"
 
 
@@ -679,7 +865,8 @@ def _gia_tri_spss(loai: str, ts: Dict[str, Any]) -> List[tuple[str, str]]:
                 *([(ts["phan_nhom"], "A60")] if ts.get("phan_nhom") else [])]
     if loai == "kinh_te":
         return [(ts["nhom"], "F8.0"), (ts["chi_phi"], "F20.4"), (ts["hieu_qua"], "F20.10")]
-    return [(ts["chu_de"], "A400")]
+    # định tính: cột người mã hoá thứ hai (tuỳ chọn) cũng vào tệp dữ liệu — R tính kappa trên chính tệp này
+    return [(ts["chu_de"], "A400"), *([(ts["chu_de_nguoi_2"], "A400")] if ts.get("chu_de_nguoi_2") else [])]
 
 
 def kich_ban_spss(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
@@ -790,11 +977,12 @@ def _doc_kq_spss(p: Path, loai: str) -> Dict[str, float]:
 # hệ số của mô hình); R so ĐỦ mọi đại lượng kể cả OR từng yếu tố. Gộp (22/11/2026): SPSS so ước lượng chung, hiệu ứng
 # tuyệt đối và Egger; phân nhóm (số nhóm thay đổi theo dữ liệu) chỉ R so.
 DAI_LUONG_SPSS = {"du_bao": ("c_statistic", "brier")}
-_CHI_R = ("rr_nhom_", "q_giua_nhom", "p_giua_nhom")
+# 22/11/2026: hiệu ứng cố định của gộp (metafor method = "FE") và kappa hai người mã hoá (định tính) — chỉ R so.
+_CHI_R = ("rr_nhom_", "q_giua_nhom", "p_giua_nhom", "rr_gop_co_dinh", "ci_duoi_co_dinh", "ci_tren_co_dinh", "kappa")
 
 
 def dai_luong_spss(loai: str, py: Dict[str, float]) -> Optional[List[str]]:
-    if loai == "gop":
+    if loai in ("gop", "dinh_tinh"):
         return [k for k in py if not k.startswith(_CHI_R)]
     return list(DAI_LUONG_SPSS[loai]) if loai in DAI_LUONG_SPSS else None
 
@@ -812,7 +1000,7 @@ def so_khop(py: Dict[str, float], khac: Dict[str, float], chi: Optional[Sequence
 
 
 def kiem_cheo(loai: str, ts: Dict[str, Any], hang: List[Dict[str, Any]], d: Path, gate: str,
-              py: Dict[str, float]) -> Dict[str, Any]:
+              py: Dict[str, float], boot: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     can = [b for b, _ in _gia_tri_spss(loai, ts)]
     tam = Path(tempfile.mkdtemp(prefix="ptdt_"))
     ket: Dict[str, Any] = {}
@@ -838,6 +1026,14 @@ def kiem_cheo(loai: str, ts: Dict[str, Any], hang: List[Dict[str, Any]], d: Path
                                 cwd=str(tam), check=False)
             ket["r"] = (so_khop(py, _doc_kq_r(r_ra)) if r_ra.is_file() else
                         {"trang_thai": "LOI", "lech": [(kq.stderr or kq.stdout).strip()[-400:]]})
+            if boot is not None and r_ra.is_file():  # bootstrap lạc quan — sai số Monte Carlo, không đòi khớp tất định
+                kr = _doc_kq_r(r_ra)
+                sb = so_khop_bootstrap(boot, kr)
+                ket["r"]["bootstrap"] = {**sb, "r": {k: kr[k] for k in kr if "hieu_chinh" in k or k.startswith(
+                    ("mcse_", "B_hop_le"))}}
+                if sb["trang_thai"] == "LECH" and ket["r"]["trang_thai"] == "KHOP":
+                    ket["r"]["trang_thai"] = "LECH"
+                    ket["r"]["lech"] = ket["r"].get("lech", []) + sb["lech"]
         except Exception as e:  # noqa: BLE001 — không chạy được R ⇒ KHÔNG ĐO ĐƯỢC, không phải «khớp»
             ket["r"] = {"trang_thai": "KHONG_DO_DUOC", "lech": [f"{type(e).__name__}: {e}"]}
         # SPSS
@@ -889,6 +1085,16 @@ def md_ket_qua(study: str, gate: str, loai: str, kq: Dict[str, Any], kc: Optiona
                "| Yếu tố | OR | KTC 95% | p |", "|---|---|---|---|"]
         dl += [f"| {h['bien']} | {so(h['or'])} | {so(h['ci_95'][0])}–{so(h['ci_95'][1])} | {so(h['p'], 4)} |"
                for h in kq["he_so"][1:]]
+        bt = kq.get("bootstrap")
+        if bt:  # 22/11/2026 (việc B): hiệu chỉnh lạc quan — Python và R chạy thật, cùng bảng
+            r = bt.get("r") or {}
+            dl += ["", f"Hiệu chỉnh lạc quan bằng bootstrap {bt['B']} lần ({bt['B_hop_le']} lần hợp lệ):", "",
+                   "| Chỉ số | Biểu kiến | Hiệu chỉnh (Python) | Hiệu chỉnh (R) |", "|---|---|---|---|"]
+            for k, nhan in (("c", "C-statistic"), ("do_doc", "Độ dốc hiệu chuẩn"),
+                            ("citl", "Calibration-in-the-large")):
+                dl.append(f"| {nhan} | {so(bt['bieu_kien'][k])} | {so(bt[k + '_hieu_chinh'])} | "
+                          f"{so(r.get(k + '_hieu_chinh'))} |")
+            dl += ["", f"Đối chiếu Python ↔ R theo sai số Monte Carlo: {bt.get('kiem_cheo_r') or '—'}"]
     elif loai == "gop":
         dl += [f"- RR gộp (ngẫu nhiên, DL) = {so(kq['rr_gop_ngau_nhien'])} (KTC 95% {so(kq['ci_95'][0])}–"
                f"{so(kq['ci_95'][1])}); RR cố định = {so(kq['rr_gop_co_dinh'])}; τ² = {so(kq['tau2'], 4)}; "
@@ -949,22 +1155,40 @@ def md_ket_qua(study: str, gate: str, loai: str, kq: Dict[str, Any], kc: Optiona
     return "\n".join(dl + ["", CAN_KIEM, ""])
 
 
+def ma_thoat_kiem_cheo(kc: Optional[Dict[str, Any]]) -> int:
+    """Mã thoát của một lượt theo kết quả kiểm chéo: LECH/LOI ⇒ 1; KHOP, KHONG_DO_DUOC hoặc không kiểm ⇒ 0.
+
+    23/11/2026: «không đo được» (máy không có R/SPSS — CI) KHÔNG phải lỗi phân tích. Trước đây mã 1 ⇒ chay_sap_g6
+    xếp cả phân tích là LỖI ⇒ G7 bỏ kết quả (CI: CHEERS 2022 mục 22 thiếu ở rct_kinh_te; chẩn đoán/dự báo/gộp có
+    phân tích chính LỖI mà vẫn xanh). Cùng quy ước kiểm chéo tư vấn của run_stats_analysis; trạng thái kiểm chéo
+    vẫn ghi ở `<gate>_kiem_cheo.json` và chỉ mục chay_sap_g6 (không bao giờ đọc thành «khớp»)."""
+    return 1 if (kc is not None and kc.get("trang_thai") in ("LECH", "LOI")) else 0
+
+
 def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bool) -> int:
     if loai not in LOAI:
         raise TuChoi(f"--loai phải thuộc {sorted(LOAI)}")
     thieu = [k for k in LOAI[loai] if ts.get(k) in (None, "", [])]
     if thieu:
         raise TuChoi(f"thiếu tham số: {', '.join(thieu)}")
+    if ts.get("mo_hinh") not in (None, *MO_HINH_GOP):
+        raise TuChoi(f"mo_hinh phải thuộc {list(MO_HINH_GOP)}")
     _g4_da_khoa(study)
     can = ([ts[k] for k in LOAI[loai] if k not in ("nguong", "covariates", "nguong_wtp")]
-           + list(ts.get("covariates") or []) + [ts[k] for k in LOAI_TUY_CHON.get(loai, ()) if ts.get(k)])
+           + list(ts.get("covariates") or [])
+           + [ts[k] for k in LOAI_TUY_CHON.get(loai, ()) if ts.get(k) and k not in THAM_SO_KHONG_PHAI_COT])
     hang, csv_khoa, bo = doc_du_lieu(study, can, ts.get("loc"))
     print(f"✓ Đọc dữ liệu khoá {csv_khoa.name}: {len(hang)} ca dùng được (loại {bo} ca thiếu dữ liệu)")
     nhan_nhom = _nhan_lua_chon(study, toi_thieu=2).get(str(ts["phan_nhom"])) if ts.get("phan_nhom") else None
     kq = tinh(loai, hang, ts, nhan_nhom)
     d = thu_muc_de_tai(study)
     py = cac_so_doi_chieu(loai, kq)
-    kc = kiem_cheo(loai, ts, hang, d, gate, py) if kiem_cheo_bat else None
+    boot = kq.get("bootstrap") if loai == "du_bao" else None
+    kc = kiem_cheo(loai, ts, hang, d, gate, py, boot) if kiem_cheo_bat else None
+    if boot is not None:  # chỉ số hiệu chỉnh lạc quan của R (chạy thật) vào tóm tắt, cạnh số của Python
+        boot["r"] = ((kc or {}).get("phan_mem", {}).get("r", {}).get("bootstrap") or {}).get("r") if kc else None
+        boot["kiem_cheo_r"] = ((kc or {}).get("phan_mem", {}).get("r", {}).get("bootstrap") or {}).get("trang_thai") \
+            if kc else "CHUA_CHAY"
     import cau_noi_spss as S  # noqa: PLC0415
 
     man = S.tim_du_lieu_khoa(study)[1] or {}  # cùng hàm kiểm khoá đã dùng khi đọc dữ liệu ở trên
@@ -998,7 +1222,7 @@ def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bo
         print(f"✓ Kiểm chéo SPSS/R: {kc['trang_thai']} — "
               + "; ".join(f"{k} {v['trang_thai']}" for k, v in kc["phan_mem"].items()))
     print(f"✓ {d / f'{gate}_ket_qua.md'}\n{CAN_KIEM}")
-    return 0 if (kc is None or kc["trang_thai"] == "KHOP") else 1
+    return ma_thoat_kiem_cheo(kc)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -1013,10 +1237,17 @@ def main(argv: Optional[List[str]] = None) -> int:
         ap.add_argument("--" + k.replace("_", "-"), dest=k, default=None)
     ap.add_argument("--phan-nhom", dest="phan_nhom", default=None,
                     help="gop: biến phân nhóm tiền định của SAP §7 — gộp riêng từng nhóm + Q giữa nhóm")
+    ap.add_argument("--chu-de-nguoi-2", dest="chu_de_nguoi_2", default=None,
+                    help="dinh_tinh: cột mã của người mã hoá thứ hai ⇒ kappa Cohen (SAP §9 confirmability)")
+    ap.add_argument("--mo-hinh", dest="mo_hinh", default=None, choices=MO_HINH_GOP,
+                    help="gop: ước lượng báo làm kết quả — ngau_nhien (DL, mặc định) hoặc co_dinh "
+                         "(nghịch đảo phương sai)")
     ap.add_argument("--nguong", type=float, default=None)
     ap.add_argument("--nguong-wtp", dest="nguong_wtp", type=float, default=None,
                     help="kinh_te: ngưỡng sẵn lòng chi trả cho một đơn vị hiệu quả (SAP khai)")
     ap.add_argument("--covariates", default="")
+    ap.add_argument("--bootstrap", type=int, default=None,
+                    help="du_bao: số lần bootstrap hiệu chỉnh lạc quan (SAP §9) — C, độ dốc hiệu chuẩn, CITL")
     ap.add_argument("--loc", default=None, help="biểu thức lọc quần thể (nhóm con/độ nhạy) — như run_stats_analysis")
     ap.add_argument("--kiem-cheo", action="store_true")
     a = ap.parse_args(argv)

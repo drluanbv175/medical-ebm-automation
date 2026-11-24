@@ -23,8 +23,12 @@ từng bộ tham số — dễ sót, dễ lệch SAP, không có chỗ nào cho 
   }
   • vai ∈ chinh (đúng MỘT, chạy với gate G6 — tệp G6_analysis_summary.json chính thức) · phu · nhom_con · do_nhay ·
     mo_ta; phân tích khác chạy với gate G6_<id> (tệp riêng, không ghi đè nhau).
-  • `chua_tu_dong` = phân tích SAP cam kết mà hệ CHƯA có công cụ (vd spline RCS, partial PO) — liệt kê rõ trong chỉ mục
-    là «chờ thống kê viên làm tay», không bỏ im.
+  • `chua_tu_dong` = phân tích SAP cam kết mà hệ CHƯA có công cụ — liệt kê rõ trong chỉ mục, không bỏ im. Từ 22/11/2026
+    mọi loại từng ghi «chờ làm tay» (spline RCS, partial PO, Firth, hệ số chặn ngẫu nhiên, trọng số hậu phân tầng,
+    gộp mức, điểm ảnh hưởng, trung gian, bảng chéo, chuỗi khâu, đáp ứng, đặc tính đo lường…) đã có đường máy:
+    `tham_so.loai_bo_sung` + `tham_so.cau_hinh` ⇒ phan_tich_sap_bo_sung.py (cấu hình kiểm bằng chính mô-đun đó).
+  • `tham_so.bien_thua` = {bien, toi_thieu}: quy tắc bỏ biến thưa định trước của SAP — đếm trên quần thể phân tích
+    trước khi gọi run_stats_analysis, biến có một nhóm dưới ngưỡng bị bỏ khỏi covariates; quyết định ghi vào chỉ mục.
   • `sha256_sap` khác SAP hiện tại ⇒ đặc tả CŨ (SAP đã sửa đổi) — từ chối chạy.
   • nguoi_duyet do THỐNG KÊ VIÊN/PI ghi kèm dấu đặc tả (lệnh `kiem` in ra) — agent soạn đặc tả, KHÔNG ghi cột duyệt;
     sửa đặc tả sau khi duyệt ⇒ hết hiệu lực. Chưa duyệt ⇒ từ chối chạy (đề tài synthetic_test: cảnh báo).
@@ -84,7 +88,24 @@ THAM_SO = {
     "time": ("--time", "s"),
     "event": ("--event", "s"),
     "n_imputations": ("--n-imputations", "nguyen"),
+    # 24/11/2026: hạt giống của bộ gán đa trị (BoGanPMM) — SAP khai «Random seed» thì đặc tả ghi đúng số đó để chạy lại
+    # cho cùng kết quả trên mọi máy; vắng ⇒ HAT_GIONG_MI của engine (ghi trong đầu ra).
+    "hat_giong": ("--hat-giong", "nguyen"),
     "loc": ("--loc", "bt"),
+    # 23/11/2026 (G7 phát hiện G6 lệch SAP — thử nghiệm không kém hơn): phương pháp KTC hiệu số nguy cơ ĐÚNG như SAP §4
+    # khai (newcombe | wald). `kiem` từ chối đặc tả lệch SAP và SAP khai phương pháp G6 chưa tính (không tự lùi Wald).
+    "kc_hieu_so": ("--kc-hieu-so", "kc_hieu_so"),
+    # 23/11/2026 (G7 phát hiện ở rct_cum — tổn hại 2 biến cố, rào EPV chặn logistic, bảng bản thảo trống): phương pháp
+    # biến cố hiếm SAP §5 khai; engine chạy nó khi rào EPV chặn. `kiem` đòi mọi phân tích có kết cục khai đúng phương
+    # pháp SAP (mo_ta_chinh_xac | firth — engine tự chạy cả hai từ 23/11/2026; Firth không kết hợp được cột cụm).
+    "bien_co_hiem": ("--bien-co-hiem", "bien_co_hiem"),
+    # 23/11/2026 (bệnh–chứng ghép cặp CÁ THỂ): cột MÃ BỘ GHÉP ⇒ engine chạy hồi quy logistic có điều kiện theo bộ ghép.
+    # `kiem`: SAP §4 họ «logistic có điều kiện» ⇒ phân tích cùng kết cục chính phải khai; SAP không khai họ đó mà đặc
+    # tả khai ⇒ LỖI (lượt chạy sẽ lệch họ SAP).
+    "bo_ghep": ("--bo-ghep", "s"),
+    # 23/11/2026: biến DÙNG ĐỂ GHÉP (vai trò bien_ghep của ma trận G3) — vào mô hình gán đa trị cùng ca/chứng (Seaman &
+    # Keogh 2015); `kiem` đòi khi phân tích khai bo_ghep
+    "bien_ghep": ("--bien-ghep", "ds"),
     # 16/11/2026 (giả lập 8 thiết kế): phân tích ĐẶC THÙ — chẩn đoán · dự báo · tổng quan–gộp · định tính — chạy bằng
     # phan_tich_thiet_ke_dac_thu.py (run_stats_analysis chưa có đường); cùng nhật ký/tóm tắt/kiểm chéo SPSS–R.
     "loai_dac_thu": ("--loai", "loai"),
@@ -98,7 +119,14 @@ THAM_SO = {
     "n_chung": ("--n-chung", "s"),
     # 22/11/2026 (PRISMA 2020 mục 20c): phân nhóm tiền định của SAP §7 — gộp riêng từng nhóm + Q giữa nhóm
     "phan_nhom": ("--phan-nhom", "s"),
+    "mo_hinh": ("--mo-hinh", "s"),  # gộp: ngau_nhien | co_dinh (độ nhạy hiệu ứng cố định)
+    # 22/11/2026 (việc B): dự báo — số lần bootstrap hiệu chỉnh lạc quan của SAP §9
+    "bootstrap": ("--bootstrap", "nguyen"),
     "chu_de": ("--chu-de", "s"),
+    "chu_de_nguoi_2": ("--chu-de-nguoi-2", "s"),  # định tính: người mã hoá thứ hai ⇒ kappa Cohen
+    # 22/11/2026: định tính — kiểm BẰNG CHỨNG THỦ TỤC của tiêu chí độ tin cậy (credibility · dependability ·
+    # transferability) theo khuôn tools/bang_chung_dinh_tinh.py; kết quả DA_KIEM hoặc THIEU_BANG_CHUNG
+    "bang_chung": (None, "bang_chung"),
     # 16/11/2026 (biến thể khó): đánh giá chi phí–hiệu quả đi kèm thử nghiệm — CHEERS 2022
     "nhom": ("--nhom", "s"),
     "chi_phi": ("--chi-phi", "s"),
@@ -109,7 +137,21 @@ THAM_SO = {
     "phan_tich_nhan_to": ("--phan-tich-nhan-to", "nhan_to"),
     "tang": ("--tang", "ds"),
     "thieu": ("--thieu", "thieu"),
+    # 22/11/2026 (bác sĩ: «việc máy làm được thì làm trọn»): phân tích SAP trước đây «chờ làm tay» — bảng chéo, chuỗi
+    # khâu, KTC hiệu chỉnh quần thể hữu hạn, đáp ứng, đặc tính đo lường, biến thể mô hình thứ tự (spline, phân vị,
+    # tương tác, gộp mức, điểm ảnh hưởng, yếu tố riêng), tỷ số chênh tương xứng một phần, hệ số chặn ngẫu nhiên, Firth,
+    # trọng số hậu phân tầng, trung gian — chạy bằng phan_tich_sap_bo_sung.py (cấu hình JSON kiểm bằng chính mô-đun đó).
+    "loai_bo_sung": ("--loai", "bo_sung"),
+    "cau_hinh": ("--cau-hinh", "cau_hinh"),
+    # Quy tắc BỎ BIẾN THƯA định trước của SAP (vd C1a §5: `co_hen_gio`, `uu_tien_kham` bỏ khỏi mô hình nếu một nhóm
+    # dưới 20 phiếu hợp lệ) — áp TRƯỚC khi gọi run_stats_analysis, chỉ dựa trên phân bố của chính biến; không thành cờ.
+    "bien_thua": (None, "bien_thua"),
+    # Quy tắc GIẢM THAM SỐ khi EPV dưới ngưỡng, theo thứ tự định trước (vd BTM §5: gộp nhóm đối tượng → gộp phòng khám →
+    # bỏ số nhóm thuốc, dừng ngay khi EPV ≥ 10) — áp trước khi gọi run_stats_analysis, chỉ đếm kết cục và số tham số.
+    "quy_tac_epv": (None, "quy_tac_epv"),
 }
+DON_VI_1SD = "1SD"  # đơn vị phơi nhiễm = 1 độ lệch chuẩn trên quần thể phân tích (tính lúc chạy)
+MO_HINH_GOP = ("ngau_nhien", "co_dinh")  # gộp: ước lượng báo làm kết quả (độ nhạy SAP §9 hiệu ứng cố định)
 DAC_THU = ("chan_doan", "du_bao", "gop", "dinh_tinh", "kinh_te")
 NHAN_TO = ("efa_cfa",)
 KHOA_NHAN_TO = ("phan_tich_nhan_to", "tang", "thieu", "loc")
@@ -157,6 +199,11 @@ def doc_dac_ta(d: Path) -> dict:
     return dt
 
 
+#: Khoảng hợp lệ của tham số số nguyên (mặc định 0–200: số bộ gán đa trị). Bootstrap hiệu chỉnh lạc quan (22/11/2026):
+#: SAP thường khai 200–2.000 lần; trần 5.000 giữ thời gian chạy hữu hạn (mỗi lần khớp lại mô hình ở Python và R).
+KHOANG_NGUYEN = {"bootstrap": (0, 5000), "hat_giong": (0, 2**31 - 1)}
+
+
 def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
     def chuoi_an_toan(x) -> bool:
         return isinstance(x, str) and x.strip() != "" and not x.strip().startswith("-") and "\n" not in x
@@ -166,15 +213,39 @@ def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
             return [f"{ten}: cần tên cột hợp lệ"]
         if ten == "outcome_type" and v not in LOAI_KC:
             return [f"outcome_type phải thuộc {LOAI_KC}"]
+        if ten == "mo_hinh" and v not in MO_HINH_GOP:
+            return [f"mo_hinh phải thuộc {MO_HINH_GOP}"]
     elif kieu in ("ds", "ds_rieng"):
         if not isinstance(v, list) or not v or not all(chuoi_an_toan(x) and TEN_RE.match(x) for x in v):
             return [f"{ten}: cần danh sách tên cột hợp lệ (không rỗng)"]
     elif kieu == "so":
+        # 22/11/2026: don_vi_phoi_nhiem «1SD» = hiệu ứng trên mỗi 1 độ lệch chuẩn của phơi nhiễm liên tục (định nghĩa
+        # thay thế SAP §9) — SD tính trên quần thể phân tích lúc chạy, ghi vào kết quả
+        if ten == "don_vi_phoi_nhiem" and v == DON_VI_1SD:
+            return []
         if isinstance(v, bool) or not isinstance(v, (int, float)):
             return [f"{ten}: cần một số"]
     elif kieu == "nguyen":
-        if isinstance(v, bool) or not isinstance(v, int) or not 0 <= v <= 200:
-            return [f"{ten}: cần số nguyên 0–200"]
+        lo, hi = KHOANG_NGUYEN.get(ten, (0, 200))
+        if isinstance(v, bool) or not isinstance(v, int) or not lo <= v <= hi:
+            return [f"{ten}: cần số nguyên {lo}–{hi}"]
+    elif kieu == "kc_hieu_so":
+        import g6_quality_gate as G6Q  # noqa: PLC0415
+
+        ho_tro = [ma for ma, _ in G6Q.KC_HIEU_SO_HO_TRO]
+        if v not in ho_tro:
+            return [f"{ten}: phải thuộc {ho_tro} (phương pháp khác G6 chưa tính — không tự lùi về Wald)"]
+    elif kieu == "bien_co_hiem":
+        import g4_quality_gate as G4Q  # noqa: PLC0415
+
+        tu_chay = [ma for ma, (_ten, co) in G4Q.BIEN_CO_HIEM.items() if co]
+        if v not in tu_chay:
+            return [f"{ten}: phải thuộc {tu_chay} (phương pháp engine tự chạy khi rào EPV chặn)"]
+    elif kieu == "bang_chung":
+        import bang_chung_dinh_tinh as BCD  # noqa: PLC0415
+
+        if v not in BCD.KHUON:
+            return [f"{ten}: phải thuộc {sorted(BCD.KHUON)}"]
     elif kieu == "loai":
         if v not in DAC_THU:
             return [f"{ten}: phải thuộc {DAC_THU}"]
@@ -184,6 +255,22 @@ def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
     elif kieu == "thieu":
         if v not in ("listwise", "pairwise"):
             return [f"{ten}: phải là listwise hoặc pairwise"]
+    elif kieu == "bo_sung":
+        import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+        if v not in PSB.LOAI:
+            return [f"{ten}: phải thuộc {sorted(PSB.LOAI)}"]
+    elif kieu == "cau_hinh":
+        if not isinstance(v, dict) or not v:
+            return [f"{ten}: cần đối tượng JSON không rỗng"]
+    elif kieu == "bien_thua":
+        import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+        return PSB.kiem_bien_thua(v, ten)
+    elif kieu == "quy_tac_epv":
+        import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+        return PSB.kiem_quy_tac_epv(v, ten)
     elif kieu == "bt":
         if not chuoi_an_toan(v):
             return [f"{ten}: cần biểu thức (không bắt đầu bằng «-»)"]
@@ -246,7 +333,19 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         for k, v in ts.items():
             if k in THAM_SO:
                 loi += [f"{pid}: {x}" for x in _kiem_gia_tri(k, THAM_SO[k][1], v)]
-        if ts.get("phan_tich_nhan_to") or ts.get("tang") or ts.get("thieu"):
+        if ts.get("bang_chung") and len(ts) > 1:
+            loi.append(f"{pid}: mục kiểm bằng chứng chỉ khai tham số bang_chung")
+        if ts.get("loai_bo_sung") or ts.get("cau_hinh"):
+            import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+            if not ts.get("loai_bo_sung") or not isinstance(ts.get("cau_hinh"), dict):
+                loi.append(f"{pid}: loai_bo_sung và cau_hinh phải đi cùng nhau")
+            else:
+                loi += [f"{pid}: {x}" for x in PSB.kiem_cau_hinh(ts["loai_bo_sung"], ts["cau_hinh"])]
+            thua = [x for x in ts if x not in ("loai_bo_sung", "cau_hinh", "loc")]
+            if thua:
+                loi.append(f"{pid}: tham số không áp dụng cho phân tích bổ sung: {', '.join(thua)}")
+        elif ts.get("phan_tich_nhan_to") or ts.get("tang") or ts.get("thieu"):
             # giá trị cấu trúc (EFA/CFA): tham số khác không có nghĩa với phan_tich_nhan_to_r.py — báo ngay khi kiểm
             if not ts.get("phan_tich_nhan_to"):
                 loi.append(f"{pid}: tang/thieu chỉ dùng kèm phan_tich_nhan_to")
@@ -265,8 +364,21 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
                                                *PTD.LOAI_TUY_CHON.get(ts["loai_dac_thu"], ()), "loai_dac_thu", "loc")]
             if thua:  # tham số của run_stats_analysis không có nghĩa với phân tích đặc thù — báo ngay khi kiểm
                 loi.append(f"{pid}: tham số không áp dụng cho phân tích {ts['loai_dac_thu']}: {', '.join(thua)}")
+        elif ts.get("bang_chung"):  # kiểm bằng chứng thủ tục định tính — không phải mô hình (kiểm ở trên)
+            pass
         elif not ts.get("outcome") and not ts.get("time") and not ts.get("ty_le"):
             loi.append(f"{pid}: cần outcome, hoặc time+event, hoặc ty_le")
+        if ts.get("bien_thua") and isinstance(ts["bien_thua"], dict):
+            ngoai = [b for b in ts["bien_thua"].get("bien") or [] if b not in (ts.get("covariates") or [])]
+            if ngoai:
+                loi.append(f"{pid}: bien_thua chỉ áp cho hiệp biến của mô hình — không có trong covariates: "
+                           f"{', '.join(ngoai)}")
+        if ts.get("quy_tac_epv") and isinstance(ts["quy_tac_epv"], dict):
+            cov = set(ts.get("covariates") or [])
+            ngoai = [b for bu in ts["quy_tac_epv"].get("buoc") or [] if isinstance(bu, dict)
+                     for b in [*(bu.get("thay") or {}), *(bu.get("bo") or [])] if b not in cov]
+            if ngoai:
+                loi.append(f"{pid}: quy_tac_epv thay/bỏ biến không có trong covariates: {', '.join(ngoai)}")
         if bool(ts.get("time")) != bool(ts.get("event")):
             loi.append(f"{pid}: time và event phải đi cùng nhau")
         if pt.get("vai") == "chinh":
@@ -286,10 +398,17 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         canh_bao += [f"{pid}: cụm neo «{neo}» chỉ nằm trong câu PHỦ ĐỊNH của SAP («{cau}») — SAP có thể đã LOẠI phân "
                      "tích này; thống kê viên xem lại: bỏ mục khỏi đặc tả, hoặc neo vào câu khẳng định"
                      for pid, neo, cau in phu["neo_phu_dinh"]]
+        loi_kc, canh_kc = kiem_kc_hieu_so_sap(ds, sap.read_text(encoding="utf-8"))
+        loi += loi_kc
+        canh_bao += canh_kc
+        loi += kiem_bien_co_hiem_sap(ds, sap.read_text(encoding="utf-8"))
+        loi += kiem_bo_ghep_sap(ds, sap.read_text(encoding="utf-8"))
         qt = quan_the_chinh_sap(sap.read_text(encoding="utf-8"))
         for pt in ds:
             if not qt or not isinstance(pt, dict) or not isinstance(pt.get("tham_so"), dict):
                 continue
+            if pt["tham_so"].get("loai_bo_sung") in _quan_the_rieng():
+                continue  # loại tự khai hai quần thể trong cấu hình (vd so sánh người bị loại với mẫu)
             bien, gia = qt
             if re.search(rf"\b{re.escape(bien)}\b", str(pt["tham_so"].get("loc") or "")):
                 continue
@@ -305,6 +424,112 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
                         f"(ghi nguoi_duyet «<VAI>:<tham chiếu>:<YYYY-MM-DD>:{dau}»)")
     return {"loi": loi, "canh_bao": canh_bao, "dau": dau, "duyet": duyet, "sap_khop": sap_khop, "phan_tich": ds,
             "phu_sap": phu}
+
+
+def kiem_kc_hieu_so_sap(ds: list, sap_text: str) -> tuple[list[str], list[str]]:
+    """(lỗi, cảnh báo) — phương pháp KTC hiệu số nguy cơ của đặc tả ↔ SAP §4 (23/11/2026).
+
+    SAP §4 khai phương pháp G6 chưa tính ⇒ LỖI (chốt đỏ, không tự lùi về Wald). SAP khai Newcombe/Wald ⇒ phân tích
+    CHÍNH và mọi phân tích run_stats_analysis CÙNG kết cục chính phải khai `kc_hieu_so` đúng phương pháp đó — thiếu
+    hoặc khác ⇒ LỖI. SAP không khai mà đặc tả tự chọn ⇒ cảnh báo (lựa chọn của thống kê viên, ghi trong tóm tắt)."""
+    import g6_quality_gate as G6Q  # noqa: PLC0415
+
+    kc = G6Q.phuong_phap_kc_hieu_so_sap(G6Q._sec(sap_text, 4))
+    loi: list[str] = []
+    canh: list[str] = []
+    if kc["chua_ho_tro"]:
+        loi.append(f"SAP §4 khai KTC hiệu số nguy cơ theo {', '.join(kc['chua_ho_tro'])} — G6 chưa tính được phương "
+                   "pháp này (hỗ trợ: newcombe, wald); không tự lùi về Wald")
+    ts_chinh = next((pt.get("tham_so") for pt in ds if isinstance(pt, dict) and pt.get("vai") == "chinh"
+                     and isinstance(pt.get("tham_so"), dict)), None) or {}
+    kc_chinh = ts_chinh.get("outcome")
+    for pt in ds:
+        ts = pt.get("tham_so") if isinstance(pt, dict) else None
+        if not isinstance(ts, dict) or any(ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to",
+                                                                 "bang_chung")):
+            continue
+        cung_kc = pt.get("vai") == "chinh" or (kc_chinh and ts.get("outcome") == kc_chinh)
+        if kc["phuong_phap"] and cung_kc and ts.get("kc_hieu_so") != kc["phuong_phap"]:
+            khai = (f"khai «{ts['kc_hieu_so']}»" if ts.get("kc_hieu_so")
+                    else "không khai kc_hieu_so (engine sẽ tính Wald)")
+            loi.append(f"{pt.get('id')}: SAP §4 khai KTC hiệu số nguy cơ theo «{kc['phuong_phap']}» nhưng đặc tả "
+                       f"{khai} — sửa đặc tả theo SAP")
+        elif not kc["phuong_phap"] and ts.get("kc_hieu_so"):
+            canh.append(f"{pt.get('id')}: SAP §4 không khai phương pháp KTC hiệu số nguy cơ — đặc tả chọn "
+                        f"«{ts['kc_hieu_so']}» (ghi trong tóm tắt; thống kê viên xác nhận lựa chọn)")
+    return loi, canh
+
+
+def kiem_bien_co_hiem_sap(ds: list, sap_text: str) -> list[str]:
+    """Lỗi đặc tả ↔ phương pháp biến cố hiếm SAP §5 (23/11/2026). SAP khai phương pháp engine tự chạy (mo_ta_chinh_xac,
+    firth) ⇒ MỌI phân tích run_stats_analysis có kết cục (`outcome`) phải khai `bien_co_hiem` đúng mã đó (rào EPV có thể
+    chặn bất kỳ phân tích nhị phân nào — nhóm con, tổn hại); Firth kèm `cot_cum` ⇒ LỖI (Firth không có sai số chuẩn
+    theo cụm). Phương pháp engine chưa tự chạy (cờ False trong G4Q.BIEN_CO_HIEM) ⇒ phải có phân tích loai_bo_sung cùng
+    mã. SAP không có dòng biến cố hiếm (SAP cũ) ⇒ không đòi (chốt G4-AUTO-04 lo phần khai)."""
+    import g4_quality_gate as G4Q  # noqa: PLC0415
+
+    bch = G4Q.phuong_phap_bien_co_hiem_sap(G4Q._section_body(sap_text, "§5"))
+    pp = bch["phuong_phap"]
+    if not pp:
+        return [f"SAP §5 có dòng biến cố hiếm nhưng chưa nêu phương pháp nhận ra được: «{bch['dong'][:120]}»"
+                ] if bch["co_dong"] else []
+    if not G4Q.BIEN_CO_HIEM[pp][1]:
+        co_bo_sung = any(isinstance(pt, dict) and (pt.get("tham_so") or {}).get("loai_bo_sung") == pp for pt in ds)
+        return [] if co_bo_sung else [
+            f"SAP §5 khai biến cố hiếm theo «{G4Q.BIEN_CO_HIEM[pp][0]}» — engine chưa tự chạy phương pháp này khi rào "
+            f"EPV chặn: khai phân tích loai_bo_sung «{pp}» (phan_tich_sap_bo_sung) cho kết cục có biến cố hiếm"]
+    loi = []
+    for pt in ds:
+        ts = pt.get("tham_so") if isinstance(pt, dict) else None
+        if not isinstance(ts, dict) or not ts.get("outcome") or any(
+                ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to", "bang_chung")):
+            continue
+        if ts.get("bien_co_hiem") != pp:
+            loi.append(f"{pt.get('id')}: SAP §5 khai biến cố hiếm «{pp}» nhưng đặc tả "
+                       f"{'khai «' + str(ts['bien_co_hiem']) + '»' if ts.get('bien_co_hiem') else 'không khai'}"
+                       " bien_co_hiem — rào EPV chặn thì bảng sẽ trống")
+        elif (pp == "firth_dk") != bool(ts.get("bo_ghep")):
+            # 23/11/2026: phương pháp biến cố hiếm phải cùng kiểu với thiết kế — có điều kiện ⇔ có bộ ghép
+            ly = ("không khai bo_ghep — firth_dk cần mã bộ ghép" if pp == "firth_dk" else
+                  "có bo_ghep (ghép cặp cá thể) — phương pháp KHÔNG điều kiện bỏ qua bộ ghép; SAP thiết kế ghép phải "
+                  "khai firth_dk")
+            loi.append(f"{pt.get('id')}: SAP §5 khai biến cố hiếm «{pp}» nhưng phân tích {ly}")
+        elif pp == "firth" and ts.get("cot_cum"):
+            loi.append(f"{pt.get('id')}: SAP §5 khai Firth cho biến cố hiếm nhưng phân tích có cột cụm "
+                       f"«{ts['cot_cum']}» — hồi quy Firth không có sai số chuẩn theo cụm; SAP thiết kế cụm cần "
+                       "phương pháp khác")
+    return loi
+
+
+def kiem_bo_ghep_sap(ds: list, sap_text: str) -> list[str]:
+    """Lỗi đặc tả ↔ họ «logistic có điều kiện» của SAP §4 (23/11/2026 — bệnh–chứng ghép cặp cá thể).
+
+    SAP §4 khoá họ `logistic_dk` ⇒ phân tích CHÍNH và mọi phân tích run_stats_analysis CÙNG kết cục chính phải khai
+    `bo_ghep` (cột mã bộ ghép) — thiếu thì engine chạy logistic KHÔNG điều kiện, lệch SAP. Đặc tả khai `bo_ghep` mà SAP
+    §4 không khoá họ đó ⇒ LỖI (lượt chạy sẽ ra họ khác SAP)."""
+    import g6_quality_gate as G6Q  # noqa: PLC0415
+
+    co_dk = "logistic_dk" in G6Q._ho_mo_hinh_sap(G6Q._sec(sap_text, 4))
+    ts_chinh = next((pt.get("tham_so") for pt in ds if isinstance(pt, dict) and pt.get("vai") == "chinh"
+                     and isinstance(pt.get("tham_so"), dict)), None) or {}
+    loi = []
+    for pt in ds:
+        ts = pt.get("tham_so") if isinstance(pt, dict) else None
+        if not isinstance(ts, dict) or any(ts.get(k) for k in ("loai_dac_thu", "loai_bo_sung", "phan_tich_nhan_to",
+                                                                 "bang_chung")):
+            continue
+        cung_kc = pt.get("vai") == "chinh" or (ts_chinh.get("outcome") and ts.get("outcome") == ts_chinh["outcome"])
+        if ts.get("bo_ghep") and not ts.get("bien_ghep"):
+            loi.append(f"{pt.get('id')}: khai bo_ghep nhưng thiếu bien_ghep (biến dùng để ghép) — gán đa trị cho dữ "
+                       "liệu ghép cặp phải đưa tình trạng ca/chứng và các biến ghép vào mô hình gán (Seaman & Keogh "
+                       "2015, PMID 26237003)")
+        if co_dk and cung_kc and not ts.get("bo_ghep"):
+            loi.append(f"{pt.get('id')}: SAP §4 khoá hồi quy logistic CÓ ĐIỀU KIỆN theo bộ ghép nhưng đặc tả không "
+                       "khai bo_ghep (cột mã bộ ghép) — engine sẽ chạy logistic không điều kiện, lệch SAP")
+        elif ts.get("bo_ghep") and not co_dk:
+            loi.append(f"{pt.get('id')}: đặc tả khai bo_ghep «{ts['bo_ghep']}» nhưng SAP §4 không khoá hồi quy "
+                       "logistic có điều kiện — lượt chạy sẽ ra họ mô hình khác SAP")
+    return loi
 
 
 # ─────────── Giai đoạn 7 «Phân tích số liệu» (15/11/2026): đặc tả ↔ SAP HAI CHIỀU ───────────
@@ -461,6 +686,12 @@ def kiem_phu_sap(dt: dict, sap_text: str) -> dict:
             "neo_phu_dinh": phu_dinh}
 
 
+def _quan_the_rieng() -> tuple:
+    import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+    return PSB.QUAN_THE_RIENG
+
+
 def gate_cua(pt: dict) -> str:
     return "G6" if pt.get("vai") == "chinh" else f"G6_{pt['id']}"
 
@@ -469,6 +700,11 @@ def doi_so_run_stats(pt: dict) -> list[str]:
     ds: list[str] = []
     for k, v in (pt.get("tham_so") or {}).items():
         co, kieu = THAM_SO[k]
+        if co is None:  # xử lý trước khi chạy (bien_thua) — không thành cờ
+            continue
+        if kieu == "cau_hinh":
+            ds += [co, json.dumps(v, ensure_ascii=False, sort_keys=True)]
+            continue
         if kieu == "ds":
             ds += [co, ",".join(v)]
         elif kieu == "ds_rieng":
@@ -503,8 +739,20 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
                 ra[nhan] = {k: r.get(k) for k in ("variable", "OR_adj", "beta", "PR_adj", "OR", "CI_95", "p") if k in r}
                 break
     if tom.get("ty_le"):
-        ra["ty_le"] = [{k: x.get(k) for k in ("cot", "ty_le", "ci_95", "n", "ci_wilson_hieu_dung") if k in x}
-                       for x in tom["ty_le"]][:6]  # fmt: skip
+        # 22/11/2026: tóm tắt ghi tỷ lệ 0–1 + «CI_95» (cụm) / «CI_95_wilson_doc_lap»; chỉ mục (và
+        # dinh_dang_uoc_luong) dùng PHẦN TRĂM + «ci_95». Bản cũ chép thẳng ⇒ «Tỷ lệ 0,4%» và mất KTC.
+        ds_tl = []
+        for x in tom["ty_le"][:6]:
+            ci = x.get("CI_95") or x.get("CI_95_wilson_doc_lap")
+            mot = {"cot": x.get("cot"), "n": x.get("n")}
+            if x.get("ty_le") is not None:
+                mot["ty_le"] = round(100 * float(x["ty_le"]), 2)
+            if isinstance(ci, (list, tuple)) and len(ci) == 2 and None not in ci:
+                mot["ci_95"] = [round(100 * float(v), 2) for v in ci]
+            if x.get("error"):
+                mot["loi"] = x["error"]
+            ds_tl.append(mot)
+        ra["ty_le"] = ds_tl
     if tom.get("dac_thu"):  # 16/11/2026: phân tích đặc thù — vài ước lượng chính theo loại
         dt_, loai = tom["dac_thu"], tom.get("loai_dac_thu")
         if loai == "chan_doan":
@@ -512,8 +760,16 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
                                "do_nhay": dt_["do_nhay"]["uoc_luong"], "do_dac_hieu": dt_["do_dac_hieu"]["uoc_luong"]}
         elif loai == "du_bao":
             ra["du_bao"] = {"c_statistic": dt_["c_statistic"]["auc"], "brier": dt_["brier"]}
+            bt = dt_.get("bootstrap") or {}
+            if bt:  # 22/11/2026 (việc B): chỉ số hiệu chỉnh lạc quan (Python) + bản R chạy thật
+                ra["du_bao"]["bootstrap"] = {k: bt.get(k) for k in ("B_hop_le", "c_hieu_chinh", "do_doc_hieu_chinh",
+                                                                    "citl_hieu_chinh", "r", "kiem_cheo_r")}
         elif loai == "gop":
-            ra["gop"] = {"rr": dt_["rr_gop_ngau_nhien"], "ci_95": dt_["ci_95"], "i2": dt_["i2_pct"], "k": dt_["k"]}
+            # 22/11/2026: mục đặc tả mo_hinh «co_dinh» báo ước lượng nghịch đảo phương sai (độ nhạy SAP §9)
+            co_dinh = (tom.get("dac_ta_phan_tich") or {}).get("mo_hinh") == "co_dinh"
+            ra["gop"] = {"rr": dt_["rr_gop_co_dinh" if co_dinh else "rr_gop_ngau_nhien"],
+                         "ci_95": dt_["ci_95_co_dinh" if co_dinh else "ci_95"], "i2": dt_["i2_pct"], "k": dt_["k"],
+                         "mo_hinh": "co_dinh" if co_dinh else "ngau_nhien"}
             eg, pn = dt_.get("egger") or {}, dt_.get("phan_nhom") or {}
             if eg.get("da_chay"):
                 ra["gop"]["egger_p"] = eg["p"]
@@ -525,6 +781,9 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
                              "goc_phan_tu": dt_["goc_phan_tu"], "nmb_tai_wtp": dt_["nmb_tai_wtp"]}
         else:
             ra["dinh_tinh"] = {"so_chu_de": dt_["so_chu_de"], "n": dt_["n_ban_go_bang"]}
+            if dt_.get("dong_thuan_hai_nguoi"):  # 22/11/2026: kappa hai người mã hoá (SAP §9 confirmability)
+                dth = dt_["dong_thuan_hai_nguoi"]
+                ra["dinh_tinh"] |= {"kappa": dth["kappa"], "n_cap": dth["n_cap"], "ty_le_trung": dth["ty_le_trung"]}
     if tom.get("nhan_to"):  # 21/11/2026: giá trị cấu trúc — số nhân tố gợi ý (nửa 1) + chỉ số phù hợp scaled (nửa 2)
         nt = tom["nhan_to"]
         efa, cfa = nt.get("efa") or {}, nt.get("cfa") or {}
@@ -534,6 +793,10 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
                          **{k.replace(".", "_"): cs.get(k) for k in ("cfi.scaled", "tli.scaled", "rmsea.scaled",
                                                                      "srmr")},
                          "phan_loai": nt.get("phan_loai_theo_nguong_dinh_truoc")}
+    if tom.get("bo_sung") is not None:  # 22/11/2026: phân tích bổ sung — khoá chính đọc nhanh; bảng đủ ở tóm tắt
+        bs = tom["bo_sung"]
+        ra["bo_sung"] = {"loai": tom.get("loai_bo_sung"),
+                         "khoa": sorted(k for k in bs if k not in ("canh_bao", "phien_ban_goi", "phien_ban_r"))[:12]}
     sv = tom.get("survival") or {}
     if (sv.get("adjusted") or {}).get("HR") is not None:
         ra["hr_hieu_chinh"] = {k: sv["adjusted"].get(k) for k in ("HR", "CI_95", "p")}
@@ -624,6 +887,58 @@ def lenh_duyet(args) -> int:
     return 0 if sau == "DA_DUYET" else 1
 
 
+def ap_bien_thua_dac_ta(study: str, pt: dict) -> tuple[dict, dict]:
+    """Áp quy tắc bỏ biến thưa (tham_so.bien_thua) lên MỘT mục đặc tả: đếm phân bố của từng biến trên ĐÚNG quần thể
+    phân tích (dữ liệu khoá + biến phái sinh + `loc`), biến có một nhóm dưới ngưỡng bị bỏ khỏi covariates và
+    hiep_bien_phan_loai. Trả (mục đã sửa — bản sao, không đụng đặc tả trên đĩa; bảng quyết định)."""
+    import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+    ts = dict(pt["tham_so"])
+    bt = ts.pop("bien_thua")
+    df, _csv, _man = PSB.doc_df(study, list(bt["bien"]), ts.get("loc"))
+    kq = PSB.quy_tac_bien_thua(df, bt["bien"], int(bt["toi_thieu"]))
+    ts = PSB.ap_bien_thua(ts, kq, "covariates", "hiep_bien_phan_loai")
+    if not ts.get("hiep_bien_phan_loai"):
+        ts.pop("hiep_bien_phan_loai", None)
+    return dict(pt, tham_so=ts), kq
+
+
+def ap_quy_tac_epv_dac_ta(study: str, pt: dict) -> tuple[dict, dict]:
+    """Áp quy tắc giảm tham số theo EPV (tham_so.quy_tac_epv) lên MỘT mục: EPV đếm trên ĐÚNG quần thể phân tích.
+    Trả (mục đã sửa — bản sao; nhật ký từng bước)."""
+    import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+    ts = dict(pt["tham_so"])
+    q = ts.pop("quy_tac_epv")
+    moi = [m for b in q["buoc"] for m in (b.get("thay") or {}).values()]
+    can = [ts["outcome"], ts["group"], *(ts.get("covariates") or []), *moi]
+    df, _csv, _man = PSB.doc_df(study, can, ts.get("loc"))
+    ts, nk = PSB.quy_tac_epv(df, ts, q)
+    return dict(pt, tham_so=ts), nk
+
+
+def ap_don_vi_1sd(study: str, pt: dict) -> tuple[dict, dict]:
+    """don_vi_phoi_nhiem «1SD» ⇒ số: độ lệch chuẩn (ddof = 1) của phơi nhiễm trên ĐÚNG tập ca của mô hình (quần thể
+    phân tích sau lọc, đủ kết cục · phơi nhiễm · hiệp biến) — cùng tập ca run_stats_analysis dùng. Trả (mục đã sửa —
+    bản sao; nhật ký)."""
+    import pandas as pd  # noqa: PLC0415
+    import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+    ts = dict(pt["tham_so"])
+    can = [c for c in (ts.get("outcome"), ts.get("group"), ts.get("time"), ts.get("event"),
+                       *(ts.get("covariates") or [])) if c]
+    df, _csv, _man = PSB.doc_df(study, can, ts.get("loc"))
+    x = pd.to_numeric(df[ts["group"]], errors="coerce")
+    o = df[can].notna().all(axis=1) & x.notna()
+    sd = float(x[o].std(ddof=1)) if int(o.sum()) > 1 else float("nan")
+    if not sd > 0:
+        raise TuChoi(f"không tính được độ lệch chuẩn của {ts['group']} (n = {int(o.sum())})")
+    nk = {"bien": ts["group"], "sd": sd, "n": int(o.sum()),
+          "cach_tinh": "độ lệch chuẩn mẫu (ddof = 1) trên tập ca đủ biến của mô hình"}
+    ts["don_vi_phoi_nhiem"] = sd  # run_stats_analysis + cầu nối R/SPSS chia phơi nhiễm cho 1 SD ở mọi họ mô hình
+    return dict(pt, tham_so=ts), nk
+
+
 def lenh_chay(args) -> int:
     d = thu_muc(args.study)
     dt = doc_dac_ta(d)
@@ -654,9 +969,56 @@ def lenh_chay(args) -> int:
             continue
         gate = gate_cua(pt)
         ts_pt = pt.get("tham_so") or {}
+        if ts_pt.get("bang_chung"):  # định tính: kiểm bằng chứng thủ tục — không phải phép tính, không kiểm chéo
+            import bang_chung_dinh_tinh as BCD  # noqa: PLC0415
+
+            bc = BCD.kiem(d, args.study, ts_pt["bang_chung"])
+            tt = "DA_KIEM" if bc["trang_thai"] == BCD.DA_KIEM else "THIEU_BANG_CHUNG"
+            ket.append(muc | {"gate": gate, "trang_thai": tt, "uoc_luong": bc,
+                              "ly_do": "; ".join(bc["thieu"]) or None})
+            print(f"{'✓' if tt == 'DA_KIEM' else '✗'} {pt['id']}: {bc['nhan']} — {'; '.join(bc['thieu']) or 'đủ'}")
+            continue
+        if ts_pt.get("quy_tac_epv"):  # giảm tham số theo thứ tự định trước — chỉ đếm kết cục và cấu trúc biến
+            try:
+                pt, qe = ap_quy_tac_epv_dac_ta(args.study, pt)
+            except Exception as e:  # noqa: BLE001
+                muc |= {"gate": gate, "trang_thai": "LOI", "ly_do": f"quy tắc EPV: {e}"[:500]}
+                ket.append(muc)
+                ma = 1
+                print(f"   ✗ lỗi quy tắc EPV — {e}")
+                continue
+            muc["quy_tac_epv"] = qe
+            ts_pt = pt.get("tham_so") or {}
+            print(f"   quy tắc EPV: áp tới bước {qe['buoc_ap']} · EPV cuối {qe['epv_cuoi']:.2f}")
+        if ts_pt.get("don_vi_phoi_nhiem") == DON_VI_1SD:  # định nghĩa thay thế: phơi nhiễm liên tục, mỗi 1 SD
+            try:
+                pt, sd1 = ap_don_vi_1sd(args.study, pt)
+            except Exception as e:  # noqa: BLE001
+                muc |= {"gate": gate, "trang_thai": "LOI", "ly_do": f"đơn vị 1 SD: {e}"[:500]}
+                ket.append(muc)
+                ma = 1
+                print(f"   ✗ lỗi đơn vị 1 SD — {e}")
+                continue
+            muc["don_vi_1sd"] = sd1
+            ts_pt = pt.get("tham_so") or {}
+            print(f"   đơn vị phơi nhiễm: 1 SD của {sd1['bien']} = {sd1['sd']:.4g} (n = {sd1['n']})")
+        if ts_pt.get("bien_thua"):  # quy tắc bỏ biến thưa định trước — phân bố của chính biến, trước khi xem kết cục
+            try:
+                pt, bt = ap_bien_thua_dac_ta(args.study, pt)
+            except Exception as e:  # noqa: BLE001
+                muc |= {"gate": gate, "trang_thai": "LOI", "ly_do": f"quy tắc biến thưa: {e}"[:500]}
+                ket.append(muc)
+                ma = 1
+                print(f"   ✗ lỗi quy tắc biến thưa — {e}")
+                continue
+            muc["bien_thua"] = bt
+            print(f"   quy tắc biến thưa: bỏ {bt['bo'] or 'không biến nào'} (ngưỡng {bt['toi_thieu']})")
         if ts_pt.get("phan_tich_nhan_to"):  # R psych/lavaan — tự đọc bộ khoá bằng cùng hàm của cổng; không kiểm chéo
             lenh = [sys.executable, str(TOOLS / "phan_tich_nhan_to_r.py"), "chay", "--study", args.study,
                     "--gate", gate, *doi_so_run_stats(pt)]  # fmt: skip
+        elif ts_pt.get("loai_bo_sung"):  # phân tích SAP bổ sung — tự đọc bộ khoá bằng cùng hàm của cổng
+            lenh = [sys.executable, str(TOOLS / "phan_tich_sap_bo_sung.py"), "--study", args.study, "--gate", gate,
+                    *doi_so_run_stats(pt)]  # fmt: skip
         else:
             cong_cu = "phan_tich_thiet_ke_dac_thu.py" if (pt.get("tham_so") or {}).get("loai_dac_thu") else \
                 "run_stats_analysis.py"
@@ -695,7 +1057,9 @@ def lenh_chay(args) -> int:
                          "sha256": sha256_tep(csv_khoa)},  # fmt: skip
         "kiem_cheo": bool(args.kiem_cheo),
         "phan_tich": ket,
-        "dem": {t: sum(1 for x in ket if x["trang_thai"] == t) for t in ("DA_CHAY", "LOI", "CHUA_TU_DONG")},
+        # trạng thái kiểm bằng chứng định tính (DA_KIEM · THIEU_BANG_CHUNG) chỉ ghi khi có — giữ khuôn đếm cũ
+        "dem": {t: n for t in ("DA_CHAY", "LOI", "CHUA_TU_DONG", "DA_KIEM", "THIEU_BANG_CHUNG")
+                if (n := sum(1 for x in ket if x["trang_thai"] == t)) or t in ("DA_CHAY", "LOI", "CHUA_TU_DONG")},
         "canh_bao": (["ĐỀ TÀI GIẢ LẬP — đặc tả chưa duyệt"] if k["duyet"] != "DA_DUYET" else []),
         "disclaimer": CAN_KIEM,
     }
@@ -720,7 +1084,9 @@ def lenh_chay(args) -> int:
                                newline="\n")
     dm = chi_muc["dem"]
     print(f"\n══ SAP G6 — {args.study}: {dm['DA_CHAY']} đã chạy · {dm['LOI']} lỗi · "
-          f"{dm['CHUA_TU_DONG']} chờ làm tay ══")
+          f"{dm['CHUA_TU_DONG']} chờ làm tay"
+          + (f" · bằng chứng thủ tục: {dm.get('DA_KIEM', 0)} đủ, {dm.get('THIEU_BANG_CHUNG', 0)} thiếu"
+             if dm.get("DA_KIEM") or dm.get("THIEU_BANG_CHUNG") else "") + " ══")
     print(f"✓ {d / TEP_KQ_MD}\n{CAN_KIEM}")
     return ma
 

@@ -41,13 +41,17 @@ BIEN_DA_CHUYEN = "EBM_DA_CHUYEN_VENV"
 
 # Thư viện NGOÀI (không thuộc thư viện chuẩn) mà chuỗi cổng nhập — bắc cầu qua tools/, app/, runtime/, kể cả import
 # muộn trong hàm. Test tests/test_moi_truong_venv_20261118.py đo lại cây import và ĐỎ khi thiếu tên ở đây.
+# 22/11/2026: pypdf vào cây qua K20 (tam_nguyen_tac_de_cuong → kiem_so_lieu_toan_van, đọc toàn văn PDF).
+# 23/11/2026: pptx vào cây qua gói bảo vệ đề cương (goi_bao_ve_hoi_dong xuất tệp trình chiếu .pptx thật; python-pptx đã
+# có trong requirements.txt và requirements.lock.txt).
 THU_VIEN_CHUOI_CONG = (
     "cryptography", "defusedxml", "docx", "dotenv", "fontTools", "lifelines", "matplotlib", "numpy", "openpyxl",
-    "pandas", "PIL", "requests", "scipy", "statsmodels",
+    "pandas", "PIL", "pptx", "pypdf", "requests", "scipy", "statsmodels",
 )
 
 # Tên gói pip khác tên import — chỉ để in lệnh cài cho dễ hiểu.
-_GOI_PIP = {"docx": "python-docx", "dotenv": "python-dotenv", "fontTools": "fonttools", "PIL": "pillow"}
+_GOI_PIP = {"docx": "python-docx", "dotenv": "python-dotenv", "fontTools": "fonttools", "PIL": "pillow",
+            "pptx": "python-pptx"}
 
 # Script ĐIỂM VÀO của chuỗi cổng phải gọi dam_bao_moi_truong (test kiểm dây nối theo cây cú pháp).
 DIEM_VAO_CHUOI_CONG = tuple(

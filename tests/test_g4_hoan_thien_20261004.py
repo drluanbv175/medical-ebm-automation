@@ -432,7 +432,11 @@ def test_g4_06_ni_ky_chieu_ket_cuc():
                       g3={"outcome_direction": "higher_better", "p0": 0.8})
     p = G4Q.parse_signed_numbers(text)
     assert p["outcome_direction"] == "higher_better" and p["effect_val"] == 0.85
-    assert "so cận khoảng tin cậy với biên Δ = 0.1" in G4Q._section_body(text, "§4")
+    # 22/11/2026 (CONSORT mở rộng NI mục 12a): nêu khoảng tin cậy hai phía tương ứng α một phía của G3
+    body = G4Q._section_body(text, "§4")
+    m = re.search(r"so cận khoảng tin cậy hai phía (\d+)% \(tương ứng kiểm định một phía α = ([\d.]+)\) với biên "
+                  r"Δ = 0\.1", body)
+    assert m and int(m.group(1)) == round(100 * (1 - 2 * float(m.group(2))))
     g3 = _g3_checkpoint(hypothesis_type="non_inferiority", margin=0.1, effect_type="NI_PROPORTION", effect_val=0.85,
                         outcome_direction="lower_better", p0=0.8)
     row = _row(_evaluate(artifact_text=text, g3_checkpoint=g3), "G4-AUTO-03")

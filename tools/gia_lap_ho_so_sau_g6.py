@@ -35,10 +35,20 @@ def _dong(ket_cuc: str, thuoc_do: str, lay: str, gate: str, y_nghia: str) -> Dic
     return {"ket_cuc": ket_cuc, "thuoc_do": thuoc_do, "lay": lay, "gate": gate, "y_nghia": y_nghia}
 
 
+#: Ô «ai thực hiện can thiệp» của RCT tin nhắn gốc — người gửi tin tách khỏi người đo huyết áp (khớp «cách làm mù»
+#: đã chốt ở G10: «tách riêng người gửi tin nhắn và người đo huyết áp»); tuân thủ theo G1 intervention_dose_adherence
+AI_THUC_HIEN_SMS = ("Điều dưỡng phụ trách chương trình tin nhắn (không tham gia đo huyết áp) cài lịch gửi tự động mỗi "
+                    "ngày, kiểm nhật ký gửi tin hằng tuần và gửi lại tin bị lỗi; tuân thủ đo bằng tỷ lệ tin nhắn gửi "
+                    "thành công, tổng hợp hằng tháng")
+
+
 def _tra_loi_g7(*, ket_qua: str, ket_luan: str, ket_cuc_phu: str, du_lieu_thieu: str, giai_thich: str,
-                diem_manh: str, so_sanh: str, mesh: str) -> List[Tuple[str, str]]:
-    """Ô bản thảo G7 tác giả trả lời — CÙNG bộ mẫu ô như hồ sơ thuần tập; {muc_N} là lời văn bản diễn giải G6.5."""
-    return [
+                diem_manh: str, so_sanh: str, mesh: str, ai_thuc_hien: str = "") -> List[Tuple[str, str]]:
+    """Ô bản thảo G7 tác giả trả lời — CÙNG bộ mẫu ô như hồ sơ thuần tập; {muc_N} là lời văn bản diễn giải G6.5.
+
+    `ai_thuc_hien` (23/11/2026): ô §3 «ai thực hiện can thiệp, kiểm soát chất lượng/tuân thủ» — chỉ thiết kế có can
+    thiệp (RCT) có ô này; trước đây ô rơi vào quy tắc chung khớp đuôi nhãn bị cắt và bị điền «6»."""
+    return [*([(r"ai thuc hien can thiep", ai_thuc_hien)] if ai_thuc_hien else []),
         (r"khong dien truoc khi phan tich", ket_qua),
         (r"^conclusions?$|2.3 cau tom tat", ket_luan),
         (r"khong chua ket cuc phu", ket_cuc_phu),
@@ -134,6 +144,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             giai_thich=("Cơ chế giả định là tin nhắn giảm quên liều, tăng tuân thủ dùng thuốc hạ áp; nghiên cứu này "
                         "không đo tuân thủ khách quan"),
             diem_manh="Ngẫu nhiên hoá và kiểm chéo độc lập bằng SPSS và R, khớp với engine phân tích chính",
+            ai_thuc_hien=AI_THUC_HIEN_SMS,
             so_sanh=("Đối chiếu chi tiết ở đoạn so sánh với phân tích gộp Thakkar 2016 (PMID 26831740); tác giả "
                      + _KC_TRUNG),
             mesh="Hypertension; Text Messaging; Medication Adherence; Randomized Controlled Trial",
@@ -184,6 +195,16 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                                   "nhánh, do PI quyết định và ghi biên bản (SPIRIT 24c)"),
             ppi_plan=("Hai người bệnh tăng huyết áp góp ý nội dung và tần suất tin nhắn trước khi tuyển; kết quả gửi "
                       "người tham gia bằng tờ tóm tắt (SPIRIT 11)"),
+            # 22/11/2026 (SPIRIT 2025 mục 31): kế hoạch thông báo sửa đổi quan trọng của đề cương
+            protocol_amendment_plan=("Mọi sửa đổi quan trọng của đề cương (tiêu chuẩn chọn, kết cục, cỡ mẫu, phân "
+                                     "tích) được trình Hội đồng Đạo đức chấp thuận trước khi áp dụng, cập nhật trên "
+                                     "ClinicalTrials.gov, thông báo cho nhóm nghiên cứu và ghi vào nhật ký sửa đổi kèm "
+                                     "ngày và lý do"),
+            # 22/11/2026 (chiều, CONSORT 2025 mục 20b): cách làm mù — khớp G1 «người đo huyết áp và thống kê viên được
+            # làm mù; người tham gia không làm mù được» và thủ tục mở mù ở trên
+            blinding_how=("Tách riêng người gửi tin nhắn và người đo huyết áp; phiếu đo không ghi nhánh; thống kê viên "
+                          "nhận dữ liệu với mã nhánh che (A/B) đến khi khoá phân tích; tin nhắn và chăm sóc thường quy "
+                          "không thể làm giống nhau nên người tham gia biết nhánh (SPIRIT 24b)"),
         ),
     )
 
@@ -223,8 +244,10 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                      "áp: tỷ lệ {ty_le}% (KTC 95% {ty_le_duoi}–{ty_le_tren}%)."),
             ket_luan=("Khoảng một nửa người tăng huyết áp điều trị ngoại trú đạt kiểm soát huyết áp; cần rà soát điều "
                       "trị cho nhóm chưa đạt đích."),
-            ket_cuc_phu=("Kết cục phụ (yếu tố liên quan kiểm soát huyết áp) chưa phân tích ở đợt này — báo cáo riêng "
-                         "theo SAP §2"),
+            # 22/11/2026 (chiều): kết cục phụ ĐÃ CHỐT ở G1 là «Đặc điểm điều trị hạ áp hiện tại» (biến số thuốc hạ áp,
+            # có ở Bảng 1) — bản cũ ghi «yếu tố liên quan … chưa phân tích», mâu thuẫn mục tiêu mô tả duy nhất
+            ket_cuc_phu=("Đặc điểm điều trị hạ áp hiện tại (số thuốc hạ áp đang dùng) được mô tả ở Bảng 1 theo SAP "
+                         "§3"),
             du_lieu_thieu="Không có dữ liệu thiếu ở biến kết cục nên không gán đa trị (khớp SAP §6)",
             giai_thich="Không áp dụng — nghiên cứu mô tả, không đánh giá cơ chế",
             diem_manh="Kết quả được kiểm chéo độc lập bằng SPSS và R, khớp với engine phân tích chính",
@@ -235,7 +258,6 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                "chéo SPSS/R khớp. Còn vài điểm trình bày theo STROBE."),
         gop_y=[
             ("Từ khoá (trang đầu)", "Dòng từ khoá do máy tách từng chữ của tiêu đề — thay bằng thuật ngữ MeSH"),
-            ("Tiêu đề", "Tiêu đề nhắc «các yếu tố liên quan» nhưng SAP chỉ có mục tiêu mô tả — sửa tiêu đề cho khớp"),
             ("Phương pháp — đo huyết áp", "Ghi rõ số lần đo, tư thế và thiết bị (STROBE mục 8)"),
         ],
         cau_hoi=["Người tham gia được chọn liên tiếp hay ngẫu nhiên trong danh sách khám?",
@@ -327,8 +349,9 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                    "mục 6b (tiêu chí bắt cặp nhóm chứng), mục 12d (xử lý bắt cặp trong phân tích)"),
         dac_ta=_dac_ta_g10(
             bias_risks="Sai lệch nhớ lại về phơi nhiễm; nhiễu do chỉ định; chọn nhóm chứng không đại diện",
-            bias_controls=("Phơi nhiễm lấy từ hồ sơ kê đơn; hiệu chỉnh chống đông và tiền sử loét theo DAG; độ nhạy "
-                           "loại người dùng chống đông"),
+            bias_controls=("Phơi nhiễm lấy từ hồ sơ kê đơn; chứng ghép theo tần suất (giới, nhóm tuổi) và phân tích "
+                           "bằng hồi quy logistic không điều kiện hiệu chỉnh chống đông, tiền sử loét cùng các biến "
+                           "ghép; độ nhạy loại người dùng chống đông"),
             timeline=("15 tháng: chuẩn bị và đạo đức 3 tháng; thu thập 6 tháng; phân tích 2 tháng; viết và công bố "
                       "4 tháng"),
             literature_review=("Masclee 2014 (PMID 24937265) ghi nhận NSAID tăng nguy cơ xuất huyết tiêu hoá trên; "
@@ -423,6 +446,22 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             pilot="Thử quy trình lấy mẫu và đo chuẩn tham chiếu trên 5 người ngoài mẫu",
             safety_plan="Chỉ lấy máu xét nghiệm thường quy; không có can thiệp do nghiên cứu",
             limitations="Cỡ mẫu nhỏ; một cơ sở; chưa đánh giá ngưỡng 1,3",
+            # 22/11/2026 (chiều, STARD 2015 mục 3, 11, 12a, 12b, 21a): PI khai vai trò dự kiến của FIB-4, lý do chọn
+            # chuẩn tham chiếu và ngưỡng, biến đo mức độ bệnh — khớp G1 (bệnh đích F3–F4, đo đàn hồi ≥ 10 kPa) và SAP
+            # (ngưỡng 1,3 và 2,67 định trước); nguồn ngưỡng 2,67 là bài gốc Shah 2009 đã tra ở hồ sơ G6.5
+            index_test_role=("Xét nghiệm phân loại ban đầu tại phòng khám ngoại trú, trước khi chỉ định đo độ đàn hồi "
+                             "gan cho người có nguy cơ xơ hoá tiến triển"),
+            reference_standard_rationale=("Đo độ đàn hồi gan thoáng qua được chọn làm chuẩn tham chiếu vì làm được "
+                                          "cho mọi người tham gia ngoại trú trong cùng lần khám, người đọc độc lập "
+                                          "với kết quả FIB-4"),
+            index_threshold_rationale=("Ngưỡng 2,67 (ngưỡng chính) và 1,3 (ngưỡng phụ) định trước trong SAP, dựa trên "
+                                       "y văn gốc của Shah 2009 (PMID 19523535); không chọn ngưỡng theo dữ liệu"),
+            reference_threshold_rationale=("Ngưỡng 10 kPa của đo đàn hồi gan được dùng vì tương ứng xơ hoá tiến triển "
+                                           "F3–F4, bệnh đích đã chốt ở đề cương"),
+            disease_severity_variable="lsm_kpa",
+            # 22/11/2026 (STARD 2015 mục 21b): biến ghi chẩn đoán ở người không có bệnh đích (phiếu thu thập, nhánh
+            # «xơ hoá tiến triển = Không») — G6 mô tả ở Bảng 1 theo chuẩn tham chiếu, bộ sinh G7 chép từ đó
+            alternative_diagnosis_variable="chan_doan_khac",
         ),
     )
 
@@ -434,32 +473,36 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
         thiet_ke="Phát triển mô hình dự báo, thuần tập",
         bang=[
             _dong("Nhập viện trong 12 tháng", "C-statistic (trong mẫu)", "c_statistic", "G6",
-                  "Phân biệt mức vừa; chưa hiệu chỉnh lạc quan"),
+                  "Phân biệt mức vừa; giá trị sau hiệu chỉnh lạc quan ở mục 2"),
             _dong(_GIOI.format(gioi="nữ"), "C-statistic", "c_statistic", "G6_NC_nu", "Thăm dò"),
             _dong(_GIOI.format(gioi="nam"), "C-statistic", "c_statistic", "G6_NC_nam", "Thăm dò"),
         ],
         muc=(
             ("Mô hình bốn yếu tố dự báo có C-statistic trong mẫu {c_statistic} (KTC 95% {c_statistic_duoi}–"
-             "{c_statistic_tren}) và Brier {brier}, với {epv} biến cố trên mỗi yếu tố dự báo. Không kiểm định giả "
-             "thuyết; ý nghĩa lâm sàng nằm ở khả năng phân biệt mức vừa — đủ để phân tầng nguy cơ sơ bộ, chưa đủ để "
-             "quyết định cá nhân khi chưa kiểm định ngoài."),
+             "{c_statistic_tren}) và Brier {brier}, với {epv} biến cố trên mỗi yếu tố dự báo. Sau hiệu chỉnh lạc quan "
+             "bằng bootstrap {boot_b} lần (khớp lại mô hình trên từng mẫu), C-statistic là {c_hieu_chinh}, độ dốc hiệu "
+             "chuẩn {do_doc_hieu_chinh} và calibration-in-the-large {citl_hieu_chinh}; {boot_doi_chieu_r}. Không kiểm "
+             "định giả thuyết; ý nghĩa lâm sàng nằm ở khả năng phân biệt mức vừa — đủ để phân tầng nguy cơ sơ bộ, chưa "
+             "đủ để quyết định cá nhân khi chưa kiểm định ngoài."),
             ("C-statistic tương đương mức trung bình của các mô hình dự báo nhập viện vì suy tim trong tổng quan 117 "
-             "mô hình của Ouwerkerk và cộng sự (2014): C-statistic trung bình 0,68 (PMID 25194294). Giá trị của đề "
-             "tài là ước lượng trong mẫu, chưa hiệu chỉnh lạc quan; tác giả " + _KC_TRUNG + "."),
+             "mô hình của Ouwerkerk và cộng sự (2014): C-statistic trung bình 0,68 (PMID 25194294). Giá trị đem so "
+             "là C-statistic sau hiệu chỉnh lạc quan {c_hieu_chinh}; tác giả " + _KC_TRUNG + "."),
             ("Điểm mạnh: yếu tố dự báo chọn theo y văn trước khi xem dữ liệu, số biến cố trên mỗi yếu tố đủ lớn, cỡ "
-             "mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: C-statistic trong mẫu (bootstrap hiệu chỉnh lạc quan chạy "
-             "trong kịch bản R, chưa báo ở đây), chưa kiểm định ngoài, một cơ sở, và chưa có biểu đồ hiệu chuẩn trong "
-             "bản này."),
+             "mẫu {n} người, kiểm chéo SPSS–R khớp, hiệu chỉnh lạc quan bằng bootstrap {boot_b} lần. Hạn chế: mới "
+             "kiểm định nội bộ, chưa kiểm định ngoài, một cơ sở, và chưa có biểu đồ hiệu chuẩn trong bản này."),
             ("Hàm ý cho thực hành: chưa dùng mô hình cho quyết định cá nhân trước khi kiểm định ngoài; có thể dùng để "
              "thử phân tầng theo dõi. Hướng tiếp: kiểm định ngoài ở cơ sở khác, báo hiệu chuẩn và lợi ích ròng "
              "(decision curve)."),
         ),
         tra_loi_g7=_tra_loi_g7(
             ket_qua=("Trong {n} người suy tim, mô hình gồm tuổi, LVEF, NT-proBNP và eGFR có C-statistic trong mẫu "
-                     "{c_statistic} (KTC 95% {c_statistic_duoi}–{c_statistic_tren}) và Brier {brier}."),
+                     "{c_statistic} (KTC 95% {c_statistic_duoi}–{c_statistic_tren}) và Brier {brier}; sau hiệu chỉnh "
+                     "lạc quan bằng bootstrap {boot_b} lần, C-statistic {c_hieu_chinh}, độ dốc hiệu chuẩn "
+                     "{do_doc_hieu_chinh}, calibration-in-the-large {citl_hieu_chinh}."),
             ket_luan=("Mô hình bốn yếu tố dự báo nhập viện 12 tháng ở người suy tim ngoại trú có khả năng phân biệt "
                       "mức vừa; cần kiểm định ngoài trước khi dùng."),
-            ket_cuc_phu="Hiệu chuẩn và hiệu chỉnh lạc quan báo riêng theo SAP §9 (kịch bản R đã sinh)",
+            ket_cuc_phu=("Hiệu chuẩn sau hiệu chỉnh lạc quan bằng bootstrap {boot_b} lần (SAP §9): độ dốc hiệu chuẩn "
+                         "{do_doc_hieu_chinh}, calibration-in-the-large {citl_hieu_chinh}"),
             du_lieu_thieu=("Không có dữ liệu thiếu ở các yếu tố dự báo nên không gán đa trị (khớp SAP §6)"),
             giai_thich="Không áp dụng — mô hình dự báo, không ước lượng hiệu ứng nhân quả",
             diem_manh="Yếu tố dự báo định trước theo y văn; kiểm chéo độc lập bằng SPSS và R",
@@ -467,16 +510,16 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             mesh="Heart Failure; Hospitalization; Risk Assessment; Models, Statistical",
         ),
         ly_do=("Yếu tố dự báo định trước, EPV đủ; C-statistic {c_statistic} (KTC 95% {c_statistic_duoi}–"
-               "{c_statistic_tren}) kiểm chéo SPSS/R khớp. Cần báo hiệu chuẩn và hiệu chỉnh lạc quan theo TRIPOD."),
+               "{c_statistic_tren}) kiểm chéo SPSS/R khớp; sau hiệu chỉnh lạc quan bằng bootstrap {c_hieu_chinh}. Cần "
+               "thêm biểu đồ hiệu chuẩn theo TRIPOD."),
         gop_y=[
             ("Từ khoá (trang đầu)", "Dòng từ khoá do máy tách từng chữ của tiêu đề — thay bằng thuật ngữ MeSH"),
             ("Kết quả — hiệu chuẩn", "Thêm biểu đồ hiệu chuẩn và độ dốc hiệu chuẩn (TRIPOD+AI mục 23)"),
-            ("Kết quả — lạc quan", "Báo C-statistic sau hiệu chỉnh lạc quan bằng bootstrap (SAP §9)"),
         ],
         cau_hoi=["Mô hình đầy đủ (phương trình hệ số) có được công bố để người khác kiểm định ngoài không?",
                  "Người tử vong trước 12 tháng được xử lý thế nào (biến cố cạnh tranh)?"],
-        checklist=("TRIPOD+AI", "24/27 mục (89%)",
-                   "mục 23 (hiệu chuẩn), mục 12 (hiệu chỉnh lạc quan), mục 27 (truy cập mô hình)"),
+        # 22/11/2026: hiệu chỉnh lạc quan (bootstrap) nay báo ở mục diễn giải và Kết quả ⇒ không còn trong mục thiếu
+        checklist=("TRIPOD+AI", "25/27 mục (93%)", "mục 23 (hiệu chuẩn), mục 27 (truy cập mô hình)"),
         dac_ta=_dac_ta_g10(
             bias_risks="Quá khớp; chọn yếu tố dự báo theo dữ liệu; biến cố cạnh tranh (tử vong)",
             bias_controls=("Yếu tố dự báo định trước theo y văn; EPV ≥ 10; bootstrap hiệu chỉnh lạc quan; báo cáo "
@@ -494,6 +537,36 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             pilot="Thử phiếu thu thập trên 10 hồ sơ ngoài mẫu",
             safety_plan="Không có can thiệp; sự cố bảo mật dữ liệu báo cáo theo quy trình đơn vị",
             limitations="Chưa kiểm định ngoài; một cơ sở; C-statistic trong mẫu",
+            # 22/11/2026 (chiều, TRIPOD+AI 3b, 3c, 6c, 8c, 15, 19, 27a, 27b): PI khai mục đích sử dụng, bất bình đẳng,
+            # cách xử lý điều trị, che giấu khi xác định kết cục, đầu ra/ngưỡng, sự tham gia của người bệnh và cách áp
+            # dụng — khớp G1 (yếu tố đo thường quy, khung 12 tháng) và hàm ý «chưa dùng cho quyết định cá nhân»
+            model_intended_use=("Hỗ trợ bác sĩ phòng khám suy tim phân tầng nguy cơ nhập viện 12 tháng tại lần khám "
+                                "định kỳ để sắp lịch tái khám; người dùng dự kiến là bác sĩ và điều dưỡng phòng khám"),
+            health_inequalities=("Chưa có dữ liệu trong nước về khác biệt nguy cơ nhập viện vì suy tim giữa các nhóm "
+                                 "dân số; khác biệt theo giới được đánh giá bằng phân tích nhóm nhỏ tiền định"),
+            model_treatment_handling=("Người tham gia điều trị suy tim theo hướng dẫn tại phòng khám; điều trị không "
+                                      "đưa vào mô hình làm yếu tố dự báo vì mô hình dự báo nguy cơ dưới chăm sóc "
+                                      "thường quy"),
+            outcome_assessment_blinding=("Người xác định nhập viện đối chiếu giấy ra viện mà không biết giá trị yếu tố "
+                                         "dự báo của người tham gia"),
+            model_output_threshold=("Mô hình cho xác suất nhập viện trong 12 tháng của từng người; không đặt ngưỡng "
+                                    "phân loại vì mục đích là phân tầng theo dõi, chưa dùng cho quyết định cá nhân"),
+            ppi_plan=("Không có sự tham gia của người bệnh hoặc công chúng trong thiết kế và thực hiện nghiên cứu; kết "
+                      "quả được phổ biến tới người bệnh qua phòng khám"),
+            model_input_handling=("Chưa áp dụng mô hình khi thiếu một trong bốn giá trị tuổi, LVEF, NT-proBNP, eGFR "
+                                  "của lần khám gần nhất; không gán giá trị thay thế khi sử dụng mô hình"),
+            model_user_interaction=("Người dùng nhập bốn giá trị có sẵn trong hồ sơ khám; không cần kỹ năng thống kê, "
+                                    "chỉ cần đọc đúng đơn vị của NT-proBNP và eGFR"),
+            # 22/11/2026 (TRIPOD+AI 14, 27c): cách tiếp cận công bằng của mô hình (khớp phân nhóm giới tiền định của
+            # SAP và G6 — C-statistic riêng theo giới) và bước nghiên cứu tiếp theo (khớp hạn chế «chưa kiểm định
+            # ngoài»)
+            model_fairness_approach=("Hiệu năng phân biệt của mô hình (C-statistic) được ước lượng riêng ở nam và nữ — "
+                                     "phân nhóm tiền định — để phát hiện khác biệt hiệu năng giữa hai giới, vì khác "
+                                     "biệt theo giới là bất bình đẳng sức khoẻ đã nêu; không đánh giá theo thu nhập "
+                                     "hay vùng vì phiếu không thu thập các biến này"),
+            model_next_steps=("Kiểm định bên ngoài mô hình trên người suy tim ngoại trú ở cơ sở khác và hiệu chuẩn lại "
+                              "trước khi dùng cho quyết định cá nhân; sau đó đánh giá tác động lâm sàng khi dùng mô "
+                              "hình để sắp lịch tái khám"),
         ),
     )
 
@@ -574,6 +647,21 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             pilot="Thử chiến lược tìm và phiếu trích trên 3 thử nghiệm đã biết",
             safety_plan="Không có người tham gia — tổng quan dữ liệu đã công bố",
             limitations="Ít thử nghiệm lớn chi phối; chưa đánh giá sai lệch công bố; chưa phân nhóm theo thuốc",
+            # 22/11/2026 (chiều, PRISMA 2020 mục 7, 11 và tóm tắt A5): PI khai câu lệnh tìm đầy đủ và cách đánh giá
+            # nguy cơ sai lệch — khớp G1 (MeSH + từ khoá, bộ lọc RCT Cochrane; hai người sàng lọc độc lập) và biến
+            # «RoB 2 — đánh giá chung» của bảng trích xuất
+            search_strings_full=('PubMed: ("Sodium-Glucose Transporter 2 Inhibitors"[MeSH] OR gliflozin*[tiab] OR '
+                                 'empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab] OR '
+                                 'ertugliflozin[tiab]) AND ("Diabetes Mellitus, Type 2"[MeSH] OR "type 2 '
+                                 'diabetes"[tiab]) AND (randomized controlled trial[pt] OR randomi*[tiab]); bộ lọc RCT '
+                                 'Cochrane, không giới hạn ngôn ngữ; câu lệnh tương ứng cho Embase, Cochrane CENTRAL, '
+                                 'ClinicalTrials.gov và WHO ICTRP'),
+            rob_assessment_process=("RoB 2 cho từng thử nghiệm; hai người đánh giá độc lập, bất đồng do người thứ ba "
+                                    "quyết định"),
+            # 22/11/2026 (PRISMA-P 2015 mục 4): kế hoạch ghi nhận sửa đổi quan trọng của đề cương
+            protocol_amendment_plan=("Mọi sửa đổi quan trọng của đề cương (tiêu chuẩn chọn, kết cục, phương pháp tổng "
+                                     "hợp) được cập nhật trên PROSPERO trước khi áp dụng, ghi vào nhật ký sửa đổi kèm "
+                                     "ngày và lý do, và báo cáo trong bài tổng quan"),
         ),
     )
 
@@ -658,4 +746,10 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                                    "nhân viên y tế lên câu trả lời"),
         ),
     )
+    # 22/11/2026 (chiều, PRISMA 2020 for Abstracts A9): tóm tắt tổng quan có ô «Limitations» — tác giả viết hạn chế
+    # chính của BẰNG CHỨNG (ít thử nghiệm lớn chi phối — như bản diễn giải; định nghĩa kết cục theo từng thử nghiệm —
+    # như G1; chưa phân nhóm theo thuốc — như hạn chế đã khai ở đặc tả)
+    hs["tong_quan_gop"]["tra_loi_G7"] = [*hs["tong_quan_gop"]["tra_loi_G7"], (
+        r"^limitations$", "Ít thử nghiệm lớn chi phối kết quả gộp; định nghĩa nhập viện vì suy tim theo từng thử "
+                          "nghiệm, không thống nhất; chưa phân nhóm theo thuốc.")]
     return hs

@@ -238,14 +238,13 @@ def test_g4_generate_chung_chi_khoa_dong_bo_voi_par_2():
     ("sr_ma", {}), ("cross_sectional", {"mo_ta_ty_le": True}),
 ])
 def test_g6_moi_khuon_danh_dau_dung_mot_dong_mo_hinh_chinh(thiet_ke, v_them):
-    import gia_lap_tron_vong as TV
     import run_g6_auto as G6
 
     v = {"exposure": "phoi", "outcome": "kc", "covariates": ["tuoi"], "time_col": "t", **v_them}
     r03 = G6.R_ANALYSIS_MAP_FUNC(thiet_ke, v, 400, 0.05, 0.8, 1.5, "OR")
     dong = [d for d in r03.splitlines() if "◆ MÔ HÌNH CHÍNH (SAP §4)" in d]
     assert len(dong) == 1 and dong[0].startswith("# "), dong
-    bat = TV.TronVong.DONG_MO_HINH_CHINH.sub(r"\1", r03)  # vai thống kê viên bật đúng dòng có dấu
+    bat = G6.bat_dong_thi_hanh(r03)  # 22/11/2026: bộ sinh tự viết dòng thi hành (không còn thống kê viên bật tay)
     assert any("◆ MÔ HÌNH CHÍNH" in d and not d.startswith("#") for d in bat.splitlines())
 
 
@@ -313,6 +312,7 @@ def _bo_doc(tmp_path, tom: dict):
         _uoc_luong = TV.TronVong._uoc_luong
         _gia_tri_ket_qua = TV.TronVong._gia_tri_ket_qua
         _gia_tri_kinh_te = TV.TronVong._gia_tri_kinh_te  # 16/11/2026: _gia_tri_ket_qua gộp khoá lời văn kinh tế
+        _gia_tri_bootstrap = TV.TronVong._gia_tri_bootstrap  # 22/11/2026: khoá lời văn hiệu chỉnh lạc quan (dự báo)
         # 22/11/2026: _gia_tri_ket_qua gộp câu cân đối lợi ích–tác hại (đọc tóm tắt G6 tổn hại nếu có)
         _TON_HAI_RCT = TV.TronVong._TON_HAI_RCT
         _ton_hai_g6 = TV.TronVong._ton_hai_g6
@@ -349,12 +349,24 @@ def test_moi_cho_giu_trong_ho_so_sau_g6_deu_co_gia_tri(tmp_path):
     import string
 
     import gia_lap_ho_so_sau_g6 as HS
+    import gia_lap_kich_ban_them as K
+    import phan_tich_thiet_ke_dac_thu as P
 
     tom = _tom_tat_theo_thiet_ke()
+    sap = K.sap_g6_tron_vong()
     for ma, hs in HS.ho_so_sau_g6().items():
         d = tmp_path / ma
         d.mkdir()
-        gt = _bo_doc(d, tom[ma])._gia_tri_ket_qua()
+        o = _bo_doc(d, tom[ma])
+        # 22/11/2026: phân tích bootstrap (dự báo, SAP §9) có tóm tắt riêng — dựng đúng như kịch bản thật: đặc tả G6
+        # của kịch bản + tóm tắt engine đặc thù chạy bootstrap
+        o.kb = {"ho_so_tron_vong": {"g6": (sap.get(ma) or {}).get("g6") or []}}
+        for pt in o.kb["ho_so_tron_vong"]["g6"]:
+            if (pt.get("tham_so") or {}).get("bootstrap"):
+                hang = [{"y": int(i % 3 == 0 or i > 25), "t": float(i), "u": float((i * 7) % 11)} for i in range(40)]
+                (d / f"G6_{pt['id']}_analysis_summary.json").write_text(json.dumps(
+                    {"dac_thu": P.du_bao(hang, "y", ["t", "u"], 20)}), encoding="utf-8", newline="\n")
+        gt = o._gia_tri_ket_qua()
         dg = hs["dien_giai"]
         gt.update({f"muc_{i}": dg[f"muc_{i}"].format(**gt) for i in range(2, 6)})
         van = ([dg[f"muc_{i}"] for i in range(2, 6)] + [hs["phan_bien_G8"]["ly_do"]]

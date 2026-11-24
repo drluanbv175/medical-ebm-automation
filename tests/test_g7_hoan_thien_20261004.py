@@ -322,7 +322,11 @@ def test_g7_11_dem_checklist_tu_chinh_phu_luc(ban_hoan_thien):
     _study, out, _goc, _text = ban_hoan_thien
     cp = json.loads((out / "G7_checkpoint.json").read_text(encoding="utf-8"))
     _ten, tong, muc = G7A._checklist_cho_thiet_ke("cohort")
-    _khoi, tu_dien, so_dong = G7A._render_checklist_block(muc, "STROBE 2007", tong)
+    # 22/11/2026: số «tự điền» = số dòng ☑ của khối chính phụ lục — K18 chấm trên CHÍNH bản thảo đã ghi
+    van = (out / f"G7_A8_MANUSCRIPT_{_study}.md").read_text(encoding="utf-8")
+    khoi_chinh = van.split("## PHỤ LỤC — CHECKLIST", 1)[1].split("**Tổng kết:**", 1)[0]
+    tu_dien = sum(1 for d in khoi_chinh.splitlines() if d.startswith("| ") and f"| {G7A.DAU_DAT_K18} |" in d)
+    so_dong = len(muc)
     ck = cp["checklist"]
     assert (ck["items_auto"], ck["items_total"], ck["items_needed"]) == (tu_dien, so_dong, so_dong - tu_dien), \
         "số trên checkpoint phải là số của CHÍNH phụ lục (bản cũ: heuristic từ khoá + số mục chính thức)"

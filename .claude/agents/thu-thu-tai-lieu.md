@@ -160,6 +160,14 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/gom_toan_van_oa.py` (chủ) — gom toàn văn PMC Open Access cho nền y văn đề tài; chốt kiểm `tools/toan_van_trich_dan.py`; nguyên tắc: bằng chứng · trung thực–minh bạch.
+- Công cụ `tools/g0_quality_gate.py` (dùng phụ) — bộ chấm cổng G0 đo đầu ra nhiệm vụ G0-T2 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g0`); nguyên tắc: đạt chuẩn định trước · câu hỏi giá trị.
+- Công cụ `tools/toan_van_trich_dan.py dinh-danh` (dùng phụ) — lập sổ định danh PMID/PMCID/DOI cho danh mục TLTK mới dựng và báo mục lệch siêu dữ liệu với Crossref/PubMed; chốt kiểm `tests/test_so_dinh_danh_tltk_20261122.py`; nguyên tắc: tái lập.
+- Công cụ `tools/danh_muc_trich_dan.py` (dùng phụ) — dựng mục TLTK đúng yếu tố NLM theo loại tài liệu (K13); chốt kiểm `tests/test_tltk_nlm_20261122.py`; nguyên tắc: khoa học.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

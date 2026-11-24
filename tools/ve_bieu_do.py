@@ -16,6 +16,8 @@ Bảy họ công cụ (mỗi lệnh ghi PNG 300 dpi + PDF vector + JSON số li�
 Lệnh:
   python3 tools/ve_bieu_do.py danh-muc [--thiet-ke rct] [--json]
       bảng hình BẮT BUỘC / KHUYẾN NGHỊ / KHI PHÙ HỢP cho thiết kế, chuẩn báo cáo và lệnh chạy đúng.
+  python3 tools/ve_bieu_do.py mau-so-do-luong --thiet-ke <tk> --ra exports/<mã>/SO_DO_LUONG_<mã>.csv [--hoi-cuu]
+      mẫu sơ đồ luồng (cột n trống); --hoi-cuu: hồ sơ có sẵn, không có bước mời/từ chối (G6 tự chọn theo study_meta).
   python3 tools/ve_bieu_do.py kiem --thu-muc exports/<mã>/bieu-bang --thiet-ke cross_sectional [--json]
       đọc JSON số liệu cạnh từng hình: hình bắt buộc nào còn thiếu, PNG có đủ 300 dpi, có PDF vector, có đúng
       ngôn ngữ tài liệu. Mã 0 = đủ hình bắt buộc và đạt chuẩn tệp · 1 = thiếu/không đạt · 3 = tham số sai.
@@ -27,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -197,16 +200,61 @@ MAU_SO_DO_LUONG: Dict[str, List[Tuple[str, str, str, str]]] = {
 
 MAU_SO_DO_LUONG["dta_ma"] = MAU_SO_DO_LUONG["sr_ma"]   # PRISMA-DTA dùng cùng các hộp PRISMA 2020
 
+# 22/11/2026 — đề tài HỒI CỨU trên hồ sơ có sẵn (miễn đồng thuận, không mời ai): khung mẫu → sàng lọc theo tiêu chuẩn
+# lựa chọn → loại theo tiêu chuẩn loại trừ → mẫu phân tích (STROBE 13a–b, RECORD 13.1). Trước đó G6 tự tạo mẫu tiến cứu
+# có ô «Từ chối tham gia» cho cả đề tài hồi cứu (BTM) — ô không bao giờ có số thật. Thiết kế không thể hồi cứu (RCT,
+# tổng quan, định tính) giữ mẫu chung.
+# Ô loại có sẵn chỗ ghi lý do: STROBE 13b đòi lý do ở từng giai đoạn; RECORD 13.1 đòi nêu việc lọc theo chất lượng và
+# độ sẵn có của dữ liệu (hồ sơ thiếu dữ liệu, trùng lặp) — đề tài có tiêu chuẩn cụ thể thì dựng sổ riêng.
+_LY_DO_LUA_CHON = "Không đạt tiêu chuẩn lựa chọn: ; Hồ sơ thiếu dữ liệu để xét tiêu chuẩn: "
+_LY_DO_LOAI_TRU = "Có tiêu chí loại trừ của đề tài: ; Hồ sơ trùng lặp: "
+_TRUC_HC = [("Hồ sơ trong khung chọn mẫu", "chinh", "", ""),
+            ("Không đủ tiêu chuẩn lựa chọn", "loai", "", _LY_DO_LUA_CHON),
+            ("Hồ sơ đủ tiêu chuẩn lựa chọn", "chinh", "", ""),
+            ("Thuộc tiêu chuẩn loại trừ", "loai", "", _LY_DO_LOAI_TRU),
+            ("Đưa vào phân tích", "chinh", "", "")]
+MAU_SO_DO_LUONG_HOI_CUU: Dict[str, List[Tuple[str, str, str, str]]] = {
+    "cross_sectional": _TRUC_HC, "cohort": _TRUC_HC, "survival": _TRUC_HC,
+    "case_control": [x for nh in ("Ca bệnh", "Chứng") for x in (
+        (f"Hồ sơ {nh.lower()} trong khung chọn mẫu", "chinh", nh, ""),
+        ("Không đủ tiêu chuẩn lựa chọn", "loai", nh, _LY_DO_LUA_CHON),
+        ("Hồ sơ đủ tiêu chuẩn lựa chọn", "chinh", nh, ""),
+        ("Thuộc tiêu chuẩn loại trừ", "loai", nh, _LY_DO_LOAI_TRU),
+        ("Đưa vào phân tích", "chinh", nh, ""))],
+    "diagnostic": _TRUC_HC[:4] + [
+        ("Hồ sơ có kết quả xét nghiệm chỉ điểm", "chinh", "", ""),
+        ("Không có tiêu chuẩn tham chiếu / kết quả không xác định", "loai", "", "Không làm tiêu chuẩn tham chiếu: ; "
+         "Kết quả không xác định: "),
+        ("Đưa vào phân tích", "chinh", "", "")],
+    "prediction": MAU_SO_DO_LUONG["prediction"],
+}
+_HOI_CUU_RE = re.compile(r"có sẵn|hồi cứu", re.I)
 
-def mau_so_do_luong(tk: str) -> List[Dict[str, str]]:
-    """Các hộp sơ đồ luồng chuẩn của thiết kế, cột n TRỐNG (điền số thật từ sổ sàng lọc)."""
+
+def la_hoi_cuu(meta: Dict[str, Any]) -> bool:
+    """Đề tài khai thác hồ sơ CÓ SẴN, không mời người tham gia — MỘT quy tắc cho cả khung đề cương lẫn mẫu sơ đồ G6.
+    G2 khai miễn đồng thuận (`icf_waiver_requested` true) ⇒ hồi cứu; khai false (có lấy đồng ý ⇒ có mời) ⇒ không, dù
+    có khai thác thêm nguồn có sẵn (C1a: phiếu tự điền + mốc thời gian chờ trên HIS); chưa khai ⇒ theo cách thu thập G1
+    («có sẵn», «hồi cứu»)."""
+    gp = (meta or {}).get("gate_params") or {}
+    mien = (gp.get("G2") or {}).get("icf_waiver_requested")
+    if mien is True or mien is False:
+        return mien
+    cach = str((gp.get("G1") or {}).get("data_collection_method") or (meta or {}).get("data_collection_method") or "")
+    return bool(_HOI_CUU_RE.search(cach))
+
+
+def mau_so_do_luong(tk: str, hoi_cuu: bool = False) -> List[Dict[str, str]]:
+    """Các hộp sơ đồ luồng chuẩn của thiết kế, cột n TRỐNG (điền số thật từ sổ sàng lọc). `hoi_cuu` ⇒ khuôn hồ sơ có
+    sẵn (không mời, không từ chối) khi thiết kế có khuôn đó."""
     t = _thiet_ke(tk)
     if t not in MAU_SO_DO_LUONG:
         raise SystemExit(f"thiết kế «{tk}» chưa có mẫu sơ đồ luồng")
-    return [{"buoc": b, "n": "", "loai": lo, "nhanh": nh, "ly_do": ly} for b, lo, nh, ly in MAU_SO_DO_LUONG[t]]
+    hop = MAU_SO_DO_LUONG_HOI_CUU[t] if hoi_cuu and t in MAU_SO_DO_LUONG_HOI_CUU else MAU_SO_DO_LUONG[t]
+    return [{"buoc": b, "n": "", "loai": lo, "nhanh": nh, "ly_do": ly} for b, lo, nh, ly in hop]
 
 
-def ghi_mau_so_do_luong(tk: str, dich: Path) -> Path:
+def ghi_mau_so_do_luong(tk: str, dich: Path, hoi_cuu: bool = False) -> Path:
     """Ghi mẫu CSV — KHÔNG ghi đè tệp đã có (có thể đang chứa số thật)."""
     if Path(dich).exists():
         raise SystemExit(f"{dich} đã có — không ghi đè (có thể đang chứa số thật)")
@@ -216,7 +264,7 @@ def ghi_mau_so_do_luong(tk: str, dich: Path) -> Path:
     b = io.StringIO()
     w = csv.DictWriter(b, fieldnames=["buoc", "n", "loai", "nhanh", "ly_do"], lineterminator="\n")
     w.writeheader()
-    w.writerows(mau_so_do_luong(tk))
+    w.writerows(mau_so_do_luong(tk, hoi_cuu))
     Path(dich).parent.mkdir(parents=True, exist_ok=True)
     tam = Path(str(dich) + ".tam")
     tam.write_text(b.getvalue(), encoding="utf-8", newline="\n")
@@ -278,6 +326,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--thu-muc", type=Path)
     ap.add_argument("--ra", type=Path,
                     help="mau-so-do-luong: tệp CSV ghi mẫu (thường exports/<mã>/SO_DO_LUONG_<mã>.csv)")
+    ap.add_argument("--hoi-cuu", action="store_true",
+                    help="mau-so-do-luong: khuôn hồ sơ có sẵn — khung mẫu → tiêu chuẩn lựa chọn → loại trừ → phân tích")
     ap.add_argument("--ngon-ngu", default="vi")
     ap.add_argument("--json", action="store_true")
     try:
@@ -303,7 +353,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             if not (a.thiet_ke and a.ra):
                 print("❌ mau-so-do-luong cần --thiet-ke và --ra")
                 return 3
-            p = ghi_mau_so_do_luong(a.thiet_ke, a.ra)
+            p = ghi_mau_so_do_luong(a.thiet_ke, a.ra, a.hoi_cuu)
             print(f"✅ mẫu sơ đồ luồng {_thiet_ke(a.thiet_ke)} → {p}\n   Điền cột n bằng số THẬT từ sổ sàng lọc; G6 "
                   "tự vẽ, tự kiểm số học và đối chiếu n phân tích. Cần bác sĩ kiểm chứng.")
             return 0

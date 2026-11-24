@@ -37,6 +37,15 @@ script R CHẠY trên chuỗi khoá (nạp 00_setup.R) phải tới được dò
 hoặc qua tệp nó `source(` và hàm nó thực sự gọi; chú thích (kể cả chú thích CUỐI DÒNG), hàm không ai gọi, tệp không ai
 nạp đều không tính ⇒ CHẶN. Phân tích TĨNH: không xét luồng điều khiển (`if (FALSE) …` vẫn tính là chạy).
 
+THÊM 23/11/2026 (G6-AUTO-09 phần LƯỢT CHẠY, G7 phát hiện hai lệch G6↔SAP): đối chiếu phương pháp SAP §4 với lượt chạy
+THẬT của phân tích chính (`G6_analysis_summary.json`), không chỉ với script — gộp vào G6-AUTO-09 để phân công trách
+nhiệm cổng giữ một chủ: (1) họ mô hình đã chạy phải thuộc họ SAP khoá — «logistic
+có điều kiện» nay là họ riêng (`logistic_dk`), SAP khai nó mà engine chạy logistic không điều kiện ⇒ CHẶN (engine
+chạy hồi quy có điều kiện khi đặc tả khai `bo_ghep` — từ 23/11/2026 chiều; không tự lùi); (2) SAP khai phương
+pháp KTC hiệu số nguy cơ (Newcombe/Wald) ⇒ tóm tắt phải ghi đúng phương pháp đó (`risk_diff_ci_method`); SAP
+khai phương pháp G6 chưa tính (Miettinen–Nurminen, Agresti–Caffo, Newcombe có hiệu chỉnh liên tục…) ⇒ CHẶN, không
+tự lùi về Wald.
+
 Dùng:  python3 tools/g6_quality_gate.py --study <mã>     (tự chạy cuối run_g6_auto)
 """
 from __future__ import annotations
@@ -57,7 +66,8 @@ for _s in (sys.stdout, sys.stderr):
 
 HERE = Path(__file__).resolve().parent
 EXPORTS = HERE.parent / "exports"
-VERSION = "1.3.0"  # 14/11/2026: G6-AUTO-11 — SAP §4 gọi postStratify( ⇒ script phải chạy svydesign( + postStratify(
+VERSION = "1.4.0"  # 23/11/2026: G6-AUTO-09 thêm phần lượt chạy — phương pháp SAP §4 ↔ tóm tắt G6 đã chạy
+# 1.3.0 (14/11/2026): G6-AUTO-11 — SAP §4 gọi postStratify( ⇒ script phải chạy svydesign( + postStratify(
 
 # Test nạp module này bằng spec_from_file_location (không qua sys.path) — tự thêm thư mục tools/ để
 # import được hợp đồng ô trống dùng chung.
@@ -218,6 +228,9 @@ _HO_SAP = (
     ("ordinal", ("proportional odds", "thu bac", "logistic thu tu", "polr", "clmm", "ordinal")),
     ("cox", ("cox", "hazard", "log-rank", "log rank", "thoi gian den bien co", "time-to-event", "kaplan")),
     ("poisson", ("poisson", "log-binomial", "log binomial", "nguy co tuong doi", "relative risk")),
+    # 23/11/2026 (G7 phát hiện G6 lệch SAP bệnh–chứng): logistic CÓ ĐIỀU KIỆN theo bộ ghép là họ RIÊNG — bản cũ gộp nó
+    # vào «logistic» nên SAP «Conditional logistic regression» + script/engine chạy logistic không điều kiện vẫn PASS.
+    ("logistic_dk", ("logistic co dieu kien", "conditional logistic", "clogit", "conditionallogit")),
     ("logistic", ("logistic", "binomial", "odds ratio", "ty so chenh")),
     ("risk_diff", ("hieu nguy co", "risk difference", "hieu ty le", "newcombe")),
     ("linear", ("tuyen tinh", "linear", "ancova", "t-test", "t test", "chenh lech trung binh", "mean difference",
@@ -232,7 +245,8 @@ _HO_SCRIPT = (
     ("cox", re.compile(r"\bcoxph\s*\(|coxphfitter|\bsurv\s*\(", re.I)),
     ("ordinal", re.compile(r"\bpolr\s*\(|\bclmm?\s*\(|\borm\s*\(", re.I)),
     ("poisson", re.compile(r"family\s*=\s*poisson|\bpoisson\s*\(\s*link", re.I)),
-    ("logistic", re.compile(r"family\s*=\s*binomial|\bbinomial\s*\(|\blogit\s*\(|\blrm\s*\(|\bclogit\s*\(", re.I)),
+    ("logistic_dk", re.compile(r"\bclogit\s*\(|\bConditionalLogit\s*\(", re.I)),
+    ("logistic", re.compile(r"family\s*=\s*binomial|\bbinomial\s*\(|\blogit\s*\(|\blrm\s*\(", re.I)),
     ("risk_diff", re.compile(r"\bprop\.test\s*\(|binomdiffci|\bhieu_nguy_co\b", re.I)),
     ("linear", re.compile(r"\blm\s*\(|\bt\.test\s*\(|\bols\s*\(", re.I)),
     ("meta", re.compile(r"\bmetagen\s*\(|\bmetabin\s*\(|\brma\s*\(", re.I)),
@@ -517,13 +531,194 @@ def _nhom_con_trong_script(noi_dung: str) -> list[tuple[str, bool]]:
     return ra
 
 
+def _bo_dau_d(s: str) -> str:
+    """_bo_dau + «đ» → «d» (NFD không tách «đ»; cùng cách run_g6_auto chuẩn hoá) — để từ khoá «có điều kiện» khớp."""
+    return _bo_dau(s).replace("đ", "d")
+
+
 def _ho_mo_hinh_sap(sap4: str) -> set[str]:
     bd = _bo_dau(sap4)
-    ho = {ten for ten, tu in _HO_SAP if any(t in bd for t in tu)}
+    # 23/11/2026: họ logistic_dk dò trên bản «đ» → «d» (từ khoá «có điều kiện»); các họ khác GIỮ cách dò cũ — chuẩn
+    # hoá «đ» cho mọi họ sẽ kích hoạt từ khoá trùng nghĩa («độ nhạy» của phân tích độ nhạy ⇒ ROC, «biến định tính» ⇒
+    # định tính) và đổi hành vi G6-AUTO-09 ngoài phạm vi vá này.
+    bd_d = bd.replace("đ", "d")
+    ho = {ten for ten, tu in _HO_SAP if any(t in (bd_d if ten == "logistic_dk" else bd) for t in tu)}
     # «logistic thứ tự»/«proportional odds» là họ THỨ BẬC — không để chữ «logistic» trong đó cho qua logistic nhị phân.
     if "ordinal" in ho and not re.search(r"logistic\s+(?:nhi\s+phan|binary)|binomial", bd):
         ho.discard("logistic")
+    # «logistic có điều kiện» KHÔNG cho qua logistic không điều kiện — trừ khi SAP khai tường minh cả bản không điều
+    # kiện (vd độ nhạy) (23/11/2026).
+    if "logistic_dk" in ho and not re.search(r"logistic\s+khong\s+dieu\s+kien|unconditional\s+logistic", bd_d):
+        ho.discard("logistic")
     return ho
+
+
+# ── G6-AUTO-09 phần LƯỢT CHẠY (23/11/2026): phương pháp SAP §4 ↔ phương pháp ĐÃ CHẠY (G6_analysis_summary.json) ──
+# G6-AUTO-09 chỉ đọc SCRIPT; lượt chạy thật của engine (chay_sap_g6 → run_stats_analysis) có thể khác script. Hai lệch
+# G7 phát hiện: bệnh–chứng SAP «logistic có điều kiện» mà engine chạy logistic không điều kiện; thử nghiệm không kém hơn
+# SAP «KTC Newcombe» mà engine tính KTC Wald, không ghi tên phương pháp.
+_DONG_HIEU_SO = re.compile(r"risk\s+difference|hieu\s+(?:so\s+)?nguy\s+co|hieu\s+(?:so\s+)?ty\s+le")
+#: (mã, mẫu trên văn bản đã bỏ dấu) — phương pháp KTC hiệu số nguy cơ G6 TÍNH ĐƯỢC (khớp run_stats_analysis.KC_HIEU_SO)
+KC_HIEU_SO_HO_TRO = (
+    ("newcombe", re.compile(r"newcombe(?![^.;\n]{0,40}(?:hieu\s+chinh\s+lien\s+tuc|continuity|\bcc\b))")),
+    ("wald", re.compile(r"\bwald\b")),
+)
+#: phương pháp KTC hiệu số nguy cơ có tên trong y văn mà G6 CHƯA tính — SAP khai ⇒ chốt đỏ, không tự lùi về Wald
+KC_HIEU_SO_CHUA_HO_TRO = (
+    ("newcombe có hiệu chỉnh liên tục", re.compile(
+        r"newcombe[^.;\n]{0,40}(?:hieu\s+chinh\s+lien\s+tuc|continuity|\bcc\b)")),
+    ("Agresti–Caffo", re.compile(r"agresti")),
+    ("Miettinen–Nurminen", re.compile(r"miettinen|nurminen")),
+    ("Farrington–Manning", re.compile(r"farrington")),
+    ("Mee", re.compile(r"\bmee\b")),
+    ("Hauck–Anderson", re.compile(r"hauck")),
+    ("Brown–Li–Jeffreys", re.compile(r"brown[\s–-]+li|jeffreys")),
+    ("chính xác (exact/Santner–Snell/Chan–Zhang)", re.compile(r"\bexact\b|santner|chan[\s–-]+zhang")),
+    ("bootstrap", re.compile(r"bootstrap")),
+)
+
+
+def phuong_phap_kc_hieu_so_sap(sap4: str) -> dict:
+    """Phương pháp KTC hiệu số nguy cơ SAP §4 khai — chỉ đọc DÒNG nói về hiệu số nguy cơ/hiệu tỷ lệ.
+
+    Trả {"phuong_phap": mã hỗ trợ đầu tiên hoặc None, "chua_ho_tro": [tên…], "dong": [dòng nguồn…]}.
+    Dùng CHUNG cho chay_sap_g6 (từ chối chạy đặc tả lệch SAP) và G6-AUTO-09 (đối chiếu tóm tắt đã chạy)."""
+    dong = [d for d in (sap4 or "").splitlines() if _DONG_HIEU_SO.search(_bo_dau_d(d))]
+    ho_tro, chua = [], []
+    for d in dong:
+        bd = _bo_dau_d(d)
+        for ten, mau in KC_HIEU_SO_CHUA_HO_TRO:
+            if mau.search(bd) and ten not in chua:
+                chua.append(ten)
+        vi_tri = sorted((m.start(), ma) for ma, mau in KC_HIEU_SO_HO_TRO for m in [mau.search(bd)] if m)
+        ho_tro += [ma for _, ma in vi_tri if ma not in ho_tro]
+    return {"phuong_phap": ho_tro[0] if ho_tro else None, "chua_ho_tro": chua, "dong": [d.strip() for d in dong]}
+
+
+_HO_DAC_THU = {"chan_doan": {"roc"}, "gop": {"meta"}, "dinh_tinh": {"qualitative"}, "du_bao": {"logistic"}}
+
+
+def ho_mo_hinh_tom_tat(tom: dict) -> set[str]:
+    """Họ mô hình engine ĐÃ CHẠY theo tóm tắt G6 (khối có ước lượng, không tính khối lỗi). Rỗng = không nhận ra."""
+    ho: set[str] = set()
+    if not isinstance(tom, dict):
+        return ho
+    mv = tom.get("multivariate")
+    if isinstance(mv, dict) and mv.get("model") and not mv.get("error"):
+        m = str(mv["model"]).lower()
+        if m.startswith("logistic_dk") or "conditional" in m or "clogit" in m:
+            ho.add("logistic_dk")
+        elif m.startswith("logistic"):
+            ho.add("logistic")
+        elif m.startswith("linear"):
+            ho.add("linear")
+    for khoa, ten in (("poisson_pr", "poisson"), ("ordinal", "ordinal")):
+        k = tom.get(khoa)
+        if isinstance(k, dict) and k.get("model") and not k.get("error"):
+            ho.add(ten)
+    sv = tom.get("survival")
+    if isinstance(sv, dict) and sv and not sv.get("error"):
+        ho.add("cox")
+    if isinstance(tom.get("ty_le"), list) and tom["ty_le"]:
+        ho.add("proportion")
+    po = tom.get("primary_outcome")
+    if isinstance(po, dict) and not po.get("error"):
+        if po.get("risk_diff") is not None:
+            ho.add("risk_diff")
+        if po.get("outcome_type") == "continuous" and po.get("md_crude") is not None:
+            ho.add("linear")
+    ho |= _HO_DAC_THU.get(str(tom.get("loai_dac_thu") or ""), set())
+    return ho
+
+
+def _doi_chieu_luot_chay_vao_auto09(ket: list[dict], thu_muc: Path, sap: str, trang_thai: str) -> str:
+    """Ghép kết quả đối chiếu SAP §4 ↔ lượt chạy thật vào mục G6-AUTO-09 vừa thêm; trả trạng thái cổng mới."""
+    k9 = next(k for k in reversed(ket) if k["id"] == "G6-AUTO-09")
+    tom_p = thu_muc / "G6_analysis_summary.json"
+    tom = None
+    if tom_p.is_file():
+        try:
+            tom = json.loads(tom_p.read_text(encoding="utf-8"))
+        except ValueError:
+            k9.update(detail=k9["detail"] + " · LƯỢT CHẠY: G6_analysis_summary.json hỏng — chưa đối chiếu được "
+                                             "phương pháp đã chạy với SAP §4",
+                      **({"pass": None} if k9["pass"] is True else {}))
+            return _DRAFT if trang_thai != "BLOCKED" else trang_thai
+    dat, chi_tiet = doi_chieu_phuong_phap_da_chay(_sec(sap, 4), tom if isinstance(tom, dict) else None,
+                                                  sap5=_sec(sap, 5))
+    k9["detail"] = f"{k9['detail']} · LƯỢT CHẠY: {chi_tiet}"
+    if dat is False:
+        k9.update({"pass": False, "blocking": True})
+    elif dat is None and co_khoi_phan_tich(tom) and k9["pass"] is True:
+        # tóm tắt CÓ khối phân tích chính mà không nhận ra họ (vd mô hình chính lỗi) ⇒ chưa đối chiếu được ⇒ không PASS
+        k9["pass"] = None
+        return _DRAFT
+    return trang_thai
+
+
+#: khối phân tích chính trong G6_analysis_summary.json (run_stats_analysis / phan_tich_thiet_ke_dac_thu)
+KHOI_PHAN_TICH = ("primary_outcome", "multivariate", "poisson_pr", "ordinal", "survival", "ty_le", "loai_dac_thu",
+                  "dac_thu")
+
+
+def co_khoi_phan_tich(tom) -> bool:
+    """Tóm tắt có ít nhất một khối phân tích chính — tóm tắt chỉ có siêu dữ liệu (N, khoá dữ liệu) chưa ghi lượt chạy
+    nào để đối chiếu: giữ kết quả theo script, ghi rõ «chưa đo lượt chạy» (như khi chưa có tóm tắt)."""
+    return isinstance(tom, dict) and any(tom.get(k) not in (None, {}, []) for k in KHOI_PHAN_TICH)
+
+
+def doi_chieu_phuong_phap_da_chay(sap4: str, tom: dict | None, sap5: str = "") -> tuple[bool | None, str]:
+    """Phần «lượt chạy» của G6-AUTO-09: (đạt?, chi tiết). None = không đo được (chưa có tóm tắt / không nhận ra họ)."""
+    if not tom:
+        return None, ("chưa có G6_analysis_summary.json (phân tích chính chưa chạy) — chưa đối chiếu được phương pháp "
+                      "SAP §4 với lượt chạy thật")
+    if not co_khoi_phan_tich(tom):
+        return None, ("G6_analysis_summary.json chưa có khối phân tích chính (chỉ siêu dữ liệu) — chưa đối chiếu được "
+                      "phương pháp SAP §4 với lượt chạy thật")
+    ho_sap = _ho_mo_hinh_sap(sap4)
+    ho_chay = ho_mo_hinh_tom_tat(tom)
+    kc = phuong_phap_kc_hieu_so_sap(sap4)
+    loi = []
+    # 23/11/2026: rào EPV chặn hồi quy logistic ⇒ lượt chạy phải dùng ĐÚNG phương pháp biến cố hiếm SAP §5 khai (định
+    # trước) — chạy đúng thì coi là chạy đúng họ SAP; thiếu/khác ⇒ CHẶN (bảng không được trống im lặng).
+    mv = tom.get("multivariate") if isinstance(tom.get("multivariate"), dict) else {}
+    if sap5 and (mv.get("rao_epv") or "EPV" in str(mv.get("warning") or "")):
+        import g4_quality_gate as G4Q  # noqa: PLC0415
+
+        pp = G4Q.phuong_phap_bien_co_hiem_sap(sap5)["phuong_phap"]
+        b = tom.get("bien_co_hiem") if isinstance(tom.get("bien_co_hiem"), dict) else {}
+        if pp and (b.get("phuong_phap") != pp or b.get("error")):
+            loi.append(f"rào EPV chặn hồi quy logistic nhưng lượt chạy không có phương pháp biến cố hiếm SAP §5 khai "
+                       f"(«{G4Q.BIEN_CO_HIEM[pp][0]}»): {b.get('error') or 'thiếu khối bien_co_hiem'}")
+        elif pp:
+            ho_chay = ho_chay | ho_sap
+    if kc["chua_ho_tro"]:
+        loi.append(f"SAP §4 khai KTC hiệu số nguy cơ theo {', '.join(kc['chua_ho_tro'])} — G6 CHƯA tính được phương "
+                   "pháp này (hỗ trợ: Newcombe hybrid score, Wald); không tự lùi về Wald")
+    if not ho_sap or not ho_chay:
+        if loi:
+            return False, "; ".join(loi)
+        thieu = "SAP §4" if not ho_sap else "tóm tắt phân tích chính"
+        return None, f"không nhận ra họ mô hình ở {thieu} — chưa đối chiếu được (SAP {sorted(ho_sap)} · đã chạy " \
+                     f"{sorted(ho_chay)})"
+    if not ho_sap & ho_chay:
+        them = (" — hồi quy logistic CÓ ĐIỀU KIỆN chạy khi đặc tả G6 khai bo_ghep (cột mã bộ ghép); không tự lùi về "
+                "logistic không điều kiện" if "logistic_dk" in ho_sap else "")
+        loi.append(f"SAP §4 khoá họ {sorted(ho_sap)} nhưng phân tích chính ĐÃ CHẠY họ {sorted(ho_chay)}{them}")
+    po = tom.get("primary_outcome") if isinstance(tom.get("primary_outcome"), dict) else {}
+    if kc["phuong_phap"]:
+        if po.get("risk_diff") is None:
+            loi.append(f"SAP §4 khai KTC {kc['phuong_phap']} cho hiệu số nguy cơ nhưng tóm tắt phân tích chính "
+                       "không có hiệu số nguy cơ")
+        elif po.get("risk_diff_ci_method") != kc["phuong_phap"]:
+            loi.append(f"SAP §4 khai KTC hiệu số nguy cơ theo «{kc['phuong_phap']}» nhưng G6 tính theo "
+                       f"«{po.get('risk_diff_ci_method') or 'không ghi phương pháp (Wald cũ)'}»")
+    if loi:
+        return False, "; ".join(loi)
+    kc_ghi = (f"; KTC hiệu số nguy cơ «{po.get('risk_diff_ci_method')}» đúng SAP" if kc["phuong_phap"] else
+              (f"; SAP không khai phương pháp KTC hiệu số — G6 ghi «{po.get('risk_diff_ci_method')}»"
+               if po.get("risk_diff") is not None else ""))
+    return True, f"phân tích chính đã chạy họ {sorted(ho_chay & ho_sap)} thuộc SAP §4 {sorted(ho_sap)}{kc_ghi}"
 
 
 _DAU_SCRIPT_G5 = {
@@ -880,6 +1075,11 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
             "với SAP đã khoá", True)
     else:
         add("G6-AUTO-09", True, f"mô hình chính «{ho_script[0]}» thuộc phương pháp SAP §4 {sorted(ho_sap)}")
+    # 23/11/2026 (G7 phát hiện hai lệch G6↔SAP): CÙNG tiêu chí còn đối chiếu SAP §4 với lượt chạy THẬT của phân tích
+    # chính (G6_analysis_summary.json — chay_sap_g6 → run_stats_analysis), không chỉ với script. Lệch ⇒ CHẶN; tóm tắt có
+    # mà hỏng/không nhận ra họ ⇒ không được PASS (DRAFT); chưa có tóm tắt ⇒ giữ kết quả theo script, ghi rõ chưa đo lượt
+    # chạy. Gộp vào G6-AUTO-09 (không mở mã mới) để phân công trách nhiệm cổng giữ nguyên một chủ.
+    trang_thai = _doi_chieu_luot_chay_vao_auto09(ket, thu_muc, sap, trang_thai)
 
     # ── G6-AUTO-10: ghi phiên bản môi trường để tái lập (VÁ 04/10/2026, G6-11) ──
     r_tep = [t for t in scripts if t.lower().endswith(".r")]

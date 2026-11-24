@@ -230,6 +230,23 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/duyet_kiem_may_api.py` (chủ) — duyệt và đo độ đúng của kiểm máy bằng Claude API; chốt kiểm `tests/test_phan_xu_kiem_may_20261121.py`; nguyên tắc: kiểm chứng khách quan · khách quan.
+- Công cụ `tools/kiem_a12_khop_bien_nhan.py` (chủ) — đối chiếu lời khai A12 với biên nhận máy-kiểm; chốt kiểm `tools/g10_quality_gate.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/tai_retraction_watch.py` (chủ) — tải danh mục Retraction Watch ngoại tuyến (tầng 1 chuỗi rút bài); chốt kiểm `tools/check_citation_retraction.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/tham_dinh_toan_van.py` (chủ) — đối chiếu số liệu tường thuật với toàn văn OA; chốt kiểm `tools/kiem_so_lieu_toan_van.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/toan_van_trich_dan.py` (chủ) — chốt toàn văn cho mọi trích dẫn đề tài (G10-AUTO-12); chốt kiểm `tools/g10_quality_gate.py`; nguyên tắc: bằng chứng.
+- Công cụ `tools/run_g8_auto.py` (kiểm) — đầu ra của `binh-duyet`: bảng rà trước nộp A9 (bình duyệt đối kháng); chốt kiểm `tools/g8_quality_gate.py`; nguyên tắc: khách quan · kiểm chứng khách quan.
+- Công cụ `tools/run_g9_auto.py` (kiểm) — đầu ra của `nop-bai-phan-hoi`: liêm chính tác giả: ICMJE/CRediT, COI, khai AI, chia sẻ dữ liệu; chốt kiểm `tools/g9_quality_gate.py`; nguyên tắc: trung thực–minh bạch · đạo đức.
+- Công cụ `tools/g10_quality_gate.py` (dùng phụ) — bộ chấm cổng G10 đo đầu ra nhiệm vụ G10-T2 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g10`); nguyên tắc: đạt chuẩn định trước · kết quả kiểm chứng được.
+- Công cụ `tools/g7_quality_gate.py` (dùng phụ) — bộ chấm cổng G7 đo đầu ra nhiệm vụ G7-T3 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g7`); nguyên tắc: đạt chuẩn định trước · trung thực–minh bạch.
+- Công cụ `tools/g9_quality_gate.py` (dùng phụ) — bộ chấm cổng G9 đo đầu ra nhiệm vụ G9-T2 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g9`); nguyên tắc: đạt chuẩn định trước · trung thực–minh bạch.
+- Công cụ `tools/kiem_noi_dung_trich_dan.py` (chủ) — CHẾ ĐỘ AGENT, không gọi API (22/11/2026): `xuat-phieu --study <mã>` (phiếu từng cặp đoạn khẳng định × tài liệu [n], kèm tệp toàn văn trên máy) → agent đọc toàn văn từng cặp, ghi JSON phán quyết `ung_ho`/`ung_ho_mot_phan`/`khong_ung_ho`/`khong_doc_duoc` kèm trích ≤ 15 từ → `nap-ket-qua --study <mã> --tu <tệp>` (máy TỪ CHỐI mã cặp lạ, băm đã cũ, trích quá 15 từ, trích không có nguyên văn trong nguồn, «ủng hộ» mà con số của đoạn không có trong nguồn) → `trang-thai`; sổ dùng chung khuôn băm với sổ đọc K21 (`so_doc_de_cuong.py`) nên sửa đoạn nào thì phải đọc lại cặp đó; chạy ở khâu cuối, sau khi đề cương đã khoá; chốt kiểm `tests/test_kiem_noi_dung_agent_20261122.py`; nguyên tắc: trung thực–minh bạch · kiểm chứng khách quan.
+- Công cụ `tools/toan_van_trich_dan.py dinh-danh` (chủ) — sổ định danh TLTK của đề tài (PMID · PMCID · DOI) và đối chiếu siêu dữ liệu với Crossref/PubMed (năm, trang, tiêu đề lệch chỉ BÁO, người viết sửa câu TLTK); thứ tự sau khi sửa TLTK: áp khuôn → `check_citations.py --study <mã>` (A12) → `dinh-danh --study <mã>` → xuất lại Word; chốt kiểm `tests/test_so_dinh_danh_tltk_20261122.py`; nguyên tắc: tái lập · trung thực–minh bạch.
+- Công cụ `tools/danh_muc_trich_dan.py` (chủ) — TLTK theo chuẩn NLM cho từng loại (`loai_tltk`, `yeu_to_nlm`: bài tạp chí, sách, chương sách, văn bản pháp quy, trang web, luận văn, báo cáo); K13 kiểm yếu tố bắt buộc của mục không có PMID và kiểm trang + PMCID của mục có PMID theo PubMed; chốt kiểm `tests/test_tltk_nlm_20261122.py`; nguyên tắc: khoa học · tái lập.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

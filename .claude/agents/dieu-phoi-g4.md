@@ -36,6 +36,7 @@ SAP đủ mục, phân tích chính theo estimand, độ nhạy/nhóm con địn
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
 
 ## 4. Công cụ thật của cổng
+- Công cụ `tools/dinh_nghia_thay_the.py` (kiểm) — đầu ra của `thiet-ke-nghien-cuu`: SAP §9 ghi định nghĩa thay thế cụ thể kèm căn cứ, không còn dòng chung; chốt kiểm `tests/test_g6_tu_dong_khong_viec_tay_20261122.py`; nguyên tắc: đạt chuẩn định trước.
 - `python3 tools/run_g4_auto.py --study <mã> [--regenerate-sap]`
   Chạy lại khi SAP ĐÃ BIÊN TẬP ⇒ bộ sinh GIỮ NGUYÊN SAP từng byte (không đè `.docx` chuẩn), vẫn ghi lại
   `G4_checkpoint.json` theo thượng nguồn hiện hành (`sap_giu_ban_bien_tap: true`), thoát mã 2 — trạng thái ĐÚNG,

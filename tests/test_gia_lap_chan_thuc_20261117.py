@@ -248,6 +248,11 @@ def test_moi_phan_tich_g6_loc_quan_the():
     for ma, kb in KB.items():
         for pt in kb["ho_so_tron_vong"]["g6"]:
             ts = pt.get("tham_so")
+            if isinstance(ts, dict) and "bang_chung" in ts:
+                # Kiểm bằng chứng thủ tục định tính (tools/bang_chung_dinh_tinh.py) đọc tệp nhật ký, không chạy
+                # trên dòng người tham gia ⇒ lọc quần thể không áp dụng; gắn «loc» vào đây là sai đặc tả.
+                assert "loc" not in ts, (ma, pt["id"], ts.get("loc"))
+                continue
             if isinstance(ts, dict) and (pt.get("vai") == "chinh" or not pt.get("ke_thua") or "loc" in ts):
                 assert "du_tieu_chuan == 1" in ts["loc"], (ma, pt["id"], ts.get("loc"))
     nam = next(p for p in KB["rct_chan_thuc"]["ho_so_tron_vong"]["g6"] if p["id"] == "NC_nam")
@@ -336,7 +341,9 @@ def test_cong_phan_ci_bat_sai_va_chua_do(tmp_path):
     tot = {"cong": {"G6_5": {"trang_thai": "DAT"}, "G10": {"trang_thai": "PASS_G10_RELEASE_PACKAGE_LOCKED"}},
            "so_o_loi_may": 0,
            "du_lieu": {"de_cuong_nop": {"ma": 0},
-                       "g6": {"bieu_do": {"loi": [], "thieu_bat_buoc": [], "co_tep": True}}}}  # fmt: skip
+                       "g6": {"bieu_do": {"loi": [], "thieu_bat_buoc": [], "co_tep": True}}},
+           # 22/11/2026: báo cáo ĐẠT phải có số đo chuẩn báo cáo theo mục với 0 mục thiếu (chốt không sổ nợ)
+           "chuan_bao_cao": {"ban_thao_thieu": [], "bao_cao_thieu": [], "bao_cao_cau_truc": []}}  # fmt: skip
     for cx, mong in (({"ket": "DAT"}, []), ({"ket": "KHONG_AP_DUNG"}, []), ({"ket": "CANH_BAO"}, []),
                      ({"ket": "SAI", "lay": "or_tho", "that": 1.84, "uoc": 6.0, "ci_95": [4, 9]}, ["SAI"]),
                      ({"ket": "CHUA_DO", "lay": "auc"}, ["CHUA_DO"])):

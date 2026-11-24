@@ -155,6 +155,15 @@ def _gia_tri(r: Mapping[str, str], spec: Mapping[str, Any], rng: random.Random, 
             return _ep_khoang(float(v), "integer" if int(spec["lam_tron"]) == 0 else "number", lo_s, hi_s,
                               int(spec["lam_tron"]))
         return int(v) if re.fullmatch(r"-?\d+", v) else (float(v) if v else None)
+    if "giong_bien" in spec:  # 22/11/2026: người mã hoá thứ hai — trùng mã người thứ nhất với xác suất p, còn lại khác
+        goc, p_giong, ds = spec["giong_bien"]
+        v = hang.get(goc)
+        if v in (None, ""):
+            return None
+        if rng.random() < float(p_giong):
+            return v
+        khac = [x for x in ds if x != v]
+        return rng.choice(khac) if khac else v
     if "chon_chu" in spec:  # chữ tự do: chọn một câu có sẵn («» = để trống — câu không bắt buộc)
         return rng.choice(list(spec["chon_chu"])) or None
     if "ngay_cong_thang" in spec:  # ngày = ngày gốc + số tháng (biến khác) × 30,44 ngày

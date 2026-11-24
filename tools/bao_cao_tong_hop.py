@@ -185,6 +185,43 @@ def _khoi_cuoi_ban_thao(bt: str, bd: Dict[str, int], canh_bao: List[str]) -> str
     return "\n\n".join(khoi)
 
 
+def _bo_sung_gioi_thieu(bt: str, dat_van_de: str, bd: Dict[str, int], canh_bao: List[str]) -> str:
+    """Câu của phần giới thiệu bản thảo KHÔNG nằm trong khối có nhãn đậm «§n …» và chưa có trong đặt vấn đề của đề
+    cương — bộ sinh G7 viết các câu theo chuẩn báo cáo ở đây (vd vai trò dự kiến của xét nghiệm — STARD 3; bất bình
+    đẳng sức khoẻ giữa các nhóm — TRIPOD+AI 3c). Đo thật 22/11/2026: đặt vấn đề của báo cáo chỉ lấy từ đề cương nên
+    mất các câu này dù bản thảo có. Giữ nguyên văn, theo thứ tự xuất hiện."""
+    import tieu_chi_ban_thao as K18  # noqa: PLC0415  (nạp trễ: chỉ cần khi dựng báo cáo)
+
+    gt = None
+    for m in re.finditer(r"(?m)^(#{1,2})\s+(.*\S)\s*$", bt):
+        if K18.khoa_imrad(m.group(2)) == "gioi_thieu":
+            gt = tach_muc(bt[m.start():], re.escape(_chuan(m.group(2))) or ".", len(m.group(1)))
+            break
+    if not gt:
+        return ""
+    co_san = re.sub(r"\s+", " ", dat_van_de)
+    them: List[str] = []
+    trong_khoi_nhan = False
+    for dong in gt.splitlines():
+        s = dong.strip()
+        if not s or s.startswith("#") or s == "---":
+            trong_khoi_nhan = False
+            continue
+        if re.match(r"^\*\*§\s*\d", s):
+            trong_khoi_nhan = True
+            continue
+        if trong_khoi_nhan and not re.match(r"^[^\s:]{1,60}(?:\s[^\s:]+){0,20}:\s", s):
+            continue  # đoạn thân của khối «§n» — đặt vấn đề của đề cương đã phủ
+        trong_khoi_nhan = False
+        if re.sub(r"\s+", " ", s) in co_san:
+            continue
+        van, thieu = doi_so_trich_dan(s, bd)
+        if thieu:
+            canh_bao.append(f"giới thiệu (bản thảo): trích dẫn không có trong danh mục: {', '.join(thieu)}")
+        them.append(van.strip())
+    return "\n\n".join(them)
+
+
 def _muc_tieu_thanh_cau(khoi: str) -> str:
     """Trong khối mục tiêu, dòng liệt kê «1. So sánh …» ngay dưới đề mục «Mục tiêu» thành «Mục tiêu 1: So sánh …» —
     câu mục tiêu đứng độc lập, đúng cách trình bày báo cáo (bộ kiểm chuẩn K18 tìm «mục tiêu … <động từ>» trong câu)."""
@@ -240,6 +277,9 @@ def sinh(study: str, out_dir: Path) -> Dict[str, object]:
         canh_bao.append("không có diễn giải G6 — mục khuyến nghị trống")
     tom_tat = lay(bt, r"^tom tat|^abstract", "tóm tắt (bản thảo)", cap=2, bd=bd_bt)
     khai_bao = _khoi_cuoi_ban_thao(bt, bd_bt, canh_bao)
+    bo_sung = _bo_sung_gioi_thieu(bt, dat_van_de, bd_bt, canh_bao)
+    if bo_sung:
+        dat_van_de = (dat_van_de + "\n\n" + bo_sung).strip()
     muc_tieu = _muc_tieu_thanh_cau(muc_tieu)
     phieu = lay(dc, r"phieu thu thap", "phụ lục phiếu thu thập", cap=1)
     bien = lay(dc, r"bang bien|bien so va ma hoa", "phụ lục bảng biến", cap=1)
