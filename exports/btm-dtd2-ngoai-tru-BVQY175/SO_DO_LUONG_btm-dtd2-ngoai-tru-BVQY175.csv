@@ -1,0 +1,9 @@
+buoc,n,loai,nhanh,ly_do
+Người bệnh khám ngoại trú tại Khoa Khám bệnh năm 2026 có mã ĐTĐ E11 hoặc chỉ có mã E14 (eHospital),,chinh,,
+"Chỉ có mã E14 (không xác định típ), không vào mẫu",,loai,,
+Người bệnh trong khung mẫu (mã ICD-10 E11),,chinh,,
+Không mở hồ sơ vì đã đủ cỡ mẫu,,loai,,
+Hồ sơ đã mở theo thứ tự ngẫu nhiên,,chinh,,
+Không đủ tiêu chuẩn lựa chọn,,loai,,Dưới 18 tuổi tại lượt khám đầu tiên trong cửa sổ: ; Chỉ có 1 lượt khám ngoại trú tại Khoa Khám bệnh trong cửa sổ: 
+Thuộc tiêu chuẩn loại trừ,,loai,,"Đang lọc máu hoặc đã ghép thận: ; Có thai trong cửa sổ: ; Có mã ĐTĐ típ 1 (E10) hoặc thể khác (E12, E13): "
+Đưa vào phân tích,,chinh,,

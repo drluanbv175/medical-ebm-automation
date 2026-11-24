@@ -233,8 +233,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 24/11/2026 (hợp đồng SAP v2): dòng hop_dong_sap.py của thiet-ke-nghien-cuu nêu thêm nơi đọc hợp đồng — vẫn 64.
 # 24/11/2026 (nhánh tích hợp 2): gộp dòng doctrine của nhánh hợp đồng SAP v2 và nhánh «điền sai kiểu» — vẫn 64.
 # 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
+# 23/11/2026: thêm dòng doctrine hệ nhập liệu cục bộ (tools/nhap_lieu_cuc_bo.py) vào quan-ly-du-lieu + dieu-phoi-g5.
+# 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "5f15055e70bed1ab7d22c7356577da53a0f7de42d88e1f708a303a32dcff6008"
+    "d8065b76a8f63fc2ce9d704f320cba195e680e57c82db021809fd2256cdf86ea"
 )
 
 MINIMUM_AGENT_COUNT = 64

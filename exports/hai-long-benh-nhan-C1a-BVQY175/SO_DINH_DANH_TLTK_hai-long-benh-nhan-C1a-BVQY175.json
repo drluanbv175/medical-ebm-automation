@@ -1,0 +1,1588 @@
+{
+ "schema": "de_tai/so_dinh_danh_tltk/v1",
+ "study": "hai-long-benh-nhan-C1a-BVQY175",
+ "luc": "2026-11-23T04:22:03",
+ "nguon": "Crossref /works, NCBI PMC ID Converter",
+ "muc": [
+  {
+   "so": 1,
+   "bam_dong": "1653a3efb842b681",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.51298/vmj.v540i1.10302",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "MỘT SỐ YẾU TỐ LIÊN QUAN ĐẾN SỰ HÀI LÒNG CỦA NGƯỜI BỆNH VỀ DỊCH VỤ KHÁM BỆNH YÊU CẦU TẠI KHOA KHÁM BỆNH, BỆNH VIỆN ĐA KHOA TỈNH THÁI BÌNH",
+    "nam": [
+     "2024"
+    ],
+    "tap": "540",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Việt Nam"
+   }
+  },
+  {
+   "so": 2,
+   "bam_dong": "e1e98d62ccd1bc7f",
+   "loai": "van_ban_quy_pham",
+   "pmid": null,
+   "pmcid": null,
+   "doi": null,
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": "56/QĐ-BYT",
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "dòng TLTK chưa ghi đường dẫn nguồn chính thức (Cổng TTĐT cơ quan ban hành)"
+   ],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": null
+  },
+  {
+   "so": 3,
+   "bam_dong": "e0bf9f7a76681280",
+   "loai": "van_ban_quy_pham",
+   "pmid": null,
+   "pmcid": null,
+   "doi": null,
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": "3869/QĐ-BYT",
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "dòng TLTK chưa ghi đường dẫn nguồn chính thức (Cổng TTĐT cơ quan ban hành)"
+   ],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": null
+  },
+  {
+   "so": 4,
+   "bam_dong": "5852e9b3f4033631",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.52163/yhc.v64i6.841",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "SỰ HÀI LÒNG CỦA NGƯỜI BỆNH VỚI CHẤT LƯỢNG DỊCH VỤ THEO YÊU CẦU TẠI KHOA KHÁM BỆNH BỆNH VIỆN ĐA KHOA ĐỐNG ĐA HÀ NỘI NĂM 2023",
+    "nam": [
+     "2023"
+    ],
+    "tap": "64",
+    "so": "6",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Cộng đồng"
+   }
+  },
+  {
+   "so": 5,
+   "bam_dong": "e012e6ce8c5c043b",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.51403/0868-2836/2021/78",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "83-88",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Sự hài lòng của người bệnh về chất lượng dịch vụ y tế tại Khoa Y học cổ truyền, Bệnh viện Quân Y 175, năm 2020",
+    "nam": [
+     "2021"
+    ],
+    "tap": "31",
+    "so": "2",
+    "trang": "83-88",
+    "tap_chi": "Tạp chí Y học Dự phòng"
+   }
+  },
+  {
+   "so": 6,
+   "bam_dong": "964a3629271381bc",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.52163/yhc.v67icd5.5018",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "ĐÁNH GIÁ HIỆU QUẢ CỦA HỆ THỐNG ĐĂNG KÝ KHÁM BỆNH TRỰC TUYẾN TẠI KHOA KHÁM BỆNH THEO YÊU CẦU, BỆNH VIỆN TRUNG ƯƠNG QUÂN ĐỘI 108",
+    "nam": [
+     "2026"
+    ],
+    "tap": null,
+    "so": null,
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Cộng đồng"
+   }
+  },
+  {
+   "so": 7,
+   "bam_dong": "07564bca6b904712",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.52163/yhc.v67i7.5934",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "THỰC TRẠNG THỜI GIAN CHỜ KHÁM BỆNH VÀ SỰ HÀI LÒNG CỦA NGƯỜI BỆNH TẠI KHOA KHÁM BỆNH, BỆNH VIỆN MẮT NGHỆ AN NĂM 2025",
+    "nam": [
+     "2026"
+    ],
+    "tap": null,
+    "so": null,
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Cộng đồng"
+   }
+  },
+  {
+   "so": 8,
+   "bam_dong": "1a3ba8d0bd6dc546",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.52163/yhc.v66i1.1940",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "36. HÀI LÒNG NGƯỜI BỆNH VỀ DỊCH VỤ ĐÔNG Y TẠI KHOA Y HỌC CỔ TRUYỀN BỆNH VIỆN QUÂN Y 175 NĂM 2024",
+    "nam": [
+     "2025"
+    ],
+    "tap": "66",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Cộng đồng"
+   }
+  },
+  {
+   "so": 9,
+   "bam_dong": "3b6cc9f729123471",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.51298/vmj.v549i2.13771",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "KHẢO SÁT SỰ HÀI LÒNG NGƯỜI BỆNH NGOẠI TRÚ TẠI KHU KHÁM BỆNH AB – KHOA KHÁM BỆNH ĐA KHOA BỆNH VIỆN TRUNG ƯƠNG QUÂN ĐỘI 108",
+    "nam": [
+     "2025"
+    ],
+    "tap": "549",
+    "so": "2",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Việt Nam"
+   }
+  },
+  {
+   "so": 10,
+   "bam_dong": "4de44d6f80edfbf1",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.52163/yhc.v64i1.573",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "SỰ HÀI LÒNG VÀ MỐI LIÊN QUAN CỦA NGƯỜI BỆNH ĐẾN KHÁM BỆNH TẠI KHOA KHÁM BỆNH ĐA KHOA BỆNH VIỆN TRUNG ƯƠNG QUÂN ĐỘI 108, NĂM 2022",
+    "nam": [
+     "2022"
+    ],
+    "tap": "64",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "Tạp chí Y học Cộng đồng"
+   }
+  },
+  {
+   "so": 11,
+   "bam_dong": "421ecf21c9c2bdda",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.38148/jhds.0706skpt23-064",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "35-41",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Đánh giá sự hài lòng của người bệnh khám ngoại trú tại khoa khám bệnh Bệnh viện Quân dân Y 16, năm 2023",
+    "nam": [
+     "2023"
+    ],
+    "tap": "07",
+    "so": "06",
+    "trang": "35-41",
+    "tap_chi": "Journal of Health and Development Studies"
+   }
+  },
+  {
+   "so": 12,
+   "bam_dong": "c899ae14fed77344",
+   "loai": "bai_bao",
+   "pmid": "27094345",
+   "pmcid": "PMC4837507",
+   "doi": "10.1186/s13104-016-2034-2",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Appraising convergent validity of patient-reported outcome measures in systematic reviews: constructing hypotheses and interpreting outcomes",
+    "nam": [
+     "2016"
+    ],
+    "tap": "9",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "BMC Research Notes"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 13,
+   "bam_dong": "cc1e7e42fc462c37",
+   "loai": "bai_bao",
+   "pmid": "15485730",
+   "pmcid": null,
+   "doi": "10.1016/j.jclinepi.2003.12.013",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "785-794",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Patterns of intra-cluster correlation from primary care research to inform study design and analysis",
+    "nam": [
+     "2004"
+    ],
+    "tap": "57",
+    "so": "8",
+    "trang": "785-794",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 14,
+   "bam_dong": "70560ed63fedd176",
+   "loai": "bai_bao",
+   "pmid": "35155757",
+   "pmcid": "PMC8829720",
+   "doi": "10.1177/23743735221079144",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Does Adjusting for Social Desirability Reduce Ceiling Effects and Increase Variation of Patient-Reported Experience Measures?",
+    "nam": [
+     "2022"
+    ],
+    "tap": "9",
+    "so": null,
+    "trang": null,
+    "tap_chi": "Journal of Patient Experience"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 15,
+   "bam_dong": "502c5ac5b1ce462b",
+   "loai": "bai_bao",
+   "pmid": "26440803",
+   "pmcid": "PMC4595218",
+   "doi": "10.1371/journal.pmed.1001885",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "e1001885",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "The REporting of studies Conducted using Observational Routinely-collected health Data (RECORD) Statement",
+    "nam": [
+     "2015"
+    ],
+    "tap": "12",
+    "so": "10",
+    "trang": "e1001885",
+    "tap_chi": "PLOS Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 16,
+   "bam_dong": "5844aebb14092673",
+   "loai": "bai_bao",
+   "pmid": "9762873",
+   "pmcid": null,
+   "doi": "10.1016/s0895-4356(98)00066-3",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "809-816",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Using Binary Logistic Regression Models for Ordinal Data with Non-proportional Odds",
+    "nam": [
+     "1998"
+    ],
+    "tap": "51",
+    "so": "10",
+    "trang": "809-816",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 17,
+   "bam_dong": "a23a307602e64ed8",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.1037/0033-2909.88.3.588",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "588-606",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Significance tests and goodness of fit in the analysis of covariance structures.",
+    "nam": [
+     "1980"
+    ],
+    "tap": "88",
+    "so": "3",
+    "trang": "588-606",
+    "tap_chi": "Psychological Bulletin"
+   }
+  },
+  {
+   "so": 18,
+   "bam_dong": "665cd12d46514c2d",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.1177/0049124192021002005",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "230-258",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Alternative Ways of Assessing Model Fit",
+    "nam": [
+     "1992"
+    ],
+    "tap": "21",
+    "so": "2",
+    "trang": "230-258",
+    "tap_chi": "Sociological Methods &amp; Research"
+   }
+  },
+  {
+   "so": 19,
+   "bam_dong": "0fde5a89a7f91f9b",
+   "loai": "bai_bao",
+   "pmid": "31218671",
+   "pmcid": "PMC6736915",
+   "doi": "10.1111/1475-6773.13187",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "1023-1035",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "A systematic review of the validity and reliability of patient‐reported experience measures",
+    "nam": [
+     "2019"
+    ],
+    "tap": "54",
+    "so": "5",
+    "trang": "1023-1035",
+    "tap_chi": "Health Services Research"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 20,
+   "bam_dong": "edd8ea710e826cf1",
+   "loai": "bai_bao",
+   "pmid": "16279131",
+   "pmcid": null,
+   "doi": "10.1191/1740774505cn071oa",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "99-107",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Determinants of the intracluster correlation coefficient in cluster randomized trials: the case of implementation research",
+    "nam": [
+     "2005"
+    ],
+    "tap": "2",
+    "so": "2",
+    "trang": "99-107",
+    "tap_chi": "Clinical Trials"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 21,
+   "bam_dong": "150558396e139a33",
+   "loai": "bai_bao",
+   "pmid": "42625778",
+   "pmcid": "PMC13490074",
+   "doi": "10.3389/frhs.2026.1844842",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Outpatient satisfaction assessed using a nationally standardized questionnaire: a survey of five health care facilities in Vietnam",
+    "nam": [
+     "2026"
+    ],
+    "tap": "6",
+    "so": null,
+    "trang": null,
+    "tap_chi": "Frontiers in Health Services"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 22,
+   "bam_dong": "7211fe6743370f60",
+   "loai": "bai_bao",
+   "pmid": "40295132",
+   "pmcid": "PMC12039015",
+   "doi": "10.1136/bmjopen-2024-093501",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "e093501",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Patient satisfaction and its associated factors in selected primary healthcare facilities in Kono District, Sierra Leone: a cross-sectional study",
+    "nam": [
+     "2025"
+    ],
+    "tap": "15",
+    "so": "4",
+    "trang": "e093501",
+    "tap_chi": "BMJ Open"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 23,
+   "bam_dong": "dd2180cf50641752",
+   "loai": "bai_bao",
+   "pmid": "36439278",
+   "pmcid": "PMC9684178",
+   "doi": "10.3389/ijph.2022.1605055",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Patient Satisfaction With Healthcare Service Quality and Its Associated Factors at One Polyclinic in Hanoi, Vietnam",
+    "nam": [
+     "2022"
+    ],
+    "tap": "67",
+    "so": null,
+    "trang": null,
+    "tap_chi": "International Journal of Public Health"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 24,
+   "bam_dong": "8a42e32361df24e9",
+   "loai": "bai_bao",
+   "pmid": "16943232",
+   "pmcid": null,
+   "doi": "10.1093/ije/dyl129",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "1292-1300",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Sample size for cluster randomized trials: effect of coefficient of variation of cluster size and analysis method",
+    "nam": [
+     "2006"
+    ],
+    "tap": "35",
+    "so": "5",
+    "trang": "1292-1300",
+    "tap_chi": "International Journal of Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 25,
+   "bam_dong": "1a7766cd18f8ccbf",
+   "loai": "bai_bao",
+   "pmid": "26776715",
+   "pmcid": null,
+   "doi": "10.1207/s15327906mbr2603_7",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "499-510",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "How Many Subjects Does It Take To Do A Regression Analysis",
+    "nam": [
+     "1991"
+    ],
+    "tap": "26",
+    "so": "3",
+    "trang": "499-510",
+    "tap_chi": "Multivariate Behavioral Research"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 26,
+   "bam_dong": "610957369ac24294",
+   "loai": "bai_bao",
+   "pmid": "12210625",
+   "pmcid": null,
+   "doi": "10.1002/sim.1047",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "2409-2419",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "A solution to the problem of separation in logistic regression",
+    "nam": [
+     "2002"
+    ],
+    "tap": "21",
+    "so": "16",
+    "trang": "2409-2419",
+    "tap_chi": "Statistics in Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 27,
+   "bam_dong": "f2dde01f3d1c8ae4",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.1080/10705519909540118",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "1-55",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Cutoff criteria for fit indexes in covariance structure analysis: Conventional criteria versus new alternatives",
+    "nam": [
+     "1999"
+    ],
+    "tap": "6",
+    "so": "1",
+    "trang": "1-55",
+    "tap_chi": "Structural Equation Modeling: A Multidisciplinary Journal"
+   }
+  },
+  {
+   "so": 28,
+   "bam_dong": "d6673538ff835364",
+   "loai": "bai_bao",
+   "pmid": "32584904",
+   "pmcid": "PMC7316281",
+   "doi": "10.1371/journal.pone.0235333",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "e0235333",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Measuring satisfaction with health care services for Vietnamese patients with cardiovascular diseases",
+    "nam": [
+     "2020"
+    ],
+    "tap": "15",
+    "so": "6",
+    "trang": "e0235333",
+    "tap_chi": "PLOS ONE"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 29,
+   "bam_dong": "a960c665af269d98",
+   "loai": "bai_bao",
+   "pmid": "34053882",
+   "pmcid": null,
+   "doi": "10.1016/j.jhqr.2021.04.004",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "269-274",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Validación y adaptación transcultural del cuestionario de satisfacción en Dermatología (PSQ-18)",
+    "nam": [
+     "2021"
+    ],
+    "tap": "36",
+    "so": "5",
+    "trang": "269-274",
+    "tap_chi": "Journal of Healthcare Quality Research"
+   },
+   "lech_tham_khao": [
+    "tiêu đề khác nguồn — Crossref: «Validación y adaptación transcultural del cuestionario de satisfacción en Dermatología (PSQ-18)»"
+   ]
+  },
+  {
+   "so": 30,
+   "bam_dong": "f310bfdd41548d06",
+   "loai": "bai_bao",
+   "pmid": "20954780",
+   "pmcid": null,
+   "doi": "10.1037/a0020761",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "309-334",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "A general approach to causal mediation analysis.",
+    "nam": [
+     "2010"
+    ],
+    "tap": "15",
+    "so": "4",
+    "trang": "309-334",
+    "tap_chi": "Psychological Methods"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 31,
+   "bam_dong": "24b1a37ca3ca3031",
+   "loai": "bai_bao",
+   "pmid": "34546296",
+   "pmcid": "PMC8974292",
+   "doi": "10.1001/jama.2021.14075",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "1045",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "A Guideline for Reporting Mediation Analyses of Randomized Trials and Observational Studies",
+    "nam": [
+     "2021"
+    ],
+    "tap": "326",
+    "so": "11",
+    "trang": "1045",
+    "tap_chi": "JAMA"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 32,
+   "bam_dong": "6a8323ddccc58a78",
+   "loai": "bai_bao",
+   "pmid": "32992600",
+   "pmcid": "PMC7579147",
+   "doi": "10.3390/ijerph17197070",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "7070",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Factors Associated with Outpatient Satisfaction in Tertiary Hospitals in China: A Systematic Review",
+    "nam": [
+     "2020"
+    ],
+    "tap": "17",
+    "so": "19",
+    "trang": "7070",
+    "tap_chi": "International Journal of Environmental Research and Public Health"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 33,
+   "bam_dong": "3259b3025dce631f",
+   "loai": "bai_bao",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.18637/jss.v009.i08",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Analysis of Complex Survey Samples",
+    "nam": [
+     "2004"
+    ],
+    "tap": "9",
+    "so": "8",
+    "trang": null,
+    "tap_chi": "Journal of Statistical Software"
+   }
+  },
+  {
+   "so": 34,
+   "bam_dong": "6d1c1661af7849ef",
+   "loai": "sach",
+   "pmid": null,
+   "pmcid": null,
+   "doi": null,
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "sách chưa ghi ISBN hoặc DOI"
+   ],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": null
+  },
+  {
+   "so": 35,
+   "bam_dong": "3c35b8e445c913c3",
+   "loai": "bai_bao",
+   "pmid": "39944421",
+   "pmcid": "PMC11821282",
+   "doi": "10.7759/cureus.77345",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Exploring Patient Satisfaction and Determinants in Outpatient Services: A Cross-Sectional Study",
+    "nam": [
+     "2025"
+    ],
+    "tap": null,
+    "so": null,
+    "trang": null,
+    "tap_chi": "Cureus"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 36,
+   "bam_dong": "07bf1a3f4f4afca0",
+   "loai": "bai_bao",
+   "pmid": "17402810",
+   "pmcid": null,
+   "doi": "10.1037/1082-989x.12.1.23",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "23-44",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Bias in cross-sectional analyses of longitudinal mediation.",
+    "nam": [
+     "2007"
+    ],
+    "tap": "12",
+    "so": "1",
+    "trang": "23-44",
+    "tap_chi": "Psychological Methods"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 37,
+   "bam_dong": "00f2d9811d39c239",
+   "loai": "bai_bao",
+   "pmid": "20494804",
+   "pmcid": null,
+   "doi": "10.1016/j.jclinepi.2010.02.006",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "737-745",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "The COSMIN study reached international consensus on taxonomy, terminology, and definitions of measurement properties for health-related patient-reported outcomes",
+    "nam": [
+     "2010"
+    ],
+    "tap": "63",
+    "so": "7",
+    "trang": "737-745",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 38,
+   "bam_dong": "a94ab7084769bbd0",
+   "loai": "bai_bao",
+   "pmid": "36292392",
+   "pmcid": "PMC9601799",
+   "doi": "10.3390/healthcare10101945",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "1945",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "An Assessment of Outpatient Satisfaction with Hospital Pharmacy Quality and Influential Factors in the Context of the COVID-19 Pandemic",
+    "nam": [
+     "2022"
+    ],
+    "tap": "10",
+    "so": "10",
+    "trang": "1945",
+    "tap_chi": "Healthcare"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 39,
+   "bam_dong": "df6f31c1b2db66bd",
+   "loai": "bai_bao",
+   "pmid": "32946537",
+   "pmcid": "PMC7500619",
+   "doi": "10.1371/journal.pone.0239306",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "e0239306",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Determinants of patient satisfaction: Lessons from large-scale inpatient interviews in Vietnam",
+    "nam": [
+     "2020"
+    ],
+    "tap": "15",
+    "so": "9",
+    "trang": "e0239306",
+    "tap_chi": "PLOS ONE"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 40,
+   "bam_dong": "89ae47aa903ef3f2",
+   "loai": "bai_bao",
+   "pmid": "8970487",
+   "pmcid": null,
+   "doi": "10.1016/s0895-4356(96)00236-3",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "1373-1379",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "A simulation study of the number of events per variable in logistic regression analysis",
+    "nam": [
+     "1996"
+    ],
+    "tap": "49",
+    "so": "12",
+    "trang": "1373-1379",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 41,
+   "bam_dong": "d8c817a5c1888807",
+   "loai": "bai_bao",
+   "pmid": "17654487",
+   "pmcid": null,
+   "doi": "10.1002/nur.20199",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "459-467",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Is the CVI an acceptable indicator of content validity? Appraisal and recommendations",
+    "nam": [
+     "2007"
+    ],
+    "tap": "30",
+    "so": "4",
+    "trang": "459-467",
+    "tap_chi": "Research in Nursing &amp; Health"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 42,
+   "bam_dong": "e3bdfeccb93f0679",
+   "loai": "bai_bao",
+   "pmid": "34017606",
+   "pmcid": "PMC8114273",
+   "doi": "10.1177/20551029211015117",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Outpatient satisfaction with primary health care services in Vietnam: Multilevel analysis results from The Vietnam Health Facilities Assessment 2015",
+    "nam": [
+     "2021"
+    ],
+    "tap": "8",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "Health Psychology Open"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 43,
+   "bam_dong": "232cb97feec11451",
+   "loai": "sach",
+   "pmid": null,
+   "pmcid": null,
+   "doi": "10.1002/9780470316696",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": null
+  },
+  {
+   "so": 44,
+   "bam_dong": "c1d29f51b0252cc1",
+   "loai": "bai_bao",
+   "pmid": "33886027",
+   "pmcid": "PMC8481359",
+   "doi": "10.1007/s11606-021-06737-1",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "3179-3187",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "A Consensus-Based Checklist for Reporting of Survey Studies (CROSS)",
+    "nam": [
+     "2021"
+    ],
+    "tap": "36",
+    "so": "10",
+    "trang": "3179-3187",
+    "tap_chi": "Journal of General Internal Medicine"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 45,
+   "bam_dong": "ed12d63bd0944223",
+   "loai": "bai_bao",
+   "pmid": "41645935",
+   "pmcid": null,
+   "doi": "10.1108/ijhcqa-07-2025-0100",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "1-11",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Translation, cross-cultural adaptation and validation of short-form patient satisfaction questionnaire (PSQ-18) in Bengali",
+    "nam": [
+     "2026"
+    ],
+    "tap": null,
+    "so": null,
+    "trang": "1-11",
+    "tap_chi": "International Journal of Health Care Quality Assurance"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 46,
+   "bam_dong": "c2e4cffee7ec2794",
+   "loai": "bai_bao",
+   "pmid": "19564179",
+   "pmcid": "PMC2714692",
+   "doi": "10.1136/bmj.b2393",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "b2393-b2393",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Multiple imputation for missing data in epidemiological and clinical research: potential and pitfalls",
+    "nam": [
+     "2009"
+    ],
+    "tap": "338",
+    "so": "jun29 1",
+    "trang": "b2393-b2393",
+    "tap_chi": "BMJ"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 47,
+   "bam_dong": "482e61980b1da3dd",
+   "loai": "bai_bao",
+   "pmid": "17161752",
+   "pmcid": null,
+   "doi": "10.1016/j.jclinepi.2006.03.012",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "34-42",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Quality criteria were proposed for measurement properties of health status questionnaires",
+    "nam": [
+     "2007"
+    ],
+    "tap": "60",
+    "so": "1",
+    "trang": "34-42",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 48,
+   "bam_dong": "b3d2cce7e187b4a9",
+   "loai": "bai_bao",
+   "pmid": "29550964",
+   "pmcid": "PMC5891557",
+   "doi": "10.1007/s11136-018-1829-0",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "1159-1170",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "COSMIN methodology for evaluating the content validity of patient-reported outcome measures: a Delphi study",
+    "nam": [
+     "2018"
+    ],
+    "tap": "27",
+    "so": "5",
+    "trang": "1159-1170",
+    "tap_chi": "Quality of Life Research"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 49,
+   "bam_dong": "2fc9dfc330b47330",
+   "loai": "bai_bao",
+   "pmid": "34445940",
+   "pmcid": null,
+   "doi": "10.1080/00185868.2021.1969871",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "73-83",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Improving Hospital’s Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities",
+    "nam": [
+     "2023"
+    ],
+    "tap": "101",
+    "so": "2",
+    "trang": "73-83",
+    "tap_chi": "Hospital Topics"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 50,
+   "bam_dong": "0b5520bd1edae844",
+   "loai": "bai_bao",
+   "pmid": "40432693",
+   "pmcid": "PMC12106881",
+   "doi": "10.1002/hsr2.70868",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "A Cross‐Sectional Study of Patients Satisfaction With the Pharmacy Services at the 108 Military Central Hospital: Determinants and Implications",
+    "nam": [
+     "2025"
+    ],
+    "tap": "8",
+    "so": "5",
+    "trang": null,
+    "tap_chi": "Health Science Reports"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 51,
+   "bam_dong": "923d336957dde34a",
+   "loai": "bai_bao",
+   "pmid": "42582692",
+   "pmcid": "PMC13458290",
+   "doi": "10.1002/hsr2.73018",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Perceived Healthcare Service Quality of Patients in the Post COVID‐19 Pandemic: A Cross‐Sectional Study at a Public District Hospital in Vietnam",
+    "nam": [
+     "2026"
+    ],
+    "tap": "9",
+    "so": "8",
+    "trang": null,
+    "tap_chi": "Health Science Reports"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 52,
+   "bam_dong": "71873f02ca6927b4",
+   "loai": "bai_bao",
+   "pmid": "23883565",
+   "pmcid": "PMC3722414",
+   "doi": "10.3402/meo.v18i0.21747",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "21747",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "The Patient Satisfaction Questionnaire Short Form (PSQ-18) as an adaptable, reliable, and validated tool for use in various settings",
+    "nam": [
+     "2013"
+    ],
+    "tap": "18",
+    "so": "1",
+    "trang": "21747",
+    "tap_chi": "Medical Education Online"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 53,
+   "bam_dong": "e368a4a119e382ec",
+   "loai": "bai_bao",
+   "pmid": "31703089",
+   "pmcid": "PMC6839840",
+   "doi": "10.1371/journal.pone.0223723",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "e0223723",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Patient satisfaction with HIV services in Vietnam: Status, service models and association with treatment outcome",
+    "nam": [
+     "2019"
+    ],
+    "tap": "14",
+    "so": "11",
+    "trang": "e0223723",
+    "tap_chi": "PLOS ONE"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 54,
+   "bam_dong": "dc29bcdd345ab8f9",
+   "loai": "bai_bao",
+   "pmid": "28690831",
+   "pmcid": "PMC5482327",
+   "doi": "10.12688/f1000research.11045.3",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": "454",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Patient waiting time in the outpatient clinic at a central surgical hospital of Vietnam: Implications for resource allocation",
+    "nam": [
+     "2017"
+    ],
+    "tap": "6",
+    "so": null,
+    "trang": "454",
+    "tap_chi": "F1000Research"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 55,
+   "bam_dong": "5b1bd251c2082f0a",
+   "loai": "bai_bao",
+   "pmid": "40995744",
+   "pmcid": "PMC12464433",
+   "doi": "10.1177/00469580251371387",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "Patient Satisfaction With Outpatient Department Health Service and Associated Factors at Public Hospitals in Ethiopia",
+    "nam": [
+     "2025"
+    ],
+    "tap": "62",
+    "so": null,
+    "trang": null,
+    "tap_chi": "INQUIRY: The Journal of Health Care Organization, Provision, and Financing"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 56,
+   "bam_dong": "c1e53a0cf63233f6",
+   "loai": "bai_bao",
+   "pmid": "26653405",
+   "pmcid": null,
+   "doi": "10.1146/annurev-publhealth-032315-021402",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "17-32",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Mediation Analysis: A Practitioner's Guide",
+    "nam": [
+     "2016"
+    ],
+    "tap": "37",
+    "so": "1",
+    "trang": "17-32",
+    "tap_chi": "Annual Review of Public Health"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 57,
+   "bam_dong": "30187521df82312a",
+   "loai": "bai_bao",
+   "pmid": "27881078",
+   "pmcid": "PMC5122171",
+   "doi": "10.1186/s12874-016-0267-3",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [],
+   "trang_nguon": null,
+   "nguon_khong_co_trang": true,
+   "crossref": {
+    "tieu_de": "No rationale for 1 variable per 10 events criterion for binary logistic regression analysis",
+    "nam": [
+     "2016"
+    ],
+    "tap": "16",
+    "so": "1",
+    "trang": null,
+    "tap_chi": "BMC Medical Research Methodology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 58,
+   "bam_dong": "c6f3cb6bac183ae8",
+   "loai": "bai_bao",
+   "pmid": "18313558",
+   "pmcid": null,
+   "doi": "10.1016/j.jclinepi.2007.11.008",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "344-349",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "The Strengthening the Reporting of Observational Studies in Epidemiology (STROBE) statement: guidelines for reporting observational studies",
+    "nam": [
+     "2008"
+    ],
+    "tap": "61",
+    "so": "4",
+    "trang": "344-349",
+    "tap_chi": "Journal of Clinical Epidemiology"
+   },
+   "lech_tham_khao": []
+  },
+  {
+   "so": 59,
+   "bam_dong": "f9ced54ed89917a6",
+   "loai": "bai_bao",
+   "pmid": "8134732",
+   "pmcid": null,
+   "doi": "10.1002/sim.4780122404",
+   "doi_de_xuat": null,
+   "isbn": null,
+   "so_hieu": null,
+   "url": null,
+   "lech": [],
+   "ly_do": [
+    "NCBI idconv lỗi HTTPError"
+   ],
+   "trang_nguon": "2257-2271",
+   "nguon_khong_co_trang": false,
+   "crossref": {
+    "tieu_de": "Sample size calculations for ordered categorical data",
+    "nam": [
+     "1993"
+    ],
+    "tap": "12",
+    "so": "24",
+    "trang": "2257-2271",
+    "tap_chi": "Statistics in Medicine"
+   },
+   "lech_tham_khao": []
+  }
+ ]
+}
