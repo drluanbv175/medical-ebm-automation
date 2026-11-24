@@ -225,9 +225,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # config/phan_cong_cong_cu.json, chép từ nhánh gốc claude/phan-cong-goc-20261122 — vẫn 64.
 # 23/11/2026: chép 2 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
 # 23/11/2026: chép 4 agent từ nguồn gốc (tools/dong_bo_agent_y_khoa.py --vao).
+# 23/11/2026: thêm dòng doctrine hệ nhập liệu cục bộ (tools/nhap_lieu_cuc_bo.py) vào quan-ly-du-lieu + dieu-phoi-g5.
 # 24/11/2026 (bộ gán đa trị PMM): phan-tich-thong-ke — BoGanPMM thay MICEData, R «pmmboot» — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "680ba4b87b1ec1621f05547e372cd9517f1d2d7270fc9e84480913e040483124"
+    "2bc5febbb5e813264ea5777ba83d2dccd8a647db1a0978ba016e2ecd6af1552a"
 )
 
 MINIMUM_AGENT_COUNT = 64

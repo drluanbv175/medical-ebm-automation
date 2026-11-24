@@ -90,6 +90,94 @@
    "test": "tests/test_z_chinh_xac_kc_wald_20261123.py"
   },
   {
+   "ma": "NLCB-CHUOI-BAM",
+   "chot": "nhật ký nhập liệu cục bộ: băm tính lại khác băm lưu ⇒ ĐỎ (sửa ngầm một trường)",
+   "tep": "tools/nhap_lieu_cuc_bo.py",
+   "cu": "            if bam_ban_ghi(r[\"stt\"], r[\"prev_hash\"], r) != r[\"hash\"]:",
+   "moi": "            if False:",
+   "test": "tests/test_nhap_lieu_cuc_bo_20261123.py::test_kiem_nhat_ky_bat_sua_ngam_truong_khong_phat_lai"
+  },
+  {
+   "ma": "NLCB-NEO",
+   "chot": "nhật ký nhập liệu cục bộ: neo cạnh kho bắt chuỗi bị tính lại",
+   "tep": "tools/nhap_lieu_cuc_bo.py",
+   "cu": "                    if theo_stt.get(int(n.get(\"stt\", 0))) != n.get(\"hash\"):",
+   "moi": "                    if False:",
+   "test": "tests/test_nhap_lieu_cuc_bo_20261123.py::test_kiem_nhat_ky_bat_tinh_lai_chuoi"
+  },
+  {
+   "ma": "NLCB-ONEDRIVE",
+   "chot": "kho nhập liệu cục bộ: từ chối thư mục OneDrive/đồng bộ đám mây",
+   "tep": "tools/nhap_lieu_cuc_bo.py",
+   "cu": "        if thap.startswith(_DONG_BO_BAT_DAU) or thap in _DONG_BO_DUNG:",
+   "moi": "        if False:",
+   "test": "tests/test_nhap_lieu_cuc_bo_20261123.py::test_tu_choi_onedrive_va_dam_may"
+  },
+  {
+   "ma": "NLCB-GIT",
+   "chot": "kho nhập liệu cục bộ: từ chối thư mục trong repo git",
+   "tep": "tools/nhap_lieu_cuc_bo.py",
+   "cu": "    repo = SP._trong_repo_git(_to_tien_ton_tai(p))",
+   "moi": "    repo = None",
+   "test": "tests/test_nhap_lieu_cuc_bo_20261123.py::test_tu_choi_trong_repo_git"
+  },
+  {
+   "ma": "NLCB-DINH-DANH",
+   "chot": "nhập liệu cục bộ: không lưu trường từ điển đánh dấu Identifier? = y",
+   "tep": "tools/nhap_lieu_cuc_bo.py",
+   "cu": "        if co_dd.get(c.truong):",
+   "moi": "        if False:",
+   "test": "tests/test_nhap_lieu_cuc_bo_20261123.py::test_khong_luu_truong_dinh_danh"
+  },
+  {
+   "ma": "NLCB-NHANH",
+   "chot": "nhập liệu cục bộ: logic nhánh ẩn/hiện bằng đúng danh_gia_logic",
+   "tep": "tools/nhap_lieu_cuc_bo.py",
+   "cu": "                hien[c.ten] = bool(NLE.danh_gia_logic(c.nhanh, dong_c))",
+   "moi": "                hien[c.ten] = True",
+   "test": "tests/test_nhap_lieu_cuc_bo_20261123.py::test_logic_nhanh_va_calc_dung_bo_danh_gia_chung"
+  },
+  {
+   "ma": "NLCB-KHOA",
+   "chot": "nhập liệu cục bộ: khoá phiếu bị từ chối khi còn truy vấn chưa đóng",
+   "tep": "tools/nhap_lieu_cuc_bo.py",
+   "cu": "            if mo:\n",
+   "moi": "            if False:\n",
+   "test": "tests/test_nhap_lieu_cuc_bo_20261123.py::test_khoa_chi_quan_ly_sau_doi_chieu_het_truy_van"
+  },
+  {
+   "ma": "NLCB-LY-DO",
+   "chot": "nhập liệu cục bộ: đổi giá trị đã lưu bắt buộc lý do",
+   "tep": "tools/nhap_lieu_cuc_bo.py",
+   "cu": "                    if len(ld) < 2:",
+   "moi": "                    if False:",
+   "test": "tests/test_nhap_lieu_cuc_bo_20261123.py::test_nhat_ky_ghi_du_truong_va_ly_do_bat_buoc"
+  },
+  {
+   "ma": "NLCB-DOC-LAP",
+   "chot": "nhập liệu cục bộ: người lượt 2 không nhập/xem lượt 1 (nhập kép độc lập)",
+   "tep": "tools/nhap_lieu_cuc_bo.py",
+   "cu": "        if LAN_CUA_VAI.get(phien.vai) != lan:",
+   "moi": "        if False:",
+   "test": "tests/test_nhap_lieu_cuc_bo_20261123.py::test_nhap_kep_doc_lap_hai_nguoi"
+  },
+  {
+   "ma": "NLCB-WEB-HOST",
+   "chot": "giao diện nhập liệu cục bộ: chặn Host lạ (chống DNS rebinding)",
+   "tep": "tools/nhap_lieu_cuc_bo_web.py",
+   "cu": "        if request.host not in app.config[\"HOST_HOP_LE\"]:",
+   "moi": "        if False:",
+   "test": "tests/test_nhap_lieu_cuc_bo_web_20261123.py::test_chan_host_la_va_csrf"
+  },
+  {
+   "ma": "NLCB-WEB-CSRF",
+   "chot": "giao diện nhập liệu cục bộ: POST thiếu/sai mã chống giả mạo yêu cầu bị chặn",
+   "tep": "tools/nhap_lieu_cuc_bo_web.py",
+   "cu": "            if not gui or not secrets.compare_digest(gui, session[\"csrf\"]):",
+   "moi": "            if False:",
+   "test": "tests/test_nhap_lieu_cuc_bo_web_20261123.py::test_chan_host_la_va_csrf"
+  },
+  {
    "ma": "CI-KIEM-CHEO-LECH",
    "chot": "cổng giả lập đỏ khi kiểm chéo SPSS/R LỆCH/LỖI/TỪ CHỐI",
    "tep": "tools/kiem_gia_lap_16.py",

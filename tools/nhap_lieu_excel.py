@@ -2194,20 +2194,11 @@ def _ten_nghi_pii(p: Path) -> bool:
         return False
 
 
-def lenh_so_sanh(args) -> int:
-    p1, p2 = Path(args.excel1).expanduser().resolve(), Path(args.excel2).expanduser().resolve()
-    if p1 == p2:
-        raise TuChoi("hai lần nhập là CÙNG một tệp")
-    ra = Path(args.ra).expanduser().resolve() if args.ra else p1.parent / f"nhap_kep_{p1.stem}_{p2.stem}"
-    _ngoai_repo(ra)
-    b1, cot, td_p, _ = _bang_tu_args(args, p1)
-    b2, _, _, _ = _bang_tu_args(args, p2)
-    loi = [(p1.name, x) for x in b1.loi()] + [(p2.name, x) for x in b2.loi()]
-    if loi:
-        print(f"🔴 {len(loi)} lỗi cấu trúc khi đọc — sửa trước khi so nhập kép:")
-        for ten, x in loi[:40]:
-            print(f"   {ten}: {x.trang}!{x.o} {x.cot} — {x.chi_tiet}")
-        return MA_LOI
+def so_sanh_bang(b1: Bang, b2: Bang, cot: list[Cot]) -> dict:
+    """So hai lần nhập độc lập TỪNG Ô theo mã nghiên cứu — lõi dùng chung của `so-sanh` (Excel/SPSS) và hệ nhập liệu
+    cục bộ (`tools/nhap_lieu_cuc_bo.py`, 23/11/2026). Trả {chi_1, chi_2, chung, lech, theo_bien, cot_chi_mot, so_o}:
+    `lech` mỗi ô một dict (CÓ giá trị — chỉ ghi ra ngoài repo), `theo_bien` {cột: [số ô so, số ô lệch]}.
+    Ô mà CẢ HAI lần đều chưa nhập trang/biểu mẫu chứa nó cho mã đó không vào mẫu số."""
     chi_1 = sorted(set(b1.hang) - set(b2.hang))
     chi_2 = sorted(set(b2.hang) - set(b1.hang))
     chung = [m for m in b1.hang if m in b2.hang]
@@ -2237,6 +2228,27 @@ def lenh_so_sanh(args) -> int:
                 )
     cot_chi_mot = sorted(set(b1.cot_co) ^ set(b2.cot_co))
     so_o = sum(v[0] for v in theo_bien.values())
+    return {"chi_1": chi_1, "chi_2": chi_2, "chung": chung, "lech": lech, "theo_bien": theo_bien,
+            "cot_chi_mot": cot_chi_mot, "so_o": so_o}  # fmt: skip
+
+
+def lenh_so_sanh(args) -> int:
+    p1, p2 = Path(args.excel1).expanduser().resolve(), Path(args.excel2).expanduser().resolve()
+    if p1 == p2:
+        raise TuChoi("hai lần nhập là CÙNG một tệp")
+    ra = Path(args.ra).expanduser().resolve() if args.ra else p1.parent / f"nhap_kep_{p1.stem}_{p2.stem}"
+    _ngoai_repo(ra)
+    b1, cot, td_p, _ = _bang_tu_args(args, p1)
+    b2, _, _, _ = _bang_tu_args(args, p2)
+    loi = [(p1.name, x) for x in b1.loi()] + [(p2.name, x) for x in b2.loi()]
+    if loi:
+        print(f"🔴 {len(loi)} lỗi cấu trúc khi đọc — sửa trước khi so nhập kép:")
+        for ten, x in loi[:40]:
+            print(f"   {ten}: {x.trang}!{x.o} {x.cot} — {x.chi_tiet}")
+        return MA_LOI
+    ss = so_sanh_bang(b1, b2, cot)
+    chi_1, chi_2, chung, lech = ss["chi_1"], ss["chi_2"], ss["chung"], ss["lech"]
+    theo_bien, cot_chi_mot, so_o = ss["theo_bien"], ss["cot_chi_mot"], ss["so_o"]
     ra.mkdir(parents=True, exist_ok=True)
     with open(ra / "NHAP_KEP_chi_tiet.csv", "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(
